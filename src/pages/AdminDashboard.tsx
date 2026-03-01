@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Check, X, Clock, ExternalLink, Pencil, Save, Trash2 } from "lucide-react";
+import { Check, X, Clock, ExternalLink, Pencil, Save, Trash2, Upload, ImageIcon } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProjectLogo from "@/components/ProjectLogo";
@@ -64,6 +64,10 @@ const AdminDashboard = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<Project>>({});
   const [projectSearch, setProjectSearch] = useState("");
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const checkAdmin = async () => {
@@ -146,15 +150,52 @@ const AdminDashboard = () => {
   const startEdit = (project: Project) => {
     setEditingId(project.id);
     setEditForm({ ...project });
+    setLogoFile(null);
+    setLogoPreview(null);
   };
 
   const cancelEdit = () => {
     setEditingId(null);
     setEditForm({});
+    setLogoFile(null);
+    setLogoPreview(null);
+  };
+
+  const handleLogoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Logo must be under 2MB");
+      return;
+    }
+    setLogoFile(file);
+    setLogoPreview(URL.createObjectURL(file));
   };
 
   const saveEdit = async () => {
     if (!editingId) return;
+    setUploading(true);
+
+    let logoUrl = editForm.logo_url;
+
+    // Upload new logo if selected
+    if (logoFile) {
+      const ext = logoFile.name.split(".").pop();
+      const path = `${editingId}-${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from("project-logos")
+        .upload(path, logoFile, { upsert: true });
+      if (uploadError) {
+        toast.error(`Logo upload failed: ${uploadError.message}`);
+        setUploading(false);
+        return;
+      }
+      const { data: publicData } = supabase.storage
+        .from("project-logos")
+        .getPublicUrl(path);
+      logoUrl = publicData.publicUrl;
+    }
+
     const { error } = await supabase.from("projects").update({
       name: editForm.name,
       tagline: editForm.tagline,
@@ -165,16 +206,18 @@ const AdminDashboard = () => {
       website: editForm.website,
       twitter_url: editForm.twitter_url,
       discord_url: editForm.discord_url,
-      logo_url: editForm.logo_url,
+      logo_url: logoUrl,
       logo_emoji: editForm.logo_emoji,
       status: editForm.status,
     }).eq("id", editingId);
+
+    setUploading(false);
 
     if (error) {
       toast.error(error.message);
     } else {
       toast.success("Project updated");
-      setProjects((prev) => prev.map((p) => p.id === editingId ? { ...p, ...editForm } as Project : p));
+      setProjects((prev) => prev.map((p) => p.id === editingId ? { ...p, ...editForm, logo_url: logoUrl } as Project : p));
       cancelEdit();
     }
   };
@@ -397,8 +440,51 @@ const AdminDashboard = () => {
                               <Input value={editForm.website || ""} onChange={(e) => setEditForm((f) => ({ ...f, website: e.target.value }))} className="mt-1" />
                             </div>
                             <div>
-                              <Label className="text-xs text-muted-foreground">Logo URL</Label>
-                              <Input value={editForm.logo_url || ""} onChange={(e) => setEditForm((f) => ({ ...f, logo_url: e.target.value }))} className="mt-1" />
+                              <Label className="text-xs text-muted-foreground">Project Logo</Label>
+                              <div className="mt-1 flex items-center gap-3">
+                                {(logoPreview || editForm.logo_url) ? (
+                                  <img
+                                    src={logoPreview || editForm.logo_url || ""}
+                                    alt="Logo"
+                                    className="h-12 w-12 rounded-lg border border-border object-cover"
+                                  />
+                                ) : (
+                                  <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-dashed border-border bg-secondary">
+                                    <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                                  </div>
+                                )}
+                                <div className="flex flex-col gap-1">
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => logoInputRef.current?.click()}
+                                  >
+                                    <Upload className="mr-1 h-3.5 w-3.5" />
+                                    {editForm.logo_url || logoPreview ? "Change" : "Upload"}
+                                  </Button>
+                                  {(logoPreview || editForm.logo_url) && (
+                                    <button
+                                      type="button"
+                                      className="text-xs text-destructive hover:underline"
+                                      onClick={() => {
+                                        setLogoFile(null);
+                                        setLogoPreview(null);
+                                        setEditForm((f) => ({ ...f, logo_url: null }));
+                                      }}
+                                    >
+                                      Remove
+                                    </button>
+                                  )}
+                                </div>
+                                <input
+                                  ref={logoInputRef}
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={handleLogoFileChange}
+                                />
+                              </div>
                             </div>
                           </div>
                           <div className="grid grid-cols-2 gap-4">
@@ -412,9 +498,9 @@ const AdminDashboard = () => {
                             </div>
                           </div>
                           <div className="flex justify-end gap-2 pt-2">
-                            <Button size="sm" variant="outline" onClick={cancelEdit}>Cancel</Button>
-                            <Button size="sm" onClick={saveEdit}>
-                              <Save className="mr-1 h-3.5 w-3.5" /> Save Changes
+                            <Button size="sm" variant="outline" onClick={cancelEdit} disabled={uploading}>Cancel</Button>
+                            <Button size="sm" onClick={saveEdit} disabled={uploading}>
+                              <Save className="mr-1 h-3.5 w-3.5" /> {uploading ? "Saving..." : "Save Changes"}
                             </Button>
                           </div>
                         </div>
