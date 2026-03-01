@@ -39,7 +39,11 @@ const CategoryFilter = ({ selected, onSelect, categoryCounts }: CategoryFilterPr
             
             <span>{cat.name}</span>
             {categoryCounts[cat.name] > 0 && (
-              <span className="ml-1 text-xs text-text-dim">
+              <span className={`ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-semibold ${
+                selected === cat.name
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground"
+              }`}>
                 {categoryCounts[cat.name]}
               </span>
             )}
