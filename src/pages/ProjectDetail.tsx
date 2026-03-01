@@ -1,8 +1,11 @@
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, ExternalLink, Globe, Layers, Coins, Calendar, Activity, Star } from "lucide-react";
+import { ArrowLeft, ExternalLink, Globe, Layers, Coins, Calendar, Activity, Star, Bookmark } from "lucide-react";
 import { useProject } from "@/hooks/useProjects";
+import { useAuth } from "@/contexts/AuthContext";
+import { useBookmarks, useToggleBookmark } from "@/hooks/useBookmarks";
 import ReviewSection from "@/components/ReviewSection";
+import ProjectLogo from "@/components/ProjectLogo";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -15,6 +18,9 @@ const statusColors: Record<string, string> = {
 const ProjectDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const { data: project, isLoading } = useProject(slug || "");
+  const { user } = useAuth();
+  const { data: bookmarks = [] } = useBookmarks();
+  const toggleBookmark = useToggleBookmark();
 
   if (isLoading) {
     return (
@@ -40,6 +46,8 @@ const ProjectDetail = () => {
     );
   }
 
+  const isBookmarked = bookmarks.includes(project.id);
+
   const details = [
     { icon: Layers, label: "Category", value: project.category },
     { icon: Globe, label: "Blockchain", value: project.blockchain },
@@ -64,10 +72,8 @@ const ProjectDetail = () => {
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-8">
             <div className="mb-4 flex items-center gap-4">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary text-3xl">
-                {project.logo_emoji}
-              </div>
-              <div>
+              <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="lg" />
+              <div className="flex-1">
                 <div className="flex items-center gap-3">
                   <h1 className="text-3xl font-bold text-foreground">{project.name}</h1>
                   {project.avg_rating && (
@@ -76,6 +82,14 @@ const ProjectDetail = () => {
                       {project.avg_rating.toFixed(1)}
                       <span className="text-xs text-muted-foreground font-normal">({project.review_count})</span>
                     </span>
+                  )}
+                  {user && (
+                    <button
+                      onClick={() => toggleBookmark.mutate({ projectId: project.id, isBookmarked })}
+                      className="ml-auto rounded-lg border border-border bg-card p-2 transition-colors hover:bg-secondary"
+                    >
+                      <Bookmark className={`h-4 w-4 ${isBookmarked ? "fill-primary text-primary" : "text-muted-foreground"}`} />
+                    </button>
                   )}
                 </div>
                 <p className="text-base text-muted-foreground">{project.tagline}</p>
