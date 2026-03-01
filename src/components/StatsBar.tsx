@@ -1,14 +1,20 @@
 import { motion } from "framer-motion";
-import { CATEGORIES, projects } from "@/data/projects";
+import { CATEGORIES } from "@/data/projects";
+import type { Project } from "@/hooks/useProjects";
 
-const StatsBar = () => {
+interface StatsBarProps {
+  projects: Project[];
+}
+
+const StatsBar = ({ projects }: StatsBarProps) => {
   const liveCount = projects.filter((p) => p.status === "live").length;
   const blockchains = new Set(projects.map((p) => p.blockchain)).size;
+  const categories = new Set(projects.map((p) => p.category)).size;
 
   const stats = [
     { label: "Total Projects", value: projects.length },
     { label: "Live Networks", value: liveCount },
-    { label: "Categories", value: CATEGORIES.length },
+    { label: "Categories", value: categories },
     { label: "Blockchains", value: blockchains },
   ];
 
