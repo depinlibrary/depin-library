@@ -3,6 +3,7 @@ import { ArrowDownAZ, ArrowUpDown, Star, Clock, Bookmark } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import StatsBar from "@/components/StatsBar";
+import TrendingSection from "@/components/TrendingSection";
 import CategoryFilter from "@/components/CategoryFilter";
 import ProjectCard from "@/components/ProjectCard";
 import Footer from "@/components/Footer";
@@ -93,6 +94,7 @@ const Index = () => {
         totalProjects={projects.length}
       />
       <StatsBar projects={projects} />
+      <TrendingSection projects={projects} />
       <CategoryFilter
         selected={selectedCategory}
         onSelect={setSelectedCategory}
