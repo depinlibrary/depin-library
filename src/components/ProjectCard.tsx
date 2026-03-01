@@ -1,7 +1,10 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowUpRight, Star } from "lucide-react";
+import { ArrowUpRight, Star, Bookmark } from "lucide-react";
 import type { Project } from "@/hooks/useProjects";
+import { useAuth } from "@/contexts/AuthContext";
+import { useBookmarks, useToggleBookmark } from "@/hooks/useBookmarks";
+import ProjectLogo from "@/components/ProjectLogo";
 
 interface ProjectCardProps {
   project: Project;
@@ -15,6 +18,18 @@ const statusColors: Record<string, string> = {
 };
 
 const ProjectCard = ({ project, index }: ProjectCardProps) => {
+  const { user } = useAuth();
+  const { data: bookmarks = [] } = useBookmarks();
+  const toggleBookmark = useToggleBookmark();
+  const isBookmarked = bookmarks.includes(project.id);
+
+  const handleBookmark = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!user) return;
+    toggleBookmark.mutate({ projectId: project.id, isBookmarked });
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -25,11 +40,23 @@ const ProjectCard = ({ project, index }: ProjectCardProps) => {
         to={`/project/${project.slug}`}
         className="group relative flex h-full flex-col rounded-xl border border-border bg-card p-5 transition-all duration-300 hover:border-primary/30 hover:bg-card/80"
       >
-        <div className="mb-4 flex items-start justify-between">
+        {/* Bookmark button */}
+        {user && (
+          <button
+            onClick={handleBookmark}
+            className="absolute top-3 right-3 rounded-md p-1.5 transition-colors hover:bg-secondary"
+          >
+            <Bookmark
+              className={`h-4 w-4 transition-colors ${
+                isBookmarked ? "fill-primary text-primary" : "text-text-dim hover:text-muted-foreground"
+              }`}
+            />
+          </button>
+        )}
+
+        <div className="mb-4 flex items-start justify-between pr-8">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-secondary text-xl">
-              {project.logo_emoji}
-            </div>
+            <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="sm" />
             <div>
               <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
                 {project.name}

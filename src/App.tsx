@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import ProjectDetail from "./pages/ProjectDetail";
 import Auth from "./pages/Auth";
 import SubmitProject from "./pages/SubmitProject";
+import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
             <Route path="/project/:slug" element={<ProjectDetail />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/submit" element={<SubmitProject />} />
+            <Route path="/admin" element={<AdminDashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

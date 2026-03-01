@@ -1,11 +1,25 @@
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
-import { LogOut, Plus, User } from "lucide-react";
+import { LogOut, Plus, User, Shield, Bookmark } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
 
 const Navbar = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (!user) { setIsAdmin(false); return; }
+    supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .eq("role", "admin")
+      .maybeSingle()
+      .then(({ data }) => setIsAdmin(!!data));
+  }, [user]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -29,22 +43,28 @@ const Navbar = () => {
           </span>
         </Link>
 
-        <div className="flex items-center gap-4">
-          <Link
-            to="/"
-            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-          >
+        <div className="flex items-center gap-3">
+          <Link to="/" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
             Explore
           </Link>
 
           {user ? (
             <>
+              {isAdmin && (
+                <Link
+                  to="/admin"
+                  className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  <Shield className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Admin</span>
+                </Link>
+              )}
               <Link
                 to="/submit"
                 className="flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
               >
                 <Plus className="h-3 w-3" />
-                Submit Project
+                <span className="hidden sm:inline">Submit Project</span>
               </Link>
               <button
                 onClick={handleSignOut}

@@ -1,17 +1,32 @@
 import { useState, useMemo } from "react";
+import { ArrowDownAZ, ArrowUpDown, Star, Clock, Bookmark } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import StatsBar from "@/components/StatsBar";
 import CategoryFilter from "@/components/CategoryFilter";
 import ProjectCard from "@/components/ProjectCard";
 import Footer from "@/components/Footer";
-import { useProjects } from "@/hooks/useProjects";
+import { useProjects, type Project } from "@/hooks/useProjects";
+import { useBookmarks } from "@/hooks/useBookmarks";
+import { useAuth } from "@/contexts/AuthContext";
 import type { Category } from "@/data/projects";
+
+type SortOption = "name" | "rating" | "newest" | "bookmarked";
+
+const sortLabels: Record<SortOption, { label: string; icon: typeof ArrowDownAZ }> = {
+  name: { label: "A–Z", icon: ArrowDownAZ },
+  rating: { label: "Top Rated", icon: Star },
+  newest: { label: "Newest", icon: Clock },
+  bookmarked: { label: "Bookmarked", icon: Bookmark },
+};
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [sortBy, setSortBy] = useState<SortOption>("name");
   const { data: projects = [], isLoading } = useProjects();
+  const { user } = useAuth();
+  const { data: bookmarks = [] } = useBookmarks();
 
   const filteredProjects = useMemo(() => {
     let results = projects;
@@ -29,8 +44,29 @@ const Index = () => {
     if (selectedCategory) {
       results = results.filter((p) => p.category === selectedCategory);
     }
-    return results;
-  }, [projects, searchQuery, selectedCategory]);
+
+    // Sort
+    const sorted = [...results];
+    switch (sortBy) {
+      case "name":
+        sorted.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case "rating":
+        sorted.sort((a, b) => (b.avg_rating || 0) - (a.avg_rating || 0));
+        break;
+      case "newest":
+        sorted.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        break;
+      case "bookmarked":
+        sorted.sort((a, b) => {
+          const aB = bookmarks.includes(a.id) ? 1 : 0;
+          const bB = bookmarks.includes(b.id) ? 1 : 0;
+          return bB - aB;
+        });
+        break;
+    }
+    return sorted;
+  }, [projects, searchQuery, selectedCategory, sortBy, bookmarks]);
 
   const categoryCounts = useMemo(() => {
     const base = searchQuery
@@ -43,6 +79,10 @@ const Index = () => {
     base.forEach((p) => { counts[p.category] = (counts[p.category] || 0) + 1; });
     return counts;
   }, [projects, searchQuery]);
+
+  const availableSorts: SortOption[] = user
+    ? ["name", "rating", "newest", "bookmarked"]
+    : ["name", "rating", "newest"];
 
   return (
     <div className="min-h-screen bg-background">
@@ -60,12 +100,34 @@ const Index = () => {
       />
 
       <section className="container mx-auto px-4 pb-20">
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-6 flex items-center justify-between flex-wrap gap-3">
           <p className="text-sm text-muted-foreground">
             {filteredProjects.length} project{filteredProjects.length !== 1 ? "s" : ""}
             {selectedCategory ? ` in ${selectedCategory}` : ""}
             {searchQuery ? ` matching "${searchQuery}"` : ""}
           </p>
+
+          {/* Sort controls */}
+          <div className="flex items-center gap-1.5">
+            <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
+            {availableSorts.map((option) => {
+              const { label, icon: Icon } = sortLabels[option];
+              return (
+                <button
+                  key={option}
+                  onClick={() => setSortBy(option)}
+                  className={`flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium transition-all ${
+                    sortBy === option
+                      ? "border border-primary/50 bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Icon className="h-3 w-3" />
+                  {label}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {isLoading ? (
