@@ -12,9 +12,9 @@ const sizeClasses = {
 };
 
 const imgSizeClasses = {
-  sm: "h-7 w-7",
-  md: "h-9 w-9",
-  lg: "h-10 w-10",
+  sm: "h-11 w-11",
+  md: "h-14 w-14",
+  lg: "h-16 w-16",
 };
 
 const ProjectLogo = ({ logoUrl, logoEmoji, name, size = "sm" }: ProjectLogoProps) => {
