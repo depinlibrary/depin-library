@@ -14,6 +14,35 @@ export type Database = {
   }
   public: {
     Tables: {
+      bookmarks: {
+        Row: {
+          created_at: string
+          id: string
+          project_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          project_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          project_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookmarks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -91,6 +120,7 @@ export type Database = {
           description: string
           id: string
           logo_emoji: string
+          logo_url: string | null
           name: string
           slug: string
           status: string
@@ -107,6 +137,7 @@ export type Database = {
           description: string
           id?: string
           logo_emoji?: string
+          logo_url?: string | null
           name: string
           slug: string
           status?: string
@@ -123,6 +154,7 @@ export type Database = {
           description?: string
           id?: string
           logo_emoji?: string
+          logo_url?: string | null
           name?: string
           slug?: string
           status?: string
