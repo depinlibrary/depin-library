@@ -36,7 +36,7 @@ const CategoryFilter = ({ selected, onSelect, categoryCounts }: CategoryFilterPr
                 : "border-border bg-card text-muted-foreground hover:border-border hover:text-foreground"
             }`}
           >
-            <span>{cat.emoji}</span>
+            
             <span>{cat.name}</span>
             {categoryCounts[cat.name] > 0 && (
               <span className="ml-1 text-xs text-text-dim">
