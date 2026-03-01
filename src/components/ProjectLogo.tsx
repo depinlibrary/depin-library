@@ -19,7 +19,7 @@ const imgSizeClasses = {
 
 const ProjectLogo = ({ logoUrl, logoEmoji, name, size = "sm" }: ProjectLogoProps) => {
   return (
-    <div className={`flex items-center justify-center bg-secondary ${sizeClasses[size]}`}>
+    <div className={`flex items-center justify-center ${logoUrl ? '' : 'bg-secondary'} ${sizeClasses[size]}`}>
       {logoUrl ? (
         <img
           src={logoUrl}
