@@ -15,6 +15,8 @@ export type Project = {
   year_founded: number | null;
   logo_emoji: string;
   logo_url: string | null;
+  twitter_url: string;
+  discord_url: string;
   created_at: string;
   avg_rating?: number;
   review_count?: number;
