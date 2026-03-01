@@ -14,16 +14,197 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      project_submissions: {
+        Row: {
+          blockchain: string
+          category: string
+          created_at: string
+          description: string
+          id: string
+          name: string
+          status: string
+          submitter_id: string
+          tagline: string
+          token: string
+          updated_at: string
+          website: string
+        }
+        Insert: {
+          blockchain: string
+          category: string
+          created_at?: string
+          description: string
+          id?: string
+          name: string
+          status?: string
+          submitter_id: string
+          tagline: string
+          token?: string
+          updated_at?: string
+          website?: string
+        }
+        Update: {
+          blockchain?: string
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          name?: string
+          status?: string
+          submitter_id?: string
+          tagline?: string
+          token?: string
+          updated_at?: string
+          website?: string
+        }
+        Relationships: []
+      }
+      projects: {
+        Row: {
+          blockchain: string
+          category: string
+          created_at: string
+          description: string
+          id: string
+          logo_emoji: string
+          name: string
+          slug: string
+          status: string
+          tagline: string
+          token: string
+          updated_at: string
+          website: string
+          year_founded: number | null
+        }
+        Insert: {
+          blockchain: string
+          category: string
+          created_at?: string
+          description: string
+          id?: string
+          logo_emoji?: string
+          name: string
+          slug: string
+          status?: string
+          tagline: string
+          token?: string
+          updated_at?: string
+          website?: string
+          year_founded?: number | null
+        }
+        Update: {
+          blockchain?: string
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          logo_emoji?: string
+          name?: string
+          slug?: string
+          status?: string
+          tagline?: string
+          token?: string
+          updated_at?: string
+          website?: string
+          year_founded?: number | null
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          created_at: string
+          id: string
+          project_id: string
+          rating: number
+          review_text: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          project_id: string
+          rating: number
+          review_text?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          project_id?: string
+          rating?: number
+          review_text?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +331,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const
