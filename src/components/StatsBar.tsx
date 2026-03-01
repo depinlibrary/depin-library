@@ -6,7 +6,7 @@ interface StatsBarProps {
   projects: Project[];
 }
 
-const StatsBar = ({ projects }: StatsBarProps) => {
+const StatsBar = ({ projects = [] }: StatsBarProps) => {
   const liveCount = projects.filter((p) => p.status === "live").length;
   const blockchains = new Set(projects.map((p) => p.blockchain)).size;
   const categories = new Set(projects.map((p) => p.category)).size;
