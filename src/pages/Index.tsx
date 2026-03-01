@@ -5,28 +5,44 @@ import StatsBar from "@/components/StatsBar";
 import CategoryFilter from "@/components/CategoryFilter";
 import ProjectCard from "@/components/ProjectCard";
 import Footer from "@/components/Footer";
-import { projects, searchProjects, type Category } from "@/data/projects";
+import { useProjects } from "@/hooks/useProjects";
+import type { Category } from "@/data/projects";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const { data: projects = [], isLoading } = useProjects();
 
   const filteredProjects = useMemo(() => {
-    let results = searchQuery ? searchProjects(searchQuery) : projects;
+    let results = projects;
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      results = results.filter(
+        (p) =>
+          p.name.toLowerCase().includes(q) ||
+          p.tagline.toLowerCase().includes(q) ||
+          p.category.toLowerCase().includes(q) ||
+          p.blockchain.toLowerCase().includes(q) ||
+          p.token.toLowerCase().includes(q)
+      );
+    }
     if (selectedCategory) {
       results = results.filter((p) => p.category === selectedCategory);
     }
     return results;
-  }, [searchQuery, selectedCategory]);
+  }, [projects, searchQuery, selectedCategory]);
 
   const categoryCounts = useMemo(() => {
-    const base = searchQuery ? searchProjects(searchQuery) : projects;
+    const base = searchQuery
+      ? projects.filter((p) => {
+          const q = searchQuery.toLowerCase();
+          return p.name.toLowerCase().includes(q) || p.tagline.toLowerCase().includes(q) || p.category.toLowerCase().includes(q) || p.blockchain.toLowerCase().includes(q);
+        })
+      : projects;
     const counts: Record<string, number> = {};
-    base.forEach((p) => {
-      counts[p.category] = (counts[p.category] || 0) + 1;
-    });
+    base.forEach((p) => { counts[p.category] = (counts[p.category] || 0) + 1; });
     return counts;
-  }, [searchQuery]);
+  }, [projects, searchQuery]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -36,14 +52,13 @@ const Index = () => {
         onSearchChange={setSearchQuery}
         totalProjects={projects.length}
       />
-      <StatsBar />
+      <StatsBar projects={projects} />
       <CategoryFilter
         selected={selectedCategory}
         onSelect={setSelectedCategory}
         categoryCounts={categoryCounts}
       />
 
-      {/* Project Grid */}
       <section className="container mx-auto px-4 pb-20">
         <div className="mb-6 flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
@@ -53,7 +68,13 @@ const Index = () => {
           </p>
         </div>
 
-        {filteredProjects.length > 0 ? (
+        {isLoading ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="h-40 animate-pulse rounded-xl border border-border bg-card" />
+            ))}
+          </div>
+        ) : filteredProjects.length > 0 ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {filteredProjects.map((project, i) => (
               <ProjectCard key={project.id} project={project} index={i} />
@@ -62,10 +83,8 @@ const Index = () => {
         ) : (
           <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card py-20 text-center">
             <span className="mb-3 text-4xl">🔍</span>
-            <p className="text-foreground font-medium">No projects found</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Try adjusting your search or filters
-            </p>
+            <p className="font-medium text-foreground">No projects found</p>
+            <p className="mt-1 text-sm text-muted-foreground">Try adjusting your search or filters</p>
           </div>
         )}
       </section>

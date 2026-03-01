@@ -1,7 +1,17 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
+import { LogOut, Plus, User } from "lucide-react";
 
 const Navbar = () => {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
+
   return (
     <motion.nav
       initial={{ y: -20, opacity: 0 }}
@@ -19,24 +29,39 @@ const Navbar = () => {
           </span>
         </Link>
 
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4">
           <Link
             to="/"
             className="text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             Explore
           </Link>
-          <a
-            href="#categories"
-            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Categories
-          </a>
-          <div className="h-4 w-px bg-border" />
-          <span className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-            {/* Will become "Submit Project" button later */}
-            v1.0
-          </span>
+
+          {user ? (
+            <>
+              <Link
+                to="/submit"
+                className="flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
+              >
+                <Plus className="h-3 w-3" />
+                Submit Project
+              </Link>
+              <button
+                onClick={handleSignOut}
+                className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+              </button>
+            </>
+          ) : (
+            <Link
+              to="/auth"
+              className="flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
+            >
+              <User className="h-3 w-3" />
+              Sign In
+            </Link>
+          )}
         </div>
       </div>
     </motion.nav>
