@@ -73,12 +73,15 @@ export type Database = {
           category: string
           created_at: string
           description: string
+          discord_url: string
           id: string
+          logo_url: string | null
           name: string
           status: string
           submitter_id: string
           tagline: string
           token: string
+          twitter_url: string
           updated_at: string
           website: string
         }
@@ -87,12 +90,15 @@ export type Database = {
           category: string
           created_at?: string
           description: string
+          discord_url?: string
           id?: string
+          logo_url?: string | null
           name: string
           status?: string
           submitter_id: string
           tagline: string
           token?: string
+          twitter_url?: string
           updated_at?: string
           website?: string
         }
@@ -101,12 +107,15 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string
+          discord_url?: string
           id?: string
+          logo_url?: string | null
           name?: string
           status?: string
           submitter_id?: string
           tagline?: string
           token?: string
+          twitter_url?: string
           updated_at?: string
           website?: string
         }
@@ -118,6 +127,7 @@ export type Database = {
           category: string
           created_at: string
           description: string
+          discord_url: string
           id: string
           logo_emoji: string
           logo_url: string | null
@@ -126,6 +136,7 @@ export type Database = {
           status: string
           tagline: string
           token: string
+          twitter_url: string
           updated_at: string
           website: string
           year_founded: number | null
@@ -135,6 +146,7 @@ export type Database = {
           category: string
           created_at?: string
           description: string
+          discord_url?: string
           id?: string
           logo_emoji?: string
           logo_url?: string | null
@@ -143,6 +155,7 @@ export type Database = {
           status?: string
           tagline: string
           token?: string
+          twitter_url?: string
           updated_at?: string
           website?: string
           year_founded?: number | null
@@ -152,6 +165,7 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string
+          discord_url?: string
           id?: string
           logo_emoji?: string
           logo_url?: string | null
@@ -160,6 +174,7 @@ export type Database = {
           status?: string
           tagline?: string
           token?: string
+          twitter_url?: string
           updated_at?: string
           website?: string
           year_founded?: number | null
