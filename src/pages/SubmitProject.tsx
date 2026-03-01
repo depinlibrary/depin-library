@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Upload, X, Twitter } from "lucide-react";
+import { Upload, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,7 @@ const SubmitProject = () => {
     token: "",
     website: "",
     twitter_url: "",
-    discord_url: "",
+    discord_url: ""
   });
 
   const update = (field: string, value: string) => setForm((f) => ({ ...f, [field]: value }));
@@ -71,9 +71,9 @@ const SubmitProject = () => {
     if (logoFile) {
       const ext = logoFile.name.split(".").pop();
       const path = `submissions/${crypto.randomUUID()}.${ext}`;
-      const { error: uploadError } = await supabase.storage
-        .from("project-logos")
-        .upload(path, logoFile);
+      const { error: uploadError } = await supabase.storage.
+      from("project-logos").
+      upload(path, logoFile);
       if (uploadError) {
         toast.error(`Logo upload failed: ${uploadError.message}`);
         setLoading(false);
@@ -94,7 +94,7 @@ const SubmitProject = () => {
       website: form.website.trim(),
       twitter_url: form.twitter_url.trim(),
       discord_url: form.discord_url.trim(),
-      logo_url: logoUrl,
+      logo_url: logoUrl
     });
 
     if (error) {
@@ -117,8 +117,8 @@ const SubmitProject = () => {
             <Button onClick={() => navigate("/auth")} className="mt-4">Sign In</Button>
           </div>
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -154,26 +154,26 @@ const SubmitProject = () => {
               <div>
                 <Label className="text-foreground mb-2 block">Project Logo</Label>
                 <div className="flex items-center gap-4">
-                  {logoPreview ? (
-                    <div className="relative">
+                  {logoPreview ?
+                  <div className="relative">
                       <img src={logoPreview} alt="Logo preview" className="h-16 w-16 rounded-xl border border-border object-cover" />
                       <button
-                        type="button"
-                        onClick={removeLogo}
-                        className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground"
-                      >
+                      type="button"
+                      onClick={removeLogo}
+                      className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground">
+
                         <X className="h-3 w-3" />
                       </button>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="flex h-16 w-16 items-center justify-center rounded-xl border-2 border-dashed border-border text-muted-foreground transition-colors hover:border-primary hover:text-primary"
-                    >
+                    </div> :
+
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex h-16 w-16 items-center justify-center rounded-xl border-2 border-dashed border-border text-muted-foreground transition-colors hover:border-primary hover:text-primary">
+
                       <Upload className="h-5 w-5" />
                     </button>
-                  )}
+                  }
                   <div className="text-sm text-muted-foreground">
                     <p>Upload a logo image</p>
                     <p className="text-xs">PNG, JPG, or SVG. Max 2MB.</p>
@@ -183,8 +183,8 @@ const SubmitProject = () => {
                     type="file"
                     accept="image/png,image/jpeg,image/svg+xml,image/webp"
                     onChange={handleFileChange}
-                    className="hidden"
-                  />
+                    className="hidden" />
+
                 </div>
               </div>
 
@@ -223,7 +223,7 @@ const SubmitProject = () => {
               {/* Social Media */}
               <div className="border-t border-border pt-5">
                 <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
-                  <Twitter className="h-4 w-4" />
+                  
                   Social Media
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
@@ -246,8 +246,8 @@ const SubmitProject = () => {
         </div>
       </div>
       <Footer />
-    </div>
-  );
+    </div>);
+
 };
 
 export default SubmitProject;
