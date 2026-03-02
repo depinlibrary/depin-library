@@ -49,17 +49,12 @@ const TrendingSection = ({ projects = [] }: TrendingSectionProps) => {
               className="group flex flex-col gap-2 rounded-xl border border-border bg-card p-3.5 transition-all hover:border-primary/30 hover:bg-card/80"
             >
               <div className="flex items-center gap-3">
-                <div className="relative">
-                  <ProjectLogo
-                    logoUrl={project.logo_url}
-                    logoEmoji={project.logo_emoji}
-                    name={project.name}
-                    size="sm"
-                  />
-                  <span className="absolute -top-1.5 -left-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
-                    {i + 1}
-                  </span>
-                </div>
+                <ProjectLogo
+                  logoUrl={project.logo_url}
+                  logoEmoji={project.logo_emoji}
+                  name={project.name}
+                  size="sm"
+                />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-foreground group-hover:text-primary transition-colors">
                     {project.name}
