@@ -47,6 +47,9 @@ const Navbar = () => {
           <Link to="/" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
             Explore
           </Link>
+          <Link to="/learn" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+            Learn
+          </Link>
 
           {user ? (
             <>

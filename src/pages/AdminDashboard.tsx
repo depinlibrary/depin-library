@@ -487,7 +487,7 @@ const AdminDashboard = () => {
                               </div>
                             </div>
                           </div>
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-3 gap-4">
                             <div>
                               <Label className="text-xs text-muted-foreground">Twitter / X</Label>
                               <Input value={editForm.twitter_url || ""} onChange={(e) => setEditForm((f) => ({ ...f, twitter_url: e.target.value }))} className="mt-1" />
@@ -495,6 +495,17 @@ const AdminDashboard = () => {
                             <div>
                               <Label className="text-xs text-muted-foreground">Discord</Label>
                               <Input value={editForm.discord_url || ""} onChange={(e) => setEditForm((f) => ({ ...f, discord_url: e.target.value }))} className="mt-1" />
+                            </div>
+                            <div>
+                              <Label className="text-xs text-muted-foreground">Status</Label>
+                              <Select value={editForm.status || "live"} onValueChange={(v) => setEditForm((f) => ({ ...f, status: v }))}>
+                                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="live">🟢 Live</SelectItem>
+                                  <SelectItem value="testnet">🟡 Testnet</SelectItem>
+                                  <SelectItem value="pending">🟠 Pending</SelectItem>
+                                </SelectContent>
+                              </Select>
                             </div>
                           </div>
                           <div className="flex justify-end gap-2 pt-2">
