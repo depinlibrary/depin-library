@@ -102,8 +102,8 @@ const MarketOverview = () => {
     const withChange = withData.filter((x) => x.market.price_change_24h !== null);
     const sorted = [...withChange].sort((a, b) => (b.market.price_change_24h || 0) - (a.market.price_change_24h || 0));
 
-    const gainers = sorted.slice(0, 5);
-    const losers = sorted.slice(-5).reverse();
+    const gainers = sorted.slice(0, 3);
+    const losers = sorted.slice(-3).reverse();
 
     const latest = withData.reduce((max, x) => {
       const t = new Date(x.market.last_updated).getTime();
@@ -236,14 +236,14 @@ const MarketOverview = () => {
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
                 className="mb-8 grid gap-4 md:grid-cols-2">
                 {/* Gainers */}
-                <div className="rounded-xl border border-border bg-card p-5">
-                  <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-foreground">
-                    <TrendingUp className="h-4 w-4 text-green-500" /> Top Gainers (24h)
+                <div className="rounded-xl border border-border bg-card p-4">
+                  <h2 className="mb-2 flex items-center gap-2 text-xs font-semibold text-foreground">
+                    <TrendingUp className="h-3.5 w-3.5 text-green-500" /> Top Gainers (24h)
                   </h2>
-                  <div className="space-y-3">
+                  <div className="space-y-1">
                     {topGainers.map(({ project, market }, i) => (
                       <Link key={project.id} to={`/project/${project.slug}`}
-                        className="flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-secondary/50">
+                        className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-secondary/50">
                         <span className="w-5 text-xs font-medium text-muted-foreground">{i + 1}</span>
                         <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="sm" />
                         <div className="min-w-0 flex-1">
@@ -260,14 +260,14 @@ const MarketOverview = () => {
                 </div>
 
                 {/* Losers */}
-                <div className="rounded-xl border border-border bg-card p-5">
-                  <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-foreground">
-                    <TrendingDown className="h-4 w-4 text-red-500" /> Top Losers (24h)
+                <div className="rounded-xl border border-border bg-card p-4">
+                  <h2 className="mb-2 flex items-center gap-2 text-xs font-semibold text-foreground">
+                    <TrendingDown className="h-3.5 w-3.5 text-red-500" /> Top Losers (24h)
                   </h2>
-                  <div className="space-y-3">
+                  <div className="space-y-1">
                     {topLosers.map(({ project, market }, i) => (
                       <Link key={project.id} to={`/project/${project.slug}`}
-                        className="flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-secondary/50">
+                        className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-secondary/50">
                         <span className="w-5 text-xs font-medium text-muted-foreground">{i + 1}</span>
                         <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="sm" />
                         <div className="min-w-0 flex-1">
