@@ -1,7 +1,7 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, ArrowDownAZ, ArrowUpDown, Star, Clock, Bookmark, SlidersHorizontal, X, LayoutGrid, List } from "lucide-react";
+import { Search, ArrowDownAZ, ArrowUpDown, Star, Clock, Bookmark, SlidersHorizontal, X, LayoutGrid, List, Loader2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import ProjectCard from "@/components/ProjectCard";
 import Footer from "@/components/Footer";
@@ -23,6 +23,8 @@ import { Link } from "react-router-dom";
 
 type SortOption = "name" | "rating" | "newest" | "bookmarked";
 type ViewMode = "grid" | "list";
+
+const ITEMS_PER_PAGE = 12;
 
 const sortLabels: Record<SortOption, { label: string; icon: typeof ArrowDownAZ }> = {
   name: { label: "A–Z", icon: ArrowDownAZ },
@@ -49,6 +51,8 @@ const Explore = () => {
   const [selectedBlockchain, setSelectedBlockchain] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>("name");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (categoryParam && validCategories.includes(categoryParam as Category)) {
@@ -58,6 +62,11 @@ const Explore = () => {
       setSortBy("newest");
     }
   }, [categoryParam, sortParam]);
+
+  // Reset visible count when filters/sort change
+  useEffect(() => {
+    setVisibleCount(ITEMS_PER_PAGE);
+  }, [searchQuery, selectedCategory, selectedBlockchain, sortBy]);
 
   const { data: projects = [], isLoading } = useProjects();
   const { user } = useAuth();
@@ -121,6 +130,28 @@ const Explore = () => {
     });
     return counts;
   }, [projects]);
+
+  const visibleProjects = useMemo(
+    () => filteredProjects.slice(0, visibleCount),
+    [filteredProjects, visibleCount]
+  );
+  const hasMore = visibleCount < filteredProjects.length;
+
+  // Infinite scroll via IntersectionObserver
+  useEffect(() => {
+    const el = loadMoreRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          setVisibleCount((prev) => prev + ITEMS_PER_PAGE);
+        }
+      },
+      { rootMargin: "200px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasMore]);
 
   const availableSorts: SortOption[] = user
     ? ["name", "rating", "newest", "bookmarked"]
@@ -293,7 +324,7 @@ const Explore = () => {
         {/* Results count */}
         <div className="mb-5 flex items-center gap-2">
           <p className="text-sm text-muted-foreground">
-            <span className="font-semibold text-foreground">{filteredProjects.length}</span> project{filteredProjects.length !== 1 ? "s" : ""}
+            Showing <span className="font-semibold text-foreground">{visibleProjects.length}</span> of <span className="font-semibold text-foreground">{filteredProjects.length}</span> project{filteredProjects.length !== 1 ? "s" : ""}
             {selectedCategory && (
               <span> in <span className="text-primary">{selectedCategory}</span></span>
             )}
@@ -316,76 +347,88 @@ const Explore = () => {
             ))}
           </div>
         ) : filteredProjects.length > 0 ? (
-          viewMode === "grid" ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <AnimatePresence mode="popLayout">
-                {filteredProjects.map((project, i) => (
-                  <ProjectCard
-                    key={project.id}
-                    project={project}
-                    index={i}
-                    marketData={marketDataMap[project.id]}
-                  />
-                ))}
-              </AnimatePresence>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-2">
-              <AnimatePresence mode="popLayout">
-                {filteredProjects.map((project, i) => (
-                  <motion.div
-                    key={project.id}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 10 }}
-                    transition={{ duration: 0.25, delay: i * 0.02 }}
-                  >
-                    <Link
-                      to={`/project/${project.slug}`}
-                      className="group flex items-center gap-4 rounded-xl border border-border bg-card px-5 py-3.5 transition-all hover:border-primary/30 hover:bg-card/80"
+          <>
+            {viewMode === "grid" ? (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <AnimatePresence mode="popLayout">
+                  {visibleProjects.map((project, i) => (
+                    <ProjectCard
+                      key={project.id}
+                      project={project}
+                      index={i % ITEMS_PER_PAGE}
+                      marketData={marketDataMap[project.id]}
+                    />
+                  ))}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <AnimatePresence mode="popLayout">
+                  {visibleProjects.map((project, i) => (
+                    <motion.div
+                      key={project.id}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 10 }}
+                      transition={{ duration: 0.25, delay: (i % ITEMS_PER_PAGE) * 0.02 }}
                     >
-                      <ProjectLogo
-                        logoUrl={project.logo_url}
-                        logoEmoji={project.logo_emoji}
-                        name={project.name}
-                        size="sm"
-                      />
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-medium text-foreground group-hover:text-primary transition-colors truncate">
-                            {project.name}
-                          </h3>
-                          <span className="text-xs text-muted-foreground">{project.token}</span>
-                          {project.avg_rating && (
-                            <span className="flex items-center gap-0.5 text-xs text-primary">
-                              <Star className="h-3 w-3 fill-primary" />
-                              {project.avg_rating.toFixed(1)}
-                            </span>
-                          )}
+                      <Link
+                        to={`/project/${project.slug}`}
+                        className="group flex items-center gap-4 rounded-xl border border-border bg-card px-5 py-3.5 transition-all hover:border-primary/30 hover:bg-card/80"
+                      >
+                        <ProjectLogo
+                          logoUrl={project.logo_url}
+                          logoEmoji={project.logo_emoji}
+                          name={project.name}
+                          size="sm"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-medium text-foreground group-hover:text-primary transition-colors truncate">
+                              {project.name}
+                            </h3>
+                            <span className="text-xs text-muted-foreground">{project.token}</span>
+                            {project.avg_rating && (
+                              <span className="flex items-center gap-0.5 text-xs text-primary">
+                                <Star className="h-3 w-3 fill-primary" />
+                                {project.avg_rating.toFixed(1)}
+                              </span>
+                            )}
+                          </div>
+                          <p className="mt-0.5 text-xs text-muted-foreground truncate">
+                            {project.tagline}
+                          </p>
                         </div>
-                        <p className="mt-0.5 text-xs text-muted-foreground truncate">
-                          {project.tagline}
-                        </p>
-                      </div>
-                      <div className="hidden sm:flex items-center gap-2">
-                        <span className="rounded-md border border-border bg-secondary px-2 py-0.5 text-[11px] font-medium text-secondary-foreground">
-                          {project.category}
-                        </span>
-                        <span className="rounded-md border border-border bg-secondary px-2 py-0.5 text-[11px] text-muted-foreground">
-                          {project.blockchain}
-                        </span>
-                        <span
-                          className={`rounded-md border px-2 py-0.5 text-[11px] font-medium ${statusColors[project.status] || statusColors.development}`}
-                        >
-                          {project.status}
-                        </span>
-                      </div>
-                    </Link>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
+                        <div className="hidden sm:flex items-center gap-2">
+                          <span className="rounded-md border border-border bg-secondary px-2 py-0.5 text-[11px] font-medium text-secondary-foreground">
+                            {project.category}
+                          </span>
+                          <span className="rounded-md border border-border bg-secondary px-2 py-0.5 text-[11px] text-muted-foreground">
+                            {project.blockchain}
+                          </span>
+                          <span
+                            className={`rounded-md border px-2 py-0.5 text-[11px] font-medium ${statusColors[project.status] || statusColors.development}`}
+                          >
+                            {project.status}
+                          </span>
+                        </div>
+                      </Link>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
+            )}
+
+            {/* Infinite scroll sentinel */}
+            <div ref={loadMoreRef} className="flex justify-center py-8">
+              {hasMore && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  Loading more projects…
+                </div>
+              )}
             </div>
-          )
+          </>
         ) : (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
