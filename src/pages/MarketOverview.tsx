@@ -1,4 +1,6 @@
-import { useMemo } from "react";
+import { useState, useMemo } from "react";
+import { Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { TrendingUp, TrendingDown, Minus, ArrowUpRight, BarChart3 } from "lucide-react";
@@ -38,8 +40,14 @@ const ChangeIndicator = ({ change }: { change: number | null }) => {
 const MarketOverview = () => {
   const { data: projects = [], isLoading: projectsLoading } = useProjects();
   const { data: marketDataMap = {}, isLoading: marketLoading } = useAllTokenMarketData();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedBlockchain, setSelectedBlockchain] = useState<string | null>(null);
 
   const isLoading = projectsLoading || marketLoading;
+
+  const categories = useMemo(() => [...new Set(projects.map((p) => p.category))].sort(), [projects]);
+  const blockchains = useMemo(() => [...new Set(projects.map((p) => p.blockchain))].sort(), [projects]);
 
   const { totalMarketCap, projectsWithData, topGainers, topLosers, lastUpdated } = useMemo(() => {
     const withData = projects
@@ -69,10 +77,20 @@ const MarketOverview = () => {
   }, [projects, marketDataMap]);
 
   const allSorted = useMemo(() => {
-    return [...projects]
+    let filtered = projects;
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      filtered = filtered.filter((p) =>
+        p.name.toLowerCase().includes(q) || p.token.toLowerCase().includes(q) || p.category.toLowerCase().includes(q) || p.blockchain.toLowerCase().includes(q)
+      );
+    }
+    if (selectedCategory) filtered = filtered.filter((p) => p.category === selectedCategory);
+    if (selectedBlockchain) filtered = filtered.filter((p) => p.blockchain === selectedBlockchain);
+
+    return filtered
       .map((p) => ({ project: p, market: marketDataMap[p.id] }))
       .sort((a, b) => (b.market?.market_cap_usd || 0) - (a.market?.market_cap_usd || 0));
-  }, [projects, marketDataMap]);
+  }, [projects, marketDataMap, searchQuery, selectedCategory, selectedBlockchain]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -201,9 +219,66 @@ const MarketOverview = () => {
               {/* Full Project Table */}
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
                 className="rounded-xl border border-border bg-card overflow-hidden">
-                <div className="p-5 border-b border-border">
-                  <h2 className="text-sm font-semibold text-foreground">All Projects</h2>
-                  <p className="text-xs text-muted-foreground mt-0.5">{projects.length} projects listed</p>
+                <div className="p-5 border-b border-border space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-sm font-semibold text-foreground">All Projects</h2>
+                      <p className="text-xs text-muted-foreground mt-0.5">{allSorted.length} of {projects.length} projects</p>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="relative flex-1 min-w-[200px] max-w-sm">
+                      <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        placeholder="Search by name, token, category..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-9 h-8 text-xs"
+                      />
+                    </div>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <button
+                        onClick={() => setSelectedCategory(null)}
+                        className={`rounded-md px-2.5 py-1 text-xs font-medium transition-all ${
+                          !selectedCategory ? "border border-primary/50 bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        All Categories
+                      </button>
+                      {categories.map((cat) => (
+                        <button
+                          key={cat}
+                          onClick={() => setSelectedCategory(selectedCategory === cat ? null : cat)}
+                          className={`rounded-md px-2.5 py-1 text-xs font-medium transition-all ${
+                            selectedCategory === cat ? "border border-primary/50 bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <button
+                        onClick={() => setSelectedBlockchain(null)}
+                        className={`rounded-md px-2.5 py-1 text-xs font-medium transition-all ${
+                          !selectedBlockchain ? "border border-primary/50 bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        All Chains
+                      </button>
+                      {blockchains.map((chain) => (
+                        <button
+                          key={chain}
+                          onClick={() => setSelectedBlockchain(selectedBlockchain === chain ? null : chain)}
+                          className={`rounded-md px-2.5 py-1 text-xs font-medium transition-all ${
+                            selectedBlockchain === chain ? "border border-primary/50 bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          {chain}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full">
