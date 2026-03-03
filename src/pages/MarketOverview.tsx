@@ -287,7 +287,8 @@ const MarketOverview = () => {
                   </div>
                   {topGainers.length > 3 && (
                     <button
-                      onClick={() => setExpandedGainers(!expandedGainers)}
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); setExpandedGainers(prev => !prev); }}
                       className="mt-2 flex w-full items-center justify-center gap-1 rounded-md py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
                     >
                       {expandedGainers ? "Show less" : `Show all ${topGainers.length}`}
@@ -348,7 +349,8 @@ const MarketOverview = () => {
                   </div>
                   {topLosers.length > 3 && (
                     <button
-                      onClick={() => setExpandedLosers(!expandedLosers)}
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); setExpandedLosers(prev => !prev); }}
                       className="mt-2 flex w-full items-center justify-center gap-1 rounded-md py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
                     >
                       {expandedLosers ? "Show less" : `Show all ${topLosers.length}`}
