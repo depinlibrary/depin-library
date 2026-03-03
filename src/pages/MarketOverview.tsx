@@ -37,6 +37,37 @@ const ChangeIndicator = ({ change }: { change: number | null }) => {
   );
 };
 
+const MiniSparkline = ({ data, change }: { data: number[] | null; change: number | null }) => {
+  if (!data || data.length < 2) return <span className="text-muted-foreground text-xs">—</span>;
+
+  // Downsample to ~24 points for a clean mini chart
+  const step = Math.max(1, Math.floor(data.length / 24));
+  const points = data.filter((_, i) => i % step === 0 || i === data.length - 1);
+
+  const min = Math.min(...points);
+  const max = Math.max(...points);
+  const range = max - min || 1;
+  const w = 80;
+  const h = 28;
+
+  const pathData = points
+    .map((val, i) => {
+      const x = (i / (points.length - 1)) * w;
+      const y = h - ((val - min) / range) * (h - 4) - 2;
+      return `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`;
+    })
+    .join(" ");
+
+  const isPositive = change !== null ? change >= 0 : points[points.length - 1] >= points[0];
+  const strokeColor = isPositive ? "rgb(34,197,94)" : "rgb(239,68,68)";
+
+  return (
+    <svg width={w} height={h} className="inline-block">
+      <path d={pathData} fill="none" stroke={strokeColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+};
+
 type SortOption = "market_cap" | "price" | "change_24h" | "name";
 
 const sortLabels: Record<SortOption, string> = {
@@ -355,6 +386,7 @@ const MarketOverview = () => {
                            onClick={() => { if (sortBy === "market_cap") setSortAsc(!sortAsc); else { setSortBy("market_cap"); setSortAsc(false); } }}>
                            <span className="flex items-center justify-end gap-1">Market Cap {sortBy === "market_cap" && (sortAsc ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />)}</span>
                          </th>
+                         <th className="px-4 py-3 text-center text-xs font-medium text-muted-foreground">7d Trend</th>
                          <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Category</th>
                          <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Status</th>
                          <th className="px-4 py-3 text-center text-xs font-medium text-muted-foreground">Source</th>
@@ -382,6 +414,9 @@ const MarketOverview = () => {
                           </td>
                           <td className="px-4 py-3 text-right text-sm text-foreground">
                             {market ? formatMarketCap(market.market_cap_usd) : "—"}
+                          </td>
+                          <td className="px-4 py-3">
+                            <MiniSparkline data={market?.sparkline_7d ?? null} change={market?.price_change_24h ?? null} />
                           </td>
                           <td className="px-4 py-3">
                             <span className="rounded-md border border-border bg-secondary px-2 py-0.5 text-xs text-secondary-foreground">

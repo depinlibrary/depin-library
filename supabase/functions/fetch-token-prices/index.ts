@@ -76,9 +76,9 @@ Deno.serve(async (req) => {
       }
     }
 
-    // 4. Batch CoinGecko IDs
+    // 4. Batch fetch using /coins/markets for sparkline support
     const ids = validProjects.map((p: any) => p.coingecko_id).join(",");
-    const cgUrl = `${COINGECKO_API}/simple/price?ids=${ids}&vs_currencies=usd&include_market_cap=true&include_24hr_change=true`;
+    const cgUrl = `${COINGECKO_API}/coins/markets?vs_currency=usd&ids=${ids}&sparkline=true&price_change_percentage=24h`;
 
     const cgRes = await fetch(cgUrl, {
       headers: { "Accept": "application/json" },
@@ -111,19 +111,28 @@ Deno.serve(async (req) => {
 
     const cgData = await cgRes.json();
 
-    // 6. Upsert market data
+    // Build lookup by coingecko id
+    const cgMap: Record<string, any> = {};
+    for (const coin of cgData) {
+      cgMap[coin.id] = coin;
+    }
+
+    // 6. Upsert market data with sparkline
     let updated = 0;
     for (const project of validProjects) {
-      const tokenData = cgData[project.coingecko_id];
-      if (!tokenData) continue;
+      const coin = cgMap[project.coingecko_id];
+      if (!coin) continue;
+
+      const sparkline = coin.sparkline_in_7d?.price || null;
 
       const { error: upsertError } = await supabase
         .from("token_market_data")
         .upsert({
           project_id: project.id,
-          price_usd: tokenData.usd ?? null,
-          market_cap_usd: tokenData.usd_market_cap ?? null,
-          price_change_24h: tokenData.usd_24h_change ?? null,
+          price_usd: coin.current_price ?? null,
+          market_cap_usd: coin.market_cap ?? null,
+          price_change_24h: coin.price_change_percentage_24h ?? null,
+          sparkline_7d: sparkline,
           last_updated: now.toISOString(),
           data_source: "coingecko",
         }, { onConflict: "project_id" });

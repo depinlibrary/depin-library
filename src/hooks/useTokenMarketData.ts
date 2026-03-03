@@ -7,6 +7,7 @@ export type TokenMarketData = {
   price_usd: number | null;
   market_cap_usd: number | null;
   price_change_24h: number | null;
+  sparkline_7d: number[] | null;
   last_updated: string;
   data_source: string;
 };
