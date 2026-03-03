@@ -250,10 +250,18 @@ const CompareProjects = () => {
               className="group rounded-lg border border-border bg-card p-4 text-left transition-all hover:border-primary/40 hover:bg-primary/5">
               
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-base">{c.projectA.logo_emoji}</span>
+                    {c.projectA.logo_url ? (
+                      <img src={c.projectA.logo_url} alt={c.projectA.name} className="w-5 h-5 rounded object-contain" />
+                    ) : (
+                      <span className="text-base">{c.projectA.logo_emoji}</span>
+                    )}
                     <span className="text-xs font-medium text-foreground truncate">{c.projectA.name}</span>
                     <ArrowRightLeft className="w-3 h-3 text-muted-foreground shrink-0" />
-                    <span className="text-base">{c.projectB.logo_emoji}</span>
+                    {c.projectB.logo_url ? (
+                      <img src={c.projectB.logo_url} alt={c.projectB.name} className="w-5 h-5 rounded object-contain" />
+                    ) : (
+                      <span className="text-base">{c.projectB.logo_emoji}</span>
+                    )}
                     <span className="text-xs font-medium text-foreground truncate">{c.projectB.name}</span>
                   </div>
                   <p className="text-xs text-muted-foreground line-clamp-2">
