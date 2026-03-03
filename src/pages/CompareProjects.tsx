@@ -109,10 +109,10 @@ const CompareProjects = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background bg-grid">
+    <div className="min-h-screen bg-background bg-grid flex flex-col">
       <div className="gradient-radial-top fixed inset-0 pointer-events-none" />
       <Navbar />
-      <main className="relative pt-24 pb-16 px-4 max-w-5xl mx-auto">
+      <main className="relative pt-24 pb-16 px-4 max-w-5xl mx-auto flex-1">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/30 bg-primary/5 mb-4">
             <Bot className="w-4 h-4 text-primary" />
@@ -137,13 +137,20 @@ const CompareProjects = () => {
             <div>
               <label className="text-sm font-medium text-foreground mb-1.5 block">Project A</label>
               <Select value={projectAId} onValueChange={setProjectAId}>
-                <SelectTrigger className="bg-secondary border-border">
+                <SelectTrigger className="bg-secondary border-border focus:ring-0 focus:ring-offset-0">
                   <SelectValue placeholder="Select project..." />
                 </SelectTrigger>
                 <SelectContent>
                   {(projects || []).map((p) => (
                     <SelectItem key={p.id} value={p.id} disabled={p.id === projectBId}>
-                      {p.logo_emoji} {p.name}
+                      <span className="flex items-center gap-2">
+                        {p.logo_url ? (
+                          <img src={p.logo_url} alt={p.name} className="w-5 h-5 rounded object-contain" />
+                        ) : (
+                          <span className="w-5 h-5 flex items-center justify-center text-sm">{p.logo_emoji}</span>
+                        )}
+                        {p.name}
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -157,13 +164,20 @@ const CompareProjects = () => {
             <div>
               <label className="text-sm font-medium text-foreground mb-1.5 block">Project B</label>
               <Select value={projectBId} onValueChange={setProjectBId}>
-                <SelectTrigger className="bg-secondary border-border">
+                <SelectTrigger className="bg-secondary border-border focus:ring-0 focus:ring-offset-0">
                   <SelectValue placeholder="Select project..." />
                 </SelectTrigger>
                 <SelectContent>
                   {(projects || []).map((p) => (
                     <SelectItem key={p.id} value={p.id} disabled={p.id === projectAId}>
-                      {p.logo_emoji} {p.name}
+                      <span className="flex items-center gap-2">
+                        {p.logo_url ? (
+                          <img src={p.logo_url} alt={p.name} className="w-5 h-5 rounded object-contain" />
+                        ) : (
+                          <span className="w-5 h-5 flex items-center justify-center text-sm">{p.logo_emoji}</span>
+                        )}
+                        {p.name}
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -177,7 +191,7 @@ const CompareProjects = () => {
               placeholder="e.g. Which one has better long-term growth potential?"
               value={userPrompt}
               onChange={(e) => setUserPrompt(e.target.value)}
-              className="bg-secondary border-border resize-none h-20"
+              className="bg-secondary border-border resize-none h-20 focus-visible:ring-0 focus-visible:ring-offset-0"
             />
           </div>
 
