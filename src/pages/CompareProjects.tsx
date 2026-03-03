@@ -379,7 +379,7 @@ const CompareProjects = () => {
             <Button variant="outline" onClick={() => setShowAuthDialog(false)}>
               Cancel
             </Button>
-            <Button onClick={() => navigate("/auth")} className="bg-primary text-primary-foreground hover:bg-primary/90">
+            <Button onClick={() => navigate("/auth?redirect=/compare")} className="bg-primary text-primary-foreground hover:bg-primary/90">
               <LogIn className="w-4 h-4 mr-2" /> Sign In
             </Button>
           </DialogFooter>
