@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Plus, Trash2, Briefcase, TrendingUp, TrendingDown, Minus } from "lucide-react";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { Plus, Trash2, Briefcase, TrendingUp, TrendingDown, Minus, Pencil, Check, X } from "lucide-react";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, AreaChart, Area, XAxis, YAxis } from "recharts";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProjectLogo from "@/components/ProjectLogo";
@@ -60,6 +60,8 @@ const Portfolio = () => {
 
   const [selectedProjectId, setSelectedProjectId] = useState<string>("");
   const [tokenAmount, setTokenAmount] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editAmount, setEditAmount] = useState("");
 
   // Fetch user holdings
   const { data: holdings = [], isLoading } = useQuery({
@@ -79,7 +81,6 @@ const Portfolio = () => {
   // Add holding mutation
   const addHolding = useMutation({
     mutationFn: async ({ projectId, amount }: { projectId: string; amount: number }) => {
-      // Check if holding already exists — upsert
       const { data, error } = await supabase
         .from("portfolio_holdings")
         .upsert(
@@ -99,6 +100,26 @@ const Portfolio = () => {
     },
     onError: (err: any) => {
       toast.error(err.message || "Failed to add holding");
+    },
+  });
+
+  // Update holding mutation
+  const updateHolding = useMutation({
+    mutationFn: async ({ holdingId, amount }: { holdingId: string; amount: number }) => {
+      const { error } = await supabase
+        .from("portfolio_holdings")
+        .update({ token_amount: amount })
+        .eq("id", holdingId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["portfolio_holdings"] });
+      setEditingId(null);
+      setEditAmount("");
+      toast.success("Holding updated");
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Failed to update holding");
     },
   });
 
@@ -125,6 +146,25 @@ const Portfolio = () => {
     addHolding.mutate({ projectId: selectedProjectId, amount: parseFloat(tokenAmount) });
   }, [selectedProjectId, tokenAmount, addHolding]);
 
+  const handleStartEdit = (holdingId: string, currentAmount: number) => {
+    setEditingId(holdingId);
+    setEditAmount(String(currentAmount));
+  };
+
+  const handleSaveEdit = (holdingId: string) => {
+    const amount = parseFloat(editAmount);
+    if (!editAmount || amount <= 0) {
+      toast.error("Enter a valid token amount");
+      return;
+    }
+    updateHolding.mutate({ holdingId, amount });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditAmount("");
+  };
+
   // Compute portfolio data
   const portfolioData = useMemo(() => {
     return holdings.map((h: any) => {
@@ -134,13 +174,7 @@ const Portfolio = () => {
       const pnl24h = market?.price_change_24h && market?.price_usd
         ? value * (market.price_change_24h / 100)
         : null;
-      return {
-        ...h,
-        project,
-        market,
-        value,
-        pnl24h,
-      };
+      return { ...h, project, market, value, pnl24h };
     }).sort((a: any, b: any) => b.value - a.value);
   }, [holdings, projects, marketDataMap]);
 
@@ -155,15 +189,44 @@ const Portfolio = () => {
   // Pie chart data
   const chartData = useMemo(() => {
     if (totalNetWorth === 0) return [];
-    const items = portfolioData
+    return portfolioData
       .filter((h: any) => h.value > 0 && h.project)
       .map((h: any) => ({
         name: h.project?.token || h.project?.name || "Unknown",
         value: h.value,
         percent: ((h.value / totalNetWorth) * 100).toFixed(2),
       }));
-    return items;
   }, [portfolioData, totalNetWorth]);
+
+  // 7-day portfolio sparkline: sum each holding's sparkline weighted by token_amount
+  const portfolioSparkline = useMemo(() => {
+    const holdingsWithSparkline = portfolioData.filter(
+      (h: any) => h.market?.sparkline_7d && Array.isArray(h.market.sparkline_7d) && h.market.sparkline_7d.length > 0
+    );
+    if (holdingsWithSparkline.length === 0) return null;
+
+    // Normalize all sparklines to the same length (use the shortest)
+    const minLen = Math.min(...holdingsWithSparkline.map((h: any) => h.market.sparkline_7d.length));
+    const step = Math.max(1, Math.floor(minLen / 48)); // ~48 data points
+    const indices = Array.from({ length: Math.ceil(minLen / step) }, (_, i) => i * step);
+
+    const points = indices.map((idx) => {
+      let totalValue = 0;
+      holdingsWithSparkline.forEach((h: any) => {
+        const sparkline = h.market.sparkline_7d as number[];
+        const price = sparkline[Math.min(idx, sparkline.length - 1)];
+        totalValue += price * Number(h.token_amount);
+      });
+      return totalValue;
+    });
+
+    const startVal = points[0];
+    const endVal = points[points.length - 1];
+    const changePercent = startVal > 0 ? ((endVal - startVal) / startVal) * 100 : 0;
+    const isPositive = changePercent >= 0;
+
+    return { points, changePercent, isPositive };
+  }, [portfolioData]);
 
   if (authLoading) return null;
   if (!user) return <Navigate to="/auth" replace />;
@@ -237,17 +300,7 @@ const Portfolio = () => {
                   <div className="h-[180px] w-[180px] flex-shrink-0">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
-                        <Pie
-                          data={chartData}
-                          dataKey="value"
-                          nameKey="name"
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={50}
-                          outerRadius={80}
-                          paddingAngle={2}
-                          strokeWidth={0}
-                        >
+                        <Pie data={chartData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={2} strokeWidth={0}>
                           {chartData.map((_: any, index: number) => (
                             <Cell key={index} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                           ))}
@@ -276,6 +329,49 @@ const Portfolio = () => {
               )}
             </div>
           </motion.div>
+
+          {/* 7-Day Portfolio Performance */}
+          {portfolioSparkline && (
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+              className="mb-8 rounded-xl border border-border bg-card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Portfolio Performance</p>
+                  <p className="text-sm text-muted-foreground mt-0.5">Last 7 days</p>
+                </div>
+                <div className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold ${portfolioSparkline.isPositive ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500"}`}>
+                  {portfolioSparkline.isPositive ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
+                  {portfolioSparkline.isPositive ? "+" : ""}{portfolioSparkline.changePercent.toFixed(2)}%
+                </div>
+              </div>
+              <div className="h-[140px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={portfolioSparkline.points.map((val, i) => ({ index: i, value: val }))}>
+                    <defs>
+                      <linearGradient id="portfolioGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={portfolioSparkline.isPositive ? "rgb(34,197,94)" : "rgb(239,68,68)"} stopOpacity={0.3} />
+                        <stop offset="100%" stopColor={portfolioSparkline.isPositive ? "rgb(34,197,94)" : "rgb(239,68,68)"} stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <XAxis dataKey="index" hide />
+                    <YAxis hide domain={["auto", "auto"]} />
+                    <Tooltip
+                      formatter={(value: number) => [formatValue(value), "Portfolio Value"]}
+                      contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", color: "hsl(var(--foreground))", fontSize: "12px" }}
+                      labelFormatter={() => ""}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="value"
+                      stroke={portfolioSparkline.isPositive ? "rgb(34,197,94)" : "rgb(239,68,68)"}
+                      strokeWidth={2}
+                      fill="url(#portfolioGradient)"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </motion.div>
+          )}
 
           {/* Add Holding Form */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
@@ -311,11 +407,7 @@ const Portfolio = () => {
                   className="h-9 text-sm focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
               </div>
-              <Button
-                onClick={handleAddHolding}
-                disabled={addHolding.isPending}
-                className="h-9 gap-1.5"
-              >
+              <Button onClick={handleAddHolding} disabled={addHolding.isPending} className="h-9 gap-1.5">
                 <Plus className="h-3.5 w-3.5" />
                 Add
               </Button>
@@ -348,7 +440,7 @@ const Portfolio = () => {
                       <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground">Amount</th>
                       <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground">PnL (24h)</th>
                       <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground">Value</th>
-                      <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground w-10"></th>
+                      <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground w-20"></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -370,8 +462,26 @@ const Portfolio = () => {
                         <td className="px-4 py-3 text-right text-sm font-medium text-foreground">
                           {formatPrice(h.market?.price_usd ?? null)}
                         </td>
-                        <td className="px-4 py-3 text-right text-sm text-foreground">
-                          {Number(h.token_amount).toLocaleString(undefined, { maximumFractionDigits: 5 })}
+                        <td className="px-4 py-3 text-right">
+                          {editingId === h.id ? (
+                            <Input
+                              type="number"
+                              min="0"
+                              step="any"
+                              value={editAmount}
+                              onChange={(e) => setEditAmount(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") handleSaveEdit(h.id);
+                                if (e.key === "Escape") handleCancelEdit();
+                              }}
+                              autoFocus
+                              className="h-7 w-28 ml-auto text-right text-sm focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                            />
+                          ) : (
+                            <span className="text-sm text-foreground">
+                              {Number(h.token_amount).toLocaleString(undefined, { maximumFractionDigits: 5 })}
+                            </span>
+                          )}
                         </td>
                         <td className="px-4 py-3 text-right">
                           {h.pnl24h !== null ? (
@@ -389,12 +499,39 @@ const Portfolio = () => {
                           {formatValue(h.value)}
                         </td>
                         <td className="px-4 py-3 text-right">
-                          <button
-                            onClick={() => deleteHolding.mutate(h.id)}
-                            className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
+                          <div className="flex items-center justify-end gap-1">
+                            {editingId === h.id ? (
+                              <>
+                                <button
+                                  onClick={() => handleSaveEdit(h.id)}
+                                  className="rounded-md p-1.5 text-green-500 transition-colors hover:bg-green-500/10"
+                                >
+                                  <Check className="h-3.5 w-3.5" />
+                                </button>
+                                <button
+                                  onClick={handleCancelEdit}
+                                  className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-secondary"
+                                >
+                                  <X className="h-3.5 w-3.5" />
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <button
+                                  onClick={() => handleStartEdit(h.id, h.token_amount)}
+                                  className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                                >
+                                  <Pencil className="h-3.5 w-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => deleteHolding.mutate(h.id)}
+                                  className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))}
