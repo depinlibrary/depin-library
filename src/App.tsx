@@ -10,7 +10,7 @@ import ProjectDetail from "./pages/ProjectDetail";
 import Auth from "./pages/Auth";
 import SubmitProject from "./pages/SubmitProject";
 import AdminDashboard from "./pages/AdminDashboard";
-import Learn from "./pages/Learn";
+import Portfolio from "./pages/Portfolio";
 import MarketOverview from "./pages/MarketOverview";
 import NotFound from "./pages/NotFound";
 
@@ -29,7 +29,7 @@ const App = () => (
             <Route path="/project/:slug" element={<ProjectDetail />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/submit" element={<SubmitProject />} />
-            <Route path="/learn" element={<Learn />} />
+            <Route path="/portfolio" element={<Portfolio />} />
             <Route path="/market" element={<MarketOverview />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="*" element={<NotFound />} />
