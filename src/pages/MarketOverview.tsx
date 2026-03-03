@@ -301,14 +301,14 @@ const MarketOverview = () => {
                         placeholder="Search by name, token, category..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-9 h-9 text-sm"
+                        className="pl-9 h-9 text-sm focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                       />
                     </div>
                     <Select value={selectedCategory ?? "all"} onValueChange={(v) => setSelectedCategory(v === "all" ? null : v)}>
                       <SelectTrigger className="w-[160px] h-9 text-sm focus:ring-0 focus:ring-offset-0">
                         <SelectValue placeholder="Category" />
                       </SelectTrigger>
-                      <SelectContent side="bottom" align="start">
+                      <SelectContent side="bottom" avoidCollisions={false}>
                         <SelectItem value="all">All Categories</SelectItem>
                         {categories.map((cat) => (
                           <SelectItem key={cat} value={cat}>{cat}</SelectItem>
@@ -319,7 +319,7 @@ const MarketOverview = () => {
                       <SelectTrigger className="w-[160px] h-9 text-sm focus:ring-0 focus:ring-offset-0">
                         <SelectValue placeholder="Blockchain" />
                       </SelectTrigger>
-                      <SelectContent side="bottom" align="start">
+                      <SelectContent side="bottom" avoidCollisions={false}>
                         <SelectItem value="all">All Chains</SelectItem>
                         {blockchains.map((chain) => (
                           <SelectItem key={chain} value={chain}>{chain}</SelectItem>
@@ -334,7 +334,7 @@ const MarketOverview = () => {
                       <SelectTrigger className="w-[180px] h-9 text-sm focus:ring-0 focus:ring-offset-0">
                         <SelectValue placeholder="Sort by" />
                       </SelectTrigger>
-                      <SelectContent side="bottom" align="start">
+                      <SelectContent side="bottom" avoidCollisions={false}>
                         {(Object.keys(sortLabels) as SortOption[]).flatMap((key) => [
                           <SelectItem key={`${key}-desc`} value={`${key}-desc`}>{sortLabels[key]} ↓</SelectItem>,
                           <SelectItem key={`${key}-asc`} value={`${key}-asc`}>{sortLabels[key]} ↑</SelectItem>,
