@@ -6,6 +6,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useBookmarks, useToggleBookmark } from "@/hooks/useBookmarks";
 import ReviewSection from "@/components/ReviewSection";
 import ProjectLogo from "@/components/ProjectLogo";
+import TokenPriceBadge from "@/components/TokenPriceBadge";
+import { useTokenMarketData } from "@/hooks/useTokenMarketData";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -19,6 +21,7 @@ const ProjectDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const { data: project, isLoading } = useProject(slug || "");
   const { user } = useAuth();
+  const { data: marketData } = useTokenMarketData(project?.id);
   const { data: bookmarks = [] } = useBookmarks();
   const toggleBookmark = useToggleBookmark();
 
@@ -132,6 +135,12 @@ const ProjectDetail = () => {
               </div>
             ))}
           </motion.div>
+
+          {marketData && marketData.price_usd !== null && (
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="mb-8">
+              <TokenPriceBadge data={marketData} />
+            </motion.div>
+          )}
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
             className="mb-8 rounded-xl border border-border bg-card p-6">

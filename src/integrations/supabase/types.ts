@@ -125,6 +125,7 @@ export type Database = {
         Row: {
           blockchain: string
           category: string
+          coingecko_id: string | null
           created_at: string
           description: string
           discord_url: string
@@ -144,6 +145,7 @@ export type Database = {
         Insert: {
           blockchain: string
           category: string
+          coingecko_id?: string | null
           created_at?: string
           description: string
           discord_url?: string
@@ -163,6 +165,7 @@ export type Database = {
         Update: {
           blockchain?: string
           category?: string
+          coingecko_id?: string | null
           created_at?: string
           description?: string
           discord_url?: string
@@ -178,6 +181,36 @@ export type Database = {
           updated_at?: string
           website?: string
           year_founded?: number | null
+        }
+        Relationships: []
+      }
+      rate_limit_state: {
+        Row: {
+          backoff_minutes: number
+          created_at: string
+          id: string
+          is_rate_limited: boolean
+          last_attempt: string | null
+          rate_limited_until: string | null
+          updated_at: string
+        }
+        Insert: {
+          backoff_minutes?: number
+          created_at?: string
+          id?: string
+          is_rate_limited?: boolean
+          last_attempt?: string | null
+          rate_limited_until?: string | null
+          updated_at?: string
+        }
+        Update: {
+          backoff_minutes?: number
+          created_at?: string
+          id?: string
+          is_rate_limited?: boolean
+          last_attempt?: string | null
+          rate_limited_until?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -214,6 +247,50 @@ export type Database = {
             foreignKeyName: "reviews_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      token_market_data: {
+        Row: {
+          created_at: string
+          data_source: string
+          id: string
+          last_updated: string | null
+          market_cap_usd: number | null
+          price_change_24h: number | null
+          price_usd: number | null
+          project_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          data_source?: string
+          id?: string
+          last_updated?: string | null
+          market_cap_usd?: number | null
+          price_change_24h?: number | null
+          price_usd?: number | null
+          project_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          data_source?: string
+          id?: string
+          last_updated?: string | null
+          market_cap_usd?: number | null
+          price_change_24h?: number | null
+          price_usd?: number | null
+          project_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "token_market_data_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
             referencedRelation: "projects"
             referencedColumns: ["id"]
           },

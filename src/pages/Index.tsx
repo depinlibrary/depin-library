@@ -9,6 +9,7 @@ import ProjectCard from "@/components/ProjectCard";
 import Footer from "@/components/Footer";
 import { useProjects, type Project } from "@/hooks/useProjects";
 import { useBookmarks } from "@/hooks/useBookmarks";
+import { useAllTokenMarketData } from "@/hooks/useTokenMarketData";
 import { useAuth } from "@/contexts/AuthContext";
 import type { Category } from "@/data/projects";
 
@@ -28,6 +29,7 @@ const Index = () => {
   const { data: projects = [], isLoading } = useProjects();
   const { user } = useAuth();
   const { data: bookmarks = [] } = useBookmarks();
+  const { data: marketDataMap = {} } = useAllTokenMarketData();
 
   const filteredProjects = useMemo(() => {
     let results = projects;
@@ -141,7 +143,7 @@ const Index = () => {
         ) : filteredProjects.length > 0 ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {filteredProjects.map((project, i) => (
-              <ProjectCard key={project.id} project={project} index={i} />
+              <ProjectCard key={project.id} project={project} index={i} marketData={marketDataMap[project.id]} />
             ))}
           </div>
         ) : (
