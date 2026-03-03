@@ -98,6 +98,7 @@ const Portfolio = () => {
   const [hideBalances, setHideBalances] = useState(false);
   const [sortBy, setSortBy] = useState<"value" | "change" | "name">("value");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [perfRange, setPerfRange] = useState<"1D" | "7D" | "30D" | "90D">("7D");
 
   // Fetch user holdings
   const { data: holdings = [], isLoading } = useQuery({
@@ -258,7 +259,7 @@ const Portfolio = () => {
     }));
   }, [chartData]);
 
-  // 7-day portfolio sparkline
+  // Portfolio sparkline with time range support
   const portfolioSparkline = useMemo(() => {
     const holdingsWithSparkline = portfolioData.filter(
       (h: any) => h.market?.sparkline_7d && Array.isArray(h.market.sparkline_7d) && h.market.sparkline_7d.length > 0
@@ -266,8 +267,14 @@ const Portfolio = () => {
     if (holdingsWithSparkline.length === 0) return null;
 
     const minLen = Math.min(...holdingsWithSparkline.map((h: any) => h.market.sparkline_7d.length));
-    const step = Math.max(1, Math.floor(minLen / 48));
-    const indices = Array.from({ length: Math.ceil(minLen / step) }, (_, i) => i * step);
+    
+    // Determine slice based on range (sparkline_7d has ~168 hourly points for 7 days)
+    const rangeSlice: Record<string, number> = { "1D": 24, "7D": minLen, "30D": minLen, "90D": minLen };
+    const sliceLen = Math.min(rangeSlice[perfRange] || minLen, minLen);
+    const startIdx = minLen - sliceLen;
+    
+    const step = Math.max(1, Math.floor(sliceLen / 48));
+    const indices = Array.from({ length: Math.ceil(sliceLen / step) }, (_, i) => startIdx + i * step);
 
     const points = indices.map((idx) => {
       let totalValue = 0;
@@ -283,9 +290,11 @@ const Portfolio = () => {
     const endVal = points[points.length - 1];
     const changePercent = startVal > 0 ? ((endVal - startVal) / startVal) * 100 : 0;
     const isPositive = changePercent >= 0;
+    // 30D and 90D are beyond available data
+    const hasData = perfRange === "1D" || perfRange === "7D";
 
-    return { points, changePercent, isPositive };
-  }, [portfolioData]);
+    return { points, changePercent, isPositive, hasData };
+  }, [portfolioData, perfRange]);
 
   // Best & worst performers
   const bestPerformer = useMemo(() => {
@@ -512,16 +521,31 @@ const Portfolio = () => {
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Performance</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">7-day portfolio value</p>
+                  {portfolioSparkline?.hasData && (
+                    <div className={`flex items-center gap-1.5 mt-1 text-sm font-semibold ${portfolioSparkline.isPositive ? "text-green-500" : "text-red-500"}`}>
+                      {portfolioSparkline.isPositive ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
+                      {portfolioSparkline.isPositive ? "+" : ""}{portfolioSparkline.changePercent.toFixed(2)}%
+                    </div>
+                  )}
                 </div>
-                {portfolioSparkline && (
-                  <div className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold ${portfolioSparkline.isPositive ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500"}`}>
-                    {portfolioSparkline.isPositive ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
-                    {portfolioSparkline.isPositive ? "+" : ""}{portfolioSparkline.changePercent.toFixed(2)}%
-                  </div>
-                )}
+                {/* Time range selector */}
+                <div className="flex items-center gap-1 rounded-lg bg-secondary/50 p-0.5">
+                  {(["1D", "7D", "30D", "90D"] as const).map((range) => (
+                    <button
+                      key={range}
+                      onClick={() => setPerfRange(range)}
+                      className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${
+                        perfRange === range
+                          ? "bg-primary text-primary-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {range}
+                    </button>
+                  ))}
+                </div>
               </div>
-              {portfolioSparkline ? (
+              {portfolioSparkline?.hasData ? (
                 <div className="h-[280px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={portfolioSparkline.points.map((val, i) => ({ index: i, value: val }))}>
@@ -548,6 +572,12 @@ const Portfolio = () => {
                       />
                     </AreaChart>
                   </ResponsiveContainer>
+                </div>
+              ) : portfolioSparkline && !portfolioSparkline.hasData ? (
+                <div className="flex h-[280px] flex-col items-center justify-center text-center">
+                  <BarChart3 className="h-8 w-8 text-muted-foreground/30 mb-3" />
+                  <p className="text-sm font-medium text-foreground">{perfRange} data not available</p>
+                  <p className="text-xs text-muted-foreground mt-1">Historical data is limited to 7 days. Select 1D or 7D to view performance.</p>
                 </div>
               ) : (
                 <div className="flex h-[280px] items-center justify-center text-sm text-muted-foreground">
