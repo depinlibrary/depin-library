@@ -1,18 +1,22 @@
-import { useState, useMemo } from "react";
-import { Search, ChevronUp, ChevronDown } from "lucide-react";
+import { useState, useMemo, useEffect, useRef } from "react";
+import { Search, ChevronUp, ChevronDown, Star, TrendingUp, TrendingDown, Minus, ArrowUpRight, BarChart3, Flame, Layers, Filter, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { TrendingUp, TrendingDown, Minus, ArrowUpRight, BarChart3 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProjectLogo from "@/components/ProjectLogo";
 import { useProjects } from "@/hooks/useProjects";
 import { useAllTokenMarketData, type TokenMarketData } from "@/hooks/useTokenMarketData";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// ── Formatters ──────────────────────────────────────────────
 
 function formatPrice(price: number | null): string {
   if (price === null || price === undefined) return "—";
+  if (price >= 1000) return `$${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   if (price >= 1) return `$${price.toFixed(2)}`;
   if (price >= 0.01) return `$${price.toFixed(4)}`;
   return `$${price.toFixed(6)}`;
@@ -20,63 +24,140 @@ function formatPrice(price: number | null): string {
 
 function formatMarketCap(cap: number | null): string {
   if (cap === null || cap === undefined) return "—";
+  if (cap >= 1e12) return `$${(cap / 1e12).toFixed(2)}T`;
   if (cap >= 1e9) return `$${(cap / 1e9).toFixed(2)}B`;
-  if (cap >= 1e6) return `$${(cap / 1e6).toFixed(1)}M`;
-  if (cap >= 1e3) return `$${(cap / 1e3).toFixed(0)}K`;
+  if (cap >= 1e6) return `$${(cap / 1e6).toFixed(2)}M`;
+  if (cap >= 1e3) return `$${(cap / 1e3).toFixed(1)}K`;
   return `$${cap.toFixed(0)}`;
 }
 
-const ChangeIndicator = ({ change }: { change: number | null }) => {
-  if (change === null || change === undefined) return <span className="text-muted-foreground">—</span>;
+function formatVolume(vol: number | null): string {
+  if (vol === null || vol === undefined) return "—";
+  if (vol >= 1e9) return `$${(vol / 1e9).toFixed(1)}B`;
+  if (vol >= 1e6) return `$${(vol / 1e6).toFixed(1)}M`;
+  if (vol >= 1e3) return `$${(vol / 1e3).toFixed(0)}K`;
+  return `$${vol.toFixed(0)}`;
+}
+
+// ── Change Badge ────────────────────────────────────────────
+
+const ChangeBadge = ({ change, size = "sm" }: { change: number | null; size?: "sm" | "md" }) => {
+  if (change === null || change === undefined) return <span className="text-muted-foreground text-xs">—</span>;
   const isPositive = change > 0;
   const isNegative = change < 0;
+  const sizeClasses = size === "md" ? "text-sm px-2 py-1" : "text-xs px-1.5 py-0.5";
   return (
-    <span className={`flex items-center gap-0.5 font-semibold ${isPositive ? "text-green-500" : isNegative ? "text-red-500" : "text-muted-foreground"}`}>
-      {isPositive ? <TrendingUp className="h-3.5 w-3.5" /> : isNegative ? <TrendingDown className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
+    <span className={`inline-flex items-center gap-0.5 rounded-md font-semibold ${sizeClasses} ${
+      isPositive ? "bg-green-500/10 text-green-500" : isNegative ? "bg-red-500/10 text-red-500" : "bg-muted text-muted-foreground"
+    }`}>
+      {isPositive ? "▲" : isNegative ? "▼" : ""}
       {Math.abs(change).toFixed(2)}%
     </span>
   );
 };
 
-const MiniSparkline = ({ data, change }: { data: number[] | null; change: number | null }) => {
-  if (!data || data.length < 2) return <span className="text-muted-foreground text-xs">—</span>;
+// ── Sparkline ───────────────────────────────────────────────
 
-  // Downsample to ~24 points for a clean mini chart
-  const step = Math.max(1, Math.floor(data.length / 24));
+const MiniSparkline = ({ data, change, width = 120, height = 40 }: { data: number[] | null; change: number | null; width?: number; height?: number }) => {
+  if (!data || data.length < 2) return <div style={{ width, height }} className="flex items-center justify-center text-muted-foreground text-[10px]">—</div>;
+
+  const step = Math.max(1, Math.floor(data.length / 30));
   const points = data.filter((_, i) => i % step === 0 || i === data.length - 1);
-
   const min = Math.min(...points);
   const max = Math.max(...points);
   const range = max - min || 1;
-  const w = 80;
-  const h = 28;
 
   const pathData = points
     .map((val, i) => {
-      const x = (i / (points.length - 1)) * w;
-      const y = h - ((val - min) / range) * (h - 4) - 2;
+      const x = (i / (points.length - 1)) * width;
+      const y = height - ((val - min) / range) * (height - 6) - 3;
       return `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`;
     })
     .join(" ");
 
+  // Gradient area
+  const areaPath = pathData + ` L${width},${height} L0,${height} Z`;
   const isPositive = change !== null ? change >= 0 : points[points.length - 1] >= points[0];
-  const strokeColor = isPositive ? "rgb(34,197,94)" : "rgb(239,68,68)";
+  const gradientId = `spark-${Math.random().toString(36).slice(2, 8)}`;
 
   return (
-    <svg width={w} height={h} className="inline-block">
-      <path d={pathData} fill="none" stroke={strokeColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <svg width={width} height={height} className="inline-block">
+      <defs>
+        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={isPositive ? "rgb(34,197,94)" : "rgb(239,68,68)"} stopOpacity="0.2" />
+          <stop offset="100%" stopColor={isPositive ? "rgb(34,197,94)" : "rgb(239,68,68)"} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path d={areaPath} fill={`url(#${gradientId})`} />
+      <path d={pathData} fill="none" stroke={isPositive ? "rgb(34,197,94)" : "rgb(239,68,68)"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 };
 
-type SortOption = "market_cap" | "price" | "change_24h" | "name";
+// ── Sortable Column Header ──────────────────────────────────
 
-const sortLabels: Record<SortOption, string> = {
-  market_cap: "Market Cap",
-  price: "Price",
-  change_24h: "24h Change",
-  name: "Name",
+type SortKey = "market_cap" | "price" | "change_24h" | "name" | "rating";
+
+const SortHeader = ({ label, sortKey, currentSort, currentAsc, onSort, align = "right" }: {
+  label: string; sortKey: SortKey; currentSort: SortKey; currentAsc: boolean; onSort: (key: SortKey) => void; align?: "left" | "right" | "center";
+}) => {
+  const isActive = currentSort === sortKey;
+  const alignClass = align === "left" ? "justify-start" : align === "center" ? "justify-center" : "justify-end";
+  return (
+    <th
+      className={`px-4 py-3.5 text-xs font-medium cursor-pointer select-none transition-colors whitespace-nowrap ${
+        isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
+      }`}
+      onClick={() => onSort(sortKey)}
+    >
+      <span className={`flex items-center gap-1 ${alignClass}`}>
+        {label}
+        {isActive && (currentAsc ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />)}
+      </span>
+    </th>
+  );
 };
+
+// ── Trending Card ───────────────────────────────────────────
+
+const TrendingCard = ({ project, market, rank, type }: {
+  project: any; market: any; rank: number; type: "gainer" | "loser";
+}) => (
+  <Link
+    to={`/project/${project.slug}`}
+    className="group flex items-center gap-3 rounded-lg border border-border bg-card px-3 py-2.5 transition-all hover:border-primary/30 hover:bg-secondary/30"
+  >
+    <span className="flex h-6 w-6 items-center justify-center rounded-md bg-secondary text-[10px] font-bold text-muted-foreground">
+      {rank}
+    </span>
+    <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="sm" />
+    <div className="min-w-0 flex-1">
+      <p className="text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors">{project.name}</p>
+      <p className="text-[11px] text-muted-foreground font-mono">{project.token}</p>
+    </div>
+    <div className="text-right shrink-0">
+      <p className="text-sm font-semibold text-foreground font-mono">{formatPrice(market.price_usd)}</p>
+      <ChangeBadge change={market.price_change_24h} />
+    </div>
+  </Link>
+);
+
+// ── Skeleton Row ────────────────────────────────────────────
+
+const TableRowSkeleton = () => (
+  <tr className="border-b border-border/30">
+    {Array.from({ length: 8 }).map((_, i) => (
+      <td key={i} className="px-4 py-3.5"><Skeleton className="h-4 w-full" /></td>
+    ))}
+  </tr>
+);
+
+// ── Items per page ──────────────────────────────────────────
+const ITEMS_PER_PAGE = 50;
+
+// ═══════════════════════════════════════════════════════════
+// MAIN COMPONENT
+// ═══════════════════════════════════════════════════════════
 
 const MarketOverview = () => {
   const { data: projects = [], isLoading: projectsLoading } = useProjects();
@@ -84,15 +165,24 @@ const MarketOverview = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedBlockchain, setSelectedBlockchain] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<SortOption>("market_cap");
+  const [sortBy, setSortBy] = useState<SortKey>("market_cap");
   const [sortAsc, setSortAsc] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
+  const [showFilters, setShowFilters] = useState(false);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   const isLoading = projectsLoading || marketLoading;
 
   const categories = useMemo(() => [...new Set(projects.map((p) => p.category))].sort(), [projects]);
   const blockchains = useMemo(() => [...new Set(projects.map((p) => p.blockchain))].sort(), [projects]);
 
-  const { totalMarketCap, projectsWithData, topGainers, topLosers, lastUpdated } = useMemo(() => {
+  const handleSort = (key: SortKey) => {
+    if (sortBy === key) setSortAsc(!sortAsc);
+    else { setSortBy(key); setSortAsc(key === "name"); }
+  };
+
+  // ── Derived data ────────────────────────────────────────
+  const { totalMarketCap, projectsWithData, avgChange24h, topGainers, topLosers, lastUpdated } = useMemo(() => {
     const withData = projects
       .map((p) => ({ project: p, market: marketDataMap[p.id] }))
       .filter((x) => x.market && x.market.price_usd !== null);
@@ -100,10 +190,13 @@ const MarketOverview = () => {
     const total = withData.reduce((sum, x) => sum + (x.market.market_cap_usd || 0), 0);
 
     const withChange = withData.filter((x) => x.market.price_change_24h !== null);
-    const sorted = [...withChange].sort((a, b) => (b.market.price_change_24h || 0) - (a.market.price_change_24h || 0));
+    const avgChange = withChange.length > 0
+      ? withChange.reduce((sum, x) => sum + (x.market.price_change_24h || 0), 0) / withChange.length
+      : 0;
 
-    const gainers = sorted.slice(0, 4);
-    const losers = sorted.slice(-4).reverse();
+    const sorted = [...withChange].sort((a, b) => (b.market.price_change_24h || 0) - (a.market.price_change_24h || 0));
+    const gainers = sorted.filter(x => (x.market.price_change_24h || 0) > 0).slice(0, 3);
+    const losers = sorted.filter(x => (x.market.price_change_24h || 0) < 0).slice(-3).reverse();
 
     const latest = withData.reduce((max, x) => {
       const t = new Date(x.market.last_updated).getTime();
@@ -113,6 +206,7 @@ const MarketOverview = () => {
     return {
       totalMarketCap: total,
       projectsWithData: withData,
+      avgChange24h: avgChange,
       topGainers: gainers,
       topLosers: losers,
       lastUpdated: latest ? new Date(latest) : null,
@@ -130,304 +224,350 @@ const MarketOverview = () => {
     if (selectedCategory) filtered = filtered.filter((p) => p.category === selectedCategory);
     if (selectedBlockchain) filtered = filtered.filter((p) => p.blockchain === selectedBlockchain);
 
-    const sorted = filtered
-      .map((p) => ({ project: p, market: marketDataMap[p.id] }));
-
-    sorted.sort((a, b) => {
+    const mapped = filtered.map((p) => ({ project: p, market: marketDataMap[p.id] }));
+    mapped.sort((a, b) => {
       let aVal: number, bVal: number;
       switch (sortBy) {
         case "price":
-          aVal = a.market?.price_usd ?? -1;
-          bVal = b.market?.price_usd ?? -1;
-          break;
+          aVal = a.market?.price_usd ?? -1; bVal = b.market?.price_usd ?? -1; break;
         case "change_24h":
-          aVal = a.market?.price_change_24h ?? -Infinity;
-          bVal = b.market?.price_change_24h ?? -Infinity;
-          break;
+          aVal = a.market?.price_change_24h ?? -Infinity; bVal = b.market?.price_change_24h ?? -Infinity; break;
+        case "rating":
+          aVal = a.project.avg_rating ?? 0; bVal = b.project.avg_rating ?? 0; break;
         case "name":
-          return sortAsc
-            ? a.project.name.localeCompare(b.project.name)
-            : b.project.name.localeCompare(a.project.name);
+          return sortAsc ? a.project.name.localeCompare(b.project.name) : b.project.name.localeCompare(a.project.name);
         case "market_cap":
         default:
-          aVal = a.market?.market_cap_usd ?? -1;
-          bVal = b.market?.market_cap_usd ?? -1;
-          break;
+          aVal = a.market?.market_cap_usd ?? -1; bVal = b.market?.market_cap_usd ?? -1; break;
       }
       return sortAsc ? aVal - bVal : bVal - aVal;
     });
-
-    return sorted;
+    return mapped;
   }, [projects, marketDataMap, searchQuery, selectedCategory, selectedBlockchain, sortBy, sortAsc]);
+
+  const visibleProjects = useMemo(() => allSorted.slice(0, visibleCount), [allSorted, visibleCount]);
+  const hasMore = visibleCount < allSorted.length;
+
+  // Reset pagination on filter change
+  useEffect(() => { setVisibleCount(ITEMS_PER_PAGE); }, [searchQuery, selectedCategory, selectedBlockchain, sortBy, sortAsc]);
+
+  // Infinite scroll
+  useEffect(() => {
+    const el = loadMoreRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => { if (entries[0].isIntersecting && hasMore) setVisibleCount((prev) => prev + ITEMS_PER_PAGE); },
+      { rootMargin: "300px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasMore]);
+
+  const activeFilters = (selectedCategory ? 1 : 0) + (selectedBlockchain ? 1 : 0);
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="relative pt-24 pb-20">
-        <div className="absolute inset-0 bg-grid opacity-30" />
+
+      {/* ── Hero Stats Banner ──────────────────────────────── */}
+      <div className="relative pt-20 pb-0">
+        <div className="absolute inset-0 bg-grid opacity-20" />
         <div className="gradient-radial-top absolute inset-0" />
 
-        <div className="container relative mx-auto max-w-6xl px-4">
-          {/* Header */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-                <BarChart3 className="h-5 w-5 text-primary" />
+        <div className="container relative mx-auto max-w-7xl px-4">
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="pt-6 pb-6">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">
+                  DePIN Market Overview
+                </h1>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Live prices and market data for decentralized physical infrastructure
+                </p>
               </div>
-              <h1 className="text-3xl font-bold text-foreground">Market Overview</h1>
+              {lastUpdated && (
+                <div className="flex items-center gap-2">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    Updated {lastUpdated.toLocaleTimeString()}
+                  </span>
+                </div>
+              )}
             </div>
-            <p className="text-muted-foreground">
-              Live token prices and market data for all listed DePIN projects
-            </p>
-            {lastUpdated && (
-              <p className="mt-1 text-xs text-muted-foreground/60">
-                Last updated: {lastUpdated.toLocaleTimeString()}
-              </p>
-            )}
+
+            {/* ── Stat Pills ──────────────────────────────── */}
+            <div className="mt-5 flex flex-wrap gap-3">
+              <div className="rounded-xl border border-border bg-card/80 backdrop-blur-sm px-5 py-3 min-w-[180px]">
+                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Total Market Cap</p>
+                <p className="text-xl font-bold text-foreground mt-0.5 font-mono">{formatMarketCap(totalMarketCap)}</p>
+              </div>
+              <div className="rounded-xl border border-border bg-card/80 backdrop-blur-sm px-5 py-3 min-w-[140px]">
+                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Projects</p>
+                <p className="text-xl font-bold text-foreground mt-0.5">{projectsWithData.length}</p>
+              </div>
+              <div className="rounded-xl border border-border bg-card/80 backdrop-blur-sm px-5 py-3 min-w-[160px]">
+                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Avg 24h Change</p>
+                <div className="mt-0.5">
+                  <ChangeBadge change={avgChange24h} size="md" />
+                </div>
+              </div>
+            </div>
           </motion.div>
+        </div>
+      </div>
 
-          {isLoading ? (
-            <div className="grid gap-4 sm:grid-cols-3">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="h-28 animate-pulse rounded-xl border border-border bg-card" />
-              ))}
+      {/* ── Main Content ──────────────────────────────────── */}
+      <div className="container relative mx-auto max-w-7xl px-4 pb-20">
+
+        {isLoading ? (
+          <div className="mt-6 space-y-4">
+            <div className="flex gap-3">
+              {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24 flex-1 rounded-xl" />)}
             </div>
-          ) : (
-            <>
-              {/* Stats Cards */}
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-                className="mb-8 grid gap-4 sm:grid-cols-3">
-                <div className="rounded-xl border border-border bg-card p-5">
-                  <p className="text-xs font-medium text-muted-foreground mb-1">Total Market Cap</p>
-                  <p className="text-2xl font-bold text-foreground">{formatMarketCap(totalMarketCap)}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">{projectsWithData.length} projects tracked</p>
-                </div>
-                <div className="rounded-xl border border-border bg-card p-5">
-                  <p className="text-xs font-medium text-muted-foreground mb-1">Top Gainer (24h)</p>
-                  {topGainers[0] ? (
-                    <>
-                      <div className="flex items-center gap-2">
-                        <ProjectLogo logoUrl={topGainers[0].project.logo_url} logoEmoji={topGainers[0].project.logo_emoji} name={topGainers[0].project.name} size="sm" />
-                        <div>
-                          <p className="font-semibold text-foreground">{topGainers[0].project.name}</p>
-                          <ChangeIndicator change={topGainers[0].market.price_change_24h} />
-                        </div>
-                      </div>
-                    </>
-                  ) : <p className="text-muted-foreground">—</p>}
-                </div>
-                <div className="rounded-xl border border-border bg-card p-5">
-                  <p className="text-xs font-medium text-muted-foreground mb-1">Top Loser (24h)</p>
-                  {topLosers[0] ? (
-                    <>
-                      <div className="flex items-center gap-2">
-                        <ProjectLogo logoUrl={topLosers[0].project.logo_url} logoEmoji={topLosers[0].project.logo_emoji} name={topLosers[0].project.name} size="sm" />
-                        <div>
-                          <p className="font-semibold text-foreground">{topLosers[0].project.name}</p>
-                          <ChangeIndicator change={topLosers[0].market.price_change_24h} />
-                        </div>
-                      </div>
-                    </>
-                  ) : <p className="text-muted-foreground">—</p>}
-                </div>
-              </motion.div>
-
-              {/* Top Gainers & Losers */}
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-                className="mb-8 grid gap-4 md:grid-cols-2">
+            <Skeleton className="h-[500px] rounded-xl" />
+          </div>
+        ) : (
+          <>
+            {/* ── Trending Section ──────────────────────── */}
+            {(topGainers.length > 0 || topLosers.length > 0) && (
+              <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mt-6 grid gap-4 lg:grid-cols-2">
                 {/* Gainers */}
-                <div className="rounded-xl border border-border bg-card p-4">
-                  <h2 className="mb-2 flex items-center gap-2 text-xs font-semibold text-foreground">
-                    <TrendingUp className="h-3.5 w-3.5 text-green-500" /> Top Gainers (24h)
-                  </h2>
-                  <div className="space-y-1">
-                    {topGainers.map(({ project, market }, i) => (
-                      <Link key={project.id} to={`/project/${project.slug}`}
-                        className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-secondary/50">
-                        <span className="w-5 text-xs font-medium text-muted-foreground">{i + 1}</span>
-                        <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="sm" />
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium text-foreground truncate">{project.name}</p>
-                          <p className="text-xs text-muted-foreground">{project.token}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-medium text-foreground">{formatPrice(market.price_usd)}</p>
-                          <ChangeIndicator change={market.price_change_24h} />
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Losers */}
-                <div className="rounded-xl border border-border bg-card p-4">
-                  <h2 className="mb-2 flex items-center gap-2 text-xs font-semibold text-foreground">
-                    <TrendingDown className="h-3.5 w-3.5 text-red-500" /> Top Losers (24h)
-                  </h2>
-                  <div className="space-y-1">
-                    {topLosers.map(({ project, market }, i) => (
-                      <Link key={project.id} to={`/project/${project.slug}`}
-                        className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-secondary/50">
-                        <span className="w-5 text-xs font-medium text-muted-foreground">{i + 1}</span>
-                        <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="sm" />
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium text-foreground truncate">{project.name}</p>
-                          <p className="text-xs text-muted-foreground">{project.token}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-medium text-foreground">{formatPrice(market.price_usd)}</p>
-                          <ChangeIndicator change={market.price_change_24h} />
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Full Project Table */}
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-                className="rounded-xl border border-border bg-card overflow-hidden">
-                <div className="p-5 border-b border-border space-y-3">
-                   <div className="flex items-center justify-between flex-wrap gap-2">
-                     <div>
-                       <h2 className="text-sm font-semibold text-foreground">All Projects</h2>
-                       <p className="text-xs text-muted-foreground mt-0.5">{allSorted.length} of {projects.length} projects</p>
-                     </div>
-                   </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <div className="relative flex-1 min-w-[200px] max-w-sm">
-                      <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-                      <Input
-                        placeholder="Search by name, token, category..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-9 h-9 text-sm focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                      />
+                {topGainers.length > 0 && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <Flame className="h-4 w-4 text-green-500" />
+                      <h2 className="text-sm font-semibold text-foreground">Top Gainers</h2>
+                      <span className="text-[10px] text-muted-foreground">24h</span>
                     </div>
-                    <Select value={selectedCategory ?? "all"} onValueChange={(v) => setSelectedCategory(v === "all" ? null : v)}>
-                      <SelectTrigger className="w-[160px] h-9 text-sm focus:ring-0 focus:ring-offset-0">
-                        <SelectValue placeholder="Category" />
-                      </SelectTrigger>
-                      <SelectContent side="bottom" avoidCollisions={false}>
-                        <SelectItem value="all">All Categories</SelectItem>
-                        {categories.map((cat) => (
-                          <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Select value={selectedBlockchain ?? "all"} onValueChange={(v) => setSelectedBlockchain(v === "all" ? null : v)}>
-                      <SelectTrigger className="w-[160px] h-9 text-sm focus:ring-0 focus:ring-offset-0">
-                        <SelectValue placeholder="Blockchain" />
-                      </SelectTrigger>
-                      <SelectContent side="bottom" avoidCollisions={false}>
-                        <SelectItem value="all">All Chains</SelectItem>
-                        {blockchains.map((chain) => (
-                          <SelectItem key={chain} value={chain}>{chain}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Select value={`${sortBy}-${sortAsc ? "asc" : "desc"}`} onValueChange={(v) => {
-                      const [key, dir] = v.split("-") as [SortOption, string];
-                      setSortBy(key);
-                      setSortAsc(dir === "asc");
-                    }}>
-                      <SelectTrigger className="w-[180px] h-9 text-sm focus:ring-0 focus:ring-offset-0">
-                        <SelectValue placeholder="Sort by" />
-                      </SelectTrigger>
-                      <SelectContent side="bottom" avoidCollisions={false}>
-                        {(Object.keys(sortLabels) as SortOption[]).flatMap((key) => [
-                          <SelectItem key={`${key}-desc`} value={`${key}-desc`}>{sortLabels[key]} ↓</SelectItem>,
-                          <SelectItem key={`${key}-asc`} value={`${key}-asc`}>{sortLabels[key]} ↑</SelectItem>,
-                        ])}
-                      </SelectContent>
-                    </Select>
+                    <div className="space-y-2">
+                      {topGainers.map(({ project, market }, i) => (
+                        <TrendingCard key={project.id} project={project} market={market} rank={i + 1} type="gainer" />
+                      ))}
+                    </div>
                   </div>
+                )}
+                {/* Losers */}
+                {topLosers.length > 0 && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <TrendingDown className="h-4 w-4 text-red-500" />
+                      <h2 className="text-sm font-semibold text-foreground">Top Losers</h2>
+                      <span className="text-[10px] text-muted-foreground">24h</span>
+                    </div>
+                    <div className="space-y-2">
+                      {topLosers.map(({ project, market }, i) => (
+                        <TrendingCard key={project.id} project={project} market={market} rank={i + 1} type="loser" />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {/* ── Table Section ─────────────────────────── */}
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+              className="mt-8 rounded-xl border border-border bg-card overflow-hidden">
+
+              {/* ── Search & Filter Bar (sticky) ─────────── */}
+              <div className="sticky top-16 z-20 bg-card/95 backdrop-blur-md border-b border-border">
+                <div className="flex items-center gap-2 px-4 py-3">
+                  {/* Search */}
+                  <div className="relative flex-1 max-w-md">
+                    <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                    <Input
+                      placeholder="Search projects..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-9 h-9 text-sm bg-secondary/50 border-border focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                    />
+                    {searchQuery && (
+                      <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Filter Toggle */}
+                  <button
+                    onClick={() => setShowFilters(!showFilters)}
+                    className={`flex items-center gap-1.5 h-9 px-3 rounded-md text-sm border transition-colors ${
+                      showFilters || activeFilters > 0
+                        ? "border-primary/50 bg-primary/10 text-primary"
+                        : "border-border bg-secondary/50 text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Filter className="h-3.5 w-3.5" />
+                    Filters
+                    {activeFilters > 0 && (
+                      <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                        {activeFilters}
+                      </span>
+                    )}
+                  </button>
+
+                  {/* Results count */}
+                  <span className="hidden sm:inline text-xs text-muted-foreground whitespace-nowrap">
+                    {allSorted.length} project{allSorted.length !== 1 ? "s" : ""}
+                  </span>
                 </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-border bg-secondary/30">
-                         <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">#</th>
-                         <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
-                           onClick={() => { if (sortBy === "name") setSortAsc(!sortAsc); else { setSortBy("name"); setSortAsc(true); } }}>
-                           <span className="flex items-center gap-1">Project {sortBy === "name" && (sortAsc ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />)}</span>
-                         </th>
-                         <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
-                           onClick={() => { if (sortBy === "price") setSortAsc(!sortAsc); else { setSortBy("price"); setSortAsc(false); } }}>
-                           <span className="flex items-center justify-end gap-1">Price {sortBy === "price" && (sortAsc ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />)}</span>
-                         </th>
-                         <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
-                           onClick={() => { if (sortBy === "change_24h") setSortAsc(!sortAsc); else { setSortBy("change_24h"); setSortAsc(false); } }}>
-                           <span className="flex items-center justify-end gap-1">24h Change {sortBy === "change_24h" && (sortAsc ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />)}</span>
-                         </th>
-                         <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
-                           onClick={() => { if (sortBy === "market_cap") setSortAsc(!sortAsc); else { setSortBy("market_cap"); setSortAsc(false); } }}>
-                           <span className="flex items-center justify-end gap-1">Market Cap {sortBy === "market_cap" && (sortAsc ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />)}</span>
-                         </th>
-                         <th className="px-4 py-3 text-center text-xs font-medium text-muted-foreground">7d Trend</th>
-                         <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Category</th>
-                         <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Status</th>
-                         <th className="px-4 py-3 text-center text-xs font-medium text-muted-foreground">Source</th>
-                       </tr>
-                    </thead>
-                    <tbody>
-                      {allSorted.map(({ project, market }, i) => (
-                        <tr key={project.id} className="border-b border-border/50 transition-colors hover:bg-secondary/20">
-                          <td className="px-4 py-3 text-xs text-muted-foreground">{i + 1}</td>
+
+                {/* ── Expandable Filter Row ──────────────── */}
+                <AnimatePresence>
+                  {showFilters && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="overflow-hidden border-t border-border/50"
+                    >
+                      <div className="flex flex-wrap items-center gap-2 px-4 py-3">
+                        <Select value={selectedCategory ?? "all"} onValueChange={(v) => setSelectedCategory(v === "all" ? null : v)}>
+                          <SelectTrigger className="w-[150px] h-8 text-xs bg-secondary/50 focus:ring-0 focus:ring-offset-0">
+                            <SelectValue placeholder="Category" />
+                          </SelectTrigger>
+                          <SelectContent side="bottom" avoidCollisions={false}>
+                            <SelectItem value="all">All Categories</SelectItem>
+                            {categories.map((cat) => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+
+                        <Select value={selectedBlockchain ?? "all"} onValueChange={(v) => setSelectedBlockchain(v === "all" ? null : v)}>
+                          <SelectTrigger className="w-[150px] h-8 text-xs bg-secondary/50 focus:ring-0 focus:ring-offset-0">
+                            <SelectValue placeholder="Blockchain" />
+                          </SelectTrigger>
+                          <SelectContent side="bottom" avoidCollisions={false}>
+                            <SelectItem value="all">All Chains</SelectItem>
+                            {blockchains.map((chain) => <SelectItem key={chain} value={chain}>{chain}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+
+                        {(selectedCategory || selectedBlockchain) && (
+                          <button
+                            onClick={() => { setSelectedCategory(null); setSelectedBlockchain(null); }}
+                            className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+                          >
+                            <X className="h-3 w-3" /> Clear
+                          </button>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* ── Data Table ───────────────────────────── */}
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-border bg-secondary/20">
+                      <th className="px-4 py-3.5 text-left text-[11px] font-medium text-muted-foreground w-12">#</th>
+                      <SortHeader label="Name" sortKey="name" currentSort={sortBy} currentAsc={sortAsc} onSort={handleSort} align="left" />
+                      <SortHeader label="Price" sortKey="price" currentSort={sortBy} currentAsc={sortAsc} onSort={handleSort} />
+                      <SortHeader label="24h %" sortKey="change_24h" currentSort={sortBy} currentAsc={sortAsc} onSort={handleSort} />
+                      <SortHeader label="Market Cap" sortKey="market_cap" currentSort={sortBy} currentAsc={sortAsc} onSort={handleSort} />
+                      <th className="px-4 py-3.5 text-center text-[11px] font-medium text-muted-foreground whitespace-nowrap">7d Chart</th>
+                      <th className="px-4 py-3.5 text-left text-[11px] font-medium text-muted-foreground">Category</th>
+                      <th className="px-4 py-3.5 text-left text-[11px] font-medium text-muted-foreground">Chain</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {visibleProjects.length === 0 && !isLoading ? (
+                      <tr>
+                        <td colSpan={8} className="px-4 py-16 text-center">
+                          <div className="flex flex-col items-center gap-2">
+                            <Search className="h-8 w-8 text-muted-foreground/30" />
+                            <p className="text-sm text-muted-foreground">No projects match your search</p>
+                            <button onClick={() => { setSearchQuery(""); setSelectedCategory(null); setSelectedBlockchain(null); }}
+                              className="text-xs text-primary hover:underline">Clear all filters</button>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      visibleProjects.map(({ project, market }, i) => (
+                        <tr key={project.id}
+                          className="border-b border-border/30 transition-colors hover:bg-secondary/20 group"
+                        >
+                          {/* Rank */}
+                          <td className="px-4 py-3 text-xs text-muted-foreground font-mono">{i + 1}</td>
+
+                          {/* Name */}
                           <td className="px-4 py-3">
-                            <Link to={`/project/${project.slug}`} className="flex items-center gap-3 group">
+                            <Link to={`/project/${project.slug}`} className="flex items-center gap-3">
                               <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="sm" />
-                              <div>
-                                <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">{project.name}</p>
-                                <p className="text-xs text-muted-foreground">{project.token}</p>
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors truncate">{project.name}</span>
+                                  <ArrowUpRight className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                                </div>
+                                <span className="text-[11px] text-muted-foreground font-mono">{project.token}</span>
                               </div>
-                              <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                             </Link>
                           </td>
-                          <td className="px-4 py-3 text-right text-sm font-medium text-foreground">
-                            {market ? formatPrice(market.price_usd) : "—"}
+
+                          {/* Price */}
+                          <td className="px-4 py-3 text-right text-sm font-semibold text-foreground font-mono whitespace-nowrap">
+                            {market ? formatPrice(market.price_usd) : <span className="text-muted-foreground">—</span>}
                           </td>
-                          <td className="px-4 py-3 text-right text-sm">
-                            {market ? <div className="flex justify-end"><ChangeIndicator change={market.price_change_24h} /></div> : "—"}
+
+                          {/* 24h Change */}
+                          <td className="px-4 py-3 text-right">
+                            <div className="flex justify-end">
+                              <ChangeBadge change={market?.price_change_24h ?? null} />
+                            </div>
                           </td>
-                          <td className="px-4 py-3 text-right text-sm text-foreground">
-                            {market ? formatMarketCap(market.market_cap_usd) : "—"}
+
+                          {/* Market Cap */}
+                          <td className="px-4 py-3 text-right text-sm text-foreground font-mono whitespace-nowrap">
+                            {market ? formatMarketCap(market.market_cap_usd) : <span className="text-muted-foreground">—</span>}
                           </td>
+
+                          {/* Sparkline */}
+                          <td className="px-4 py-2">
+                            <div className="flex justify-center">
+                              <MiniSparkline data={market?.sparkline_7d ?? null} change={market?.price_change_24h ?? null} width={100} height={32} />
+                            </div>
+                          </td>
+
+                          {/* Category */}
                           <td className="px-4 py-3">
-                            <MiniSparkline data={market?.sparkline_7d ?? null} change={market?.price_change_24h ?? null} />
-                          </td>
-                          <td className="px-4 py-3">
-                            <span className="rounded-md border border-border bg-secondary px-2 py-0.5 text-xs text-secondary-foreground">
+                            <span className="rounded-md bg-secondary/80 px-2 py-0.5 text-[11px] text-secondary-foreground whitespace-nowrap">
                               {project.category}
                             </span>
                           </td>
+
+                          {/* Chain */}
                           <td className="px-4 py-3">
-                            <span className={`rounded-md border px-2 py-0.5 text-xs font-medium ${
-                              project.status === "live" ? "bg-green-500/10 text-green-500 border-green-500/30" :
-                              project.status === "testnet" ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/30" :
-                              "bg-muted text-muted-foreground border-border"
-                            }`}>
-                              {project.status}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 text-center">
-                            {market?.data_source ? (
-                              <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
-                                market.data_source === "coingecko" ? "bg-green-500/15 text-green-500" : "bg-yellow-500/15 text-yellow-400"
-                              }`}>
-                                {market.data_source === "coingecko" ? "Live" : "Cached"}
-                              </span>
-                            ) : <span className="text-xs text-muted-foreground">—</span>}
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">{project.blockchain}</span>
                           </td>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* ── Load More Sentinel ────────────────────── */}
+              {hasMore && (
+                <div ref={loadMoreRef} className="flex items-center justify-center py-6 border-t border-border/30">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                    Loading more projects...
+                  </div>
                 </div>
-              </motion.div>
-            </>
-          )}
-        </div>
+              )}
+
+              {!hasMore && allSorted.length > 0 && (
+                <div className="py-4 text-center text-xs text-muted-foreground border-t border-border/30">
+                  Showing all {allSorted.length} projects
+                </div>
+              )}
+            </motion.div>
+          </>
+        )}
       </div>
       <Footer />
     </div>
