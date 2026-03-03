@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { Search, ChevronUp, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { TrendingUp, TrendingDown, Minus, ArrowUpRight, BarChart3 } from "lucide-react";
@@ -292,24 +293,6 @@ const MarketOverview = () => {
                        <h2 className="text-sm font-semibold text-foreground">All Projects</h2>
                        <p className="text-xs text-muted-foreground mt-0.5">{allSorted.length} of {projects.length} projects</p>
                      </div>
-                     <div className="flex items-center gap-1.5">
-                       <span className="text-xs text-muted-foreground mr-1">Sort:</span>
-                       {(Object.keys(sortLabels) as SortOption[]).map((key) => (
-                         <button
-                           key={key}
-                           onClick={() => {
-                             if (sortBy === key) setSortAsc(!sortAsc);
-                             else { setSortBy(key); setSortAsc(false); }
-                           }}
-                           className={`flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium transition-all ${
-                             sortBy === key ? "border border-primary/50 bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"
-                           }`}
-                         >
-                           {sortLabels[key]}
-                           {sortBy === key && (sortAsc ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />)}
-                         </button>
-                       ))}
-                     </div>
                    </div>
                   <div className="flex flex-wrap items-center gap-2">
                     <div className="relative flex-1 min-w-[200px] max-w-sm">
@@ -321,48 +304,43 @@ const MarketOverview = () => {
                         className="pl-9 h-8 text-xs"
                       />
                     </div>
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <button
-                        onClick={() => setSelectedCategory(null)}
-                        className={`rounded-md px-2.5 py-1 text-xs font-medium transition-all ${
-                          !selectedCategory ? "border border-primary/50 bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"
-                        }`}
-                      >
-                        All Categories
-                      </button>
-                      {categories.map((cat) => (
-                        <button
-                          key={cat}
-                          onClick={() => setSelectedCategory(selectedCategory === cat ? null : cat)}
-                          className={`rounded-md px-2.5 py-1 text-xs font-medium transition-all ${
-                            selectedCategory === cat ? "border border-primary/50 bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"
-                          }`}
-                        >
-                          {cat}
-                        </button>
-                      ))}
-                    </div>
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <button
-                        onClick={() => setSelectedBlockchain(null)}
-                        className={`rounded-md px-2.5 py-1 text-xs font-medium transition-all ${
-                          !selectedBlockchain ? "border border-primary/50 bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"
-                        }`}
-                      >
-                        All Chains
-                      </button>
-                      {blockchains.map((chain) => (
-                        <button
-                          key={chain}
-                          onClick={() => setSelectedBlockchain(selectedBlockchain === chain ? null : chain)}
-                          className={`rounded-md px-2.5 py-1 text-xs font-medium transition-all ${
-                            selectedBlockchain === chain ? "border border-primary/50 bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"
-                          }`}
-                        >
-                          {chain}
-                        </button>
-                      ))}
-                    </div>
+                    <Select value={selectedCategory ?? "all"} onValueChange={(v) => setSelectedCategory(v === "all" ? null : v)}>
+                      <SelectTrigger className="w-[160px] h-8 text-xs">
+                        <SelectValue placeholder="Category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Categories</SelectItem>
+                        {categories.map((cat) => (
+                          <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Select value={selectedBlockchain ?? "all"} onValueChange={(v) => setSelectedBlockchain(v === "all" ? null : v)}>
+                      <SelectTrigger className="w-[160px] h-8 text-xs">
+                        <SelectValue placeholder="Blockchain" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Chains</SelectItem>
+                        {blockchains.map((chain) => (
+                          <SelectItem key={chain} value={chain}>{chain}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Select value={`${sortBy}-${sortAsc ? "asc" : "desc"}`} onValueChange={(v) => {
+                      const [key, dir] = v.split("-") as [SortOption, string];
+                      setSortBy(key);
+                      setSortAsc(dir === "asc");
+                    }}>
+                      <SelectTrigger className="w-[180px] h-8 text-xs">
+                        <SelectValue placeholder="Sort by" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(Object.keys(sortLabels) as SortOption[]).flatMap((key) => [
+                          <SelectItem key={`${key}-desc`} value={`${key}-desc`}>{sortLabels[key]} ↓</SelectItem>,
+                          <SelectItem key={`${key}-asc`} value={`${key}-asc`}>{sortLabels[key]} ↑</SelectItem>,
+                        ])}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
                 <div className="overflow-x-auto">
