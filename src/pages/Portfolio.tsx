@@ -745,10 +745,14 @@ const Portfolio = () => {
                             {formatPrice(h.market?.price_usd ?? null)}
                           </td>
                           <td className="px-4 py-3.5 text-right">
-                            <ChangeIndicator change={h.market?.price_change_24h ?? null} />
+                            <div className="flex justify-end">
+                              <ChangeIndicator change={h.market?.price_change_24h ?? null} />
+                            </div>
                           </td>
-                          <td className="px-4 py-3.5 text-right hidden md:table-cell">
-                            {sparkArr && <MiniSparkline data={sparkArr as number[]} isPositive={change >= 0} />}
+                          <td className="px-4 py-3.5 hidden md:table-cell">
+                            <div className="flex justify-end">
+                              {sparkArr && <MiniSparkline data={sparkArr as number[]} isPositive={change >= 0} />}
+                            </div>
                           </td>
                           <td className="px-4 py-3.5 text-right">
                             {editingId === h.id ? (
