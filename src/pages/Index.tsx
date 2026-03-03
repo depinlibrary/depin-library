@@ -2,7 +2,6 @@ import { useState, useMemo } from "react";
 import { ArrowDownAZ, ArrowUpDown, Star, Clock, Bookmark } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
-import StatsBar from "@/components/StatsBar";
 import TrendingSection from "@/components/TrendingSection";
 import CategoryFilter from "@/components/CategoryFilter";
 import ProjectCard from "@/components/ProjectCard";
@@ -25,6 +24,7 @@ const sortLabels: Record<SortOption, {label: string;icon: typeof ArrowDownAZ;}> 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [selectedBlockchain, setSelectedBlockchain] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>("name");
   const { data: projects = [], isLoading } = useProjects();
   const { user } = useAuth();
@@ -46,6 +46,9 @@ const Index = () => {
     }
     if (selectedCategory) {
       results = results.filter((p) => p.category === selectedCategory);
+    }
+    if (selectedBlockchain) {
+      results = results.filter((p) => p.blockchain === selectedBlockchain);
     }
 
     // Sort
@@ -69,7 +72,7 @@ const Index = () => {
         break;
     }
     return sorted;
-  }, [projects, searchQuery, selectedCategory, sortBy, bookmarks]);
+  }, [projects, searchQuery, selectedCategory, selectedBlockchain, sortBy, bookmarks]);
 
   const categoryCounts = useMemo(() => {
     const base = searchQuery ?
@@ -95,12 +98,14 @@ const Index = () => {
         onSearchChange={setSearchQuery}
         totalProjects={projects.length} />
       
-      <StatsBar projects={projects} />
       <TrendingSection projects={projects} />
       <CategoryFilter
-        selected={selectedCategory}
-        onSelect={setSelectedCategory}
-        categoryCounts={categoryCounts} />
+        selectedCategory={selectedCategory}
+        onSelectCategory={setSelectedCategory}
+        selectedBlockchain={selectedBlockchain}
+        onSelectBlockchain={setSelectedBlockchain}
+        categoryCounts={categoryCounts}
+        projects={projects} />
       
 
       <section className="container mx-auto px-4 pb-20">
