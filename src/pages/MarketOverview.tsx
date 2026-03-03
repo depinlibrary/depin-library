@@ -178,11 +178,11 @@ const ColHeader = ({ label, sortKey, active, asc, onSort, align = "right", class
 }) => (
   <th
     className={`px-3 py-3 text-[11px] font-semibold uppercase tracking-wider cursor-pointer select-none transition-colors whitespace-nowrap ${
-      active ? "text-primary" : "text-muted-foreground/70 hover:text-muted-foreground"
-    } ${className}`}
+      align === "left" ? "text-left" : align === "center" ? "text-center" : "text-right"
+    } ${active ? "text-primary" : "text-muted-foreground/70 hover:text-muted-foreground"} ${className}`}
     onClick={() => onSort(sortKey)}
   >
-    <span className={`inline-flex items-center gap-1 ${align === "left" ? "" : align === "center" ? "justify-center" : "justify-end"}`}>
+    <span className={`inline-flex items-center gap-1 w-full ${align === "left" ? "justify-start" : align === "center" ? "justify-center" : "justify-end"}`}>
       {label}
       {active && (asc ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />)}
     </span>
