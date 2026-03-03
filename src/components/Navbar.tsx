@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
-import { LogOut, Plus, User, Shield, BarChart3 } from "lucide-react";
+import { LogOut, Plus, User, Shield, Briefcase } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 
@@ -47,13 +47,14 @@ const Navbar = () => {
           <Link to="/" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
             Explore
           </Link>
-          <Link to="/learn" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-            Learn
-          </Link>
-          <Link to="/market" className="flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground">
-            <BarChart3 className="h-3.5 w-3.5" />
+          <Link to="/market" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
             Market
           </Link>
+          {user && (
+            <Link to="/portfolio" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+              Portfolio
+            </Link>
+          )}
 
           {user ? (
             <>
