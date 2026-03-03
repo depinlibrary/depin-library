@@ -1,24 +1,42 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Layers, BarChart3, GitCompare, Briefcase } from "lucide-react";
+import {
+  ArrowRight,
+  Layers,
+  BarChart3,
+  GitCompare,
+  Briefcase,
+  Wifi,
+  HardDrive,
+  Cpu,
+  Thermometer,
+  Map,
+  Brain,
+  Car,
+  Globe,
+  Shield,
+} from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useProjects } from "@/hooks/useProjects";
-import { CATEGORIES, BLOCKCHAINS } from "@/data/projects";
+import { CATEGORIES } from "@/data/projects";
+import type { Category } from "@/data/projects";
+
+const categoryIcons: Record<Category, React.ElementType> = {
+  Wireless: Wifi,
+  Storage: HardDrive,
+  Compute: Cpu,
+  Sensors: Thermometer,
+  Energy: Shield,
+  Mapping: Map,
+  AI: Brain,
+  Mobility: Car,
+  CDN: Globe,
+  VPN: Shield,
+};
 
 const Overview = () => {
   const { data: projects = [] } = useProjects();
-
-  const liveCount = projects.filter((p) => p.status === "live").length;
-  const blockchainCount = new Set(projects.map((p) => p.blockchain)).size;
-  const categoryCount = new Set(projects.map((p) => p.category)).size;
-
-  const stats = [
-    { label: "Total Projects", value: projects.length },
-    { label: "Live Networks", value: liveCount },
-    { label: "Categories", value: categoryCount },
-    { label: "Blockchains", value: blockchainCount },
-  ];
 
   const quickLinks = [
     {
@@ -47,10 +65,18 @@ const Overview = () => {
     },
   ];
 
-  const topCategories = CATEGORIES.slice(0, 6).map((cat) => ({
-    ...cat,
-    count: projects.filter((p) => p.category === cat.name).length,
+  // Top 6 categories — swap Energy for AI
+  const topCategoryNames: Category[] = ["Wireless", "Storage", "Compute", "Sensors", "AI", "Mapping"];
+  const topCategories = topCategoryNames.map((name) => ({
+    name,
+    count: projects.filter((p) => p.category === name).length,
+    Icon: categoryIcons[name],
   }));
+
+  // Recently added projects (newest 6)
+  const recentProjects = [...projects]
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, 6);
 
   return (
     <div className="min-h-screen bg-background">
@@ -103,24 +129,6 @@ const Overview = () => {
         </div>
       </section>
 
-      {/* Stats */}
-      <section className="container mx-auto px-4 pb-16">
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {stats.map((stat, i) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 + i * 0.1 }}
-              className="rounded-xl border border-border bg-card p-5 text-center"
-            >
-              <p className="text-3xl font-bold text-primary">{stat.value}</p>
-              <p className="mt-1 text-xs text-muted-foreground">{stat.label}</p>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
       {/* Quick Links */}
       <section className="container mx-auto px-4 pb-16">
         <h2 className="mb-6 text-xl font-semibold text-foreground">Quick Access</h2>
@@ -153,7 +161,7 @@ const Overview = () => {
       </section>
 
       {/* Top Categories */}
-      <section className="container mx-auto px-4 pb-20">
+      <section className="container mx-auto px-4 pb-16">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold text-foreground">Top Categories</h2>
           <Link
@@ -175,9 +183,59 @@ const Overview = () => {
                 to={`/explore?category=${cat.name}`}
                 className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 text-center transition-all hover:border-primary/40 hover:shadow-md hover:shadow-primary/5"
               >
-                <span className="text-2xl">{cat.emoji}</span>
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <cat.Icon className="h-5 w-5" />
+                </div>
                 <span className="text-sm font-medium text-foreground">{cat.name}</span>
                 <span className="text-xs text-muted-foreground">{cat.count} projects</span>
+              </Link>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* Recently Added Projects */}
+      <section className="container mx-auto px-4 pb-20">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-semibold text-foreground">Recently Added</h2>
+          <Link
+            to="/explore?sort=newest"
+            className="text-xs font-medium text-primary hover:underline"
+          >
+            View all →
+          </Link>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {recentProjects.map((project, i) => (
+            <motion.div
+              key={project.id}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 + i * 0.06 }}
+            >
+              <Link
+                to={`/project/${project.slug}`}
+                className="group flex items-start gap-4 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/40 hover:shadow-md hover:shadow-primary/5"
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-lg">
+                  {project.logo_emoji}
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-medium text-foreground group-hover:text-primary transition-colors truncate">
+                    {project.name}
+                  </h3>
+                  <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">
+                    {project.tagline}
+                  </p>
+                  <div className="mt-2 flex items-center gap-2">
+                    <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                      {project.category}
+                    </span>
+                    <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                      {project.blockchain}
+                    </span>
+                  </div>
+                </div>
               </Link>
             </motion.div>
           ))}

@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { ArrowDownAZ, ArrowUpDown, Star, Clock, Bookmark } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
@@ -11,6 +12,7 @@ import { useBookmarks } from "@/hooks/useBookmarks";
 import { useAllTokenMarketData } from "@/hooks/useTokenMarketData";
 import { useAuth } from "@/contexts/AuthContext";
 import type { Category } from "@/data/projects";
+import { CATEGORIES } from "@/data/projects";
 
 type SortOption = "name" | "rating" | "newest" | "bookmarked";
 
@@ -21,11 +23,26 @@ const sortLabels: Record<SortOption, {label: string;icon: typeof ArrowDownAZ;}> 
   bookmarked: { label: "Bookmarked", icon: Bookmark }
 };
 
+const validCategories = CATEGORIES.map((c) => c.name);
+
 const Index = () => {
+  const [searchParams] = useSearchParams();
+  const categoryParam = searchParams.get("category");
+  const sortParam = searchParams.get("sort");
+
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [selectedBlockchain, setSelectedBlockchain] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>("name");
+
+  useEffect(() => {
+    if (categoryParam && validCategories.includes(categoryParam as Category)) {
+      setSelectedCategory(categoryParam as Category);
+    }
+    if (sortParam === "newest") {
+      setSortBy("newest");
+    }
+  }, [categoryParam, sortParam]);
   const { data: projects = [], isLoading } = useProjects();
   const { user } = useAuth();
   const { data: bookmarks = [] } = useBookmarks();
