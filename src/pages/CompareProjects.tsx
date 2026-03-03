@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bot, ArrowRightLeft, Sparkles, Database, AlertTriangle, Shield, TrendingUp, Zap, Loader2, Flame, LogIn } from "lucide-react";
@@ -38,6 +38,15 @@ const CompareProjects = () => {
   const [analyzing, setAnalyzing] = useState(false);
   const [createdAt, setCreatedAt] = useState<string>("");
   const [showAuthDialog, setShowAuthDialog] = useState(false);
+
+  // Restore selected projects from URL params
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const a = params.get("a");
+    const b = params.get("b");
+    if (a) setProjectAId(a);
+    if (b) setProjectBId(b);
+  }, []);
 
   const projectA = useMemo(() => projects?.find((p) => p.id === projectAId), [projects, projectAId]);
   const projectB = useMemo(() => projects?.find((p) => p.id === projectBId), [projects, projectBId]);
@@ -379,7 +388,7 @@ const CompareProjects = () => {
             <Button variant="outline" onClick={() => setShowAuthDialog(false)}>
               Cancel
             </Button>
-            <Button onClick={() => navigate("/auth?redirect=/compare")} className="bg-primary text-primary-foreground hover:bg-primary/90">
+            <Button onClick={() => navigate(`/auth?redirect=/compare?a=${projectAId}&b=${projectBId}`)} className="bg-primary text-primary-foreground hover:bg-primary/90">
               <LogIn className="w-4 h-4 mr-2" /> Sign In
             </Button>
           </DialogFooter>
