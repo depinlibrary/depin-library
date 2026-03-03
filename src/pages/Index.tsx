@@ -15,11 +15,11 @@ import type { Category } from "@/data/projects";
 
 type SortOption = "name" | "rating" | "newest" | "bookmarked";
 
-const sortLabels: Record<SortOption, { label: string; icon: typeof ArrowDownAZ }> = {
+const sortLabels: Record<SortOption, {label: string;icon: typeof ArrowDownAZ;}> = {
   name: { label: "A–Z", icon: ArrowDownAZ },
   rating: { label: "Top Rated", icon: Star },
   newest: { label: "Newest", icon: Clock },
-  bookmarked: { label: "Bookmarked", icon: Bookmark },
+  bookmarked: { label: "Bookmarked", icon: Bookmark }
 };
 
 const Index = () => {
@@ -37,11 +37,11 @@ const Index = () => {
       const q = searchQuery.toLowerCase();
       results = results.filter(
         (p) =>
-          p.name.toLowerCase().includes(q) ||
-          p.tagline.toLowerCase().includes(q) ||
-          p.category.toLowerCase().includes(q) ||
-          p.blockchain.toLowerCase().includes(q) ||
-          p.token.toLowerCase().includes(q)
+        p.name.toLowerCase().includes(q) ||
+        p.tagline.toLowerCase().includes(q) ||
+        p.category.toLowerCase().includes(q) ||
+        p.blockchain.toLowerCase().includes(q) ||
+        p.token.toLowerCase().includes(q)
       );
     }
     if (selectedCategory) {
@@ -72,20 +72,20 @@ const Index = () => {
   }, [projects, searchQuery, selectedCategory, sortBy, bookmarks]);
 
   const categoryCounts = useMemo(() => {
-    const base = searchQuery
-      ? projects.filter((p) => {
-          const q = searchQuery.toLowerCase();
-          return p.name.toLowerCase().includes(q) || p.tagline.toLowerCase().includes(q) || p.category.toLowerCase().includes(q) || p.blockchain.toLowerCase().includes(q);
-        })
-      : projects;
+    const base = searchQuery ?
+    projects.filter((p) => {
+      const q = searchQuery.toLowerCase();
+      return p.name.toLowerCase().includes(q) || p.tagline.toLowerCase().includes(q) || p.category.toLowerCase().includes(q) || p.blockchain.toLowerCase().includes(q);
+    }) :
+    projects;
     const counts: Record<string, number> = {};
-    base.forEach((p) => { counts[p.category] = (counts[p.category] || 0) + 1; });
+    base.forEach((p) => {counts[p.category] = (counts[p.category] || 0) + 1;});
     return counts;
   }, [projects, searchQuery]);
 
-  const availableSorts: SortOption[] = user
-    ? ["name", "rating", "newest", "bookmarked"]
-    : ["name", "rating", "newest"];
+  const availableSorts: SortOption[] = user ?
+  ["name", "rating", "newest", "bookmarked"] :
+  ["name", "rating", "newest"];
 
   return (
     <div className="min-h-screen bg-background">
@@ -93,15 +93,15 @@ const Index = () => {
       <HeroSection
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        totalProjects={projects.length}
-      />
+        totalProjects={projects.length} />
+      
       <StatsBar projects={projects} />
       <TrendingSection projects={projects} />
       <CategoryFilter
         selected={selectedCategory}
         onSelect={setSelectedCategory}
-        categoryCounts={categoryCounts}
-      />
+        categoryCounts={categoryCounts} />
+      
 
       <section className="container mx-auto px-4 pb-20">
         <div className="mb-6 flex items-center justify-between flex-wrap gap-3">
@@ -121,43 +121,43 @@ const Index = () => {
                   key={option}
                   onClick={() => setSortBy(option)}
                   className={`flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium transition-all ${
-                    sortBy === option
-                      ? "border border-primary/50 bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
+                  sortBy === option ?
+                  "border border-primary/50 bg-primary/10 text-primary" :
+                  "text-muted-foreground hover:text-foreground"}`
+                  }>
+                  
                   <Icon className="h-3 w-3" />
                   {label}
-                </button>
-              );
+                </button>);
+
             })}
           </div>
         </div>
 
-        {isLoading ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-40 animate-pulse rounded-xl border border-border bg-card" />
-            ))}
-          </div>
-        ) : filteredProjects.length > 0 ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredProjects.map((project, i) => (
-              <ProjectCard key={project.id} project={project} index={i} marketData={marketDataMap[project.id]} />
-            ))}
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card py-20 text-center">
-            <span className="mb-3 text-4xl">🔍</span>
+        {isLoading ?
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) =>
+          <div key={i} className="h-40 animate-pulse rounded-xl border border-border bg-card" />
+          )}
+          </div> :
+        filteredProjects.length > 0 ?
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {filteredProjects.map((project, i) =>
+          <ProjectCard key={project.id} project={project} index={i} marketData={marketDataMap[project.id]} />
+          )}
+          </div> :
+
+        <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card py-20 text-center">
+            
             <p className="font-medium text-foreground">No projects found</p>
             <p className="mt-1 text-sm text-muted-foreground">Try adjusting your search or filters</p>
           </div>
-        )}
+        }
       </section>
 
       <Footer />
-    </div>
-  );
+    </div>);
+
 };
 
 export default Index;
