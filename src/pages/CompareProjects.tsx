@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bot, ArrowRightLeft, Sparkles, Database, AlertTriangle, Shield, TrendingUp, Zap, Loader2 } from "lucide-react";
+import { Bot, ArrowRightLeft, Sparkles, Database, AlertTriangle, Shield, TrendingUp, Zap, Loader2, Flame } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useProjects } from "@/hooks/useProjects";
@@ -36,6 +37,38 @@ const CompareProjects = () => {
 
   const projectA = useMemo(() => projects?.find((p) => p.id === projectAId), [projects, projectAId]);
   const projectB = useMemo(() => projects?.find((p) => p.id === projectBId), [projects, projectBId]);
+
+  // Fetch popular comparisons from cache
+  const { data: popularComparisons } = useQuery({
+    queryKey: ["popular-comparisons"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("project_comparisons")
+        .select("project_a_id, project_b_id, comparison_type, created_at, ai_response")
+        .eq("comparison_type", "standard")
+        .order("created_at", { ascending: false })
+        .limit(6);
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const popularWithNames = useMemo(() => {
+    if (!popularComparisons || !projects) return [];
+    return popularComparisons.map((c: any) => {
+      const a = projects.find((p) => p.id === c.project_a_id);
+      const b = projects.find((p) => p.id === c.project_b_id);
+      if (!a || !b) return null;
+      return { ...c, projectA: a, projectB: b };
+    }).filter(Boolean);
+  }, [popularComparisons, projects]);
+
+  const handlePopularClick = (aId: string, bId: string) => {
+    setProjectAId(aId);
+    setProjectBId(bId);
+    setUserPrompt("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const handleAnalyze = async () => {
     if (!user) {
@@ -160,6 +193,43 @@ const CompareProjects = () => {
             )}
           </Button>
         </motion.div>
+
+        {/* Popular Comparisons */}
+        {!result && popularWithNames.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mb-8"
+          >
+            <h2 className="text-sm font-semibold font-['Space_Grotesk'] text-muted-foreground mb-3 flex items-center gap-2">
+              <Flame className="w-4 h-4 text-primary" /> Popular Comparisons
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {popularWithNames.map((c: any, i: number) => (
+                <button
+                  key={i}
+                  onClick={() => handlePopularClick(c.project_a_id, c.project_b_id)}
+                  className="group rounded-lg border border-border bg-card p-4 text-left transition-all hover:border-primary/40 hover:bg-primary/5"
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-base">{c.projectA.logo_emoji}</span>
+                    <span className="text-xs font-medium text-foreground truncate">{c.projectA.name}</span>
+                    <ArrowRightLeft className="w-3 h-3 text-muted-foreground shrink-0" />
+                    <span className="text-base">{c.projectB.logo_emoji}</span>
+                    <span className="text-xs font-medium text-foreground truncate">{c.projectB.name}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground line-clamp-2">
+                    {(c.ai_response as any)?.summary?.slice(0, 100) || "View comparison"}...
+                  </p>
+                  <span className="text-[10px] text-primary mt-2 inline-block opacity-0 group-hover:opacity-100 transition-opacity">
+                    Load this comparison →
+                  </span>
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
 
         {/* Results */}
         <AnimatePresence>
