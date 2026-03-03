@@ -12,6 +12,7 @@ import SubmitProject from "./pages/SubmitProject";
 import AdminDashboard from "./pages/AdminDashboard";
 import Portfolio from "./pages/Portfolio";
 import MarketOverview from "./pages/MarketOverview";
+import CompareProjects from "./pages/CompareProjects";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/portfolio" element={<Portfolio />} />
             <Route path="/market" element={<MarketOverview />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/compare" element={<CompareProjects />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
