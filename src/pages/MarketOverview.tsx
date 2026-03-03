@@ -1,18 +1,24 @@
-import { useState, useMemo, useEffect, useRef } from "react";
-import { Search, ChevronUp, ChevronDown, Star, TrendingUp, TrendingDown, Minus, ArrowUpRight, BarChart3, Flame, Layers, Filter, X } from "lucide-react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import {
+  Search, ChevronUp, ChevronDown, TrendingUp, TrendingDown,
+  ArrowUpRight, Flame, X, Star, Zap, Activity, Globe2, LayoutGrid, List
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProjectLogo from "@/components/ProjectLogo";
-import { useProjects } from "@/hooks/useProjects";
+import { useProjects, type Project } from "@/hooks/useProjects";
 import { useAllTokenMarketData, type TokenMarketData } from "@/hooks/useTokenMarketData";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/contexts/AuthContext";
+import { useBookmarks, useToggleBookmark } from "@/hooks/useBookmarks";
 
-// ── Formatters ──────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════
+// FORMATTERS
+// ═══════════════════════════════════════════════════════════
 
 function formatPrice(price: number | null): string {
   if (price === null || price === undefined) return "—";
@@ -31,544 +37,566 @@ function formatMarketCap(cap: number | null): string {
   return `$${cap.toFixed(0)}`;
 }
 
-function formatVolume(vol: number | null): string {
-  if (vol === null || vol === undefined) return "—";
-  if (vol >= 1e9) return `$${(vol / 1e9).toFixed(1)}B`;
-  if (vol >= 1e6) return `$${(vol / 1e6).toFixed(1)}M`;
-  if (vol >= 1e3) return `$${(vol / 1e3).toFixed(0)}K`;
-  return `$${vol.toFixed(0)}`;
+function formatCompact(n: number): string {
+  if (n >= 1e9) return `${(n / 1e9).toFixed(1)}B`;
+  if (n >= 1e6) return `${(n / 1e6).toFixed(1)}M`;
+  if (n >= 1e3) return `${(n / 1e3).toFixed(0)}K`;
+  return n.toFixed(0);
 }
 
-// ── Change Badge ────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════
+// SUB-COMPONENTS
+// ═══════════════════════════════════════════════════════════
 
-const ChangeBadge = ({ change, size = "sm" }: { change: number | null; size?: "sm" | "md" }) => {
+const PriceChange = ({ change, showIcon = false }: { change: number | null; showIcon?: boolean }) => {
   if (change === null || change === undefined) return <span className="text-muted-foreground text-xs">—</span>;
-  const isPositive = change > 0;
-  const isNegative = change < 0;
-  const sizeClasses = size === "md" ? "text-sm px-2 py-1" : "text-xs px-1.5 py-0.5";
+  const positive = change > 0;
+  const negative = change < 0;
   return (
-    <span className={`inline-flex items-center gap-0.5 rounded-md font-semibold ${sizeClasses} ${
-      isPositive ? "bg-green-500/10 text-green-500" : isNegative ? "bg-red-500/10 text-red-500" : "bg-muted text-muted-foreground"
+    <span className={`inline-flex items-center gap-0.5 font-semibold text-xs ${
+      positive ? "text-green-400" : negative ? "text-red-400" : "text-muted-foreground"
     }`}>
-      {isPositive ? "▲" : isNegative ? "▼" : ""}
-      {Math.abs(change).toFixed(2)}%
+      {showIcon && (positive ? <TrendingUp className="h-3 w-3" /> : negative ? <TrendingDown className="h-3 w-3" /> : null)}
+      {positive ? "+" : ""}{change.toFixed(2)}%
     </span>
   );
 };
 
-// ── Sparkline ───────────────────────────────────────────────
+const ChangePill = ({ change }: { change: number | null }) => {
+  if (change === null || change === undefined) return <span className="text-muted-foreground text-xs">—</span>;
+  const positive = change > 0;
+  const negative = change < 0;
+  return (
+    <span className={`inline-flex items-center gap-0.5 rounded-md px-2 py-0.5 text-xs font-bold ${
+      positive ? "bg-green-500/10 text-green-400" : negative ? "bg-red-500/10 text-red-400" : "bg-muted text-muted-foreground"
+    }`}>
+      {positive ? "▲" : negative ? "▼" : "–"} {Math.abs(change).toFixed(2)}%
+    </span>
+  );
+};
 
-const MiniSparkline = ({ data, change, width = 120, height = 40 }: { data: number[] | null; change: number | null; width?: number; height?: number }) => {
-  if (!data || data.length < 2) return <div style={{ width, height }} className="flex items-center justify-center text-muted-foreground text-[10px]">—</div>;
+// Sparkline with gradient fill
+const Sparkline = ({ data, change, width = 120, height = 36 }: { data: number[] | null; change: number | null; width?: number; height?: number }) => {
+  if (!data || data.length < 2) return <div style={{ width, height }} />;
 
-  const step = Math.max(1, Math.floor(data.length / 30));
-  const points = data.filter((_, i) => i % step === 0 || i === data.length - 1);
-  const min = Math.min(...points);
-  const max = Math.max(...points);
+  const step = Math.max(1, Math.floor(data.length / 28));
+  const pts = data.filter((_, i) => i % step === 0 || i === data.length - 1);
+  const min = Math.min(...pts);
+  const max = Math.max(...pts);
   const range = max - min || 1;
 
-  const pathData = points
-    .map((val, i) => {
-      const x = (i / (points.length - 1)) * width;
-      const y = height - ((val - min) / range) * (height - 6) - 3;
-      return `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`;
-    })
-    .join(" ");
+  const coords = pts.map((val, i) => ({
+    x: (i / (pts.length - 1)) * width,
+    y: height - ((val - min) / range) * (height - 4) - 2,
+  }));
 
-  // Gradient area
-  const areaPath = pathData + ` L${width},${height} L0,${height} Z`;
-  const isPositive = change !== null ? change >= 0 : points[points.length - 1] >= points[0];
-  const gradientId = `spark-${Math.random().toString(36).slice(2, 8)}`;
+  const linePath = coords.map((c, i) => `${i === 0 ? "M" : "L"}${c.x.toFixed(1)},${c.y.toFixed(1)}`).join(" ");
+  const areaPath = `${linePath} L${width},${height} L0,${height} Z`;
+  const positive = change !== null ? change >= 0 : pts[pts.length - 1] >= pts[0];
+  const color = positive ? "34,197,94" : "239,68,68";
+  const id = `sp-${Math.random().toString(36).slice(2, 7)}`;
 
   return (
-    <svg width={width} height={height} className="inline-block">
+    <svg width={width} height={height} className="block">
       <defs>
-        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={isPositive ? "rgb(34,197,94)" : "rgb(239,68,68)"} stopOpacity="0.2" />
-          <stop offset="100%" stopColor={isPositive ? "rgb(34,197,94)" : "rgb(239,68,68)"} stopOpacity="0" />
+        <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={`rgb(${color})`} stopOpacity="0.15" />
+          <stop offset="100%" stopColor={`rgb(${color})`} stopOpacity="0" />
         </linearGradient>
       </defs>
-      <path d={areaPath} fill={`url(#${gradientId})`} />
-      <path d={pathData} fill="none" stroke={isPositive ? "rgb(34,197,94)" : "rgb(239,68,68)"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d={areaPath} fill={`url(#${id})`} />
+      <path d={linePath} fill="none" stroke={`rgb(${color})`} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 };
 
-// ── Sortable Column Header ──────────────────────────────────
+// Hero stat card
+const StatCard = ({ icon: Icon, label, value, sub, accent = false }: {
+  icon: React.ElementType; label: string; value: React.ReactNode; sub?: React.ReactNode; accent?: boolean;
+}) => (
+  <motion.div
+    initial={{ opacity: 0, y: 12 }}
+    animate={{ opacity: 1, y: 0 }}
+    className={`relative overflow-hidden rounded-2xl border p-5 ${
+      accent
+        ? "border-primary/20 bg-gradient-to-br from-primary/5 to-transparent"
+        : "border-border bg-card/60 backdrop-blur-sm"
+    }`}
+  >
+    <div className="flex items-start justify-between">
+      <div>
+        <p className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">{label}</p>
+        <p className="mt-1.5 text-2xl font-bold text-foreground font-mono tracking-tight">{value}</p>
+        {sub && <div className="mt-1">{sub}</div>}
+      </div>
+      <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${accent ? "bg-primary/10" : "bg-secondary"}`}>
+        <Icon className={`h-4.5 w-4.5 ${accent ? "text-primary" : "text-muted-foreground"}`} />
+      </div>
+    </div>
+    {accent && (
+      <div className="absolute -bottom-8 -right-8 h-24 w-24 rounded-full bg-primary/5 blur-2xl" />
+    )}
+  </motion.div>
+);
 
-type SortKey = "market_cap" | "price" | "change_24h" | "name" | "rating";
+// Trending ticker item
+const TickerItem = ({ project, market, rank }: { project: Project; market: TokenMarketData; rank: number }) => {
+  const change = market.price_change_24h;
+  const positive = change !== null && change > 0;
+  const negative = change !== null && change < 0;
 
-const SortHeader = ({ label, sortKey, currentSort, currentAsc, onSort, align = "right" }: {
-  label: string; sortKey: SortKey; currentSort: SortKey; currentAsc: boolean; onSort: (key: SortKey) => void; align?: "left" | "right" | "center";
-}) => {
-  const isActive = currentSort === sortKey;
-  const alignClass = align === "left" ? "justify-start" : align === "center" ? "justify-center" : "justify-end";
   return (
-    <th
-      className={`px-4 py-3.5 text-xs font-medium cursor-pointer select-none transition-colors whitespace-nowrap ${
-        isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
-      }`}
-      onClick={() => onSort(sortKey)}
+    <Link
+      to={`/project/${project.slug}`}
+      className="group flex items-center gap-3 rounded-xl border border-border/60 bg-card/40 backdrop-blur-sm px-4 py-3 transition-all duration-200 hover:border-primary/30 hover:bg-card/80 hover:shadow-lg hover:shadow-primary/5"
     >
-      <span className={`flex items-center gap-1 ${alignClass}`}>
-        {label}
-        {isActive && (currentAsc ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />)}
+      <span className="flex h-5 w-5 items-center justify-center rounded text-[10px] font-bold text-muted-foreground bg-secondary/80">
+        {rank}
       </span>
-    </th>
+      <div className="h-8 w-8 shrink-0">
+        <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="sm" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+          {project.name}
+        </p>
+        <p className="text-[10px] text-muted-foreground font-mono">{project.token}</p>
+      </div>
+      <div className="text-right shrink-0">
+        <p className="text-sm font-bold text-foreground font-mono">{formatPrice(market.price_usd)}</p>
+        <PriceChange change={change} />
+      </div>
+    </Link>
   );
 };
 
-// ── Trending Card ───────────────────────────────────────────
+// Sortable column header
+type SortKey = "market_cap" | "price" | "change_24h" | "name";
 
-const TrendingCard = ({ project, market, rank, type }: {
-  project: any; market: any; rank: number; type: "gainer" | "loser";
+const ColHeader = ({ label, sortKey, active, asc, onSort, align = "right", className = "" }: {
+  label: string; sortKey: SortKey; active: boolean; asc: boolean; onSort: (k: SortKey) => void; align?: string; className?: string;
 }) => (
-  <Link
-    to={`/project/${project.slug}`}
-    className="group flex items-center gap-3 rounded-lg border border-border bg-card px-3 py-2.5 transition-all hover:border-primary/30 hover:bg-secondary/30"
+  <th
+    className={`px-3 py-3 text-[11px] font-semibold uppercase tracking-wider cursor-pointer select-none transition-colors whitespace-nowrap ${
+      active ? "text-primary" : "text-muted-foreground/70 hover:text-muted-foreground"
+    } ${className}`}
+    onClick={() => onSort(sortKey)}
   >
-    <span className="flex h-6 w-6 items-center justify-center rounded-md bg-secondary text-[10px] font-bold text-muted-foreground">
-      {rank}
+    <span className={`inline-flex items-center gap-1 ${align === "left" ? "" : align === "center" ? "justify-center" : "justify-end"}`}>
+      {label}
+      {active && (asc ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />)}
     </span>
-    <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="sm" />
-    <div className="min-w-0 flex-1">
-      <p className="text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors">{project.name}</p>
-      <p className="text-[11px] text-muted-foreground font-mono">{project.token}</p>
-    </div>
-    <div className="text-right shrink-0">
-      <p className="text-sm font-semibold text-foreground font-mono">{formatPrice(market.price_usd)}</p>
-      <ChangeBadge change={market.price_change_24h} />
-    </div>
-  </Link>
+  </th>
 );
 
-// ── Skeleton Row ────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════
+// TABLE ROW
+// ═══════════════════════════════════════════════════════════
 
-const TableRowSkeleton = () => (
-  <tr className="border-b border-border/30">
-    {Array.from({ length: 8 }).map((_, i) => (
-      <td key={i} className="px-4 py-3.5"><Skeleton className="h-4 w-full" /></td>
-    ))}
-  </tr>
-);
+const ProjectRow = ({ project, market, rank, isBookmarked, onBookmark, showBookmark }: {
+  project: Project; market: TokenMarketData | undefined; rank: number;
+  isBookmarked: boolean; onBookmark: () => void; showBookmark: boolean;
+}) => {
+  return (
+    <tr className="group border-b border-border/20 transition-colors hover:bg-secondary/15">
+      {/* Rank */}
+      <td className="px-3 py-3 text-center">
+        <div className="flex items-center justify-center gap-1">
+          {showBookmark && (
+            <button
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onBookmark(); }}
+              className="opacity-0 group-hover:opacity-100 transition-opacity -ml-1"
+            >
+              <Star className={`h-3.5 w-3.5 transition-colors ${isBookmarked ? "fill-yellow-400 text-yellow-400 opacity-100" : "text-muted-foreground hover:text-yellow-400"}`} />
+            </button>
+          )}
+          <span className="text-xs text-muted-foreground font-mono w-6 text-center">{rank}</span>
+        </div>
+      </td>
 
-// ── Items per page ──────────────────────────────────────────
+      {/* Project */}
+      <td className="px-3 py-3">
+        <Link to={`/project/${project.slug}`} className="flex items-center gap-3">
+          <div className="h-9 w-9 shrink-0 rounded-lg overflow-hidden bg-secondary">
+            <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="sm" />
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-1">
+              <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors truncate">
+                {project.name}
+              </span>
+              <ArrowUpRight className="h-3 w-3 text-muted-foreground/40 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] text-muted-foreground font-mono">{project.token}</span>
+              <span className={`inline-block h-1.5 w-1.5 rounded-full ${
+                project.status === "live" ? "bg-green-500" : project.status === "testnet" ? "bg-yellow-500" : "bg-muted-foreground"
+              }`} />
+            </div>
+          </div>
+        </Link>
+      </td>
+
+      {/* Price */}
+      <td className="px-3 py-3 text-right">
+        <span className="text-sm font-semibold text-foreground font-mono">
+          {market ? formatPrice(market.price_usd) : <span className="text-muted-foreground/40">—</span>}
+        </span>
+      </td>
+
+      {/* 24h */}
+      <td className="px-3 py-3 text-right">
+        <ChangePill change={market?.price_change_24h ?? null} />
+      </td>
+
+      {/* Market Cap */}
+      <td className="px-3 py-3 text-right">
+        <span className="text-sm text-foreground/80 font-mono">
+          {market ? formatMarketCap(market.market_cap_usd) : <span className="text-muted-foreground/40">—</span>}
+        </span>
+      </td>
+
+      {/* Sparkline */}
+      <td className="px-3 py-2">
+        <div className="flex justify-center">
+          <Sparkline data={market?.sparkline_7d ?? null} change={market?.price_change_24h ?? null} width={110} height={32} />
+        </div>
+      </td>
+
+      {/* Category & Chain */}
+      <td className="px-3 py-3">
+        <div className="flex flex-col gap-0.5">
+          <span className="text-[11px] text-foreground/70">{project.category}</span>
+          <span className="text-[10px] text-muted-foreground">{project.blockchain}</span>
+        </div>
+      </td>
+    </tr>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════
+// MAIN PAGE
+// ═══════════════════════════════════════════════════════════
+
 const ITEMS_PER_PAGE = 50;
-
-// ═══════════════════════════════════════════════════════════
-// MAIN COMPONENT
-// ═══════════════════════════════════════════════════════════
 
 const MarketOverview = () => {
   const { data: projects = [], isLoading: projectsLoading } = useProjects();
   const { data: marketDataMap = {}, isLoading: marketLoading } = useAllTokenMarketData();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedBlockchain, setSelectedBlockchain] = useState<string | null>(null);
+  const { user } = useAuth();
+  const { data: bookmarks = [] } = useBookmarks();
+  const toggleBookmark = useToggleBookmark();
+
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState<string | null>(null);
+  const [chain, setChain] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortKey>("market_cap");
   const [sortAsc, setSortAsc] = useState(false);
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
-  const [showFilters, setShowFilters] = useState(false);
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
   const isLoading = projectsLoading || marketLoading;
+  const categories = useMemo(() => [...new Set(projects.map(p => p.category))].sort(), [projects]);
+  const chains = useMemo(() => [...new Set(projects.map(p => p.blockchain))].sort(), [projects]);
+  const bookmarkedIds = useMemo(() => new Set(bookmarks.map((b: any) => b.project_id)), [bookmarks]);
 
-  const categories = useMemo(() => [...new Set(projects.map((p) => p.category))].sort(), [projects]);
-  const blockchains = useMemo(() => [...new Set(projects.map((p) => p.blockchain))].sort(), [projects]);
-
-  const handleSort = (key: SortKey) => {
-    if (sortBy === key) setSortAsc(!sortAsc);
+  const handleSort = useCallback((key: SortKey) => {
+    if (sortBy === key) setSortAsc(a => !a);
     else { setSortBy(key); setSortAsc(key === "name"); }
-  };
+  }, [sortBy]);
 
-  // ── Derived data ────────────────────────────────────────
-  const { totalMarketCap, projectsWithData, avgChange24h, topGainers, topLosers, lastUpdated } = useMemo(() => {
+  // ── Derived ─────────────────────────────────────────────
+  const stats = useMemo(() => {
     const withData = projects
-      .map((p) => ({ project: p, market: marketDataMap[p.id] }))
-      .filter((x) => x.market && x.market.price_usd !== null);
+      .map(p => ({ project: p, market: marketDataMap[p.id] }))
+      .filter(x => x.market?.price_usd != null);
 
-    const total = withData.reduce((sum, x) => sum + (x.market.market_cap_usd || 0), 0);
-
-    const withChange = withData.filter((x) => x.market.price_change_24h !== null);
-    const avgChange = withChange.length > 0
-      ? withChange.reduce((sum, x) => sum + (x.market.price_change_24h || 0), 0) / withChange.length
-      : 0;
-
+    const totalMcap = withData.reduce((s, x) => s + (x.market.market_cap_usd || 0), 0);
+    const withChange = withData.filter(x => x.market.price_change_24h != null);
+    const avgChange = withChange.length ? withChange.reduce((s, x) => s + (x.market.price_change_24h || 0), 0) / withChange.length : 0;
     const sorted = [...withChange].sort((a, b) => (b.market.price_change_24h || 0) - (a.market.price_change_24h || 0));
     const gainers = sorted.filter(x => (x.market.price_change_24h || 0) > 0).slice(0, 3);
-    const losers = sorted.filter(x => (x.market.price_change_24h || 0) < 0).slice(-3).reverse();
+    const losers = sorted.filter(x => (x.market.price_change_24h || 0) < 0).reverse().slice(0, 3);
+    const latest = withData.reduce((m, x) => Math.max(m, new Date(x.market.last_updated).getTime()), 0);
 
-    const latest = withData.reduce((max, x) => {
-      const t = new Date(x.market.last_updated).getTime();
-      return t > max ? t : max;
-    }, 0);
-
-    return {
-      totalMarketCap: total,
-      projectsWithData: withData,
-      avgChange24h: avgChange,
-      topGainers: gainers,
-      topLosers: losers,
-      lastUpdated: latest ? new Date(latest) : null,
-    };
+    return { totalMcap, tracked: withData.length, avgChange, gainers, losers, lastUpdated: latest ? new Date(latest) : null };
   }, [projects, marketDataMap]);
 
-  const allSorted = useMemo(() => {
-    let filtered = projects;
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      filtered = filtered.filter((p) =>
-        p.name.toLowerCase().includes(q) || p.token.toLowerCase().includes(q) || p.category.toLowerCase().includes(q) || p.blockchain.toLowerCase().includes(q)
-      );
+  const filtered = useMemo(() => {
+    let r = projects;
+    if (search) {
+      const q = search.toLowerCase();
+      r = r.filter(p => p.name.toLowerCase().includes(q) || p.token.toLowerCase().includes(q));
     }
-    if (selectedCategory) filtered = filtered.filter((p) => p.category === selectedCategory);
-    if (selectedBlockchain) filtered = filtered.filter((p) => p.blockchain === selectedBlockchain);
+    if (category) r = r.filter(p => p.category === category);
+    if (chain) r = r.filter(p => p.blockchain === chain);
 
-    const mapped = filtered.map((p) => ({ project: p, market: marketDataMap[p.id] }));
+    const mapped = r.map(p => ({ project: p, market: marketDataMap[p.id] }));
     mapped.sort((a, b) => {
-      let aVal: number, bVal: number;
       switch (sortBy) {
-        case "price":
-          aVal = a.market?.price_usd ?? -1; bVal = b.market?.price_usd ?? -1; break;
-        case "change_24h":
-          aVal = a.market?.price_change_24h ?? -Infinity; bVal = b.market?.price_change_24h ?? -Infinity; break;
-        case "rating":
-          aVal = a.project.avg_rating ?? 0; bVal = b.project.avg_rating ?? 0; break;
-        case "name":
-          return sortAsc ? a.project.name.localeCompare(b.project.name) : b.project.name.localeCompare(a.project.name);
-        case "market_cap":
-        default:
-          aVal = a.market?.market_cap_usd ?? -1; bVal = b.market?.market_cap_usd ?? -1; break;
+        case "price": return (sortAsc ? 1 : -1) * ((a.market?.price_usd ?? -1) - (b.market?.price_usd ?? -1));
+        case "change_24h": return (sortAsc ? 1 : -1) * ((a.market?.price_change_24h ?? -Infinity) - (b.market?.price_change_24h ?? -Infinity));
+        case "name": return sortAsc ? a.project.name.localeCompare(b.project.name) : b.project.name.localeCompare(a.project.name);
+        default: return (sortAsc ? 1 : -1) * ((a.market?.market_cap_usd ?? -1) - (b.market?.market_cap_usd ?? -1));
       }
-      return sortAsc ? aVal - bVal : bVal - aVal;
     });
     return mapped;
-  }, [projects, marketDataMap, searchQuery, selectedCategory, selectedBlockchain, sortBy, sortAsc]);
+  }, [projects, marketDataMap, search, category, chain, sortBy, sortAsc]);
 
-  const visibleProjects = useMemo(() => allSorted.slice(0, visibleCount), [allSorted, visibleCount]);
-  const hasMore = visibleCount < allSorted.length;
+  const visible = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
+  const hasMore = visibleCount < filtered.length;
 
-  // Reset pagination on filter change
-  useEffect(() => { setVisibleCount(ITEMS_PER_PAGE); }, [searchQuery, selectedCategory, selectedBlockchain, sortBy, sortAsc]);
+  useEffect(() => { setVisibleCount(ITEMS_PER_PAGE); }, [search, category, chain, sortBy, sortAsc]);
 
-  // Infinite scroll
   useEffect(() => {
     const el = loadMoreRef.current;
     if (!el) return;
-    const observer = new IntersectionObserver(
-      (entries) => { if (entries[0].isIntersecting && hasMore) setVisibleCount((prev) => prev + ITEMS_PER_PAGE); },
-      { rootMargin: "300px" }
+    const obs = new IntersectionObserver(
+      entries => { if (entries[0].isIntersecting && hasMore) setVisibleCount(c => c + ITEMS_PER_PAGE); },
+      { rootMargin: "400px" }
     );
-    observer.observe(el);
-    return () => observer.disconnect();
+    obs.observe(el);
+    return () => obs.disconnect();
   }, [hasMore]);
 
-  const activeFilters = (selectedCategory ? 1 : 0) + (selectedBlockchain ? 1 : 0);
+  const activeFilters = (category ? 1 : 0) + (chain ? 1 : 0) + (search ? 1 : 0);
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      {/* ── Hero Stats Banner ──────────────────────────────── */}
-      <div className="relative pt-20 pb-0">
-        <div className="absolute inset-0 bg-grid opacity-20" />
-        <div className="gradient-radial-top absolute inset-0" />
+      {/* ═══ HERO ═══════════════════════════════════════════ */}
+      <section className="relative pt-16 overflow-hidden">
+        {/* Background layers */}
+        <div className="absolute inset-0 bg-grid opacity-15" />
+        <div className="absolute inset-0 gradient-radial-top" />
+        <div className="absolute bottom-0 left-0 right-0 h-32 gradient-fade-bottom" />
 
-        <div className="container relative mx-auto max-w-7xl px-4">
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="pt-6 pb-6">
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">
-                  DePIN Market Overview
-                </h1>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Live prices and market data for decentralized physical infrastructure
-                </p>
-              </div>
-              {lastUpdated && (
-                <div className="flex items-center gap-2">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    Updated {lastUpdated.toLocaleTimeString()}
-                  </span>
+        <div className="container relative mx-auto max-w-7xl px-4 pt-10 pb-6">
+          {/* Title row */}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex items-end justify-between gap-4 flex-wrap">
+            <div>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
+                  <Activity className="h-5 w-5 text-primary" />
                 </div>
-              )}
-            </div>
-
-            {/* ── Stat Pills ──────────────────────────────── */}
-            <div className="mt-5 flex flex-wrap gap-3">
-              <div className="rounded-xl border border-border bg-card/80 backdrop-blur-sm px-5 py-3 min-w-[180px]">
-                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Total Market Cap</p>
-                <p className="text-xl font-bold text-foreground mt-0.5 font-mono">{formatMarketCap(totalMarketCap)}</p>
-              </div>
-              <div className="rounded-xl border border-border bg-card/80 backdrop-blur-sm px-5 py-3 min-w-[140px]">
-                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Projects</p>
-                <p className="text-xl font-bold text-foreground mt-0.5">{projectsWithData.length}</p>
-              </div>
-              <div className="rounded-xl border border-border bg-card/80 backdrop-blur-sm px-5 py-3 min-w-[160px]">
-                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Avg 24h Change</p>
-                <div className="mt-0.5">
-                  <ChangeBadge change={avgChange24h} size="md" />
+                <div>
+                  <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight leading-none">
+                    DePIN Markets
+                  </h1>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Real-time price data for decentralized infrastructure tokens
+                  </p>
                 </div>
               </div>
             </div>
+
+            {stats.lastUpdated && (
+              <div className="flex items-center gap-2 pb-1">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-60" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+                </span>
+                <span className="text-[11px] text-muted-foreground font-mono">
+                  {stats.lastUpdated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                </span>
+              </div>
+            )}
           </motion.div>
-        </div>
-      </div>
 
-      {/* ── Main Content ──────────────────────────────────── */}
-      <div className="container relative mx-auto max-w-7xl px-4 pb-20">
-
-        {isLoading ? (
-          <div className="mt-6 space-y-4">
-            <div className="flex gap-3">
-              {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24 flex-1 rounded-xl" />)}
+          {/* ── Stat Cards ──────────────────────────────── */}
+          {!isLoading && (
+            <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3">
+              <StatCard icon={Zap} label="Total Market Cap" value={formatMarketCap(stats.totalMcap)} accent />
+              <StatCard icon={Globe2} label="Tracked Projects" value={stats.tracked} sub={<span className="text-xs text-muted-foreground">{projects.length} total</span>} />
+              <StatCard icon={TrendingUp} label="Avg 24h Change" value={<PriceChange change={stats.avgChange} showIcon />} />
+              <StatCard icon={LayoutGrid} label="Categories" value={categories.length} sub={<span className="text-xs text-muted-foreground">{chains.length} chains</span>} />
             </div>
-            <Skeleton className="h-[500px] rounded-xl" />
-          </div>
-        ) : (
-          <>
-            {/* ── Trending Section ──────────────────────── */}
-            {(topGainers.length > 0 || topLosers.length > 0) && (
-              <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mt-6 grid gap-4 lg:grid-cols-2">
-                {/* Gainers */}
-                {topGainers.length > 0 && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <Flame className="h-4 w-4 text-green-500" />
-                      <h2 className="text-sm font-semibold text-foreground">Top Gainers</h2>
-                      <span className="text-[10px] text-muted-foreground">24h</span>
-                    </div>
-                    <div className="space-y-2">
-                      {topGainers.map(({ project, market }, i) => (
-                        <TrendingCard key={project.id} project={project} market={market} rank={i + 1} type="gainer" />
-                      ))}
-                    </div>
+          )}
+        </div>
+      </section>
+
+      {/* ═══ TRENDING ═══════════════════════════════════════ */}
+      {!isLoading && (stats.gainers.length > 0 || stats.losers.length > 0) && (
+        <section className="container mx-auto max-w-7xl px-4 py-6">
+          <div className="grid gap-6 lg:grid-cols-2">
+            {/* Gainers */}
+            {stats.gainers.length > 0 && (
+              <motion.div initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }}>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-green-500/10">
+                    <Flame className="h-3.5 w-3.5 text-green-400" />
                   </div>
-                )}
-                {/* Losers */}
-                {topLosers.length > 0 && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <TrendingDown className="h-4 w-4 text-red-500" />
-                      <h2 className="text-sm font-semibold text-foreground">Top Losers</h2>
-                      <span className="text-[10px] text-muted-foreground">24h</span>
-                    </div>
-                    <div className="space-y-2">
-                      {topLosers.map(({ project, market }, i) => (
-                        <TrendingCard key={project.id} project={project} market={market} rank={i + 1} type="loser" />
-                      ))}
-                    </div>
-                  </div>
-                )}
+                  <h2 className="text-sm font-semibold text-foreground">Top Gainers</h2>
+                  <span className="rounded bg-secondary px-1.5 py-0.5 text-[10px] text-muted-foreground">24h</span>
+                </div>
+                <div className="space-y-2">
+                  {stats.gainers.map(({ project, market }, i) => (
+                    <TickerItem key={project.id} project={project} market={market} rank={i + 1} />
+                  ))}
+                </div>
               </motion.div>
             )}
 
-            {/* ── Table Section ─────────────────────────── */}
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-              className="mt-8 rounded-xl border border-border bg-card overflow-hidden">
-
-              {/* ── Search & Filter Bar (sticky) ─────────── */}
-              <div className="sticky top-16 z-20 bg-card/95 backdrop-blur-md border-b border-border">
-                <div className="flex items-center gap-2 px-4 py-3">
-                  {/* Search */}
-                  <div className="relative flex-1 max-w-md">
-                    <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-                    <Input
-                      placeholder="Search projects..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-9 h-9 text-sm bg-secondary/50 border-border focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                    />
-                    {searchQuery && (
-                      <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-                    )}
+            {/* Losers */}
+            {stats.losers.length > 0 && (
+              <motion.div initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-red-500/10">
+                    <TrendingDown className="h-3.5 w-3.5 text-red-400" />
                   </div>
+                  <h2 className="text-sm font-semibold text-foreground">Top Losers</h2>
+                  <span className="rounded bg-secondary px-1.5 py-0.5 text-[10px] text-muted-foreground">24h</span>
+                </div>
+                <div className="space-y-2">
+                  {stats.losers.map(({ project, market }, i) => (
+                    <TickerItem key={project.id} project={project} market={market} rank={i + 1} />
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </div>
+        </section>
+      )}
 
-                  {/* Filter Toggle */}
-                  <button
-                    onClick={() => setShowFilters(!showFilters)}
-                    className={`flex items-center gap-1.5 h-9 px-3 rounded-md text-sm border transition-colors ${
-                      showFilters || activeFilters > 0
-                        ? "border-primary/50 bg-primary/10 text-primary"
-                        : "border-border bg-secondary/50 text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <Filter className="h-3.5 w-3.5" />
-                    Filters
-                    {activeFilters > 0 && (
-                      <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
-                        {activeFilters}
-                      </span>
-                    )}
+      {/* ═══ MAIN TABLE ═════════════════════════════════════ */}
+      <section className="container mx-auto max-w-7xl px-4 pb-20">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+          className="rounded-2xl border border-border bg-card/60 backdrop-blur-sm overflow-hidden shadow-xl shadow-background/50"
+        >
+          {/* ── Toolbar ──────────────────────────────────── */}
+          <div className="sticky top-16 z-20 bg-card/90 backdrop-blur-xl border-b border-border/50">
+            <div className="flex items-center gap-2 px-4 py-3">
+              <div className="relative flex-1 max-w-sm">
+                <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/50 pointer-events-none" />
+                <Input
+                  placeholder="Search name or token..."
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  className="pl-9 h-9 text-sm bg-secondary/40 border-border/50 focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/40"
+                />
+                {search && (
+                  <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                    <X className="h-3.5 w-3.5" />
                   </button>
-
-                  {/* Results count */}
-                  <span className="hidden sm:inline text-xs text-muted-foreground whitespace-nowrap">
-                    {allSorted.length} project{allSorted.length !== 1 ? "s" : ""}
-                  </span>
-                </div>
-
-                {/* ── Expandable Filter Row ──────────────── */}
-                <AnimatePresence>
-                  {showFilters && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="overflow-hidden border-t border-border/50"
-                    >
-                      <div className="flex flex-wrap items-center gap-2 px-4 py-3">
-                        <Select value={selectedCategory ?? "all"} onValueChange={(v) => setSelectedCategory(v === "all" ? null : v)}>
-                          <SelectTrigger className="w-[150px] h-8 text-xs bg-secondary/50 focus:ring-0 focus:ring-offset-0">
-                            <SelectValue placeholder="Category" />
-                          </SelectTrigger>
-                          <SelectContent side="bottom" avoidCollisions={false}>
-                            <SelectItem value="all">All Categories</SelectItem>
-                            {categories.map((cat) => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
-
-                        <Select value={selectedBlockchain ?? "all"} onValueChange={(v) => setSelectedBlockchain(v === "all" ? null : v)}>
-                          <SelectTrigger className="w-[150px] h-8 text-xs bg-secondary/50 focus:ring-0 focus:ring-offset-0">
-                            <SelectValue placeholder="Blockchain" />
-                          </SelectTrigger>
-                          <SelectContent side="bottom" avoidCollisions={false}>
-                            <SelectItem value="all">All Chains</SelectItem>
-                            {blockchains.map((chain) => <SelectItem key={chain} value={chain}>{chain}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
-
-                        {(selectedCategory || selectedBlockchain) && (
-                          <button
-                            onClick={() => { setSelectedCategory(null); setSelectedBlockchain(null); }}
-                            className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
-                          >
-                            <X className="h-3 w-3" /> Clear
-                          </button>
-                        )}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                )}
               </div>
 
-              {/* ── Data Table ───────────────────────────── */}
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-border bg-secondary/20">
-                      <th className="px-4 py-3.5 text-left text-[11px] font-medium text-muted-foreground w-12">#</th>
-                      <SortHeader label="Name" sortKey="name" currentSort={sortBy} currentAsc={sortAsc} onSort={handleSort} align="left" />
-                      <SortHeader label="Price" sortKey="price" currentSort={sortBy} currentAsc={sortAsc} onSort={handleSort} />
-                      <SortHeader label="24h %" sortKey="change_24h" currentSort={sortBy} currentAsc={sortAsc} onSort={handleSort} />
-                      <SortHeader label="Market Cap" sortKey="market_cap" currentSort={sortBy} currentAsc={sortAsc} onSort={handleSort} />
-                      <th className="px-4 py-3.5 text-center text-[11px] font-medium text-muted-foreground whitespace-nowrap">7d Chart</th>
-                      <th className="px-4 py-3.5 text-left text-[11px] font-medium text-muted-foreground">Category</th>
-                      <th className="px-4 py-3.5 text-left text-[11px] font-medium text-muted-foreground">Chain</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {visibleProjects.length === 0 && !isLoading ? (
-                      <tr>
-                        <td colSpan={8} className="px-4 py-16 text-center">
-                          <div className="flex flex-col items-center gap-2">
-                            <Search className="h-8 w-8 text-muted-foreground/30" />
-                            <p className="text-sm text-muted-foreground">No projects match your search</p>
-                            <button onClick={() => { setSearchQuery(""); setSelectedCategory(null); setSelectedBlockchain(null); }}
-                              className="text-xs text-primary hover:underline">Clear all filters</button>
+              <Select value={category ?? "all"} onValueChange={v => setCategory(v === "all" ? null : v)}>
+                <SelectTrigger className="w-[140px] h-9 text-xs bg-secondary/40 border-border/50 focus:ring-0 focus:ring-offset-0">
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent side="bottom" avoidCollisions={false}>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+
+              <Select value={chain ?? "all"} onValueChange={v => setChain(v === "all" ? null : v)}>
+                <SelectTrigger className="w-[130px] h-9 text-xs bg-secondary/40 border-border/50 focus:ring-0 focus:ring-offset-0">
+                  <SelectValue placeholder="Chain" />
+                </SelectTrigger>
+                <SelectContent side="bottom" avoidCollisions={false}>
+                  <SelectItem value="all">All Chains</SelectItem>
+                  {chains.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+
+              {activeFilters > 0 && (
+                <button
+                  onClick={() => { setSearch(""); setCategory(null); setChain(null); }}
+                  className="flex items-center gap-1 h-9 px-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <X className="h-3 w-3" /> Clear
+                </button>
+              )}
+
+              <div className="ml-auto text-[11px] text-muted-foreground hidden sm:block font-mono">
+                {filtered.length} result{filtered.length !== 1 ? "s" : ""}
+              </div>
+            </div>
+          </div>
+
+          {/* ── Table ────────────────────────────────────── */}
+          {isLoading ? (
+            <div className="p-4 space-y-3">
+              {Array.from({ length: 10 }).map((_, i) => (
+                <Skeleton key={i} className="h-14 w-full rounded-lg" />
+              ))}
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[800px]">
+                <thead>
+                  <tr className="border-b border-border/40">
+                    <th className="px-3 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70 w-16">#</th>
+                    <ColHeader label="Name" sortKey="name" active={sortBy === "name"} asc={sortAsc} onSort={handleSort} align="left" className="text-left" />
+                    <ColHeader label="Price" sortKey="price" active={sortBy === "price"} asc={sortAsc} onSort={handleSort} />
+                    <ColHeader label="24h %" sortKey="change_24h" active={sortBy === "change_24h"} asc={sortAsc} onSort={handleSort} />
+                    <ColHeader label="Market Cap" sortKey="market_cap" active={sortBy === "market_cap"} asc={sortAsc} onSort={handleSort} />
+                    <th className="px-3 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70 whitespace-nowrap">Last 7 Days</th>
+                    <th className="px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">Info</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {visible.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="py-20 text-center">
+                        <div className="flex flex-col items-center gap-3">
+                          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-secondary">
+                            <Search className="h-6 w-6 text-muted-foreground/30" />
                           </div>
-                        </td>
-                      </tr>
-                    ) : (
-                      visibleProjects.map(({ project, market }, i) => (
-                        <tr key={project.id}
-                          className="border-b border-border/30 transition-colors hover:bg-secondary/20 group"
-                        >
-                          {/* Rank */}
-                          <td className="px-4 py-3 text-xs text-muted-foreground font-mono">{i + 1}</td>
+                          <p className="text-sm text-muted-foreground">No projects found</p>
+                          <button
+                            onClick={() => { setSearch(""); setCategory(null); setChain(null); }}
+                            className="text-xs text-primary hover:underline"
+                          >
+                            Reset filters
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    visible.map(({ project, market }, i) => (
+                      <ProjectRow
+                        key={project.id}
+                        project={project}
+                        market={market}
+                        rank={i + 1}
+                        isBookmarked={bookmarkedIds.has(project.id)}
+                        onBookmark={() => toggleBookmark.mutate({ projectId: project.id, isBookmarked: bookmarkedIds.has(project.id) })}
+                        showBookmark={!!user}
+                      />
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
 
-                          {/* Name */}
-                          <td className="px-4 py-3">
-                            <Link to={`/project/${project.slug}`} className="flex items-center gap-3">
-                              <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="sm" />
-                              <div className="min-w-0">
-                                <div className="flex items-center gap-1.5">
-                                  <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors truncate">{project.name}</span>
-                                  <ArrowUpRight className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                                </div>
-                                <span className="text-[11px] text-muted-foreground font-mono">{project.token}</span>
-                              </div>
-                            </Link>
-                          </td>
-
-                          {/* Price */}
-                          <td className="px-4 py-3 text-right text-sm font-semibold text-foreground font-mono whitespace-nowrap">
-                            {market ? formatPrice(market.price_usd) : <span className="text-muted-foreground">—</span>}
-                          </td>
-
-                          {/* 24h Change */}
-                          <td className="px-4 py-3 text-right">
-                            <div className="flex justify-end">
-                              <ChangeBadge change={market?.price_change_24h ?? null} />
-                            </div>
-                          </td>
-
-                          {/* Market Cap */}
-                          <td className="px-4 py-3 text-right text-sm text-foreground font-mono whitespace-nowrap">
-                            {market ? formatMarketCap(market.market_cap_usd) : <span className="text-muted-foreground">—</span>}
-                          </td>
-
-                          {/* Sparkline */}
-                          <td className="px-4 py-2">
-                            <div className="flex justify-center">
-                              <MiniSparkline data={market?.sparkline_7d ?? null} change={market?.price_change_24h ?? null} width={100} height={32} />
-                            </div>
-                          </td>
-
-                          {/* Category */}
-                          <td className="px-4 py-3">
-                            <span className="rounded-md bg-secondary/80 px-2 py-0.5 text-[11px] text-secondary-foreground whitespace-nowrap">
-                              {project.category}
-                            </span>
-                          </td>
-
-                          {/* Chain */}
-                          <td className="px-4 py-3">
-                            <span className="text-xs text-muted-foreground whitespace-nowrap">{project.blockchain}</span>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
+          {/* ── Infinite scroll sentinel ─────────────────── */}
+          {hasMore && (
+            <div ref={loadMoreRef} className="flex items-center justify-center py-8 border-t border-border/20">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary/60 border-t-transparent" />
+                <span className="font-mono">Loading more...</span>
               </div>
+            </div>
+          )}
 
-              {/* ── Load More Sentinel ────────────────────── */}
-              {hasMore && (
-                <div ref={loadMoreRef} className="flex items-center justify-center py-6 border-t border-border/30">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                    Loading more projects...
-                  </div>
-                </div>
-              )}
+          {!hasMore && filtered.length > ITEMS_PER_PAGE && (
+            <div className="py-5 text-center border-t border-border/20">
+              <span className="text-[11px] text-muted-foreground font-mono">
+                All {filtered.length} projects loaded
+              </span>
+            </div>
+          )}
+        </motion.div>
+      </section>
 
-              {!hasMore && allSorted.length > 0 && (
-                <div className="py-4 text-center text-xs text-muted-foreground border-t border-border/30">
-                  Showing all {allSorted.length} projects
-                </div>
-              )}
-            </motion.div>
-          </>
-        )}
-      </div>
       <Footer />
     </div>
   );
