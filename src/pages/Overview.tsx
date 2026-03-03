@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import ProjectLogo from "@/components/ProjectLogo";
 import { useProjects } from "@/hooks/useProjects";
 import { CATEGORIES } from "@/data/projects";
 import type { Category } from "@/data/projects";
@@ -217,9 +218,7 @@ const Overview = () => {
                 to={`/project/${project.slug}`}
                 className="group flex items-start gap-4 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/40 hover:shadow-md hover:shadow-primary/5"
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-lg">
-                  {project.logo_emoji}
-                </div>
+                <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="sm" />
                 <div className="min-w-0">
                   <h3 className="font-medium text-foreground group-hover:text-primary transition-colors truncate">
                     {project.name}
