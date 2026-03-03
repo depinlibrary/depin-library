@@ -262,6 +262,7 @@ export type Database = {
           price_change_24h: number | null
           price_usd: number | null
           project_id: string
+          sparkline_7d: Json | null
           updated_at: string
         }
         Insert: {
@@ -273,6 +274,7 @@ export type Database = {
           price_change_24h?: number | null
           price_usd?: number | null
           project_id: string
+          sparkline_7d?: Json | null
           updated_at?: string
         }
         Update: {
@@ -284,6 +286,7 @@ export type Database = {
           price_change_24h?: number | null
           price_usd?: number | null
           project_id?: string
+          sparkline_7d?: Json | null
           updated_at?: string
         }
         Relationships: [

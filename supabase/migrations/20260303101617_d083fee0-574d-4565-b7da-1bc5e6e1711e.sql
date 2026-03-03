@@ -1,0 +1,1 @@
+ALTER TABLE public.token_market_data ADD COLUMN IF NOT EXISTS sparkline_7d jsonb DEFAULT NULL;
