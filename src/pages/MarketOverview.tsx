@@ -217,7 +217,7 @@ const ProjectRow = ({ project, market, rank, isBookmarked, onBookmark, showBookm
       {/* Project */}
       <td className="px-3 py-3">
         <Link to={`/project/${project.slug}`} className="flex items-center gap-3">
-          <div className="h-9 w-9 shrink-0 rounded-lg overflow-hidden bg-secondary">
+          <div className="h-9 w-9 shrink-0">
             <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="sm" />
           </div>
           <div className="min-w-0">
@@ -468,7 +468,7 @@ const MarketOverview = () => {
           className="rounded-2xl border border-border bg-card/60 backdrop-blur-sm overflow-hidden shadow-xl shadow-background/50"
         >
           {/* ── Toolbar ──────────────────────────────────── */}
-          <div className="sticky top-16 z-20 bg-card/90 backdrop-blur-xl border-b border-border/50">
+          <div className="relative z-20 bg-card/90 backdrop-blur-xl border-b border-border/50">
             <div className="flex items-center gap-2 px-4 py-3">
               <div className="relative flex-1 max-w-sm">
                 <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/50 pointer-events-none" />
