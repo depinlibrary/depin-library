@@ -3,7 +3,7 @@ import { Search, ChevronUp, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Link } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { TrendingUp, TrendingDown, Minus, ArrowUpRight, BarChart3 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -86,8 +86,6 @@ const MarketOverview = () => {
   const [selectedBlockchain, setSelectedBlockchain] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>("market_cap");
   const [sortAsc, setSortAsc] = useState(false);
-  const [expandedGainers, setExpandedGainers] = useState(false);
-  const [expandedLosers, setExpandedLosers] = useState(false);
 
   const isLoading = projectsLoading || marketLoading;
 
@@ -104,8 +102,8 @@ const MarketOverview = () => {
     const withChange = withData.filter((x) => x.market.price_change_24h !== null);
     const sorted = [...withChange].sort((a, b) => (b.market.price_change_24h || 0) - (a.market.price_change_24h || 0));
 
-    const gainers = sorted.slice(0, 5);
-    const losers = sorted.slice(-5).reverse();
+    const gainers = sorted.slice(0, 4);
+    const losers = sorted.slice(-4).reverse();
 
     const latest = withData.reduce((max, x) => {
       const t = new Date(x.market.last_updated).getTime();
@@ -243,7 +241,7 @@ const MarketOverview = () => {
                     <TrendingUp className="h-3.5 w-3.5 text-green-500" /> Top Gainers (24h)
                   </h2>
                   <div className="space-y-1">
-                    {topGainers.slice(0, 3).map(({ project, market }, i) => (
+                    {topGainers.map(({ project, market }, i) => (
                       <Link key={project.id} to={`/project/${project.slug}`}
                         className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-secondary/50">
                         <span className="w-5 text-xs font-medium text-muted-foreground">{i + 1}</span>
@@ -258,45 +256,7 @@ const MarketOverview = () => {
                         </div>
                       </Link>
                     ))}
-                    <AnimatePresence>
-                      {expandedGainers && topGainers.slice(3).map(({ project, market }, i) => (
-                        <motion.div
-                          key={project.id}
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.2, delay: i * 0.05 }}
-                          className="overflow-hidden"
-                        >
-                          <Link to={`/project/${project.slug}`}
-                            className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-secondary/50">
-                            <span className="w-5 text-xs font-medium text-muted-foreground">{i + 4}</span>
-                            <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="sm" />
-                            <div className="min-w-0 flex-1">
-                              <p className="text-sm font-medium text-foreground truncate">{project.name}</p>
-                              <p className="text-xs text-muted-foreground">{project.token}</p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-sm font-medium text-foreground">{formatPrice(market.price_usd)}</p>
-                              <ChangeIndicator change={market.price_change_24h} />
-                            </div>
-                          </Link>
-                        </motion.div>
-                      ))}
-                    </AnimatePresence>
                   </div>
-                  {topGainers.length > 3 && (
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); setExpandedGainers(prev => !prev); }}
-                      className="mt-2 flex w-full items-center justify-center gap-1 rounded-md py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {expandedGainers ? "Show less" : `Show all ${topGainers.length}`}
-                      <motion.span animate={{ rotate: expandedGainers ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                        <ChevronDown className="h-3 w-3" />
-                      </motion.span>
-                    </button>
-                  )}
                 </div>
 
                 {/* Losers */}
@@ -305,7 +265,7 @@ const MarketOverview = () => {
                     <TrendingDown className="h-3.5 w-3.5 text-red-500" /> Top Losers (24h)
                   </h2>
                   <div className="space-y-1">
-                    {topLosers.slice(0, 3).map(({ project, market }, i) => (
+                    {topLosers.map(({ project, market }, i) => (
                       <Link key={project.id} to={`/project/${project.slug}`}
                         className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-secondary/50">
                         <span className="w-5 text-xs font-medium text-muted-foreground">{i + 1}</span>
@@ -320,45 +280,7 @@ const MarketOverview = () => {
                         </div>
                       </Link>
                     ))}
-                    <AnimatePresence>
-                      {expandedLosers && topLosers.slice(3).map(({ project, market }, i) => (
-                        <motion.div
-                          key={project.id}
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.2, delay: i * 0.05 }}
-                          className="overflow-hidden"
-                        >
-                          <Link to={`/project/${project.slug}`}
-                            className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-secondary/50">
-                            <span className="w-5 text-xs font-medium text-muted-foreground">{i + 4}</span>
-                            <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="sm" />
-                            <div className="min-w-0 flex-1">
-                              <p className="text-sm font-medium text-foreground truncate">{project.name}</p>
-                              <p className="text-xs text-muted-foreground">{project.token}</p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-sm font-medium text-foreground">{formatPrice(market.price_usd)}</p>
-                              <ChangeIndicator change={market.price_change_24h} />
-                            </div>
-                          </Link>
-                        </motion.div>
-                      ))}
-                    </AnimatePresence>
                   </div>
-                  {topLosers.length > 3 && (
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); setExpandedLosers(prev => !prev); }}
-                      className="mt-2 flex w-full items-center justify-center gap-1 rounded-md py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {expandedLosers ? "Show less" : `Show all ${topLosers.length}`}
-                      <motion.span animate={{ rotate: expandedLosers ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                        <ChevronDown className="h-3 w-3" />
-                      </motion.span>
-                    </button>
-                  )}
                 </div>
               </motion.div>
 
