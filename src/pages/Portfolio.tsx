@@ -489,7 +489,9 @@ const Portfolio = () => {
                         </Pie>
                         <Tooltip
                           formatter={(value: number) => [formatValue(value), ""]}
-                          contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px", color: "hsl(var(--foreground))", fontSize: "12px" }}
+                          contentStyle={{ backgroundColor: "hsl(220, 18%, 10%)", border: "1px solid hsl(220, 14%, 18%)", borderRadius: "12px", color: "hsl(210, 20%, 92%)", fontSize: "12px" }}
+                          itemStyle={{ color: "hsl(210, 20%, 92%)" }}
+                          labelStyle={{ color: "hsl(210, 20%, 92%)" }}
                         />
                       </PieChart>
                     </ResponsiveContainer>
