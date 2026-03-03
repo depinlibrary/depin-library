@@ -140,31 +140,30 @@ const StatCard = ({ icon: Icon, label, value, sub, accent = false }: {
 );
 
 // Trending ticker item
-const TickerItem = ({ project, market, rank }: { project: Project; market: TokenMarketData; rank: number }) => {
+const TickerItem = ({ project, market, rank, type }: { project: Project; market: TokenMarketData; rank: number; type: "gainer" | "loser" }) => {
   const change = market.price_change_24h;
   const positive = change !== null && change > 0;
-  const negative = change !== null && change < 0;
 
   return (
     <Link
       to={`/project/${project.slug}`}
-      className="group flex items-center gap-3 rounded-xl border border-border/60 bg-card/40 backdrop-blur-sm px-4 py-3 transition-all duration-200 hover:border-primary/30 hover:bg-card/80 hover:shadow-lg hover:shadow-primary/5"
+      className="group flex items-center gap-4 rounded-xl border border-border/50 bg-card/50 px-5 py-4 transition-all duration-200 hover:bg-card hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5"
     >
-      <span className="flex h-5 w-5 items-center justify-center rounded text-[10px] font-bold text-muted-foreground bg-secondary/80">
+      <span className="text-xs font-bold text-muted-foreground/60 w-4 text-center shrink-0">
         {rank}
       </span>
-      <div className="h-8 w-8 shrink-0">
+      <div className="shrink-0">
         <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="sm" />
       </div>
       <div className="min-w-0 flex-1">
         <p className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">
           {project.name}
         </p>
-        <p className="text-[10px] text-muted-foreground font-mono">{project.token}</p>
+        <p className="text-[11px] text-muted-foreground font-mono mt-0.5">{project.token}</p>
       </div>
-      <div className="text-right shrink-0">
+      <div className="text-right shrink-0 space-y-0.5">
         <p className="text-sm font-bold text-foreground font-mono">{formatPrice(market.price_usd)}</p>
-        <PriceChange change={change} />
+        <ChangePill change={change} />
       </div>
     </Link>
   );
@@ -215,8 +214,8 @@ const ProjectRow = ({ project, market, rank, isBookmarked, onBookmark, showBookm
       </td>
 
       {/* Project */}
-      <td className="px-3 py-3">
-        <Link to={`/project/${project.slug}`} className="flex items-center gap-3">
+      <td className="px-3 py-3.5">
+        <Link to={`/project/${project.slug}`} className="flex items-center gap-4">
           <div className="h-9 w-9 shrink-0">
             <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="sm" />
           </div>
@@ -418,21 +417,23 @@ const MarketOverview = () => {
 
       {/* ═══ TRENDING ═══════════════════════════════════════ */}
       {!isLoading && (stats.gainers.length > 0 || stats.losers.length > 0) && (
-        <section className="container mx-auto max-w-7xl px-4 py-6">
-          <div className="grid gap-6 lg:grid-cols-2">
+        <section className="container mx-auto max-w-7xl px-4 pt-2 pb-8">
+          <div className="grid gap-8 lg:grid-cols-2">
             {/* Gainers */}
             {stats.gainers.length > 0 && (
-              <motion.div initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }}>
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-green-500/10">
-                    <Flame className="h-3.5 w-3.5 text-green-400" />
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+                <div className="flex items-center gap-2.5 mb-4">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-green-500/10 ring-1 ring-green-500/20">
+                    <TrendingUp className="h-3.5 w-3.5 text-green-400" />
                   </div>
-                  <h2 className="text-sm font-semibold text-foreground">Top Gainers</h2>
-                  <span className="rounded bg-secondary px-1.5 py-0.5 text-[10px] text-muted-foreground">24h</span>
+                  <div>
+                    <h2 className="text-sm font-bold text-foreground leading-none">Top Gainers</h2>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">Best performing in 24h</p>
+                  </div>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   {stats.gainers.map(({ project, market }, i) => (
-                    <TickerItem key={project.id} project={project} market={market} rank={i + 1} />
+                    <TickerItem key={project.id} project={project} market={market} rank={i + 1} type="gainer" />
                   ))}
                 </div>
               </motion.div>
@@ -440,17 +441,19 @@ const MarketOverview = () => {
 
             {/* Losers */}
             {stats.losers.length > 0 && (
-              <motion.div initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-red-500/10">
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+                <div className="flex items-center gap-2.5 mb-4">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-red-500/10 ring-1 ring-red-500/20">
                     <TrendingDown className="h-3.5 w-3.5 text-red-400" />
                   </div>
-                  <h2 className="text-sm font-semibold text-foreground">Top Losers</h2>
-                  <span className="rounded bg-secondary px-1.5 py-0.5 text-[10px] text-muted-foreground">24h</span>
+                  <div>
+                    <h2 className="text-sm font-bold text-foreground leading-none">Top Losers</h2>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">Biggest drops in 24h</p>
+                  </div>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   {stats.losers.map(({ project, market }, i) => (
-                    <TickerItem key={project.id} project={project} market={market} rank={i + 1} />
+                    <TickerItem key={project.id} project={project} market={market} rank={i + 1} type="loser" />
                   ))}
                 </div>
               </motion.div>
