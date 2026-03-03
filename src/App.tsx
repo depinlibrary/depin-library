@@ -5,7 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import Index from "./pages/Index";
+import Overview from "./pages/Overview";
+import Explore from "./pages/Explore";
 import ProjectDetail from "./pages/ProjectDetail";
 import Auth from "./pages/Auth";
 import SubmitProject from "./pages/SubmitProject";
@@ -26,7 +27,8 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            <Route path="/" element={<Index />} />
+            <Route path="/" element={<Overview />} />
+            <Route path="/explore" element={<Explore />} />
             <Route path="/project/:slug" element={<ProjectDetail />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/submit" element={<SubmitProject />} />

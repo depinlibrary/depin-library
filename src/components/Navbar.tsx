@@ -45,6 +45,9 @@ const Navbar = () => {
 
         <div className="flex items-center gap-3">
           <Link to="/" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+            Overview
+          </Link>
+          <Link to="/explore" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
             Explore
           </Link>
           <Link to="/market" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
