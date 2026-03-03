@@ -43,6 +43,24 @@ export type Database = {
           },
         ]
       }
+      comparison_requests: {
+        Row: {
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       portfolio_holdings: {
         Row: {
           created_at: string
@@ -101,6 +119,57 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      project_comparisons: {
+        Row: {
+          ai_response: Json
+          comparison_type: Database["public"]["Enums"]["comparison_type"]
+          created_at: string
+          id: string
+          normalized_key: string
+          project_a_id: string
+          project_b_id: string
+          updated_at: string
+          user_prompt: string | null
+        }
+        Insert: {
+          ai_response: Json
+          comparison_type?: Database["public"]["Enums"]["comparison_type"]
+          created_at?: string
+          id?: string
+          normalized_key: string
+          project_a_id: string
+          project_b_id: string
+          updated_at?: string
+          user_prompt?: string | null
+        }
+        Update: {
+          ai_response?: Json
+          comparison_type?: Database["public"]["Enums"]["comparison_type"]
+          created_at?: string
+          id?: string
+          normalized_key?: string
+          project_a_id?: string
+          project_b_id?: string
+          updated_at?: string
+          user_prompt?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_comparisons_project_a_id_fkey"
+            columns: ["project_a_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_comparisons_project_b_id_fkey"
+            columns: ["project_b_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       project_submissions: {
         Row: {
@@ -367,6 +436,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      comparison_type: "standard" | "custom"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -495,6 +565,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      comparison_type: ["standard", "custom"],
     },
   },
 } as const
