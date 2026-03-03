@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bot, ArrowRightLeft, Sparkles, Database, AlertTriangle, Shield, TrendingUp, Zap, Loader2, Flame } from "lucide-react";
+import { Bot, ArrowRightLeft, Sparkles, Database, AlertTriangle, Shield, TrendingUp, Zap, Loader2, Flame, LogIn } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useProjects } from "@/hooks/useProjects";
@@ -12,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 
 type ComparisonResult = {
   summary: string;
@@ -26,6 +28,7 @@ const CompareProjects = () => {
   const { data: projects, isLoading: loadingProjects } = useProjects();
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const [projectAId, setProjectAId] = useState<string>("");
   const [projectBId, setProjectBId] = useState<string>("");
@@ -34,6 +37,7 @@ const CompareProjects = () => {
   const [isCached, setIsCached] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [createdAt, setCreatedAt] = useState<string>("");
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
 
   const projectA = useMemo(() => projects?.find((p) => p.id === projectAId), [projects, projectAId]);
   const projectB = useMemo(() => projects?.find((p) => p.id === projectBId), [projects, projectBId]);
@@ -70,9 +74,14 @@ const CompareProjects = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const handleSwap = () => {
+    setProjectAId(projectBId);
+    setProjectBId(projectAId);
+  };
+
   const handleAnalyze = async () => {
     if (!user) {
-      toast({ title: "Sign in required", description: "Please sign in to use the AI comparison agent.", variant: "destructive" });
+      setShowAuthDialog(true);
       return;
     }
     if (!projectAId || !projectBId) {
@@ -157,9 +166,14 @@ const CompareProjects = () => {
               </Select>
             </div>
             <div className="flex justify-center">
-              <div className="w-10 h-10 rounded-full border border-border bg-secondary flex items-center justify-center">
+              <button
+                onClick={handleSwap}
+                disabled={!projectAId && !projectBId}
+                className="w-10 h-10 rounded-full border border-border bg-secondary flex items-center justify-center transition-colors hover:bg-primary/10 hover:border-primary/30 disabled:opacity-50 disabled:pointer-events-none"
+                title="Swap projects"
+              >
                 <ArrowRightLeft className="w-4 h-4 text-muted-foreground" />
-              </div>
+              </button>
             </div>
             <div>
               <label className="text-sm font-medium text-foreground mb-1.5 block">Project B</label>
@@ -349,6 +363,29 @@ const CompareProjects = () => {
           )}
         </AnimatePresence>
       </main>
+
+      {/* Auth Required Dialog */}
+      <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
+        <DialogContent className="bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 font-['Space_Grotesk']">
+              <LogIn className="w-5 h-5 text-primary" /> Sign In Required
+            </DialogTitle>
+            <DialogDescription>
+              You need to be signed in to use the AI comparison agent. Sign in or create an account to start analyzing DePIN projects.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setShowAuthDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={() => navigate("/auth")} className="bg-primary text-primary-foreground hover:bg-primary/90">
+              <LogIn className="w-4 h-4 mr-2" /> Sign In
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Footer />
     </div>
   );
