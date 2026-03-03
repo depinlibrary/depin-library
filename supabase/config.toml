@@ -1,1 +1,4 @@
 project_id = "sudmztcghmvvyieaoblv"
+
+[functions.fetch-token-prices]
+verify_jwt = false

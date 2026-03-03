@@ -49,6 +49,7 @@ type Project = {
   logo_emoji: string;
   status: string;
   year_founded: number | null;
+  coingecko_id: string | null;
   created_at: string;
 };
 
@@ -209,7 +210,15 @@ const AdminDashboard = () => {
       logo_url: logoUrl,
       logo_emoji: editForm.logo_emoji,
       status: editForm.status,
+      coingecko_id: editForm.coingecko_id || null,
     }).eq("id", editingId);
+
+    // If coingecko_id was set, trigger a price fetch for this project
+    if (!error && editForm.coingecko_id) {
+      supabase.functions.invoke("fetch-token-prices", {
+        body: { project_id: editingId },
+      }).catch(() => {}); // fire-and-forget
+    }
 
     setUploading(false);
 
@@ -487,7 +496,7 @@ const AdminDashboard = () => {
                               </div>
                             </div>
                           </div>
-                          <div className="grid grid-cols-3 gap-4">
+                          <div className="grid grid-cols-2 gap-4">
                             <div>
                               <Label className="text-xs text-muted-foreground">Twitter / X</Label>
                               <Input value={editForm.twitter_url || ""} onChange={(e) => setEditForm((f) => ({ ...f, twitter_url: e.target.value }))} className="mt-1" />
@@ -495,6 +504,12 @@ const AdminDashboard = () => {
                             <div>
                               <Label className="text-xs text-muted-foreground">Discord</Label>
                               <Input value={editForm.discord_url || ""} onChange={(e) => setEditForm((f) => ({ ...f, discord_url: e.target.value }))} className="mt-1" />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-3 gap-4">
+                            <div>
+                              <Label className="text-xs text-muted-foreground">CoinGecko ID</Label>
+                              <Input value={editForm.coingecko_id || ""} onChange={(e) => setEditForm((f) => ({ ...f, coingecko_id: e.target.value || null }))} className="mt-1" placeholder="e.g. helium, filecoin" />
                             </div>
                             <div>
                               <Label className="text-xs text-muted-foreground">Status</Label>
@@ -506,6 +521,10 @@ const AdminDashboard = () => {
                                   <SelectItem value="pending">🟠 Pending</SelectItem>
                                 </SelectContent>
                               </Select>
+                            </div>
+                            <div>
+                              <Label className="text-xs text-muted-foreground">Year Founded</Label>
+                              <Input type="number" value={editForm.year_founded || ""} onChange={(e) => setEditForm((f) => ({ ...f, year_founded: e.target.value ? Number(e.target.value) : null }))} className="mt-1" />
                             </div>
                           </div>
                           <div className="flex justify-end gap-2 pt-2">

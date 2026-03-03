@@ -5,10 +5,13 @@ import type { Project } from "@/hooks/useProjects";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBookmarks, useToggleBookmark } from "@/hooks/useBookmarks";
 import ProjectLogo from "@/components/ProjectLogo";
+import TokenPriceBadge from "@/components/TokenPriceBadge";
+import type { TokenMarketData } from "@/hooks/useTokenMarketData";
 
 interface ProjectCardProps {
   project: Project;
   index: number;
+  marketData?: TokenMarketData | null;
 }
 
 const statusColors: Record<string, string> = {
@@ -17,7 +20,7 @@ const statusColors: Record<string, string> = {
   development: "bg-muted text-muted-foreground border-border",
 };
 
-const ProjectCard = ({ project, index }: ProjectCardProps) => {
+const ProjectCard = ({ project, index, marketData }: ProjectCardProps) => {
   const { user } = useAuth();
   const { data: bookmarks = [] } = useBookmarks();
   const toggleBookmark = useToggleBookmark();
@@ -61,15 +64,16 @@ const ProjectCard = ({ project, index }: ProjectCardProps) => {
               <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
                 {project.name}
               </h3>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">{project.token}</span>
-                {project.avg_rating && (
-                  <span className="flex items-center gap-0.5 text-xs text-primary">
-                    <Star className="h-3 w-3 fill-primary" />
-                    {project.avg_rating.toFixed(1)}
-                  </span>
-                )}
-              </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">{project.token}</span>
+                  {project.avg_rating && (
+                    <span className="flex items-center gap-0.5 text-xs text-primary">
+                      <Star className="h-3 w-3 fill-primary" />
+                      {project.avg_rating.toFixed(1)}
+                    </span>
+                  )}
+                </div>
+                {marketData && <TokenPriceBadge data={marketData} compact />}
             </div>
           </div>
           <ArrowUpRight className="h-4 w-4 text-text-dim opacity-0 transition-all group-hover:opacity-100 group-hover:text-primary" />
