@@ -7,7 +7,9 @@ window.addEventListener("unhandledrejection", (event) => {
   if (event.reason?.message?.includes("removeChild")) {
     event.preventDefault();
     console.warn("Suppressed transient removeChild error");
+    return;
   }
+  console.error("Unhandled rejection:", event.reason);
 });
 
 createRoot(document.getElementById("root")!).render(<App />);
