@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
-import { LogOut, Plus, User, Shield, Briefcase, Bot } from "lucide-react";
+import { LogOut, Plus, User, Shield, Briefcase } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 
@@ -50,9 +50,8 @@ const Navbar = () => {
           <Link to="/market" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
             Market
           </Link>
-          <Link to="/compare" className="flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground">
-            <Bot className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Compare</span>
+          <Link to="/compare" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+            Compare
           </Link>
           {user && (
             <Link to="/portfolio" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
