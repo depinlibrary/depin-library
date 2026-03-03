@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Search } from "lucide-react";
+import { Search, ChevronUp, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -37,12 +37,23 @@ const ChangeIndicator = ({ change }: { change: number | null }) => {
   );
 };
 
+type SortOption = "market_cap" | "price" | "change_24h" | "name";
+
+const sortLabels: Record<SortOption, string> = {
+  market_cap: "Market Cap",
+  price: "Price",
+  change_24h: "24h Change",
+  name: "Name",
+};
+
 const MarketOverview = () => {
   const { data: projects = [], isLoading: projectsLoading } = useProjects();
   const { data: marketDataMap = {}, isLoading: marketLoading } = useAllTokenMarketData();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedBlockchain, setSelectedBlockchain] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<SortOption>("market_cap");
+  const [sortAsc, setSortAsc] = useState(false);
 
   const isLoading = projectsLoading || marketLoading;
 
@@ -87,10 +98,35 @@ const MarketOverview = () => {
     if (selectedCategory) filtered = filtered.filter((p) => p.category === selectedCategory);
     if (selectedBlockchain) filtered = filtered.filter((p) => p.blockchain === selectedBlockchain);
 
-    return filtered
-      .map((p) => ({ project: p, market: marketDataMap[p.id] }))
-      .sort((a, b) => (b.market?.market_cap_usd || 0) - (a.market?.market_cap_usd || 0));
-  }, [projects, marketDataMap, searchQuery, selectedCategory, selectedBlockchain]);
+    const sorted = filtered
+      .map((p) => ({ project: p, market: marketDataMap[p.id] }));
+
+    sorted.sort((a, b) => {
+      let aVal: number, bVal: number;
+      switch (sortBy) {
+        case "price":
+          aVal = a.market?.price_usd ?? -1;
+          bVal = b.market?.price_usd ?? -1;
+          break;
+        case "change_24h":
+          aVal = a.market?.price_change_24h ?? -Infinity;
+          bVal = b.market?.price_change_24h ?? -Infinity;
+          break;
+        case "name":
+          return sortAsc
+            ? a.project.name.localeCompare(b.project.name)
+            : b.project.name.localeCompare(a.project.name);
+        case "market_cap":
+        default:
+          aVal = a.market?.market_cap_usd ?? -1;
+          bVal = b.market?.market_cap_usd ?? -1;
+          break;
+      }
+      return sortAsc ? aVal - bVal : bVal - aVal;
+    });
+
+    return sorted;
+  }, [projects, marketDataMap, searchQuery, selectedCategory, selectedBlockchain, sortBy, sortAsc]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -220,12 +256,30 @@ const MarketOverview = () => {
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
                 className="rounded-xl border border-border bg-card overflow-hidden">
                 <div className="p-5 border-b border-border space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="text-sm font-semibold text-foreground">All Projects</h2>
-                      <p className="text-xs text-muted-foreground mt-0.5">{allSorted.length} of {projects.length} projects</p>
-                    </div>
-                  </div>
+                   <div className="flex items-center justify-between flex-wrap gap-2">
+                     <div>
+                       <h2 className="text-sm font-semibold text-foreground">All Projects</h2>
+                       <p className="text-xs text-muted-foreground mt-0.5">{allSorted.length} of {projects.length} projects</p>
+                     </div>
+                     <div className="flex items-center gap-1.5">
+                       <span className="text-xs text-muted-foreground mr-1">Sort:</span>
+                       {(Object.keys(sortLabels) as SortOption[]).map((key) => (
+                         <button
+                           key={key}
+                           onClick={() => {
+                             if (sortBy === key) setSortAsc(!sortAsc);
+                             else { setSortBy(key); setSortAsc(false); }
+                           }}
+                           className={`flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium transition-all ${
+                             sortBy === key ? "border border-primary/50 bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"
+                           }`}
+                         >
+                           {sortLabels[key]}
+                           {sortBy === key && (sortAsc ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />)}
+                         </button>
+                       ))}
+                     </div>
+                   </div>
                   <div className="flex flex-wrap items-center gap-2">
                     <div className="relative flex-1 min-w-[200px] max-w-sm">
                       <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
@@ -284,15 +338,27 @@ const MarketOverview = () => {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-border bg-secondary/30">
-                        <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">#</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Project</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground">Price</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground">24h Change</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground">Market Cap</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Category</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Status</th>
-                        <th className="px-4 py-3 text-center text-xs font-medium text-muted-foreground">Source</th>
-                      </tr>
+                         <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">#</th>
+                         <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
+                           onClick={() => { if (sortBy === "name") setSortAsc(!sortAsc); else { setSortBy("name"); setSortAsc(true); } }}>
+                           <span className="flex items-center gap-1">Project {sortBy === "name" && (sortAsc ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />)}</span>
+                         </th>
+                         <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
+                           onClick={() => { if (sortBy === "price") setSortAsc(!sortAsc); else { setSortBy("price"); setSortAsc(false); } }}>
+                           <span className="flex items-center justify-end gap-1">Price {sortBy === "price" && (sortAsc ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />)}</span>
+                         </th>
+                         <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
+                           onClick={() => { if (sortBy === "change_24h") setSortAsc(!sortAsc); else { setSortBy("change_24h"); setSortAsc(false); } }}>
+                           <span className="flex items-center justify-end gap-1">24h Change {sortBy === "change_24h" && (sortAsc ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />)}</span>
+                         </th>
+                         <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
+                           onClick={() => { if (sortBy === "market_cap") setSortAsc(!sortAsc); else { setSortBy("market_cap"); setSortAsc(false); } }}>
+                           <span className="flex items-center justify-end gap-1">Market Cap {sortBy === "market_cap" && (sortAsc ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />)}</span>
+                         </th>
+                         <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Category</th>
+                         <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Status</th>
+                         <th className="px-4 py-3 text-center text-xs font-medium text-muted-foreground">Source</th>
+                       </tr>
                     </thead>
                     <tbody>
                       {allSorted.map(({ project, market }, i) => (
