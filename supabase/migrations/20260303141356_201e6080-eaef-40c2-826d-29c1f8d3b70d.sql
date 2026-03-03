@@ -1,0 +1,1 @@
+UPDATE public.projects SET coingecko_id = 'weatherxm-network' WHERE id = '6e6045e6-ba0b-49a0-83d3-9af7ffd9a877';
