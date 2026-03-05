@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
-import { Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Users, ShieldCheck, ShieldOff } from "lucide-react";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 type UserProfile = {
   id: string;
@@ -10,35 +13,70 @@ type UserProfile = {
   display_name: string | null;
   created_at: string;
   role?: string;
+  roleId?: string;
 };
 
 const UsersList = () => {
+  const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [search, setSearch] = useState("");
+  const [toggling, setToggling] = useState<string | null>(null);
+
+  const fetchUsers = async () => {
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    const { data: roles } = await supabase
+      .from("user_roles")
+      .select("id, user_id, role");
+
+    const roleMap = new Map<string, { role: string; id: string }>();
+    roles?.forEach((r) => roleMap.set(r.user_id, { role: r.role, id: r.id }));
+
+    setUsers(
+      (profiles || []).map((p) => ({
+        ...p,
+        role: roleMap.get(p.user_id)?.role || "user",
+        roleId: roleMap.get(p.user_id)?.id,
+      }))
+    );
+  };
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("user_id, role");
-
-      const roleMap = new Map<string, string>();
-      roles?.forEach((r) => roleMap.set(r.user_id, r.role));
-
-      setUsers(
-        (profiles || []).map((p) => ({
-          ...p,
-          role: roleMap.get(p.user_id) || "user",
-        }))
-      );
-    };
     fetchUsers();
   }, []);
+
+  const toggleRole = async (profile: UserProfile) => {
+    if (profile.user_id === currentUser?.id) {
+      toast.error("You cannot change your own role");
+      return;
+    }
+
+    const newRole = profile.role === "admin" ? "user" : "admin";
+    if (newRole === "admin" && !confirm(`Promote "${profile.display_name || "this user"}" to admin?`)) return;
+    if (newRole === "user" && !confirm(`Demote "${profile.display_name || "this user"}" to user?`)) return;
+
+    setToggling(profile.user_id);
+
+    const { error } = await supabase
+      .from("user_roles")
+      .update({ role: newRole })
+      .eq("user_id", profile.user_id);
+
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success(`${profile.display_name || "User"} is now ${newRole}`);
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.user_id === profile.user_id ? { ...u, role: newRole } : u
+        )
+      );
+    }
+    setToggling(null);
+  };
 
   const filtered = search
     ? users.filter(
@@ -91,6 +129,19 @@ const UsersList = () => {
               <span className="text-xs text-muted-foreground">
                 {new Date(user.created_at).toLocaleDateString()}
               </span>
+              <Button
+                size="sm"
+                variant={user.role === "admin" ? "outline" : "default"}
+                className="h-7 text-xs"
+                disabled={toggling === user.user_id || user.user_id === currentUser?.id}
+                onClick={() => toggleRole(user)}
+              >
+                {user.role === "admin" ? (
+                  <><ShieldOff className="mr-1 h-3 w-3" /> Demote</>
+                ) : (
+                  <><ShieldCheck className="mr-1 h-3 w-3" /> Promote</>
+                )}
+              </Button>
             </div>
           </motion.div>
         ))}
