@@ -265,7 +265,7 @@ const Explore = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Blockchains</SelectItem>
-                {dbBlockchains.filter((b) => blockchainCounts[b]).map((blockchain) => (
+                {dbBlockchains.map((blockchain) => (
                   <SelectItem key={blockchain} value={blockchain}>
                     {blockchain} ({blockchainCounts[blockchain] || 0})
                   </SelectItem>
