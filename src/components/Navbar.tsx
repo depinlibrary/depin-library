@@ -34,7 +34,7 @@ const Navbar = () => {
     { to: "/explore", label: "Explore" },
     { to: "/market", label: "Market" },
     { to: "/compare", label: "Compare" },
-    ...(user ? [{ to: "/portfolio", label: "Portfolio" }] : []),
+    { to: "/portfolio", label: "Portfolio" },
   ];
 
   return (

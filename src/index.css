@@ -174,7 +174,21 @@
   background: hsl(var(--muted-foreground));
 }
 
-/* Prevent layout shift from scrollbar */
+/* Prevent layout shift from scrollbar and dropdowns */
 html {
   overflow-y: scroll;
+  overflow-x: hidden;
+}
+
+/* Prevent Radix from hiding scrollbar and shifting layout */
+body[data-scroll-locked] {
+  overflow-y: scroll !important;
+  margin-right: 0 !important;
+  padding-right: 0 !important;
+}
+
+body {
+  overflow-x: hidden;
+  position: relative;
+  width: 100%;
 }
