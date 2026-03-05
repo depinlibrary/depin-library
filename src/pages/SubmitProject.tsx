@@ -12,11 +12,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { toast } from "sonner";
-
-const CATEGORIES = ["Wireless", "Storage", "Compute", "Sensors", "Energy", "Mapping", "AI", "Mobility", "CDN", "VPN"];
-const BLOCKCHAINS = ["Solana", "Ethereum", "Polygon", "Cosmos", "IoTeX", "Polkadot", "Arbitrum", "Filecoin", "Arweave", "Custom"];
+import { useDynamicOptions } from "@/hooks/useDynamicOptions";
 
 const SubmitProject = () => {
+  const { categories: CATEGORIES, blockchains: BLOCKCHAINS } = useDynamicOptions();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
