@@ -10,8 +10,7 @@ import { useProjects, type Project } from "@/hooks/useProjects";
 import { useBookmarks } from "@/hooks/useBookmarks";
 import { useAllTokenMarketData } from "@/hooks/useTokenMarketData";
 import { useAuth } from "@/contexts/AuthContext";
-import type { Category } from "@/data/projects";
-import { CATEGORIES, BLOCKCHAINS } from "@/data/projects";
+import { useDynamicOptions } from "@/hooks/useDynamicOptions";
 import {
   Select,
   SelectContent,
@@ -33,7 +32,7 @@ const sortLabels: Record<SortOption, { label: string; icon: typeof ArrowDownAZ }
   bookmarked: { label: "Bookmarked", icon: Bookmark },
 };
 
-const validCategories = CATEGORIES.map((c) => c.name);
+
 
 const statusColors: Record<string, string> = {
   live: "bg-neon-green/15 text-neon-green border-neon-green/30",
@@ -47,21 +46,23 @@ const Explore = () => {
   const sortParam = searchParams.get("sort");
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedBlockchain, setSelectedBlockchain] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>("name");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
+  const { categories: dbCategories, blockchains: dbBlockchains } = useDynamicOptions();
+
   useEffect(() => {
-    if (categoryParam && validCategories.includes(categoryParam as Category)) {
-      setSelectedCategory(categoryParam as Category);
+    if (categoryParam && dbCategories.includes(categoryParam)) {
+      setSelectedCategory(categoryParam);
     }
     if (sortParam === "newest") {
       setSortBy("newest");
     }
-  }, [categoryParam, sortParam]);
+  }, [categoryParam, sortParam, dbCategories]);
 
   // Reset visible count when filters/sort change
   useEffect(() => {
@@ -91,6 +92,14 @@ const Explore = () => {
     }
     if (selectedBlockchain) {
       results = results.filter((p) => p.blockchain === selectedBlockchain);
+    }
+
+    // Filter based on sort mode
+    if (sortBy === "rating") {
+      results = results.filter((p) => p.avg_rating && p.avg_rating > 0);
+    }
+    if (sortBy === "bookmarked") {
+      results = results.filter((p) => bookmarks.includes(p.id));
     }
 
     const sorted = [...results];
@@ -231,16 +240,16 @@ const Explore = () => {
             {/* Category Dropdown */}
             <Select
               value={selectedCategory || "all"}
-              onValueChange={(v) => setSelectedCategory(v === "all" ? null : (v as Category))}
+              onValueChange={(v) => setSelectedCategory(v === "all" ? null : v)}
             >
               <SelectTrigger className="h-8 w-[150px] text-xs border-border bg-card/60">
                 <SelectValue placeholder="All Categories" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
-                {CATEGORIES.map((cat) => (
-                  <SelectItem key={cat.name} value={cat.name}>
-                    {cat.name} ({categoryCounts[cat.name] || 0})
+                {dbCategories.map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    {cat} ({categoryCounts[cat] || 0})
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -256,7 +265,7 @@ const Explore = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Blockchains</SelectItem>
-                {BLOCKCHAINS.filter((b) => blockchainCounts[b]).map((blockchain) => (
+                {dbBlockchains.filter((b) => blockchainCounts[b]).map((blockchain) => (
                   <SelectItem key={blockchain} value={blockchain}>
                     {blockchain} ({blockchainCounts[blockchain] || 0})
                   </SelectItem>
