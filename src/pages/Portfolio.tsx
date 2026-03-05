@@ -310,7 +310,7 @@ const Portfolio = () => {
   }, [portfolioData]);
 
   if (authLoading) return null;
-  if (!user) return <Navigate to="/auth" replace />;
+  if (!user) return <Navigate to="/auth?redirect=/portfolio" replace />;
 
   const SortIcon = ({ column }: { column: "value" | "change" | "name" }) => {
     if (sortBy !== column) return null;
