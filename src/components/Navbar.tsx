@@ -1,12 +1,14 @@
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
-import { LogOut, Plus, User, Shield, Menu, X } from "lucide-react";
+import { useTheme } from "@/contexts/ThemeContext";
+import { LogOut, Plus, User, Shield, Menu, X, Sun, Moon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 
 const Navbar = () => {
   const { user, signOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -64,6 +66,13 @@ const Navbar = () => {
 
         {/* Desktop auth actions — right */}
         <div className="hidden md:flex items-center gap-3 shrink-0">
+          <button
+            onClick={toggleTheme}
+            className="rounded-md p-2 text-muted-foreground transition-colors hover:text-foreground hover:bg-secondary"
+            aria-label="Toggle theme"
+          >
+            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </button>
           {user ? (
             <>
               {isAdmin && (
@@ -123,6 +132,10 @@ const Navbar = () => {
                 </Link>
               ))}
               <div className="border-t border-border/50 pt-3 mt-1 flex flex-col gap-3">
+                <button onClick={toggleTheme} className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                  {theme === "dark" ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+                  {theme === "dark" ? "Light Mode" : "Dark Mode"}
+                </button>
                 {user ? (
                   <>
                     {isAdmin && (

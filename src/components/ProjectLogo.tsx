@@ -6,9 +6,9 @@ interface ProjectLogoProps {
 }
 
 const sizeClasses = {
-  sm: "h-11 w-11 rounded text-xl",
-  md: "h-14 w-14 rounded text-2xl",
-  lg: "h-16 w-16 rounded text-3xl",
+  sm: "h-11 w-11 rounded-[7px] text-xl",
+  md: "h-14 w-14 rounded-[7px] text-2xl",
+  lg: "h-16 w-16 rounded-[7px] text-3xl",
 };
 
 const imgSizeClasses = {
