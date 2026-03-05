@@ -16,6 +16,7 @@ import Portfolio from "./pages/Portfolio";
 import MarketOverview from "./pages/MarketOverview";
 import CompareProjects from "./pages/CompareProjects";
 import NotFound from "./pages/NotFound";
+import ScrollToTop from "./components/ScrollToTop";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <ScrollToTop />
         <AuthProvider>
           <Routes>
             <Route path="/" element={<Overview />} />
