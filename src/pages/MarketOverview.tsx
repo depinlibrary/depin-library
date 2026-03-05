@@ -15,6 +15,7 @@ import { useAllTokenMarketData, type TokenMarketData } from "@/hooks/useTokenMar
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBookmarks, useToggleBookmark } from "@/hooks/useBookmarks";
+import { useDynamicOptions } from "@/hooks/useDynamicOptions";
 
 // ═══════════════════════════════════════════════════════════
 // FORMATTERS
@@ -295,8 +296,11 @@ const MarketOverview = () => {
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
   const isLoading = projectsLoading || marketLoading;
-  const categories = useMemo(() => [...new Set(projects.map(p => p.category))].sort(), [projects]);
-  const chains = useMemo(() => [...new Set(projects.map(p => p.blockchain))].sort(), [projects]);
+
+  // Fetch categories & blockchains from DB
+  const { categories: dbCategories, blockchains: dbBlockchains } = useDynamicOptions();
+  const categories = dbCategories.length > 0 ? dbCategories : [...new Set(projects.map(p => p.category))].sort();
+  const chains = dbBlockchains.length > 0 ? dbBlockchains : [...new Set(projects.map(p => p.blockchain))].sort();
   const bookmarkedIds = useMemo(() => new Set(bookmarks.map((b: any) => b.project_id)), [bookmarks]);
 
   const handleSort = useCallback((key: SortKey) => {
