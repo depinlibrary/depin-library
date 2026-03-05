@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
-import { LogOut, Plus, User, Shield, Briefcase } from "lucide-react";
+import { LogOut, Plus, User, Shield, Menu, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 
@@ -9,6 +9,7 @@ const Navbar = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     if (!user) { setIsAdmin(false); return; }
@@ -26,6 +27,14 @@ const Navbar = () => {
     navigate("/");
   };
 
+  const navLinks = [
+    { to: "/", label: "Overview" },
+    { to: "/explore", label: "Explore" },
+    { to: "/market", label: "Market" },
+    { to: "/compare", label: "Compare" },
+    ...(user ? [{ to: "/portfolio", label: "Portfolio" }] : []),
+  ];
+
   return (
     <motion.nav
       initial={{ y: -20, opacity: 0 }}
@@ -33,8 +42,9 @@ const Navbar = () => {
       transition={{ duration: 0.5 }}
       className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl"
     >
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link to="/" className="flex items-center gap-2.5">
+      <div className="container mx-auto flex h-16 items-center px-4">
+        {/* Logo — left */}
+        <Link to="/" className="flex items-center gap-2.5 shrink-0" onClick={() => setMobileOpen(false)}>
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 glow-primary-sm">
             <span className="text-sm">⬡</span>
           </div>
@@ -43,61 +53,100 @@ const Navbar = () => {
           </span>
         </Link>
 
-        <div className="flex items-center gap-3">
-          <Link to="/" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-            Overview
-          </Link>
-          <Link to="/explore" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-            Explore
-          </Link>
-          <Link to="/market" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-            Market
-          </Link>
-          <Link to="/compare" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-            Compare
-          </Link>
-          {user && (
-            <Link to="/portfolio" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-              Portfolio
+        {/* Desktop nav links — centered */}
+        <nav className="hidden md:flex flex-1 items-center justify-center gap-4">
+          {navLinks.map((link) => (
+            <Link key={link.to} to={link.to} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+              {link.label}
             </Link>
-          )}
+          ))}
+        </nav>
 
+        {/* Desktop auth actions — right */}
+        <div className="hidden md:flex items-center gap-3 shrink-0">
           {user ? (
             <>
               {isAdmin && (
-                <Link
-                  to="/admin"
-                  className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
-                >
+                <Link to="/admin" className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
                   <Shield className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Admin</span>
+                  <span>Admin</span>
                 </Link>
               )}
               <Link
                 to="/submit"
-                className="flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
+                className="flex items-center gap-1.5 rounded-full border border-border bg-secondary px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-secondary/80"
               >
                 <Plus className="h-3 w-3" />
-                <span className="hidden sm:inline">Submit Project</span>
+                Submit Project
               </Link>
-              <button
-                onClick={handleSignOut}
-                className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
-              >
+              <button onClick={handleSignOut} className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
                 <LogOut className="h-3.5 w-3.5" />
               </button>
             </>
           ) : (
             <Link
               to="/auth"
-              className="flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
+              className="flex items-center gap-1.5 rounded-full border border-border bg-secondary px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-secondary/80"
             >
               <User className="h-3 w-3" />
               Sign In
             </Link>
           )}
         </div>
+
+        {/* Mobile hamburger */}
+        <div className="md:hidden ml-auto">
+          <button onClick={() => setMobileOpen(!mobileOpen)} className="p-2 text-muted-foreground hover:text-foreground transition-colors">
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
       </div>
+
+      {/* Mobile menu */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="md:hidden overflow-hidden border-t border-border/50 bg-background/95 backdrop-blur-xl"
+          >
+            <div className="container mx-auto px-4 py-4 flex flex-col gap-3">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  onClick={() => setMobileOpen(false)}
+                  className="text-sm text-muted-foreground transition-colors hover:text-foreground py-1"
+                >
+                  {link.label}
+                </Link>
+              ))}
+              <div className="border-t border-border/50 pt-3 mt-1 flex flex-col gap-3">
+                {user ? (
+                  <>
+                    {isAdmin && (
+                      <Link to="/admin" onClick={() => setMobileOpen(false)} className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <Shield className="h-3.5 w-3.5" /> Admin
+                      </Link>
+                    )}
+                    <Link to="/submit" onClick={() => setMobileOpen(false)} className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                      <Plus className="h-3.5 w-3.5" /> Submit Project
+                    </Link>
+                    <button onClick={() => { handleSignOut(); setMobileOpen(false); }} className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                      <LogOut className="h-3.5 w-3.5" /> Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <Link to="/auth" onClick={() => setMobileOpen(false)} className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <User className="h-3.5 w-3.5" /> Sign In
+                  </Link>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.nav>
   );
 };

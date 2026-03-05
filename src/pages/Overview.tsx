@@ -143,9 +143,9 @@ const Overview = () => {
             >
               <Link
                 to={link.to}
-                className="group flex flex-col gap-3 rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5"
+                className="group flex flex-col gap-3 rounded-xl border border-border bg-card p-5 transition-all hover:border-border hover:shadow-lg hover:shadow-background/10"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary/20">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-muted-foreground transition-colors group-hover:bg-secondary/80">
                   <link.icon className="h-5 w-5" />
                 </div>
                 <div>
@@ -154,7 +154,7 @@ const Overview = () => {
                     {link.description}
                   </p>
                 </div>
-                <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary" />
+                <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-foreground" />
               </Link>
             </motion.div>
           ))}
@@ -184,11 +184,10 @@ const Overview = () => {
                 to={`/explore?category=${cat.name}`}
                 className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 text-center transition-all hover:border-primary/40 hover:shadow-md hover:shadow-primary/5"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-muted-foreground">
                   <cat.Icon className="h-5 w-5" />
                 </div>
                 <span className="text-sm font-medium text-foreground">{cat.name}</span>
-                <span className="text-xs text-muted-foreground">{cat.count} projects</span>
               </Link>
             </motion.div>
           ))}
@@ -216,11 +215,11 @@ const Overview = () => {
             >
               <Link
                 to={`/project/${project.slug}`}
-                className="group flex items-start gap-4 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/40 hover:shadow-md hover:shadow-primary/5"
+                className="group flex items-start gap-4 rounded-xl border border-border bg-card p-4 transition-all hover:border-border hover:shadow-md hover:shadow-background/10"
               >
                 <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="sm" />
                 <div className="min-w-0">
-                  <h3 className="font-medium text-foreground group-hover:text-primary transition-colors truncate">
+                  <h3 className="font-medium text-foreground group-hover:text-foreground transition-colors truncate">
                     {project.name}
                   </h3>
                   <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">

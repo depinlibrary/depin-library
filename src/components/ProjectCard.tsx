@@ -41,7 +41,7 @@ const ProjectCard = ({ project, index, marketData }: ProjectCardProps) => {
     >
       <Link
         to={`/project/${project.slug}`}
-        className="group relative flex h-full flex-col rounded-xl border border-border bg-card p-5 transition-all duration-300 hover:border-primary/30 hover:bg-card/80"
+        className="group relative flex h-full flex-col rounded-xl border border-border bg-card p-5 transition-all duration-300 hover:border-border hover:bg-card/80"
       >
         {/* Bookmark button */}
         {user && (
@@ -61,7 +61,7 @@ const ProjectCard = ({ project, index, marketData }: ProjectCardProps) => {
           <div className="flex items-center gap-3">
             <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="sm" />
             <div>
-              <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
+              <h3 className="font-semibold text-foreground group-hover:text-foreground transition-colors">
                 {project.name}
               </h3>
                 <div className="flex items-center gap-2">
@@ -89,11 +89,6 @@ const ProjectCard = ({ project, index, marketData }: ProjectCardProps) => {
           </span>
           <span className="rounded-md border border-border bg-secondary px-2 py-0.5 text-xs text-muted-foreground">
             {project.blockchain}
-          </span>
-          <span
-            className={`ml-auto rounded-md border px-2 py-0.5 text-xs font-medium ${statusColors[project.status] || statusColors.development}`}
-          >
-            {project.status}
           </span>
         </div>
       </Link>

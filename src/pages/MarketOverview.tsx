@@ -147,7 +147,7 @@ const TickerItem = ({ project, market, rank, type }: { project: Project; market:
   return (
     <Link
       to={`/project/${project.slug}`}
-      className="group flex items-center gap-4 rounded-xl border border-border/50 bg-card/50 px-5 py-4 transition-all duration-200 hover:bg-card hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5"
+      className="group flex items-center gap-4 rounded-xl border border-border/50 bg-card/50 px-5 py-4 transition-all duration-200 hover:bg-card hover:border-border hover:shadow-lg hover:shadow-background/10"
     >
       <span className="text-xs font-bold text-muted-foreground/60 w-4 text-center shrink-0">
         {rank}
@@ -221,7 +221,7 @@ const ProjectRow = ({ project, market, rank, isBookmarked, onBookmark, showBookm
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-1">
-              <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors truncate">
+              <span className="text-sm font-semibold text-foreground group-hover:text-foreground transition-colors truncate">
                 {project.name}
               </span>
               <ArrowUpRight className="h-3 w-3 text-muted-foreground/40 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
