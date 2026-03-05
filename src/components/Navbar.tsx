@@ -65,14 +65,16 @@ const Navbar = () => {
         </nav>
 
         {/* Desktop auth actions — right */}
-        <div className="hidden md:flex items-center gap-3 shrink-0">
+        <div className="hidden md:flex items-center gap-2 shrink-0">
+          {/* Theme toggle */}
           <button
             onClick={toggleTheme}
-            className="rounded-md p-2 text-muted-foreground transition-colors hover:text-foreground hover:bg-secondary"
+            className="relative flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-card transition-all hover:bg-secondary"
             aria-label="Toggle theme"
           >
-            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            {theme === "dark" ? <Sun className="h-4 w-4 text-foreground" /> : <Moon className="h-4 w-4 text-foreground" />}
           </button>
+
           {user ? (
             <>
               {isAdmin && (
@@ -83,19 +85,23 @@ const Navbar = () => {
               )}
               <Link
                 to="/submit"
-                className="flex items-center gap-1.5 rounded-full border border-border bg-secondary px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-secondary/80"
+                className="flex items-center gap-1.5 rounded-lg border border-border bg-card px-3.5 py-1.5 text-xs font-medium text-foreground transition-all hover:bg-secondary"
               >
                 <Plus className="h-3 w-3" />
-                Submit Project
+                Submit
               </Link>
-              <button onClick={handleSignOut} className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
+              <button
+                onClick={handleSignOut}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-card transition-all hover:bg-destructive/10 hover:border-destructive/30 hover:text-destructive"
+                aria-label="Sign out"
+              >
                 <LogOut className="h-3.5 w-3.5" />
               </button>
             </>
           ) : (
             <Link
               to="/auth"
-              className="flex items-center gap-1.5 rounded-full border border-border bg-secondary px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-secondary/80"
+              className="flex items-center gap-1.5 rounded-lg bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground transition-all hover:bg-primary/90"
             >
               <User className="h-3 w-3" />
               Sign In
@@ -132,8 +138,8 @@ const Navbar = () => {
                 </Link>
               ))}
               <div className="border-t border-border/50 pt-3 mt-1 flex flex-col gap-3">
-                <button onClick={toggleTheme} className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                  {theme === "dark" ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+                <button onClick={() => { toggleTheme(); setMobileOpen(false); }} className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground">
+                  {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
                   {theme === "dark" ? "Light Mode" : "Dark Mode"}
                 </button>
                 {user ? (
@@ -146,12 +152,12 @@ const Navbar = () => {
                     <Link to="/submit" onClick={() => setMobileOpen(false)} className="flex items-center gap-1.5 text-sm text-muted-foreground">
                       <Plus className="h-3.5 w-3.5" /> Submit Project
                     </Link>
-                    <button onClick={() => { handleSignOut(); setMobileOpen(false); }} className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <button onClick={() => { handleSignOut(); setMobileOpen(false); }} className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
                       <LogOut className="h-3.5 w-3.5" /> Sign Out
                     </button>
                   </>
                 ) : (
-                  <Link to="/auth" onClick={() => setMobileOpen(false)} className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                  <Link to="/auth" onClick={() => setMobileOpen(false)} className="flex items-center justify-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground">
                     <User className="h-3.5 w-3.5" /> Sign In
                   </Link>
                 )}
