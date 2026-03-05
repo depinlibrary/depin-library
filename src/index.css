@@ -173,3 +173,8 @@
 ::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--muted-foreground));
 }
+
+/* Prevent layout shift from scrollbar */
+html {
+  overflow-y: scroll;
+}
