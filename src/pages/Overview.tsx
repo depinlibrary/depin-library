@@ -145,7 +145,7 @@ const Overview = () => {
                 to={link.to}
                 className="group flex flex-col gap-3 rounded-xl border border-border bg-card p-5 transition-all hover:border-border hover:shadow-lg hover:shadow-background/10"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-muted-foreground transition-colors group-hover:bg-secondary/80">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary/15">
                   <link.icon className="h-5 w-5" />
                 </div>
                 <div>
@@ -184,7 +184,7 @@ const Overview = () => {
                 to={`/explore?category=${cat.name}`}
                 className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 text-center transition-all hover:border-primary/40 hover:shadow-md hover:shadow-primary/5"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-muted-foreground">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                   <cat.Icon className="h-5 w-5" />
                 </div>
                 <span className="text-sm font-medium text-foreground">{cat.name}</span>
