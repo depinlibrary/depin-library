@@ -5,6 +5,7 @@ import { Bot, ArrowRightLeft, Sparkles, Database, AlertTriangle, Shield, Trendin
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import ProjectLogo from "@/components/ProjectLogo";
 import { useProjects } from "@/hooks/useProjects";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -39,7 +40,6 @@ const CompareProjects = () => {
   const [createdAt, setCreatedAt] = useState<string>("");
   const [showAuthDialog, setShowAuthDialog] = useState(false);
 
-  // Restore selected projects from URL params
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const a = params.get("a");
@@ -51,16 +51,15 @@ const CompareProjects = () => {
   const projectA = useMemo(() => projects?.find((p) => p.id === projectAId), [projects, projectAId]);
   const projectB = useMemo(() => projects?.find((p) => p.id === projectBId), [projects, projectBId]);
 
-  // Fetch popular comparisons from cache
   const { data: popularComparisons } = useQuery({
     queryKey: ["popular-comparisons"],
     queryFn: async () => {
-      const { data, error } = await supabase.
-      from("project_comparisons").
-      select("project_a_id, project_b_id, comparison_type, created_at, ai_response").
-      eq("comparison_type", "standard").
-      order("created_at", { ascending: false }).
-      limit(6);
+      const { data, error } = await supabase
+        .from("project_comparisons")
+        .select("project_a_id, project_b_id, comparison_type, created_at, ai_response")
+        .eq("comparison_type", "standard")
+        .order("created_at", { ascending: false })
+        .limit(6);
       if (error) throw error;
       return data || [];
     }
@@ -127,128 +126,160 @@ const CompareProjects = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background bg-grid flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
+      <div className="absolute inset-0 bg-grid opacity-15 pointer-events-none" />
       <div className="gradient-radial-top fixed inset-0 pointer-events-none" />
       <Navbar />
-      <main className="relative pt-24 pb-16 px-4 max-w-5xl mx-auto flex-1">
+
+      <main className="relative pt-24 pb-16 px-4 max-w-6xl mx-auto flex-1 w-full">
+        {/* Header */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/30 bg-primary/5 mb-4">
-            <Bot className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium text-primary">AI Comparison Agent</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border bg-secondary/50 mb-4">
+            <Bot className="w-3.5 h-3.5 text-muted-foreground" />
+            <span className="text-xs font-medium text-muted-foreground">AI Comparison</span>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold font-['Space_Grotesk'] mb-2">
-            Compare <span className="text-primary text-glow">DePIN</span> Projects
+          <h1 className="text-3xl md:text-4xl font-bold font-['Space_Grotesk'] mb-2 text-foreground">
+            Compare DePIN Projects
           </h1>
-          <p className="text-muted-foreground max-w-lg mx-auto">
+          <p className="text-muted-foreground max-w-lg mx-auto text-sm">
             Select two projects for AI-powered analysis of strengths, risks, and long-term outlook.
           </p>
         </motion.div>
 
-        {/* Selection */}
+        {/* Selection Panel */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="rounded-xl border border-border bg-card p-6 mb-6">
-          
-          <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 items-end mb-4">
-            <div>
-              <label className="text-sm font-medium text-foreground mb-1.5 block">Project A</label>
-              <Select value={projectAId} onValueChange={setProjectAId}>
-                <SelectTrigger className="bg-secondary border-border focus:ring-0 focus:ring-offset-0">
-                  <SelectValue placeholder="Select project..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {(projects || []).map((p) =>
-                  <SelectItem key={p.id} value={p.id} disabled={p.id === projectBId}>
-                      <span className="flex items-center gap-2">
-                        {p.logo_url ?
-                      <img src={p.logo_url} alt={p.name} className="w-5 h-5 rounded object-contain" /> :
+          className="rounded-2xl border border-border bg-card/80 backdrop-blur-sm overflow-hidden mb-8"
+        >
+          {/* Project Selectors */}
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 items-end">
+              {/* Project A */}
+              <div>
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block">Project A</label>
+                <Select value={projectAId} onValueChange={setProjectAId}>
+                  <SelectTrigger className="bg-secondary/50 border-border h-11">
+                    <SelectValue placeholder="Select project..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(projects || []).map((p) => (
+                      <SelectItem key={p.id} value={p.id} disabled={p.id === projectBId}>
+                        <span className="flex items-center gap-2">
+                          {p.logo_url ? (
+                            <img src={p.logo_url} alt={p.name} className="w-5 h-5 rounded object-contain" />
+                          ) : (
+                            <span className="w-5 h-5 flex items-center justify-center text-sm">{p.logo_emoji}</span>
+                          )}
+                          {p.name}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {projectA && (
+                  <div className="mt-3 flex items-center gap-3 rounded-lg bg-secondary/30 p-3">
+                    <ProjectLogo logoUrl={projectA.logo_url} logoEmoji={projectA.logo_emoji} name={projectA.name} size="sm" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-foreground truncate">{projectA.name}</p>
+                      <p className="text-xs text-muted-foreground">{projectA.category} · {projectA.blockchain}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
 
-                      <span className="w-5 h-5 flex items-center justify-center text-sm">{p.logo_emoji}</span>
-                      }
-                        {p.name}
-                      </span>
-                    </SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex justify-center">
-              <button
-                onClick={handleSwap}
-                disabled={!projectAId && !projectBId}
-                className="w-10 h-10 rounded-full border border-border bg-secondary flex items-center justify-center transition-colors hover:bg-primary/10 hover:border-primary/30 disabled:opacity-50 disabled:pointer-events-none"
-                title="Swap projects">
-                
-                <ArrowRightLeft className="w-4 h-4 text-muted-foreground" />
-              </button>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-foreground mb-1.5 block">Project B</label>
-              <Select value={projectBId} onValueChange={setProjectBId}>
-                <SelectTrigger className="bg-secondary border-border focus:ring-0 focus:ring-offset-0">
-                  <SelectValue placeholder="Select project..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {(projects || []).map((p) =>
-                  <SelectItem key={p.id} value={p.id} disabled={p.id === projectAId}>
-                      <span className="flex items-center gap-2">
-                        {p.logo_url ?
-                      <img src={p.logo_url} alt={p.name} className="w-5 h-5 rounded object-contain" /> :
+              {/* Swap */}
+              <div className="flex justify-center md:pb-2">
+                <button
+                  onClick={handleSwap}
+                  disabled={!projectAId && !projectBId}
+                  className="w-10 h-10 rounded-full border border-border bg-secondary flex items-center justify-center transition-colors hover:bg-secondary/80 disabled:opacity-50 disabled:pointer-events-none"
+                  title="Swap projects"
+                >
+                  <ArrowRightLeft className="w-4 h-4 text-muted-foreground" />
+                </button>
+              </div>
 
-                      <span className="w-5 h-5 flex items-center justify-center text-sm">{p.logo_emoji}</span>
-                      }
-                        {p.name}
-                      </span>
-                    </SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
+              {/* Project B */}
+              <div>
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block">Project B</label>
+                <Select value={projectBId} onValueChange={setProjectBId}>
+                  <SelectTrigger className="bg-secondary/50 border-border h-11">
+                    <SelectValue placeholder="Select project..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(projects || []).map((p) => (
+                      <SelectItem key={p.id} value={p.id} disabled={p.id === projectAId}>
+                        <span className="flex items-center gap-2">
+                          {p.logo_url ? (
+                            <img src={p.logo_url} alt={p.name} className="w-5 h-5 rounded object-contain" />
+                          ) : (
+                            <span className="w-5 h-5 flex items-center justify-center text-sm">{p.logo_emoji}</span>
+                          )}
+                          {p.name}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {projectB && (
+                  <div className="mt-3 flex items-center gap-3 rounded-lg bg-secondary/30 p-3">
+                    <ProjectLogo logoUrl={projectB.logo_url} logoEmoji={projectB.logo_emoji} name={projectB.name} size="sm" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-foreground truncate">{projectB.name}</p>
+                      <p className="text-xs text-muted-foreground">{projectB.category} · {projectB.blockchain}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
-          <div className="mb-4">
-            <label className="text-sm font-medium text-foreground mb-1.5 block">Custom Question (optional)</label>
-            <Textarea
-              placeholder="e.g. Which one has better long-term growth potential?"
-              value={userPrompt}
-              onChange={(e) => setUserPrompt(e.target.value)}
-              className="bg-secondary border-border resize-none h-20 focus-visible:ring-0 focus-visible:ring-offset-0" />
-            
+          {/* Custom question + analyze */}
+          <div className="border-t border-border bg-secondary/20 p-6">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex-1">
+                <Textarea
+                  placeholder="Ask a custom question (optional)... e.g. Which has better long-term growth potential?"
+                  value={userPrompt}
+                  onChange={(e) => setUserPrompt(e.target.value)}
+                  className="bg-card border-border resize-none h-11 min-h-[44px] py-2.5 text-sm"
+                />
+              </div>
+              <Button
+                onClick={handleAnalyze}
+                disabled={analyzing || !projectAId || !projectBId || loadingProjects}
+                className="h-11 px-6 bg-foreground text-background hover:bg-foreground/90 font-semibold shrink-0"
+              >
+                {analyzing ? (
+                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Analyzing...</>
+                ) : (
+                  <><Sparkles className="w-4 h-4 mr-2" /> Analyze</>
+                )}
+              </Button>
+            </div>
           </div>
-
-          <Button
-            onClick={handleAnalyze}
-            disabled={analyzing || !projectAId || !projectBId || loadingProjects}
-            className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold">
-            
-            {analyzing ?
-            <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Analyzing...</> :
-
-            <><Sparkles className="w-4 h-4 mr-2" /> Analyze</>
-            }
-          </Button>
         </motion.div>
 
         {/* Popular Comparisons */}
-        {!result && popularWithNames.length > 0 &&
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="mb-8">
-          
-            <h2 className="text-sm font-semibold font-['Space_Grotesk'] text-muted-foreground mb-3 flex items-center gap-2">
-              <Flame className="w-4 h-4 text-primary" /> Popular Comparisons
+        {!result && popularWithNames.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mb-8"
+          >
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
+              <Flame className="w-3.5 h-3.5" /> Recent Comparisons
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {popularWithNames.map((c: any, i: number) =>
-            <button
-              key={i}
-              onClick={() => handlePopularClick(c.project_a_id, c.project_b_id)}
-              className="group rounded-lg border border-border bg-card p-4 text-left transition-all hover:border-primary/40 hover:bg-primary/5">
-              
+              {popularWithNames.map((c: any, i: number) => (
+                <button
+                  key={i}
+                  onClick={() => handlePopularClick(c.project_a_id, c.project_b_id)}
+                  className="group rounded-xl border border-border bg-card/60 p-4 text-left transition-all hover:bg-secondary/50"
+                >
                   <div className="flex items-center gap-2 mb-2">
                     {c.projectA.logo_url ? (
                       <img src={c.projectA.logo_url} alt={c.projectA.name} className="w-5 h-5 rounded object-contain" />
@@ -256,7 +287,7 @@ const CompareProjects = () => {
                       <span className="text-base">{c.projectA.logo_emoji}</span>
                     )}
                     <span className="text-xs font-medium text-foreground truncate">{c.projectA.name}</span>
-                    <ArrowRightLeft className="w-3 h-3 text-muted-foreground shrink-0" />
+                    <span className="text-muted-foreground text-[10px]">vs</span>
                     {c.projectB.logo_url ? (
                       <img src={c.projectB.logo_url} alt={c.projectB.name} className="w-5 h-5 rounded object-contain" />
                     ) : (
@@ -267,136 +298,141 @@ const CompareProjects = () => {
                   <p className="text-xs text-muted-foreground line-clamp-2">
                     {(c.ai_response as any)?.summary?.slice(0, 100) || "View comparison"}...
                   </p>
-                  <span className="text-[10px] text-primary mt-2 inline-block opacity-0 group-hover:opacity-100 transition-opacity">
-                    Load this comparison →
-                  </span>
                 </button>
-            )}
+              ))}
             </div>
           </motion.div>
-        }
+        )}
 
         {/* Results */}
         <AnimatePresence>
-          {result &&
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="space-y-4">
-            
-              {/* Header badges */}
+          {result && (
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-6"
+            >
+              {/* Result header */}
               <div className="flex items-center gap-3 flex-wrap">
-                {isCached ?
-              <Badge className="bg-secondary text-secondary-foreground border border-border gap-1">
-                    <Database className="w-3 h-3" /> Cached Analysis
-                  </Badge> :
-
-              <Badge className="bg-primary/10 text-primary border border-primary/30 gap-1">
+                {isCached ? (
+                  <Badge variant="secondary" className="gap-1 text-xs">
+                    <Database className="w-3 h-3" /> Cached
+                  </Badge>
+                ) : (
+                  <Badge variant="secondary" className="gap-1 text-xs">
                     <Sparkles className="w-3 h-3" /> AI Generated
                   </Badge>
-              }
-                {createdAt &&
-              <span className="text-xs text-muted-foreground">
-                    Generated {new Date(createdAt).toLocaleDateString()}
+                )}
+                {createdAt && (
+                  <span className="text-xs text-muted-foreground">
+                    {new Date(createdAt).toLocaleDateString()}
                   </span>
-              }
+                )}
               </div>
 
               {/* Summary */}
-              <div className="rounded-xl border border-border bg-card p-5">
-                <h2 className="text-lg font-semibold font-['Space_Grotesk'] mb-2 flex items-center gap-2">
-                  <Bot className="w-5 h-5 text-primary" /> Summary
-                </h2>
-                <p className="text-secondary-foreground leading-relaxed">{result.summary}</p>
+              <div className="rounded-2xl border border-border bg-card/80 p-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <Bot className="w-4 h-4 text-muted-foreground" />
+                  <h2 className="text-base font-semibold text-foreground">Summary</h2>
+                </div>
+                <p className="text-sm text-secondary-foreground leading-relaxed">{result.summary}</p>
               </div>
 
-              {/* Strengths */}
+              {/* Strengths — side by side */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="rounded-xl border border-border bg-card p-5">
-                  <h3 className="text-sm font-semibold font-['Space_Grotesk'] mb-3 flex items-center gap-2">
-                    <Zap className="w-4 h-4 text-primary" /> {projectA?.name || "Project A"} Strengths
-                  </h3>
-                  <ul className="space-y-2">
-                    {result.project_a_strengths.map((s, i) =>
-                  <li key={i} className="flex items-start gap-2 text-sm text-secondary-foreground">
-                        <span className="mt-1 w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+                <div className="rounded-2xl border border-border bg-card/80 p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-6 h-6 rounded-md bg-secondary flex items-center justify-center">
+                      <Zap className="w-3 h-3 text-foreground" />
+                    </div>
+                    <h3 className="text-sm font-semibold text-foreground">{projectA?.name || "Project A"}</h3>
+                  </div>
+                  <ul className="space-y-2.5">
+                    {result.project_a_strengths.map((s, i) => (
+                      <li key={i} className="flex items-start gap-2.5 text-sm text-secondary-foreground">
+                        <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-foreground/30 shrink-0" />
                         {s}
                       </li>
-                  )}
+                    ))}
                   </ul>
                 </div>
-                <div className="rounded-xl border border-border bg-card p-5">
-                  <h3 className="text-sm font-semibold font-['Space_Grotesk'] mb-3 flex items-center gap-2">
-                    <Zap className="w-4 h-4 text-accent" /> {projectB?.name || "Project B"} Strengths
-                  </h3>
-                  <ul className="space-y-2">
-                    {result.project_b_strengths.map((s, i) =>
-                  <li key={i} className="flex items-start gap-2 text-sm text-secondary-foreground">
-                        <span className="mt-1 w-1.5 h-1.5 rounded-full bg-accent shrink-0" />
+                <div className="rounded-2xl border border-border bg-card/80 p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-6 h-6 rounded-md bg-secondary flex items-center justify-center">
+                      <Zap className="w-3 h-3 text-foreground" />
+                    </div>
+                    <h3 className="text-sm font-semibold text-foreground">{projectB?.name || "Project B"}</h3>
+                  </div>
+                  <ul className="space-y-2.5">
+                    {result.project_b_strengths.map((s, i) => (
+                      <li key={i} className="flex items-start gap-2.5 text-sm text-secondary-foreground">
+                        <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-foreground/30 shrink-0" />
                         {s}
                       </li>
-                  )}
+                    ))}
                   </ul>
                 </div>
               </div>
 
               {/* Risks */}
-              <div className="rounded-xl border border-border bg-card p-5">
-                <h3 className="text-sm font-semibold font-['Space_Grotesk'] mb-3 flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 text-destructive" /> Risks
-                </h3>
-                <ul className="space-y-2">
-                  {result.risks.map((r, i) =>
-                <li key={i} className="flex items-start gap-2 text-sm text-secondary-foreground">
-                      <span className="mt-1 w-1.5 h-1.5 rounded-full bg-destructive shrink-0" />
+              <div className="rounded-2xl border border-border bg-card/80 p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <AlertTriangle className="w-4 h-4 text-destructive" />
+                  <h3 className="text-sm font-semibold text-foreground">Risks</h3>
+                </div>
+                <ul className="space-y-2.5">
+                  {result.risks.map((r, i) => (
+                    <li key={i} className="flex items-start gap-2.5 text-sm text-secondary-foreground">
+                      <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-destructive/50 shrink-0" />
                       {r}
                     </li>
-                )}
+                  ))}
                 </ul>
               </div>
 
-              {/* Outlook */}
-              <div className="rounded-xl border border-border bg-card p-5">
-                <h3 className="text-sm font-semibold font-['Space_Grotesk'] mb-3 flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-primary" /> Long-Term Outlook
-                </h3>
+              {/* Long-Term Outlook */}
+              <div className="rounded-2xl border border-border bg-card/80 p-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <TrendingUp className="w-4 h-4 text-muted-foreground" />
+                  <h3 className="text-sm font-semibold text-foreground">Long-Term Outlook</h3>
+                </div>
                 <p className="text-sm text-secondary-foreground leading-relaxed">{result.long_term_outlook}</p>
               </div>
 
               {/* Conclusion */}
-              <div className="rounded-xl border border-primary/20 bg-primary/5 p-5">
-                <h3 className="text-sm font-semibold font-['Space_Grotesk'] mb-2 flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-primary" /> Conclusion
-                </h3>
+              <div className="rounded-2xl border border-border bg-secondary/30 p-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <Shield className="w-4 h-4 text-muted-foreground" />
+                  <h3 className="text-sm font-semibold text-foreground">Conclusion</h3>
+                </div>
                 <p className="text-sm text-secondary-foreground leading-relaxed">{result.conclusion}</p>
               </div>
 
               {/* Disclaimer */}
-              <p className="text-xs text-muted-foreground text-center italic pt-2">
-                ⚠️ This analysis is AI-generated and not financial advice. Always do your own research.
+              <p className="text-[11px] text-muted-foreground text-center pt-2">
+                This analysis is AI-generated and not financial advice. Always do your own research.
               </p>
             </motion.div>
-          }
+          )}
         </AnimatePresence>
       </main>
 
-      {/* Auth Required Dialog */}
+      {/* Auth Dialog */}
       <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
         <DialogContent className="bg-card border-border">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 font-['Space_Grotesk']">
-               Sign In Required
-            </DialogTitle>
+            <DialogTitle className="font-['Space_Grotesk']">Sign In Required</DialogTitle>
             <DialogDescription>
-              You need to be signed in to use the AI comparison agent. Sign in or create an account to start analyzing DePIN projects.
+              Sign in to use the AI comparison agent and start analyzing DePIN projects.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:gap-0">
             <Button variant="outline" onClick={() => setShowAuthDialog(false)}>
               Cancel
             </Button>
-            <Button onClick={() => navigate(`/auth?redirect=/compare?a=${projectAId}&b=${projectBId}`)} className="bg-primary text-primary-foreground hover:bg-primary/90">
+            <Button onClick={() => navigate(`/auth?redirect=/compare?a=${projectAId}&b=${projectBId}`)} className="bg-foreground text-background hover:bg-foreground/90">
               <LogIn className="w-4 h-4 mr-2" /> Sign In
             </Button>
           </DialogFooter>
@@ -404,8 +440,8 @@ const CompareProjects = () => {
       </Dialog>
 
       <Footer />
-    </div>);
-
+    </div>
+  );
 };
 
 export default CompareProjects;
