@@ -13,9 +13,10 @@ import Footer from "@/components/Footer";
 import ProjectLogo from "@/components/ProjectLogo";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { ManageCategories, ManageBlockchains } from "@/components/admin/ManageCategories";
+import UsersList from "@/components/admin/UsersList";
 
-const CATEGORIES = ["Wireless", "Storage", "Compute", "Sensors", "Energy", "Mapping", "AI", "Mobility", "CDN", "VPN"];
-const BLOCKCHAINS = ["Solana", "Ethereum", "Polygon", "Cosmos", "IoTeX", "Polkadot", "Arbitrum", "Filecoin", "Arweave", "Custom"];
+import { useDynamicOptions } from "@/hooks/useDynamicOptions";
 
 type Submission = {
   id: string;
@@ -56,9 +57,10 @@ type Project = {
 const AdminDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { categories: CATEGORIES, blockchains: BLOCKCHAINS } = useDynamicOptions();
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<"submissions" | "projects">("projects");
+  const [tab, setTab] = useState<"projects" | "submissions" | "categories" | "users">("projects");
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [filter, setFilter] = useState<"pending" | "approved" | "rejected">("pending");
   const [projects, setProjects] = useState<Project[]>([]);
@@ -283,23 +285,23 @@ const AdminDashboard = () => {
             <p className="mb-6 text-muted-foreground">Manage projects and review submissions</p>
 
             {/* Main tabs */}
-            <div className="mb-6 flex gap-2 border-b border-border pb-4">
-              <button
-                onClick={() => setTab("projects")}
-                className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
-                  tab === "projects" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                All Projects ({projects.length})
-              </button>
-              <button
-                onClick={() => setTab("submissions")}
-                className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
-                  tab === "submissions" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Submissions
-              </button>
+            <div className="mb-6 flex flex-wrap gap-2 border-b border-border pb-4">
+              {([
+                { key: "projects", label: `All Projects (${projects.length})` },
+                { key: "submissions", label: "Submissions" },
+                { key: "categories", label: "Categories & Blockchains" },
+                { key: "users", label: "Users" },
+              ] as const).map((t) => (
+                <button
+                  key={t.key}
+                  onClick={() => setTab(t.key)}
+                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
+                    tab === t.key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ))}
             </div>
 
             {tab === "submissions" && (
@@ -559,6 +561,19 @@ const AdminDashboard = () => {
                 </div>
               </>
             )}
+
+            {tab === "categories" && (
+              <div className="grid gap-8 md:grid-cols-2">
+                <div className="rounded-xl border border-border bg-card p-5">
+                  <ManageCategories />
+                </div>
+                <div className="rounded-xl border border-border bg-card p-5">
+                  <ManageBlockchains />
+                </div>
+              </div>
+            )}
+
+            {tab === "users" && <UsersList />}
           </motion.div>
         </div>
       </div>
