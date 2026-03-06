@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Timer, ThumbsUp, ThumbsDown, Plus, TrendingUp, Clock, Flame, ChevronLeft, ChevronRight, LogIn } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -139,6 +139,7 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated }: {
 const Forecasts = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { data: projects = [] } = useProjects();
   const [sort, setSort] = useState<ForecastSortOption>("newest");
   const [page, setPage] = useState(1);
@@ -153,6 +154,18 @@ const Forecasts = () => {
   const [projectAId, setProjectAId] = useState("");
   const [projectBId, setProjectBId] = useState("");
   const [endDate, setEndDate] = useState("");
+
+  // Auto-open create dialog from compare page
+  useEffect(() => {
+    if (searchParams.get("create") === "true" && user) {
+      setShowCreate(true);
+      const a = searchParams.get("a");
+      const b = searchParams.get("b");
+      if (a) setProjectAId(a);
+      if (b) setProjectBId(b);
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, user]);
 
   const forecasts = data?.forecasts || [];
   const total = data?.total || 0;
@@ -189,7 +202,7 @@ const Forecasts = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
 
       {/* Hero */}
@@ -239,7 +252,7 @@ const Forecasts = () => {
       </section>
 
       {/* Forecast Grid */}
-      <section className="container mx-auto px-4 py-8 pb-20">
+      <section className="container mx-auto px-4 py-8 flex-1">
         {isLoading ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
@@ -324,9 +337,18 @@ const Forecasts = () => {
                   <SelectTrigger className="mt-1">
                     <SelectValue placeholder="Select project" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent position="popper" side="bottom" sideOffset={4}>
                     {projects.map((p) => (
-                      <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                      <SelectItem key={p.id} value={p.id}>
+                        <span className="flex items-center gap-2">
+                          {p.logo_url ? (
+                            <img src={p.logo_url} alt={p.name} className="w-5 h-5 rounded object-contain" />
+                          ) : (
+                            <span className="w-5 h-5 flex items-center justify-center text-sm">{p.logo_emoji}</span>
+                          )}
+                          {p.name}
+                        </span>
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -337,10 +359,19 @@ const Forecasts = () => {
                   <SelectTrigger className="mt-1">
                     <SelectValue placeholder="Select project" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent position="popper" side="bottom" sideOffset={4}>
                     <SelectItem value="none">None</SelectItem>
                     {projects.filter((p) => p.id !== projectAId).map((p) => (
-                      <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                      <SelectItem key={p.id} value={p.id}>
+                        <span className="flex items-center gap-2">
+                          {p.logo_url ? (
+                            <img src={p.logo_url} alt={p.name} className="w-5 h-5 rounded object-contain" />
+                          ) : (
+                            <span className="w-5 h-5 flex items-center justify-center text-sm">{p.logo_emoji}</span>
+                          )}
+                          {p.name}
+                        </span>
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
