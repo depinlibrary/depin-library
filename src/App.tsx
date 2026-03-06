@@ -15,6 +15,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import Portfolio from "./pages/Portfolio";
 import MarketOverview from "./pages/MarketOverview";
 import CompareProjects from "./pages/CompareProjects";
+import Forecasts from "./pages/Forecasts";
 import NotFound from "./pages/NotFound";
 import ScrollToTop from "./components/ScrollToTop";
 
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/market" element={<MarketOverview />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/compare" element={<CompareProjects />} />
+            <Route path="/forecasts" element={<Forecasts />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

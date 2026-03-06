@@ -97,6 +97,98 @@ export type Database = {
         }
         Relationships: []
       }
+      forecast_votes: {
+        Row: {
+          confidence_level: number | null
+          created_at: string
+          forecast_id: string
+          id: string
+          user_id: string
+          vote: string
+        }
+        Insert: {
+          confidence_level?: number | null
+          created_at?: string
+          forecast_id: string
+          id?: string
+          user_id: string
+          vote: string
+        }
+        Update: {
+          confidence_level?: number | null
+          created_at?: string
+          forecast_id?: string
+          id?: string
+          user_id?: string
+          vote?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forecast_votes_forecast_id_fkey"
+            columns: ["forecast_id"]
+            isOneToOne: false
+            referencedRelation: "forecasts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forecasts: {
+        Row: {
+          created_at: string
+          creator_user_id: string
+          description: string
+          end_date: string
+          id: string
+          project_a_id: string
+          project_b_id: string | null
+          status: string
+          title: string
+          total_votes_no: number
+          total_votes_yes: number
+        }
+        Insert: {
+          created_at?: string
+          creator_user_id: string
+          description?: string
+          end_date: string
+          id?: string
+          project_a_id: string
+          project_b_id?: string | null
+          status?: string
+          title: string
+          total_votes_no?: number
+          total_votes_yes?: number
+        }
+        Update: {
+          created_at?: string
+          creator_user_id?: string
+          description?: string
+          end_date?: string
+          id?: string
+          project_a_id?: string
+          project_b_id?: string | null
+          status?: string
+          title?: string
+          total_votes_no?: number
+          total_votes_yes?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forecasts_project_a_id_fkey"
+            columns: ["project_a_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forecasts_project_b_id_fkey"
+            columns: ["project_b_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       portfolio_holdings: {
         Row: {
           created_at: string
@@ -207,6 +299,85 @@ export type Database = {
           },
         ]
       }
+      project_ratings: {
+        Row: {
+          adoption_rating: number
+          created_at: string
+          hardware_rating: number
+          id: string
+          project_id: string
+          tokenomics_rating: number
+          updated_at: string
+          user_id: string
+          utility_rating: number
+        }
+        Insert: {
+          adoption_rating: number
+          created_at?: string
+          hardware_rating: number
+          id?: string
+          project_id: string
+          tokenomics_rating: number
+          updated_at?: string
+          user_id: string
+          utility_rating: number
+        }
+        Update: {
+          adoption_rating?: number
+          created_at?: string
+          hardware_rating?: number
+          id?: string
+          project_id?: string
+          tokenomics_rating?: number
+          updated_at?: string
+          user_id?: string
+          utility_rating?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_ratings_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_sentiment: {
+        Row: {
+          bearish_votes: number
+          bullish_percentage: number
+          bullish_votes: number
+          project_id: string
+          total_votes: number
+          updated_at: string
+        }
+        Insert: {
+          bearish_votes?: number
+          bullish_percentage?: number
+          bullish_votes?: number
+          project_id: string
+          total_votes?: number
+          updated_at?: string
+        }
+        Update: {
+          bearish_votes?: number
+          bullish_percentage?: number
+          bullish_votes?: number
+          project_id?: string
+          total_votes?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_sentiment_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_submissions: {
         Row: {
           blockchain: string
@@ -260,6 +431,32 @@ export type Database = {
           website?: string
         }
         Relationships: []
+      }
+      project_trending_scores: {
+        Row: {
+          project_id: string
+          score: number
+          updated_at: string
+        }
+        Insert: {
+          project_id: string
+          score?: number
+          updated_at?: string
+        }
+        Update: {
+          project_id?: string
+          score?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_trending_scores_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       projects: {
         Row: {
@@ -468,6 +665,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      update_project_sentiment: {
+        Args: { p_project_id: string }
+        Returns: undefined
       }
     }
     Enums: {

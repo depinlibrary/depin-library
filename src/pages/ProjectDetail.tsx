@@ -4,10 +4,12 @@ import { ArrowLeft, ExternalLink, Globe, Layers, Coins, Calendar, Activity, Star
 import { useProject } from "@/hooks/useProjects";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBookmarks, useToggleBookmark } from "@/hooks/useBookmarks";
-import ReviewSection from "@/components/ReviewSection";
+import ProjectRatings from "@/components/ProjectRatings";
+import SentimentBadge from "@/components/SentimentBadge";
 import ProjectLogo from "@/components/ProjectLogo";
 import TokenPriceBadge from "@/components/TokenPriceBadge";
 import { useTokenMarketData } from "@/hooks/useTokenMarketData";
+import { useProjectRatings } from "@/hooks/useProjectRatings";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -24,6 +26,7 @@ const ProjectDetail = () => {
   const { data: marketData } = useTokenMarketData(project?.id);
   const { data: bookmarks = [] } = useBookmarks();
   const toggleBookmark = useToggleBookmark();
+  const { data: ratingsData } = useProjectRatings(project?.id || "");
 
   if (isLoading) {
     return (
@@ -50,6 +53,7 @@ const ProjectDetail = () => {
   }
 
   const isBookmarked = bookmarks.includes(project.id);
+  const overallRating = ratingsData?.averages?.overall;
 
   const details = [
     { icon: Layers, label: "Category", value: project.category },
@@ -79,11 +83,11 @@ const ProjectDetail = () => {
               <div className="flex-1">
                 <div className="flex items-center gap-3">
                   <h1 className="text-3xl font-bold text-foreground">{project.name}</h1>
-                  {project.avg_rating && (
+                  {overallRating && overallRating > 0 && (
                     <span className="flex items-center gap-1 rounded-lg border border-primary/30 bg-primary/10 px-2 py-1 text-sm font-semibold text-primary">
                       <Star className="h-3.5 w-3.5 fill-primary" />
-                      {project.avg_rating.toFixed(1)}
-                      <span className="text-xs text-muted-foreground font-normal">({project.review_count})</span>
+                      {overallRating.toFixed(1)}
+                      <span className="text-xs text-muted-foreground font-normal">({ratingsData?.averages?.count})</span>
                     </span>
                   )}
                   {user && (
@@ -148,8 +152,14 @@ const ProjectDetail = () => {
             <p className="text-sm leading-relaxed text-muted-foreground">{project.description}</p>
           </motion.div>
 
+          {/* Sentiment */}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="mb-8">
+            <SentimentBadge projectId={project.id} projectName={project.name} />
+          </motion.div>
+
+          {/* Structured Ratings */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-            <ReviewSection projectId={project.id} projectName={project.name} />
+            <ProjectRatings projectId={project.id} projectName={project.name} />
           </motion.div>
         </div>
       </div>
