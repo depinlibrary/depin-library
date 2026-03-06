@@ -419,6 +419,22 @@ const CompareProjects = () => {
                 </div>
               )}
 
+              {/* Create Forecast from comparison */}
+              {user && projectA && projectB && (
+                <div className="rounded-2xl border border-primary/20 bg-primary/5 p-6 text-center">
+                  <h3 className="text-sm font-semibold text-foreground mb-2">Have a prediction based on this analysis?</h3>
+                  <p className="text-xs text-muted-foreground mb-4 max-w-md mx-auto">
+                    Create a community forecast about {projectA.name} vs {projectB.name} and let others vote on the outcome.
+                  </p>
+                  <Button
+                    onClick={() => navigate(`/forecasts?create=true&a=${projectAId}&b=${projectBId}`)}
+                    className="gap-2"
+                  >
+                    <TrendingUp className="w-4 h-4" /> Create Forecast
+                  </Button>
+                </div>
+              )}
+
               {/* Disclaimer */}
               <p className="text-[11px] text-muted-foreground text-center pt-2">
                 This analysis is AI-generated and not financial advice. Always do your own research.
