@@ -6,6 +6,7 @@ import {
   BarChart3,
   GitCompare,
   Briefcase,
+  TrendingUp,
   Wifi,
   HardDrive,
   Cpu,
@@ -20,6 +21,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProjectLogo from "@/components/ProjectLogo";
 import { useProjects } from "@/hooks/useProjects";
+import { useTopSentiments, useTrendingProjects } from "@/hooks/useSentiment";
 import { CATEGORIES } from "@/data/projects";
 import type { Category } from "@/data/projects";
 
@@ -38,35 +40,17 @@ const categoryIcons: Record<Category, React.ElementType> = {
 
 const Overview = () => {
   const { data: projects = [] } = useProjects();
+  const { data: topSentiments = [] } = useTopSentiments(6);
+  const { data: trendingProjects = [] } = useTrendingProjects(5);
 
   const quickLinks = [
-    {
-      title: "Explore Projects",
-      description: "Browse, search, and filter the full DePIN project directory.",
-      icon: Layers,
-      to: "/explore",
-    },
-    {
-      title: "Market Overview",
-      description: "Track token prices, market caps, and 24h trends across the ecosystem.",
-      icon: BarChart3,
-      to: "/market",
-    },
-    {
-      title: "Compare Projects",
-      description: "Side-by-side AI-powered comparison of any two DePIN projects.",
-      icon: GitCompare,
-      to: "/compare",
-    },
-    {
-      title: "Portfolio",
-      description: "Track your DePIN holdings, allocation, and performance over time.",
-      icon: Briefcase,
-      to: "/portfolio",
-    },
+    { title: "Explore Projects", description: "Browse, search, and filter the full DePIN project directory.", icon: Layers, to: "/explore" },
+    { title: "Market Overview", description: "Track token prices, market caps, and 24h trends across the ecosystem.", icon: BarChart3, to: "/market" },
+    { title: "Compare Projects", description: "Side-by-side AI-powered comparison of any two DePIN projects.", icon: GitCompare, to: "/compare" },
+    { title: "Forecasts", description: "Community predictions and voting on the future of DePIN projects.", icon: TrendingUp, to: "/forecasts" },
+    { title: "Portfolio", description: "Track your DePIN holdings, allocation, and performance over time.", icon: Briefcase, to: "/portfolio" },
   ];
 
-  // Top 6 categories — swap Energy for AI
   const topCategoryNames: Category[] = ["Wireless", "Storage", "Compute", "Sensors", "AI", "Mapping"];
   const topCategories = topCategoryNames.map((name) => ({
     name,
@@ -74,7 +58,6 @@ const Overview = () => {
     Icon: categoryIcons[name],
   }));
 
-  // Recently added projects (newest 6)
   const recentProjects = [...projects]
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, 6);
@@ -87,43 +70,24 @@ const Overview = () => {
       <section className="relative overflow-hidden pt-32 pb-20">
         <div className="absolute inset-0 bg-grid opacity-40" />
         <div className="gradient-radial-top absolute inset-0" />
-
         <div className="container relative mx-auto px-4 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
-          >
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-secondary/50 px-4 py-1.5">
               <span className="h-1.5 w-1.5 animate-pulse-glow rounded-full bg-primary" />
-              <span className="text-xs font-medium text-muted-foreground">
-                DePIN Indexed
-              </span>
+              <span className="text-xs font-medium text-muted-foreground">DePIN Intelligence Hub</span>
             </div>
-
             <h1 className="mx-auto max-w-3xl text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl md:text-6xl">
               The{" "}
               <span className="text-glow text-primary">DePIN</span>{" "}
               Ecosystem at a Glance
             </h1>
-
             <p className="mx-auto mt-5 max-w-xl text-base text-muted-foreground sm:text-lg">
               Your central hub to explore, compare, and understand Decentralized
               Physical Infrastructure Networks — all in one place.
             </p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="mt-8"
-            >
-              <Link
-                to="/explore"
-                className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-              >
-                Explore Projects
-                <ArrowRight className="h-4 w-4" />
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="mt-8">
+              <Link to="/explore" className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90">
+                Explore Projects <ArrowRight className="h-4 w-4" />
               </Link>
             </motion.div>
           </motion.div>
@@ -133,26 +97,16 @@ const Overview = () => {
       {/* Quick Links */}
       <section className="container mx-auto px-4 pb-16">
         <h2 className="mb-6 text-xl font-semibold text-foreground">Quick Access</h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {quickLinks.map((link, i) => (
-            <motion.div
-              key={link.title}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 + i * 0.08 }}
-            >
-              <Link
-                to={link.to}
-                className="group flex flex-col gap-3 rounded-xl border border-border bg-card p-5 transition-all hover:border-border hover:shadow-lg hover:shadow-background/10"
-              >
+            <motion.div key={link.title} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 + i * 0.08 }}>
+              <Link to={link.to} className="group flex flex-col gap-3 rounded-xl border border-border bg-card p-5 transition-all hover:border-border hover:shadow-lg hover:shadow-background/10">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary/15">
                   <link.icon className="h-5 w-5" />
                 </div>
                 <div>
                   <h3 className="font-medium text-foreground">{link.title}</h3>
-                  <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
-                    {link.description}
-                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{link.description}</p>
                 </div>
                 <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-foreground" />
               </Link>
@@ -161,29 +115,73 @@ const Overview = () => {
         </div>
       </section>
 
+      {/* Community Sentiment */}
+      {topSentiments.length > 0 && (
+        <section className="container mx-auto px-4 pb-16">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-foreground">DePIN Community Sentiment</h2>
+            <Link to="/forecasts" className="text-xs font-medium text-primary hover:underline">View forecasts →</Link>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {topSentiments.map((s, i) => {
+              const bearPct = 100 - s.bullish_percentage;
+              return (
+                <motion.div key={s.project_id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + i * 0.05 }}>
+                  <Link to={`/project/${s.project_slug}`} className="group block rounded-xl border border-border bg-card p-4 transition-all hover:border-border hover:shadow-md">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-semibold text-foreground">{s.project_name}</span>
+                      <span className={`text-xs font-bold ${s.bullish_percentage >= 50 ? "text-green-400" : "text-red-400"}`}>
+                        {s.bullish_percentage.toFixed(0)}% {s.bullish_percentage >= 50 ? "Bullish" : "Bearish"}
+                      </span>
+                    </div>
+                    <div className="h-2 rounded-full bg-secondary overflow-hidden flex">
+                      <div className="h-full bg-green-500" style={{ width: `${s.bullish_percentage}%` }} />
+                      <div className="h-full bg-red-500" style={{ width: `${bearPct}%` }} />
+                    </div>
+                    <p className="mt-1.5 text-[10px] text-muted-foreground">{s.total_votes} votes</p>
+                  </Link>
+                </motion.div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* Trending Projects */}
+      {trendingProjects.length > 0 && (
+        <section className="container mx-auto px-4 pb-16">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-primary" /> Trending Projects
+            </h2>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            {trendingProjects.map((project: any, i: number) => (
+              <motion.div key={project.id} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + i * 0.06 }}>
+                <Link to={`/project/${project.slug}`} className="group flex items-start gap-3 rounded-xl border border-border bg-card p-4 transition-all hover:border-border hover:shadow-md">
+                  <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="sm" />
+                  <div className="min-w-0">
+                    <h3 className="font-medium text-foreground truncate text-sm">{project.name}</h3>
+                    <p className="text-[10px] text-muted-foreground truncate">{project.tagline}</p>
+                    <span className="mt-1 inline-block rounded-full bg-secondary px-2 py-0.5 text-[10px] text-muted-foreground">{project.category}</span>
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Top Categories */}
       <section className="container mx-auto px-4 pb-16">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold text-foreground">Top Categories</h2>
-          <Link
-            to="/explore"
-            className="text-xs font-medium text-primary hover:underline"
-          >
-            View all →
-          </Link>
+          <Link to="/explore" className="text-xs font-medium text-primary hover:underline">View all →</Link>
         </div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
           {topCategories.map((cat, i) => (
-            <motion.div
-              key={cat.name}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.5 + i * 0.05 }}
-            >
-              <Link
-                to={`/explore?category=${cat.name}`}
-                className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 text-center transition-all hover:border-primary/40 hover:shadow-md hover:shadow-primary/5"
-              >
+            <motion.div key={cat.name} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.5 + i * 0.05 }}>
+              <Link to={`/explore?category=${cat.name}`} className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 text-center transition-all hover:border-primary/40 hover:shadow-md hover:shadow-primary/5">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                   <cat.Icon className="h-5 w-5" />
                 </div>
@@ -194,44 +192,23 @@ const Overview = () => {
         </div>
       </section>
 
-      {/* Recently Added Projects */}
+      {/* Recently Added */}
       <section className="container mx-auto px-4 pb-20">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold text-foreground">Recently Added</h2>
-          <Link
-            to="/explore?sort=newest"
-            className="text-xs font-medium text-primary hover:underline"
-          >
-            View all →
-          </Link>
+          <Link to="/explore?sort=newest" className="text-xs font-medium text-primary hover:underline">View all →</Link>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {recentProjects.map((project, i) => (
-            <motion.div
-              key={project.id}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 + i * 0.06 }}
-            >
-              <Link
-                to={`/project/${project.slug}`}
-                className="group flex items-start gap-4 rounded-xl border border-border bg-card p-4 transition-all hover:border-border hover:shadow-md hover:shadow-background/10"
-              >
+            <motion.div key={project.id} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + i * 0.06 }}>
+              <Link to={`/project/${project.slug}`} className="group flex items-start gap-4 rounded-xl border border-border bg-card p-4 transition-all hover:border-border hover:shadow-md hover:shadow-background/10">
                 <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="sm" />
                 <div className="min-w-0">
-                  <h3 className="font-medium text-foreground group-hover:text-foreground transition-colors truncate">
-                    {project.name}
-                  </h3>
-                  <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">
-                    {project.tagline}
-                  </p>
+                  <h3 className="font-medium text-foreground group-hover:text-foreground transition-colors truncate">{project.name}</h3>
+                  <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{project.tagline}</p>
                   <div className="mt-2 flex items-center gap-2">
-                    <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                      {project.category}
-                    </span>
-                    <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                      {project.blockchain}
-                    </span>
+                    <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-medium text-muted-foreground">{project.category}</span>
+                    <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-medium text-muted-foreground">{project.blockchain}</span>
                   </div>
                 </div>
               </Link>

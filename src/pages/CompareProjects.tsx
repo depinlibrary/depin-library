@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bot, ArrowRightLeft, Sparkles, Database, AlertTriangle, Shield, TrendingUp, Zap, Loader2, Flame, LogIn } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import SentimentBadge from "@/components/SentimentBadge";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProjectLogo from "@/components/ProjectLogo";
@@ -409,6 +410,14 @@ const CompareProjects = () => {
                 </div>
                 <p className="text-sm text-secondary-foreground leading-relaxed">{result.conclusion}</p>
               </div>
+
+              {/* Sentiment Side-by-Side */}
+              {projectA && projectB && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <SentimentBadge projectId={projectA.id} projectName={projectA.name} />
+                  <SentimentBadge projectId={projectB.id} projectName={projectB.name} />
+                </div>
+              )}
 
               {/* Disclaimer */}
               <p className="text-[11px] text-muted-foreground text-center pt-2">

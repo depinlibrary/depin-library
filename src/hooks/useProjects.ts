@@ -33,15 +33,16 @@ export function useProjects() {
       
       if (error) throw error;
 
-      // Fetch review stats
-      const { data: reviews } = await supabase
-        .from("reviews")
-        .select("project_id, rating");
+      // Fetch structured rating stats
+      const { data: ratings } = await supabase
+        .from("project_ratings")
+        .select("project_id, utility_rating, tokenomics_rating, adoption_rating, hardware_rating");
 
       const statsMap: Record<string, { total: number; count: number }> = {};
-      (reviews || []).forEach((r: any) => {
+      (ratings || []).forEach((r: any) => {
         if (!statsMap[r.project_id]) statsMap[r.project_id] = { total: 0, count: 0 };
-        statsMap[r.project_id].total += r.rating;
+        const avg = (r.utility_rating + r.tokenomics_rating + r.adoption_rating + r.hardware_rating) / 4;
+        statsMap[r.project_id].total += avg;
         statsMap[r.project_id].count += 1;
       });
 
@@ -67,17 +68,23 @@ export function useProject(slug: string) {
       if (error) throw error;
       if (!data) return null;
 
-      const { data: reviews } = await supabase
-        .from("reviews")
-        .select("rating")
+      const { data: ratings } = await supabase
+        .from("project_ratings")
+        .select("utility_rating, tokenomics_rating, adoption_rating, hardware_rating")
         .eq("project_id", data.id);
 
-      const count = reviews?.length || 0;
-      const total = (reviews || []).reduce((sum: number, r: any) => sum + r.rating, 0);
+      const count = ratings?.length || 0;
+      let avgRating: number | undefined;
+      if (count > 0) {
+        const total = ratings!.reduce((sum: number, r: any) => {
+          return sum + (r.utility_rating + r.tokenomics_rating + r.adoption_rating + r.hardware_rating) / 4;
+        }, 0);
+        avgRating = total / count;
+      }
 
       return {
         ...data,
-        avg_rating: count > 0 ? total / count : undefined,
+        avg_rating: avgRating,
         review_count: count,
       } as Project;
     },
