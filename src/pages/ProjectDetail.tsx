@@ -201,7 +201,7 @@ const ProjectDetail = () => {
                   className="rounded-xl border border-border bg-card p-5">
                   <h3 className="mb-3 text-sm font-semibold text-foreground">7d Price Trend</h3>
                   <div className="h-16">
-                    <Sparkline data={sparkline as number[]} color={
+                    <Sparkline data={(sparkline as number[]).map(v => ({ count: v }))} color={
                       (marketData?.price_change_24h ?? 0) >= 0
                         ? "hsl(var(--neon-green))"
                         : "hsl(var(--destructive))"
