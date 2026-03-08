@@ -95,6 +95,10 @@ export function useForecasts(sort: ForecastSortOption = "newest", page = 1, page
         project_b_name: f.project_b_id ? projectMap[f.project_b_id]?.name || "Unknown" : null,
         project_a_slug: projectMap[f.project_a_id]?.slug,
         project_b_slug: f.project_b_id ? projectMap[f.project_b_id]?.slug : null,
+        project_a_logo_url: projectMap[f.project_a_id]?.logo_url,
+        project_a_logo_emoji: projectMap[f.project_a_id]?.logo_emoji || "⬡",
+        project_b_logo_url: f.project_b_id ? projectMap[f.project_b_id]?.logo_url : null,
+        project_b_logo_emoji: f.project_b_id ? projectMap[f.project_b_id]?.logo_emoji || "⬡" : "⬡",
         user_vote: userVotes[f.id] || null,
       }));
 
