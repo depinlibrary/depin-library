@@ -13,6 +13,7 @@ import {
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProjectLogo from "@/components/ProjectLogo";
+import TokenPriceBadge from "@/components/TokenPriceBadge";
 import BillboardHero from "@/components/BillboardHero";
 import { useProjects } from "@/hooks/useProjects";
 import { useAllTokenMarketData } from "@/hooks/useTokenMarketData";
