@@ -518,7 +518,7 @@ const BillboardHero = ({
                         </div>
 
                         {/* Title */}
-                        <p className="text-[11px] font-semibold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">{f.title}</p>
+                        <p className="text-xs font-semibold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">{f.title}</p>
 
                         {/* Vote bar with labels */}
                         <div className="mt-auto space-y-1.5">
