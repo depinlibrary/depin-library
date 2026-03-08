@@ -30,7 +30,8 @@ import {
 import { format, formatDistanceToNow } from "date-fns";
 
 const Profile = () => {
-  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+  const { user, loading: authLoading, signOut } = useAuth();
   const { avatarUrl, displayName, uploading, uploadAvatar, updateDisplayName } = useAvatar();
   const { data: forecastStats, isLoading: statsLoading } = useUserForecastStats(user?.id);
   const { data: bookmarks } = useBookmarks();
