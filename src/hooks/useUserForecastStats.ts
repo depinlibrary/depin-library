@@ -6,6 +6,7 @@ export type VoteHistoryItem = {
   forecast_title: string;
   project_name: string;
   project_logo_emoji: string;
+  project_logo_url: string | null;
   vote: string;
   voted_at: string;
   end_date: string;
