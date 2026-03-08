@@ -585,6 +585,13 @@ const AdminDashboard = () => {
                 <DeletionRequests />
               </div>
             )}
+
+            {tab === "spotlight" && (
+              <div className="rounded-xl border border-border bg-card p-5">
+                <h3 className="mb-4 text-lg font-semibold text-foreground">Manage Spotlight Projects</h3>
+                <ManageSpotlight />
+              </div>
+            )}
           </motion.div>
         </div>
       </div>
