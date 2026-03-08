@@ -811,6 +811,7 @@ const Portfolio = () => {
             <div className="flex items-center gap-1 rounded-lg bg-secondary/40 p-0.5">
               {([
                 { key: "holdings" as const, label: "Holdings", icon: Wallet },
+                { key: "alerts" as const, label: "Price Alerts", icon: Bell },
                 { key: "forecasts" as const, label: "My Forecasts", icon: Activity },
               ]).map((tab) => (
                 <button
