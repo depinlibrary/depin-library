@@ -278,7 +278,11 @@ const Profile = () => {
                         to={`/forecasts/${item.forecast_id}`}
                         className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors group"
                       >
-                        <span className="text-lg shrink-0">{item.project_logo_emoji}</span>
+                        {item.project_logo_url ? (
+                          <img src={item.project_logo_url} alt={item.project_name} className="w-8 h-8 rounded-lg object-contain bg-secondary shrink-0" />
+                        ) : (
+                          <span className="w-8 h-8 rounded-lg flex items-center justify-center text-base bg-secondary shrink-0">{item.project_logo_emoji}</span>
+                        )}
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors">
                             {item.forecast_title}

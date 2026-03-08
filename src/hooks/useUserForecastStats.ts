@@ -88,6 +88,7 @@ export function useUserForecastStats(userId: string | undefined) {
           forecast_title: f?.title || "Unknown",
           project_name: project?.name || "Unknown",
           project_logo_emoji: project?.logo_emoji || "⬡",
+          project_logo_url: project?.logo_url || null,
           vote: v.vote,
           voted_at: v.created_at,
           end_date: f?.end_date || "",
