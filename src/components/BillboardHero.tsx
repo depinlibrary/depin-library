@@ -333,7 +333,7 @@ const BillboardHero = ({
                   <p className={`text-lg font-bold font-['Space_Grotesk'] tabular-nums leading-tight ${avgChange >= 0 ? "text-neon-green" : "text-destructive"}`}>
                     {avgChange >= 0 ? "+" : ""}{avgChange.toFixed(1)}%
                   </p>
-                  <p className="text-[9px] text-muted-foreground font-medium">Avg 24h</p>
+                  <p className="text-[10px] text-muted-foreground font-medium">Avg 24h</p>
                 </div>
               </div>
 
