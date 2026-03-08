@@ -125,47 +125,13 @@ const Notifications = () => {
         </div>
 
         {/* Filters */}
-        <div className="flex items-center gap-3 mb-6">
-          <div className="flex items-center gap-2 rounded-lg border border-border p-1">
-            <button
-              onClick={() => setFilter("all")}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                filter === "all"
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              All
-            </button>
-            <button
-              onClick={() => setFilter("unread")}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                filter === "unread"
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Unread
-            </button>
-          </div>
-
-          {notificationTypes.length > 1 && (
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-40 h-9">
-                <Filter className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
-                <SelectValue placeholder="All types" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All types</SelectItem>
-                {notificationTypes.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {notificationTypeLabels[type] || type}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-        </div>
+        <NotificationFilters
+          filter={filter}
+          typeFilter={typeFilter}
+          notificationTypes={notificationTypes}
+          onFilterChange={handleFilterChange}
+          onTypeFilterChange={handleTypeFilterChange}
+        />
 
         {/* Notifications list */}
         {isLoading ? (
