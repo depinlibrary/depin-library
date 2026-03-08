@@ -287,7 +287,7 @@ const Profile = () => {
                       <Link
                         key={item.forecast_id + item.voted_at}
                         to={`/forecasts/${item.forecast_id}`}
-                        className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors group"
+                        className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 transition-colors group"
                       >
                         {item.project_logo_url ? (
                           <img src={item.project_logo_url} alt={item.project_name} className="w-8 h-8 rounded-lg object-contain bg-secondary shrink-0" />
