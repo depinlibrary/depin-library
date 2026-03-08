@@ -129,9 +129,28 @@ const Overview = () => {
                 >
                   <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="sm" />
                   <div className="min-w-0 flex-1">
-                    <h3 className="font-semibold text-foreground text-sm group-hover:text-foreground transition-colors truncate">
-                      {project.name}
-                    </h3>
+                    <div className="flex items-center justify-between gap-2">
+                      <h3 className="font-semibold text-foreground text-sm group-hover:text-foreground transition-colors truncate">
+                        {project.name}
+                      </h3>
+                      {marketData[project.id]?.price_usd && (
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span className="text-xs font-semibold text-foreground tabular-nums">
+                            {marketData[project.id].price_usd! >= 1
+                              ? `$${marketData[project.id].price_usd!.toFixed(2)}`
+                              : marketData[project.id].price_usd! >= 0.01
+                                ? `$${marketData[project.id].price_usd!.toFixed(4)}`
+                                : `$${marketData[project.id].price_usd!.toFixed(6)}`}
+                          </span>
+                          {marketData[project.id]?.price_change_24h !== null && (
+                            <span className={`text-[10px] font-bold tabular-nums ${(marketData[project.id]?.price_change_24h || 0) >= 0 ? "text-neon-green" : "text-destructive"}`}>
+                              {(marketData[project.id]?.price_change_24h || 0) >= 0 ? "+" : ""}
+                              {(marketData[project.id]?.price_change_24h || 0).toFixed(1)}%
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
                     <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2 leading-relaxed">{project.tagline}</p>
                     <div className="mt-2.5 flex items-center gap-2">
                       <span className="rounded-full bg-secondary px-2.5 py-0.5 text-[10px] font-medium text-muted-foreground">
