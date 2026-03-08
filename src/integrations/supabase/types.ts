@@ -953,6 +953,35 @@ export type Database = {
           },
         ]
       }
+      spotlight_projects: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          project_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          project_id: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          project_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spotlight_projects_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       token_market_data: {
         Row: {
           created_at: string
