@@ -221,7 +221,7 @@ const Overview = () => {
           <motion.div initial="hidden" animate="visible" variants={stagger}>
             <motion.div variants={fadeUp} className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <h2 className="text-xl font-semibold text-foreground font-['Space_Grotesk']">Ending Soon</h2>
+                <h2 className="text-xl font-semibold text-foreground font-['Space_Grotesk']">Forecasts Ending Soon</h2>
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-destructive" />
