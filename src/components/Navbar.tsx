@@ -513,7 +513,7 @@ const Navbar = () => {
                                 value={nameInput}
                                 onChange={(e) => setNameInput(e.target.value.slice(0, 50))}
                                 onKeyDown={(e) => { if (e.key === "Escape") setEditingName(false); }}
-                                className="w-full bg-secondary/50 border border-border rounded px-1.5 py-0.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
+                                className="w-full bg-secondary/50 border border-border rounded px-1.5 py-0.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-border"
                                 maxLength={50}
                               />
                               <button type="submit" className="shrink-0 p-0.5 rounded hover:bg-primary/15 transition-colors">

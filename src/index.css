@@ -246,8 +246,8 @@ body {
 }
 .focus-ring-animate:focus,
 .focus-ring-animate:focus-within {
-  border-color: hsl(var(--ring));
-  box-shadow: 0 0 0 3px hsl(var(--ring) / 0.15);
+  border-color: hsl(var(--border));
+  box-shadow: 0 0 0 3px hsl(var(--foreground) / 0.06);
 }
 
 /* Smooth tab indicator */
