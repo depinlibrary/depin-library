@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -10,8 +10,11 @@ const Navbar = () => {
   const { user, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isAdmin, setIsAdmin] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  
+  const isMarketActive = location.pathname === "/market" || location.pathname === "/forecasts";
 
   useEffect(() => {
     if (!user) { setIsAdmin(false); return; }
@@ -76,14 +79,23 @@ const Navbar = () => {
             </Link>
           ))}
           {/* Market mega dropdown */}
-          <div className="relative" ref={marketDropdownRef}>
-            <button
-              onClick={() => setMarketDropdownOpen((v) => !v)}
-              className="flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
-            >
-              Market
-              <ChevronDown className={`h-3.5 w-3.5 transition-transform ${marketDropdownOpen ? "rotate-180" : ""}`} />
-            </button>
+           <div 
+             className="relative" 
+             ref={marketDropdownRef}
+             onMouseEnter={() => setMarketDropdownOpen(true)}
+             onMouseLeave={() => setMarketDropdownOpen(false)}
+           >
+             <button
+               onClick={() => setMarketDropdownOpen((v) => !v)}
+               className={`flex items-center gap-1 text-sm transition-colors ${
+                 isMarketActive 
+                   ? "text-primary font-medium" 
+                   : "text-muted-foreground hover:text-foreground"
+               }`}
+             >
+               Market
+               <ChevronDown className={`h-3.5 w-3.5 transition-transform ${marketDropdownOpen ? "rotate-180" : ""}`} />
+             </button>
             <AnimatePresence>
               {marketDropdownOpen && (
                 <motion.div
