@@ -1,0 +1,1 @@
+ALTER TABLE public.reviews DROP CONSTRAINT reviews_rating_check;
