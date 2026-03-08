@@ -1,0 +1,1 @@
+ALTER TABLE notification_preferences ADD COLUMN IF NOT EXISTS forecast_vote boolean NOT NULL DEFAULT true;

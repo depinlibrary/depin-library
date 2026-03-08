@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-
+import { createNotification } from "@/hooks/useNotifications";
 export type Forecast = {
   id: string;
   title: string;
@@ -176,6 +176,34 @@ export function useVoteForecast() {
         { onConflict: "forecast_id,user_id" }
       );
       if (error) throw error;
+
+      // Notify forecast creator
+      const { data: forecast } = await supabase
+        .from("forecasts")
+        .select("creator_user_id, title")
+        .eq("id", forecastId)
+        .single();
+
+      if (forecast && forecast.creator_user_id !== user.id) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("display_name")
+          .eq("user_id", user.id)
+          .single();
+
+        const voterName = profile?.display_name || "Someone";
+        const voteLabel = vote === "yes" ? "Yes" : "No";
+
+        await createNotification({
+          userId: forecast.creator_user_id,
+          type: "forecast_vote",
+          title: "New vote on your forecast",
+          message: `${voterName} voted "${voteLabel}" on "${forecast.title.slice(0, 50)}${forecast.title.length > 50 ? "..." : ""}"`,
+          link: `/forecasts/${forecastId}`,
+          metadata: { forecastId, vote },
+        });
+      }
+
       return forecastId;
     },
     onSuccess: (forecastId) => {

@@ -9,6 +9,7 @@ export type NotificationPreferences = {
   forecast_comment_like: boolean;
   forecast_new_comment: boolean;
   review_like: boolean;
+  forecast_vote: boolean;
   created_at: string;
   updated_at: string;
 };
@@ -18,6 +19,7 @@ const DEFAULT_PREFS = {
   forecast_comment_like: true,
   forecast_new_comment: true,
   review_like: true,
+  forecast_vote: true,
 };
 
 export function useNotificationPreferences() {
