@@ -429,8 +429,6 @@ const BillboardHero = ({
         </motion.div>
       </div>
 
-      {/* Live Price Ticker */}
-      <PriceTicker projects={projects} marketData={marketData} />
     </section>
   );
 };
