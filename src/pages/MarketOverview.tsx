@@ -465,8 +465,8 @@ const MarketOverview = () => {
         >
           {/* ── Toolbar ──────────────────────────────────── */}
           <div className="relative z-20 bg-card/90 backdrop-blur-xl border-b border-border/50">
-            <div className="flex items-center gap-2 px-4 py-3">
-              <div className="relative flex-1 max-w-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 px-4 py-3">
+              <div className="relative flex-1 min-w-0">
                 <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/50 pointer-events-none" />
                 <Input
                   placeholder="Search name or token..."
@@ -481,37 +481,39 @@ const MarketOverview = () => {
                 )}
               </div>
 
-              <Select value={category ?? "all"} onValueChange={v => setCategory(v === "all" ? null : v)}>
-                <SelectTrigger className="w-[140px] h-9 text-xs bg-secondary/40 border-border/50 focus:ring-0 focus:ring-offset-0">
-                  <SelectValue placeholder="Category" />
-                </SelectTrigger>
-                <SelectContent side="bottom" avoidCollisions={false}>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <div className="flex items-center gap-2 overflow-x-auto scrollbar-none">
+                <Select value={category ?? "all"} onValueChange={v => setCategory(v === "all" ? null : v)}>
+                  <SelectTrigger className="w-[120px] sm:w-[140px] h-9 text-xs bg-secondary/40 border-border/50 focus:ring-0 focus:ring-offset-0 shrink-0">
+                    <SelectValue placeholder="Category" />
+                  </SelectTrigger>
+                  <SelectContent side="bottom" avoidCollisions={false}>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  </SelectContent>
+                </Select>
 
-              <Select value={chain ?? "all"} onValueChange={v => setChain(v === "all" ? null : v)}>
-                <SelectTrigger className="w-[130px] h-9 text-xs bg-secondary/40 border-border/50 focus:ring-0 focus:ring-offset-0">
-                  <SelectValue placeholder="Chain" />
-                </SelectTrigger>
-                <SelectContent side="bottom" avoidCollisions={false}>
-                  <SelectItem value="all">All Chains</SelectItem>
-                  {chains.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                </SelectContent>
-              </Select>
+                <Select value={chain ?? "all"} onValueChange={v => setChain(v === "all" ? null : v)}>
+                  <SelectTrigger className="w-[110px] sm:w-[130px] h-9 text-xs bg-secondary/40 border-border/50 focus:ring-0 focus:ring-offset-0 shrink-0">
+                    <SelectValue placeholder="Chain" />
+                  </SelectTrigger>
+                  <SelectContent side="bottom" avoidCollisions={false}>
+                    <SelectItem value="all">All Chains</SelectItem>
+                    {chains.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  </SelectContent>
+                </Select>
 
-              {activeFilters > 0 && (
-                <button
-                  onClick={() => { setSearch(""); setCategory(null); setChain(null); }}
-                  className="flex items-center gap-1 h-9 px-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <X className="h-3 w-3" /> Clear
-                </button>
-              )}
+                {activeFilters > 0 && (
+                  <button
+                    onClick={() => { setSearch(""); setCategory(null); setChain(null); }}
+                    className="flex items-center gap-1 h-9 px-2 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0"
+                  >
+                    <X className="h-3 w-3" /> Clear
+                  </button>
+                )}
 
-              <div className="ml-auto text-[11px] text-muted-foreground hidden sm:block font-mono">
-                {filtered.length} result{filtered.length !== 1 ? "s" : ""}
+                <div className="ml-auto text-[11px] text-muted-foreground hidden sm:block font-mono shrink-0">
+                  {filtered.length} result{filtered.length !== 1 ? "s" : ""}
+                </div>
               </div>
             </div>
           </div>

@@ -662,16 +662,16 @@ const Portfolio = () => {
             transition={{ delay: 0.2 }}
             className="mb-4"
           >
-            <div className="flex items-center gap-1 rounded-lg bg-secondary/40 p-0.5 w-fit">
+            <div className="flex items-center gap-1 rounded-lg bg-secondary/40 p-0.5 w-fit overflow-x-auto scrollbar-none max-w-full">
               {([
                 { key: "holdings" as const, label: "Holdings", icon: Wallet },
-                { key: "alerts" as const, label: "Price Alerts", icon: Bell },
-                { key: "forecasts" as const, label: "My Forecasts", icon: Activity },
+                { key: "alerts" as const, label: "Alerts", icon: Bell },
+                { key: "forecasts" as const, label: "Forecasts", icon: Activity },
               ]).map((tab) => (
                 <button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key)}
-                  className={`flex items-center gap-1.5 rounded-md px-4 py-2 text-sm font-medium transition-all ${
+                  className={`flex items-center gap-1.5 rounded-md px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium transition-all whitespace-nowrap shrink-0 ${
                     activeTab === tab.key
                       ? "bg-card text-foreground shadow-sm border border-border"
                       : "text-muted-foreground hover:text-foreground"

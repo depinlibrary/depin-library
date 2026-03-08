@@ -92,11 +92,11 @@ const ProjectDetail = () => {
 
           {/* Hero */}
           <motion.div {...fadeUp} transition={{ delay: 0.05 }} className="mb-8">
-            <div className="mb-4 flex items-center gap-4">
+            <div className="mb-4 flex flex-col sm:flex-row sm:items-center gap-4">
               <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="lg" />
               <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-3">
-                  <h1 className="text-3xl font-bold text-foreground">{project.name}</h1>
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{project.name}</h1>
                    {ratingsData?.averages?.count > 0 && overallRating && (
                      <span className="flex items-center gap-1 rounded-lg border border-primary/30 bg-primary/10 px-2 py-1 text-sm font-semibold text-primary">
                        <Star className="h-3.5 w-3.5 fill-primary" />
@@ -104,19 +104,19 @@ const ProjectDetail = () => {
                        <span className="text-xs font-normal text-muted-foreground">({ratingsData?.averages?.count})</span>
                      </span>
                    )}
-                  <div className="ml-auto flex items-center gap-2">
-                    <CompareWithButton currentProjectId={project.id} currentProjectName={project.name} currentCategory={project.category} />
-                    {user && (
-                      <button
-                        onClick={() => toggleBookmark.mutate({ projectId: project.id, isBookmarked })}
-                        className="rounded-lg border border-border bg-card p-2 transition-colors hover:bg-secondary"
-                      >
-                        <Bookmark className={`h-4 w-4 ${isBookmarked ? "fill-primary text-primary" : "text-muted-foreground"}`} />
-                      </button>
-                    )}
-                  </div>
                 </div>
-                <p className="mt-1 text-base text-muted-foreground">{project.tagline}</p>
+                <p className="mt-1 text-sm sm:text-base text-muted-foreground">{project.tagline}</p>
+                <div className="flex items-center gap-2 mt-2">
+                  <CompareWithButton currentProjectId={project.id} currentProjectName={project.name} currentCategory={project.category} />
+                  {user && (
+                    <button
+                      onClick={() => toggleBookmark.mutate({ projectId: project.id, isBookmarked })}
+                      className="rounded-lg border border-border bg-card p-2 transition-colors hover:bg-secondary"
+                    >
+                      <Bookmark className={`h-4 w-4 ${isBookmarked ? "fill-primary text-primary" : "text-muted-foreground"}`} />
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 

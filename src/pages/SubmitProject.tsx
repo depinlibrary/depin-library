@@ -225,7 +225,7 @@ const SubmitProject = () => {
                   
                   Social Media
                 </h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label className="text-foreground">Twitter / X</Label>
                     <Input value={form.twitter_url} onChange={(e) => update("twitter_url", e.target.value)} placeholder="https://x.com/project" className="mt-1" />
