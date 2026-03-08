@@ -105,7 +105,6 @@ const Navbar = () => {
 
   const navLinks = [
     { to: "/", label: "Overview" },
-    { to: "/explore", label: "Explore" },
     { to: "/compare", label: "Compare" },
   ];
 
