@@ -46,7 +46,7 @@ function getTimeRemaining(endDate: string): string {
 }
 
 // ── Reply Thread Component ──
-const CommentReplyThread = ({ commentId }: { commentId: string }) => {
+const CommentReplyThread = ({ commentId, forecastId }: { commentId: string; forecastId: string }) => {
   const { user } = useAuth();
   const { data: replies = [], isLoading } = useForecastCommentReplies(commentId);
   const createReply = useCreateForecastCommentReply();
@@ -58,7 +58,7 @@ const CommentReplyThread = ({ commentId }: { commentId: string }) => {
     if (!replyText.trim()) return;
     if (!user) { toast.error("Sign in to reply"); return; }
     try {
-      await createReply.mutateAsync({ commentId, replyText: replyText.trim() });
+      await createReply.mutateAsync({ commentId, replyText: replyText.trim(), forecastId });
       setReplyText("");
       setShowInput(false);
       toast.success("Reply posted");
@@ -602,7 +602,7 @@ const ForecastDetail = () => {
                         )}
 
                         {/* Reply thread */}
-                        <CommentReplyThread commentId={comment.id} />
+                        <CommentReplyThread commentId={comment.id} forecastId={forecast.id} />
                       </div>
                     </div>
                   </div>

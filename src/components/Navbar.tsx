@@ -5,6 +5,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { LogOut, Plus, User, Shield, Menu, X, Sun, Moon, ChevronDown, BarChart3, TrendingUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState, useRef } from "react";
+import NotificationDropdown from "@/components/NotificationDropdown";
 
 const Navbar = () => {
   const { user, signOut } = useAuth();
@@ -150,6 +151,7 @@ const Navbar = () => {
 
           {user ? (
             <>
+              <NotificationDropdown />
               {isAdmin && (
                 <Link to="/admin" className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
                   <Shield className="h-3.5 w-3.5" />
