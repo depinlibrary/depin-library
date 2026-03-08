@@ -150,8 +150,8 @@ export default function MyForecasts() {
         <div className="space-y-3">
           <AnimatePresence>
             {forecasts.map((f, i) => {
-              const projA = projectMap.get(f.project_a_id);
-              const projB = f.project_b_id ? projectMap.get(f.project_b_id) : null;
+              const projA = projectMap.get(f.project_a_id) as any;
+              const projB = f.project_b_id ? (projectMap.get(f.project_b_id) as any) : null;
               const canEdit = isWithin24Hours(f.created_at);
               const editTimeLeft = timeLeftToEdit(f.created_at);
               const deletionReq = getDeletionStatus(f.id);
