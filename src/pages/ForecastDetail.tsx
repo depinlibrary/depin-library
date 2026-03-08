@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, ThumbsUp, ThumbsDown, Users, Timer, MessageSquare,
-  Send, Trash2, CalendarDays, User as UserIcon
+  Send, Trash2, CalendarDays, User as UserIcon, ArrowRight
 } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import Navbar from "@/components/Navbar";
