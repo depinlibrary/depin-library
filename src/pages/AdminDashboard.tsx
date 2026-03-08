@@ -16,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 import { ManageCategories, ManageBlockchains } from "@/components/admin/ManageCategories";
 import UsersList from "@/components/admin/UsersList";
 import DeletionRequests from "@/components/admin/DeletionRequests";
+import ManageSpotlight from "@/components/admin/ManageSpotlight";
 
 import { useDynamicOptions } from "@/hooks/useDynamicOptions";
 
