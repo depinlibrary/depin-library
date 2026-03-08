@@ -189,13 +189,13 @@ const BillboardHero = ({
 
           {/* Bento Grid */}
           <motion.div 
-            className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 auto-rows-min relative"
+            className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2.5 auto-rows-min relative"
             animate={{ opacity: isRefetching ? [1, 0.7, 1] : 1 }}
             transition={{ duration: 0.8, repeat: isRefetching ? Infinity : 0 }}
           >
             {/* ── Stat: Total Projects ── */}
              <motion.div variants={fadeUp}>
-               <Link to="/explore" className="block rounded-xl border border-border bg-card/50 backdrop-blur-md p-4 flex flex-col justify-between h-full transition-colors hover:bg-card/60">
+               <Link to="/explore" className="block rounded-xl border border-border bg-card/50 backdrop-blur-md p-3 flex flex-col justify-between h-full transition-colors hover:bg-card/60">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 mb-3">
                   <Layers className="h-4 w-4 text-primary" />
                 </div>
@@ -208,7 +208,7 @@ const BillboardHero = ({
 
             {/* ── Stat: Total Market Cap ── */}
              <motion.div variants={fadeUp}>
-               <Link to="/market" className="block rounded-xl border border-border bg-card/50 backdrop-blur-md p-4 flex flex-col justify-between h-full transition-colors hover:bg-card/60">
+               <Link to="/market" className="block rounded-xl border border-border bg-card/50 backdrop-blur-md p-3 flex flex-col justify-between h-full transition-colors hover:bg-card/60">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 mb-3">
                   <BarChart3 className="h-4 w-4 text-primary" />
                 </div>
@@ -221,7 +221,7 @@ const BillboardHero = ({
 
             {/* ── Stat: Avg 24h Change ── */}
              <motion.div variants={fadeUp}>
-               <Link to="/market" className="block rounded-xl border border-border bg-card/50 backdrop-blur-md p-4 flex flex-col justify-between h-full transition-colors hover:bg-card/60">
+               <Link to="/market" className="block rounded-xl border border-border bg-card/50 backdrop-blur-md p-3 flex flex-col justify-between h-full transition-colors hover:bg-card/60">
                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 mb-3">
                    <TrendingUp className="h-4 w-4 text-primary" />
                  </div>
@@ -234,7 +234,7 @@ const BillboardHero = ({
 
             {/* ── Stat: Categories + Chains ── */}
              <motion.div variants={fadeUp}>
-               <Link to="/explore" className="block rounded-xl border border-border bg-card/50 backdrop-blur-md p-4 flex flex-col justify-between h-full transition-colors hover:bg-card/60">
+               <Link to="/explore" className="block rounded-xl border border-border bg-card/50 backdrop-blur-md p-3 flex flex-col justify-between h-full transition-colors hover:bg-card/60">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 mb-3">
                    <Zap className="h-4 w-4 text-primary" />
                 </div>
@@ -254,7 +254,7 @@ const BillboardHero = ({
             </motion.div>
 
             {/* ── Top Market Cap (spans 2 cols) ── */}
-             <motion.div variants={fadeUp} className="col-span-2 rounded-xl border border-border bg-card/50 backdrop-blur-md p-4">
+             <motion.div variants={fadeUp} className="col-span-2 rounded-xl border border-border bg-card/50 backdrop-blur-md p-3">
               <div className="flex items-center gap-2 mb-3">
                 <Crown className="h-3.5 w-3.5 text-primary" />
                 <span className="text-xs font-semibold text-foreground">Top Market Cap</span>
@@ -288,7 +288,7 @@ const BillboardHero = ({
             </motion.div>
 
             {/* ── Trending Projects ── */}
-             <motion.div variants={fadeUp} className="col-span-2 sm:col-span-2 rounded-xl border border-border bg-card/50 backdrop-blur-md p-4">
+             <motion.div variants={fadeUp} className="col-span-2 sm:col-span-2 rounded-xl border border-border bg-card/50 backdrop-blur-md p-3">
               <div className="flex items-center gap-2 mb-3">
                 <Flame className="h-3.5 w-3.5 text-primary" />
                 <span className="text-xs font-semibold text-foreground">Trending Now</span>
@@ -321,7 +321,7 @@ const BillboardHero = ({
             </motion.div>
 
             {/* ── Top Gainers ── */}
-             <motion.div variants={fadeUp} className="rounded-xl border border-border bg-card/50 backdrop-blur-md p-4">
+             <motion.div variants={fadeUp} className="rounded-xl border border-border bg-card/50 backdrop-blur-md p-3">
               <div className="flex items-center gap-1.5 mb-3">
                 <ArrowUpRight className="h-3.5 w-3.5 text-neon-green" />
                 <span className="text-xs font-semibold text-foreground">Top Gainers</span>
@@ -346,7 +346,7 @@ const BillboardHero = ({
             </motion.div>
 
             {/* ── Top Losers ── */}
-             <motion.div variants={fadeUp} className="rounded-xl border border-border bg-card/50 backdrop-blur-md p-4">
+             <motion.div variants={fadeUp} className="rounded-xl border border-border bg-card/50 backdrop-blur-md p-3">
               <div className="flex items-center gap-1.5 mb-3">
                 <ArrowDownRight className="h-3.5 w-3.5 text-destructive" />
                 <span className="text-xs font-semibold text-foreground">Top Losers</span>
@@ -372,7 +372,7 @@ const BillboardHero = ({
 
             {/* ── Top Forecasts (spans 2 cols) ── */}
              {topForecasts.length > 0 && (
-               <motion.div variants={fadeUp} className="col-span-2 rounded-xl border border-border bg-card/50 backdrop-blur-md p-4">
+               <motion.div variants={fadeUp} className="col-span-2 rounded-xl border border-border bg-card/50 backdrop-blur-md p-3">
                 <div className="flex items-center gap-2 mb-3">
                   <TrendingUp className="h-3.5 w-3.5 text-primary" />
                   <span className="text-xs font-semibold text-foreground">Top Forecasts</span>

@@ -86,21 +86,23 @@ const Overview = () => {
           </motion.div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             {quickLinks.map((link, i) => (
-              <motion.div key={link.title} variants={fadeUp}>
+              <motion.div key={link.title} variants={fadeUp} className="h-full">
                 <Link
                   to={link.to}
-                  className="group relative flex flex-col gap-3 rounded-xl border border-border bg-card p-5 transition-all hover:bg-card/80 hover:shadow-lg hover:shadow-background/10 overflow-hidden"
+                  className="group relative flex flex-col justify-between rounded-xl border border-border bg-card p-5 transition-all hover:bg-card/80 hover:shadow-lg hover:shadow-background/10 overflow-hidden h-full"
                 >
                   {/* Subtle corner accent */}
                   <div className="absolute top-0 right-0 w-16 h-16 bg-primary/[0.03] rounded-bl-[40px] transition-all group-hover:w-20 group-hover:h-20" />
-                  <div className="relative flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary transition-all group-hover:bg-primary/15 group-hover:scale-105">
-                    <link.icon className="h-5 w-5" />
+                  <div>
+                    <div className="relative flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary transition-all group-hover:bg-primary/15 group-hover:scale-105 mb-3">
+                      <link.icon className="h-5 w-5" />
+                    </div>
+                    <div className="relative">
+                      <h3 className="font-semibold text-foreground text-sm">{link.title}</h3>
+                      <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{link.description}</p>
+                    </div>
                   </div>
-                  <div className="relative">
-                    <h3 className="font-semibold text-foreground text-sm">{link.title}</h3>
-                    <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{link.description}</p>
-                  </div>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground/40 transition-all group-hover:text-primary group-hover:translate-x-1" />
+                  <ArrowRight className="h-4 w-4 text-muted-foreground/40 transition-all group-hover:text-primary group-hover:translate-x-1 mt-3" />
                 </Link>
               </motion.div>
             ))}
