@@ -7,16 +7,6 @@ import {
   GitCompare,
   Briefcase,
   TrendingUp,
-  Wifi,
-  HardDrive,
-  Cpu,
-  Thermometer,
-  Map,
-  Brain,
-  Car,
-  Globe,
-  Shield,
-  Users,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -26,22 +16,6 @@ import { useProjects } from "@/hooks/useProjects";
 import { useAllTokenMarketData } from "@/hooks/useTokenMarketData";
 import { useTrendingProjects } from "@/hooks/useSentiment";
 import { useForecasts } from "@/hooks/useForecasts";
-import { CATEGORIES } from "@/data/projects";
-import type { Category } from "@/data/projects";
-import { useEffect, useState } from "react";
-
-const categoryIcons: Record<Category, React.ElementType> = {
-  Wireless: Wifi,
-  Storage: HardDrive,
-  Compute: Cpu,
-  Sensors: Thermometer,
-  Energy: Shield,
-  Mapping: Map,
-  AI: Brain,
-  Mobility: Car,
-  CDN: Globe,
-  VPN: Shield,
-};
 
 
 const stagger = {
