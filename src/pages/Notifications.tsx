@@ -90,7 +90,7 @@ const Notifications = () => {
         {/* Back link */}
         <Link
           to="/"
-          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-6"
+          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-6 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-md"
         >
           <ArrowLeft className="h-3.5 w-3.5" /> Back to Home
         </Link>
