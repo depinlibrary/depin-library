@@ -259,35 +259,11 @@ const Navbar = () => {
         {/* Desktop auth actions — right */}
         <div className="hidden md:flex items-center gap-1.5 shrink-0">
           <button
-            onClick={(e) => {
-              const btn = e.currentTarget;
-              const burst = document.createElement("div");
-              burst.style.cssText = `
-                position: absolute; inset: -12px; border-radius: 50%; pointer-events: none; z-index: 50;
-                background: radial-gradient(circle, ${theme === "dark" ? "hsl(45 100% 60% / 0.5)" : "hsl(230 80% 50% / 0.4)"} 0%, transparent 70%);
-                animation: glow-burst 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-              `;
-              btn.style.position = "relative";
-              btn.style.overflow = "visible";
-              btn.appendChild(burst);
-              setTimeout(() => burst.remove(), 600);
-              toggleTheme();
-            }}
-            className="relative flex h-8 w-8 items-center justify-center rounded-lg border border-border transition-all hover:bg-secondary/50"
+            onClick={toggleTheme}
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-border transition-all hover:bg-secondary/50"
             aria-label="Toggle theme"
           >
-            <AnimatePresence mode="wait">
-              <motion.span
-                key={theme}
-                initial={{ rotate: -90, scale: 0, opacity: 0 }}
-                animate={{ rotate: 0, scale: 1, opacity: 1 }}
-                exit={{ rotate: 90, scale: 0, opacity: 0 }}
-                transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] as [number, number, number, number] }}
-                className="flex items-center justify-center"
-              >
-                {theme === "dark" ? <Sun className="h-3.5 w-3.5 text-foreground" /> : <Moon className="h-3.5 w-3.5 text-foreground" />}
-              </motion.span>
-            </AnimatePresence>
+            {theme === "dark" ? <Sun className="h-3.5 w-3.5 text-foreground" /> : <Moon className="h-3.5 w-3.5 text-foreground" />}
           </button>
 
           {user ? (
