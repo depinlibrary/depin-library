@@ -72,15 +72,25 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated }: {
       <div className="flex flex-wrap gap-1.5 mb-4">
         <Link
           to={`/project/${forecast.project_a_slug}`}
-          className="rounded-full bg-secondary px-2.5 py-0.5 text-[11px] font-medium text-foreground hover:bg-secondary/80 transition-colors"
+          className="flex items-center gap-1.5 rounded-full bg-secondary px-2.5 py-1 text-[11px] font-medium text-foreground hover:bg-secondary/80 transition-colors"
         >
+          {forecast.project_a_logo_url ? (
+            <img src={forecast.project_a_logo_url} alt={forecast.project_a_name} className="w-4 h-4 rounded-full object-contain" />
+          ) : (
+            <span className="text-xs">{forecast.project_a_logo_emoji || "⬡"}</span>
+          )}
           {forecast.project_a_name}
         </Link>
         {forecast.project_b_name && (
           <Link
             to={`/project/${forecast.project_b_slug}`}
-            className="rounded-full bg-secondary px-2.5 py-0.5 text-[11px] font-medium text-foreground hover:bg-secondary/80 transition-colors"
+            className="flex items-center gap-1.5 rounded-full bg-secondary px-2.5 py-1 text-[11px] font-medium text-foreground hover:bg-secondary/80 transition-colors"
           >
+            {forecast.project_b_logo_url ? (
+              <img src={forecast.project_b_logo_url} alt={forecast.project_b_name} className="w-4 h-4 rounded-full object-contain" />
+            ) : (
+              <span className="text-xs">{forecast.project_b_logo_emoji || "⬡"}</span>
+            )}
             {forecast.project_b_name}
           </Link>
         )}

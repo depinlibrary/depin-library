@@ -18,6 +18,10 @@ export type Forecast = {
   project_b_name?: string;
   project_a_slug?: string;
   project_b_slug?: string;
+  project_a_logo_url?: string | null;
+  project_a_logo_emoji?: string;
+  project_b_logo_url?: string | null;
+  project_b_logo_emoji?: string;
   user_vote?: string | null;
 };
 
@@ -60,12 +64,12 @@ export function useForecasts(sort: ForecastSortOption = "newest", page = 1, page
 
       const { data: projects } = await supabase
         .from("projects")
-        .select("id, name, slug")
+        .select("id, name, slug, logo_url, logo_emoji")
         .in("id", [...projectIds]);
 
-      const projectMap: Record<string, { name: string; slug: string }> = {};
+      const projectMap: Record<string, { name: string; slug: string; logo_url: string | null; logo_emoji: string }> = {};
       (projects || []).forEach((p: any) => {
-        projectMap[p.id] = { name: p.name, slug: p.slug };
+        projectMap[p.id] = { name: p.name, slug: p.slug, logo_url: p.logo_url, logo_emoji: p.logo_emoji };
       });
 
       // Get current user's votes
@@ -91,6 +95,10 @@ export function useForecasts(sort: ForecastSortOption = "newest", page = 1, page
         project_b_name: f.project_b_id ? projectMap[f.project_b_id]?.name || "Unknown" : null,
         project_a_slug: projectMap[f.project_a_id]?.slug,
         project_b_slug: f.project_b_id ? projectMap[f.project_b_id]?.slug : null,
+        project_a_logo_url: projectMap[f.project_a_id]?.logo_url,
+        project_a_logo_emoji: projectMap[f.project_a_id]?.logo_emoji || "⬡",
+        project_b_logo_url: f.project_b_id ? projectMap[f.project_b_id]?.logo_url : null,
+        project_b_logo_emoji: f.project_b_id ? projectMap[f.project_b_id]?.logo_emoji || "⬡" : "⬡",
         user_vote: userVotes[f.id] || null,
       }));
 
