@@ -183,6 +183,17 @@ export default function MyForecasts() {
             ))}
           </div>
           <Link to="/forecasts?create=true">
+          <Select value={sortBy} onValueChange={(v) => setSortBy(v as any)}>
+            <SelectTrigger className="h-8 w-[130px] text-[11px] focus:ring-0 focus:ring-offset-0">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent side="bottom" avoidCollisions={false}>
+              <SelectItem value="newest">Newest first</SelectItem>
+              <SelectItem value="votes">Most votes</SelectItem>
+              <SelectItem value="ending">Ending soon</SelectItem>
+            </SelectContent>
+          </Select>
+          <Link to="/forecasts?create=true">
             <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs">
               <BarChart3 className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">New Forecast</span>
