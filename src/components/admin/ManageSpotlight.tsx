@@ -97,11 +97,20 @@ const ManageSpotlight = () => {
 
   return (
     <div className="space-y-4">
+      {atLimit && (
+        <Alert variant="destructive" className="border-yellow-500/50 bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 [&>svg]:text-yellow-500">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            Maximum of {MAX_SPOTLIGHT} spotlight projects reached. Remove a project before adding another.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Add project */}
       <div className="flex items-center gap-2">
-        <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
+        <Select value={selectedProjectId} onValueChange={setSelectedProjectId} disabled={atLimit}>
           <SelectTrigger className="flex-1">
-            <SelectValue placeholder="Select a project to spotlight..." />
+            <SelectValue placeholder={atLimit ? "Limit reached (6/6)" : "Select a project to spotlight..."} />
           </SelectTrigger>
           <SelectContent>
             {availableProjects.map((p) => (
@@ -115,7 +124,7 @@ const ManageSpotlight = () => {
             ))}
           </SelectContent>
         </Select>
-        <Button onClick={handleAdd} disabled={!selectedProjectId} size="sm" className="shrink-0">
+        <Button onClick={handleAdd} disabled={!selectedProjectId || atLimit} size="sm" className="shrink-0">
           <Plus className="h-4 w-4 mr-1" /> Add
         </Button>
       </div>
