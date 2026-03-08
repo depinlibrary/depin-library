@@ -12,6 +12,7 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
+import UserStatsHoverCard from "@/components/UserStatsHoverCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useVoteForecast } from "@/hooks/useForecasts";
 import {
@@ -347,7 +348,11 @@ const ForecastDetail = () => {
             {/* Meta row + share */}
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-4 text-[11px] text-muted-foreground/70">
-                <span className="flex items-center gap-1"><UserIcon className="h-3 w-3" /> {forecast.creator_name}</span>
+                <UserStatsHoverCard userId={forecast.creator_user_id} displayName={forecast.creator_name}>
+                  <span className="flex items-center gap-1 cursor-pointer hover:text-foreground transition-colors">
+                    <UserIcon className="h-3 w-3" /> {forecast.creator_name}
+                  </span>
+                </UserStatsHoverCard>
                 <span className="flex items-center gap-1"><CalendarDays className="h-3 w-3" /> {format(new Date(forecast.created_at), "MMM d, yyyy")}</span>
                 <span className="flex items-center gap-1"><Timer className="h-3 w-3" /> Ends {format(new Date(forecast.end_date), "MMM d, yyyy")}</span>
               </div>
