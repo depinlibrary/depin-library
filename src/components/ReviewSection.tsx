@@ -1,10 +1,19 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { Star, Trash2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Star, Trash2, ThumbsUp, MessageSquare, Send, ChevronDown, ChevronUp } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useReviews, useCreateReview, useDeleteReview, type Review } from "@/hooks/useReviews";
+import {
+  useReviewLikes,
+  useToggleReviewLike,
+  useReviewReplies,
+  useCreateReviewReply,
+  useDeleteReviewReply,
+  type ReviewReply,
+} from "@/hooks/useReviewInteractions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -40,6 +49,89 @@ const StarRating = ({ rating, onRate, interactive = false }: { rating: number; o
   );
 };
 
+/* ── Reply list for a single review ── */
+const ReplyThread = ({ reviewId }: { reviewId: string }) => {
+  const { user } = useAuth();
+  const { data: replies = [], isLoading } = useReviewReplies(reviewId);
+  const createReply = useCreateReviewReply();
+  const deleteReply = useDeleteReviewReply();
+  const [replyText, setReplyText] = useState("");
+  const [showForm, setShowForm] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!replyText.trim()) return;
+    try {
+      await createReply.mutateAsync({ reviewId, replyText: replyText.trim() });
+      setReplyText("");
+      setShowForm(false);
+      toast.success("Reply posted");
+    } catch {
+      toast.error("Failed to post reply");
+    }
+  };
+
+  const handleDelete = async (reply: ReviewReply) => {
+    try {
+      await deleteReply.mutateAsync({ replyId: reply.id, reviewId });
+      toast.success("Reply deleted");
+    } catch {
+      toast.error("Failed to delete reply");
+    }
+  };
+
+  return (
+    <div className="mt-3 space-y-2 border-l-2 border-border pl-4">
+      {isLoading && <p className="text-xs text-muted-foreground">Loading replies…</p>}
+
+      <AnimatePresence>
+        {replies.map((reply) => (
+          <motion.div
+            key={reply.id}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            className="flex items-start gap-2"
+          >
+            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-secondary-foreground">
+              {(reply.display_name || "A")[0].toUpperCase()}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-medium text-foreground">{reply.display_name}</span>
+                <span className="text-[10px] text-text-dim">{new Date(reply.created_at).toLocaleDateString()}</span>
+                {user?.id === reply.user_id && (
+                  <button onClick={() => handleDelete(reply)} className="ml-auto text-muted-foreground hover:text-destructive transition-colors">
+                    <Trash2 className="h-3 w-3" />
+                  </button>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">{reply.reply_text}</p>
+            </div>
+          </motion.div>
+        ))}
+      </AnimatePresence>
+
+      {user && (
+        showForm ? (
+          <div className="flex items-center gap-2">
+            <Input
+              value={replyText}
+              onChange={(e) => setReplyText(e.target.value)}
+              placeholder="Write a reply…"
+              className="h-8 text-xs"
+              onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSubmit()}
+            />
+            <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={handleSubmit} disabled={createReply.isPending}>
+              <Send className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        ) : null
+      )}
+    </div>
+  );
+};
+
+/* ── Main ReviewSection ── */
 const ReviewSection = ({ projectId, projectName }: ReviewSectionProps) => {
   const { user } = useAuth();
   const { data: reviews = [], isLoading } = useReviews(projectId);
@@ -47,6 +139,20 @@ const ReviewSection = ({ projectId, projectName }: ReviewSectionProps) => {
   const deleteReview = useDeleteReview();
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
+
+  const reviewIds = reviews.map((r) => r.id);
+  const { data: likesData = {} } = useReviewLikes(reviewIds);
+  const toggleLike = useToggleReviewLike();
+
+  const [expandedReplies, setExpandedReplies] = useState<Set<string>>(new Set());
+
+  const toggleReplies = (id: string) => {
+    setExpandedReplies((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
 
   const userHasReview = reviews.some((r) => r.user_id === user?.id);
 
@@ -115,41 +221,89 @@ const ReviewSection = ({ projectId, projectName }: ReviewSectionProps) => {
         <p className="text-sm text-muted-foreground">No reviews yet. Be the first!</p>
       ) : (
         <div className="space-y-3">
-          {reviews.map((review, i) => (
-            <motion.div
-              key={review.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              className="rounded-xl border border-border bg-card p-4"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-xs font-bold text-secondary-foreground">
-                    {(review.display_name || "A")[0].toUpperCase()}
+          {reviews.map((review, i) => {
+            const likeInfo = likesData[review.id] || { count: 0, userLiked: false };
+            const repliesOpen = expandedReplies.has(review.id);
+
+            return (
+              <motion.div
+                key={review.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+                className="rounded-xl border border-border bg-card p-4"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-xs font-bold text-secondary-foreground">
+                      {(review.display_name || "A")[0].toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{review.display_name}</p>
+                      <StarRating rating={review.rating} />
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-foreground">{review.display_name}</p>
-                    <StarRating rating={review.rating} />
-                  </div>
+                  {user?.id === review.user_id && (
+                    <button
+                      onClick={() => handleDelete(review)}
+                      className="text-muted-foreground hover:text-destructive transition-colors"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  )}
                 </div>
-                {user?.id === review.user_id && (
-                  <button
-                    onClick={() => handleDelete(review)}
-                    className="text-muted-foreground hover:text-destructive transition-colors"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+
+                {review.review_text && (
+                  <p className="text-sm text-muted-foreground leading-relaxed mb-3">{review.review_text}</p>
                 )}
-              </div>
-              {review.review_text && (
-                <p className="text-sm text-muted-foreground leading-relaxed">{review.review_text}</p>
-              )}
-              <p className="mt-2 text-xs text-text-dim">
-                {new Date(review.created_at).toLocaleDateString()}
-              </p>
-            </motion.div>
-          ))}
+
+                {/* Like + Reply actions */}
+                <div className="flex items-center gap-4 pt-1 border-t border-border mt-2">
+                  <button
+                    onClick={() => {
+                      if (!user) { toast.error("Sign in to like"); return; }
+                      toggleLike.mutate({ reviewId: review.id, isLiked: likeInfo.userLiked });
+                    }}
+                    className={`flex items-center gap-1.5 text-xs transition-colors ${
+                      likeInfo.userLiked
+                        ? "text-primary font-medium"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <ThumbsUp className={`h-3.5 w-3.5 ${likeInfo.userLiked ? "fill-primary" : ""}`} />
+                    {likeInfo.count > 0 ? likeInfo.count : "Like"}
+                  </button>
+
+                  <button
+                    onClick={() => toggleReplies(review.id)}
+                    className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <MessageSquare className="h-3.5 w-3.5" />
+                    Reply
+                    {repliesOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                  </button>
+
+                  <span className="ml-auto text-[10px] text-text-dim">
+                    {new Date(review.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+
+                {/* Reply thread */}
+                <AnimatePresence>
+                  {repliesOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <ReplyThread reviewId={review.id} />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            );
+          })}
         </div>
       )}
     </div>

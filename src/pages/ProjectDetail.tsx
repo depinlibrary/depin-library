@@ -203,10 +203,44 @@ const ProjectDetail = () => {
               {sparkline && Array.isArray(sparkline) && sparkline.length > 0 && (
                 <motion.div {...fadeUp} transition={{ delay: 0.15 }}
                   className="rounded-xl border border-border bg-card p-5">
-                  <h3 className="mb-3 text-sm font-semibold text-foreground">7d Price Trend</h3>
-                  <div className="h-16">
-                    <Sparkline data={(sparkline as number[]).map(v => ({ count: v }))} />
+                  <div className="mb-3 flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-foreground">7d Price Trend</h3>
+                    {marketData?.price_change_24h !== null && marketData?.price_change_24h !== undefined && (
+                      <span className={`text-xs font-semibold ${(marketData.price_change_24h ?? 0) >= 0 ? "text-neon-green" : "text-destructive"}`}>
+                        {(marketData.price_change_24h ?? 0) >= 0 ? "+" : ""}{marketData.price_change_24h?.toFixed(2)}%
+                      </span>
+                    )}
                   </div>
+                  <div className="h-24">
+                    <Sparkline
+                      data={(sparkline as number[]).map(v => ({ count: v }))}
+                      width={240}
+                      height={80}
+                    />
+                  </div>
+                  <div className="mt-3 flex items-center justify-between text-[10px] text-text-dim">
+                    <span>7d ago</span>
+                    <span>Now</span>
+                  </div>
+                  {(() => {
+                    const arr = sparkline as number[];
+                    const high = Math.max(...arr);
+                    const low = Math.min(...arr);
+                    const fmt = (n: number) => n < 0.01 ? n.toFixed(6) : n < 1 ? n.toFixed(4) : n.toFixed(2);
+                    return (
+                      <div className="mt-2 flex gap-3 rounded-lg bg-secondary/50 p-2">
+                        <div className="flex-1 text-center">
+                          <p className="text-[10px] text-muted-foreground">7d High</p>
+                          <p className="text-xs font-semibold text-neon-green">${fmt(high)}</p>
+                        </div>
+                        <div className="h-auto w-px bg-border" />
+                        <div className="flex-1 text-center">
+                          <p className="text-[10px] text-muted-foreground">7d Low</p>
+                          <p className="text-xs font-semibold text-destructive">${fmt(low)}</p>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </motion.div>
               )}
 
