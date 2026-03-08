@@ -5,18 +5,29 @@ import { useProject } from "@/hooks/useProjects";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBookmarks, useToggleBookmark } from "@/hooks/useBookmarks";
 import ProjectRatings from "@/components/ProjectRatings";
+import ReviewSection from "@/components/ReviewSection";
 import SentimentBadge from "@/components/SentimentBadge";
 import ProjectLogo from "@/components/ProjectLogo";
 import TokenPriceBadge from "@/components/TokenPriceBadge";
+import ShareButtons from "@/components/ShareButtons";
+import RelatedProjects from "@/components/RelatedProjects";
+import ProjectDetailSkeleton from "@/components/ProjectDetailSkeleton";
+import Sparkline from "@/components/Sparkline";
 import { useTokenMarketData } from "@/hooks/useTokenMarketData";
 import { useProjectRatings } from "@/hooks/useProjectRatings";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const statusColors: Record<string, string> = {
   live: "bg-neon-green/15 text-neon-green border-neon-green/30",
   testnet: "bg-yellow-500/15 text-yellow-400 border-yellow-500/30",
   development: "bg-muted text-muted-foreground border-border",
+};
+
+const fadeUp = {
+  initial: { opacity: 0, y: 16 },
+  animate: { opacity: 1, y: 0 },
 };
 
 const ProjectDetail = () => {
@@ -32,9 +43,7 @@ const ProjectDetail = () => {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
-        <div className="flex min-h-screen items-center justify-center pt-16">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-        </div>
+        <ProjectDetailSkeleton />
       </div>
     );
   }
@@ -54,6 +63,7 @@ const ProjectDetail = () => {
 
   const isBookmarked = bookmarks.includes(project.id);
   const overallRating = ratingsData?.averages?.overall;
+  const sparkline = marketData?.sparkline_7d;
 
   const details = [
     { icon: Layers, label: "Category", value: project.category },
@@ -70,24 +80,27 @@ const ProjectDetail = () => {
         <div className="absolute inset-0 bg-grid opacity-30" />
         <div className="gradient-radial-top absolute inset-0" />
 
-        <div className="container relative mx-auto max-w-3xl px-4">
-          <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}>
-            <Link to="/" className="mb-8 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
+        <div className="container relative mx-auto max-w-5xl px-4">
+          {/* Back + Share row */}
+          <motion.div {...fadeUp} className="mb-8 flex items-center justify-between">
+            <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
               <ArrowLeft className="h-4 w-4" /> Back to library
             </Link>
+            <ShareButtons title={project.name} description={project.tagline} />
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-8">
+          {/* Hero */}
+          <motion.div {...fadeUp} transition={{ delay: 0.05 }} className="mb-8">
             <div className="mb-4 flex items-center gap-4">
               <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="lg" />
-              <div className="flex-1">
-                <div className="flex items-center gap-3">
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-3">
                   <h1 className="text-3xl font-bold text-foreground">{project.name}</h1>
                   {overallRating && overallRating > 0 && (
                     <span className="flex items-center gap-1 rounded-lg border border-primary/30 bg-primary/10 px-2 py-1 text-sm font-semibold text-primary">
                       <Star className="h-3.5 w-3.5 fill-primary" />
                       {overallRating.toFixed(1)}
-                      <span className="text-xs text-muted-foreground font-normal">({ratingsData?.averages?.count})</span>
+                      <span className="text-xs font-normal text-muted-foreground">({ratingsData?.averages?.count})</span>
                     </span>
                   )}
                   {user && (
@@ -99,10 +112,11 @@ const ProjectDetail = () => {
                     </button>
                   )}
                 </div>
-                <p className="text-base text-muted-foreground">{project.tagline}</p>
+                <p className="mt-1 text-base text-muted-foreground">{project.tagline}</p>
               </div>
             </div>
 
+            {/* Tags row */}
             <div className="flex flex-wrap gap-2">
               <span className={`rounded-md border px-3 py-1 text-xs font-medium ${statusColors[project.status] || statusColors.development}`}>
                 ● {project.status}
@@ -129,38 +143,88 @@ const ProjectDetail = () => {
             </div>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-            className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
-            {details.map(({ icon: Icon, label, value }) => (
-              <div key={label} className="rounded-xl border border-border bg-card p-4 text-center">
-                <Icon className="mx-auto mb-2 h-4 w-4 text-muted-foreground" />
-                <p className="text-xs text-muted-foreground">{label}</p>
-                <p className="mt-0.5 text-sm font-semibold text-foreground capitalize">{value}</p>
-              </div>
-            ))}
-          </motion.div>
+          {/* Two-column layout */}
+          <div className="grid gap-6 lg:grid-cols-3">
+            {/* Main column */}
+            <div className="space-y-6 lg:col-span-2">
+              {/* Token price banner */}
+              {marketData && marketData.price_usd !== null && (
+                <motion.div {...fadeUp} transition={{ delay: 0.1 }}>
+                  <TokenPriceBadge data={marketData} />
+                </motion.div>
+              )}
 
-          {marketData && marketData.price_usd !== null && (
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="mb-8">
-              <TokenPriceBadge data={marketData} />
-            </motion.div>
-          )}
+              {/* About */}
+              <motion.div {...fadeUp} transition={{ delay: 0.15 }} className="rounded-xl border border-border bg-card p-6">
+                <h2 className="mb-3 text-lg font-semibold text-foreground">About {project.name}</h2>
+                <p className="text-sm leading-relaxed text-muted-foreground">{project.description}</p>
+              </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-            className="mb-8 rounded-xl border border-border bg-card p-6">
-            <h2 className="mb-3 text-lg font-semibold text-foreground">About {project.name}</h2>
-            <p className="text-sm leading-relaxed text-muted-foreground">{project.description}</p>
-          </motion.div>
+              {/* Tabbed content: Ratings & Reviews */}
+              <motion.div {...fadeUp} transition={{ delay: 0.2 }}>
+                <Tabs defaultValue="ratings" className="w-full">
+                  <TabsList className="mb-4 w-full justify-start bg-card border border-border">
+                    <TabsTrigger value="ratings">Ratings</TabsTrigger>
+                    <TabsTrigger value="reviews">Reviews</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="ratings">
+                    <ProjectRatings projectId={project.id} projectName={project.name} />
+                  </TabsContent>
+                  <TabsContent value="reviews">
+                    <ReviewSection projectId={project.id} projectName={project.name} />
+                  </TabsContent>
+                </Tabs>
+              </motion.div>
+            </div>
 
-          {/* Sentiment */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="mb-8">
-            <SentimentBadge projectId={project.id} projectName={project.name} />
-          </motion.div>
+            {/* Sidebar */}
+            <div className="space-y-6">
+              {/* Quick stats */}
+              <motion.div {...fadeUp} transition={{ delay: 0.1 }}
+                className="rounded-xl border border-border bg-card p-5">
+                <h3 className="mb-4 text-sm font-semibold text-foreground">Project Details</h3>
+                <div className="space-y-3">
+                  {details.map(({ icon: Icon, label, value }) => (
+                    <div key={label} className="flex items-center justify-between">
+                      <span className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Icon className="h-3.5 w-3.5" /> {label}
+                      </span>
+                      <span className="text-sm font-medium text-foreground capitalize">{value}</span>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
 
-          {/* Structured Ratings */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-            <ProjectRatings projectId={project.id} projectName={project.name} />
-          </motion.div>
+              {/* 7d Sparkline */}
+              {sparkline && Array.isArray(sparkline) && sparkline.length > 0 && (
+                <motion.div {...fadeUp} transition={{ delay: 0.15 }}
+                  className="rounded-xl border border-border bg-card p-5">
+                  <h3 className="mb-3 text-sm font-semibold text-foreground">7d Price Trend</h3>
+                  <div className="h-16">
+                    <Sparkline data={sparkline as number[]} color={
+                      (marketData?.price_change_24h ?? 0) >= 0
+                        ? "hsl(var(--neon-green))"
+                        : "hsl(var(--destructive))"
+                    } />
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Sentiment */}
+              <motion.div {...fadeUp} transition={{ delay: 0.2 }}>
+                <SentimentBadge projectId={project.id} projectName={project.name} />
+              </motion.div>
+
+              {/* Related */}
+              <motion.div {...fadeUp} transition={{ delay: 0.25 }}>
+                <RelatedProjects
+                  currentProjectId={project.id}
+                  category={project.category}
+                  blockchain={project.blockchain}
+                />
+              </motion.div>
+            </div>
+          </div>
         </div>
       </div>
       <Footer />
