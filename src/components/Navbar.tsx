@@ -452,6 +452,33 @@ const Navbar = () => {
               />
             )}
           </Link>
+          
+          {/* Notifications link - only show when authenticated */}
+          {user && (
+            <Link
+              to="/notifications"
+              className={`relative rounded-lg px-3 py-1.5 text-[13px] font-medium transition-all flex items-center gap-1.5 ${
+                isActive("/notifications")
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/40"
+              }`}
+            >
+              <Bell className="h-3.5 w-3.5" />
+              Notifications
+              {unreadCount > 0 && (
+                <Badge variant="destructive" className="h-4 min-w-4 px-1 text-[10px] font-bold">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </Badge>
+              )}
+              {isActive("/notifications") && (
+                <motion.div
+                  layoutId="nav-indicator"
+                  className="absolute inset-x-1 -bottom-[13px] h-[2px] rounded-full bg-primary"
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
+              )}
+            </Link>
+          )}
         </nav>
 
         {/* Desktop auth actions — right */}
