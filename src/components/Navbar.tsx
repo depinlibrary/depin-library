@@ -2,7 +2,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
-import { LogOut, Plus, User, Shield, Menu, X, Sun, Moon, ChevronDown, BarChart3, TrendingUp, Compass, GitCompare, Briefcase, Home } from "lucide-react";
+import { LogOut, Plus, User, Shield, Menu, X, Sun, Moon, ChevronDown, BarChart3, TrendingUp, Compass, GitCompare, Briefcase, Home, Zap, ArrowRight, LineChart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState, useRef, useCallback } from "react";
 import NotificationDropdown from "@/components/NotificationDropdown";
