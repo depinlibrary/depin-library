@@ -176,7 +176,11 @@ const BillboardHero = ({
           </motion.div>
 
           {/* Bento Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 auto-rows-min">
+          <motion.div 
+            className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 auto-rows-min relative"
+            animate={{ opacity: isRefetching ? [1, 0.7, 1] : 1 }}
+            transition={{ duration: 0.8, repeat: isRefetching ? Infinity : 0 }}
+          >
             {/* ── Stat: Total Projects ── */}
             <motion.div variants={fadeUp}>
               <Link to="/explore" className="block rounded-xl border border-border bg-card/80 backdrop-blur-sm p-4 flex flex-col justify-between h-full transition-colors hover:border-primary/40 hover:bg-card">
@@ -399,7 +403,7 @@ const BillboardHero = ({
                 </div>
               </motion.div>
             )}
-          </div>
+          </motion.div>
         </motion.div>
       </div>
     </section>
