@@ -182,7 +182,6 @@ export default function MyForecasts() {
               </button>
             ))}
           </div>
-          <Link to="/forecasts?create=true">
           <Select value={sortBy} onValueChange={(v) => setSortBy(v as any)}>
             <SelectTrigger className="h-8 w-[130px] text-[11px] focus:ring-0 focus:ring-offset-0">
               <SelectValue />
