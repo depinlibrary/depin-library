@@ -437,10 +437,10 @@ const Portfolio = () => {
               },
               {
                 label: "Top Dominance",
-                content: chartData[0] ? (
+                content: topDominance ? (
                   <div>
-                    <p className="text-2xl font-bold text-foreground tabular-nums">{chartData[0].percent}%</p>
-                    <p className="text-xs text-muted-foreground">{chartData[0].name}</p>
+                    <p className="text-2xl font-bold text-foreground tabular-nums">{topDominance.percent}%</p>
+                    <p className="text-xs text-muted-foreground">{topDominance.name}</p>
                   </div>
                 ) : null,
               },
