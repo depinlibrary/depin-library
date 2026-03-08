@@ -98,6 +98,11 @@ const Explore = () => {
     if (sortBy === "rating") {
       results = results.filter((p) => p.avg_rating && p.avg_rating > 0);
     }
+    if (sortBy === "newest") {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      results = results.filter((p) => new Date(p.created_at) >= thirtyDaysAgo);
+    }
     if (sortBy === "bookmarked") {
       results = results.filter((p) => bookmarks.includes(p.id));
     }
