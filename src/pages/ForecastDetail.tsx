@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, ThumbsUp, ThumbsDown, Users, Timer, MessageSquare,
-  Send, Trash2, CalendarDays, User as UserIcon, ArrowRight, Pencil, Check, X
+  Send, Trash2, CalendarDays, User as UserIcon, ArrowRight, Pencil, Check, X, Share2, Copy, ExternalLink
 } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import Navbar from "@/components/Navbar";
@@ -170,11 +170,36 @@ const ForecastDetail = () => {
               </p>
             )}
 
-            {/* Meta row */}
-            <div className="flex items-center gap-4 text-[11px] text-muted-foreground/70">
-              <span className="flex items-center gap-1"><UserIcon className="h-3 w-3" /> {forecast.creator_name}</span>
-              <span className="flex items-center gap-1"><CalendarDays className="h-3 w-3" /> {format(new Date(forecast.created_at), "MMM d, yyyy")}</span>
-              <span className="flex items-center gap-1"><Timer className="h-3 w-3" /> Ends {format(new Date(forecast.end_date), "MMM d, yyyy")}</span>
+            {/* Meta row + share */}
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4 text-[11px] text-muted-foreground/70">
+                <span className="flex items-center gap-1"><UserIcon className="h-3 w-3" /> {forecast.creator_name}</span>
+                <span className="flex items-center gap-1"><CalendarDays className="h-3 w-3" /> {format(new Date(forecast.created_at), "MMM d, yyyy")}</span>
+                <span className="flex items-center gap-1"><Timer className="h-3 w-3" /> Ends {format(new Date(forecast.end_date), "MMM d, yyyy")}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => {
+                    const url = window.location.href;
+                    const text = `${forecast.title} — ${yesPct.toFixed(0)}% Yes | ${totalVotes} votes`;
+                    window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, "_blank", "noopener,noreferrer,width=550,height=420");
+                  }}
+                  className="flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                  title="Share on X"
+                >
+                  <ExternalLink className="h-3 w-3" /> X
+                </button>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(window.location.href);
+                    toast.success("Link copied!");
+                  }}
+                  className="flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                  title="Copy link"
+                >
+                  <Copy className="h-3 w-3" /> Copy
+                </button>
+              </div>
             </div>
           </div>
 
