@@ -12,6 +12,7 @@ import {
   ArrowDownRight,
   Crown,
   Flame,
+  RefreshCw,
 } from "lucide-react";
 import ProjectLogo from "@/components/ProjectLogo";
 import type { Project } from "@/hooks/useProjects";
