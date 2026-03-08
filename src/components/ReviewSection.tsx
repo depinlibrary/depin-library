@@ -143,8 +143,8 @@ const ReviewSection = ({ projectId, projectName }: ReviewSectionProps) => {
     }
     try {
       await createReview.mutateAsync({ projectId, rating: 0, reviewText });
-      toast.success("Review submitted!");
-      setRating(0);
+      toast.success("Comment posted!");
+      setReviewText("");
       setReviewText("");
     } catch (err: any) {
       toast.error(err.message || "Failed to submit review");
