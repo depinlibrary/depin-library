@@ -27,9 +27,9 @@ export type Forecast = {
 
 export type ForecastSortOption = "votes" | "newest" | "ending_soon";
 
-export function useForecasts(sort: ForecastSortOption = "newest", page = 1, pageSize = 12, projectFilter?: string) {
+export function useForecasts(sort: ForecastSortOption = "newest", page = 1, pageSize = 12, projectFilter?: string, search?: string) {
   return useQuery({
-    queryKey: ["forecasts", sort, page, projectFilter],
+    queryKey: ["forecasts", sort, page, projectFilter, search],
     queryFn: async (): Promise<{ forecasts: Forecast[]; total: number }> => {
       // Get total count
       let countQuery = supabase
@@ -38,6 +38,10 @@ export function useForecasts(sort: ForecastSortOption = "newest", page = 1, page
 
       if (projectFilter) {
         countQuery = countQuery.or(`project_a_id.eq.${projectFilter},project_b_id.eq.${projectFilter}`);
+      }
+
+      if (search) {
+        countQuery = countQuery.ilike("title", `%${search}%`);
       }
 
       const { count } = await countQuery;
@@ -49,6 +53,10 @@ export function useForecasts(sort: ForecastSortOption = "newest", page = 1, page
 
       if (projectFilter) {
         query = query.or(`project_a_id.eq.${projectFilter},project_b_id.eq.${projectFilter}`);
+      }
+
+      if (search) {
+        query = query.ilike("title", `%${search}%`);
       }
 
       switch (sort) {
