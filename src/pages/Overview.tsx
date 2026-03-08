@@ -142,7 +142,7 @@ const Overview = () => {
                       <h3 className="font-semibold text-foreground text-sm group-hover:text-primary transition-colors truncate">
                         {project.name}
                       </h3>
-                      <span className="text-[11px] text-muted-foreground">{project.status === "live" ? "🟢 Live" : project.status === "testnet" ? "🟡 Testnet" : "🔵 Development"}</span>
+                      {marketData[project.id] && <TokenPriceBadge data={marketData[project.id]} compact />}
                     </div>
                     <ArrowUpRight className="h-4 w-4 text-muted-foreground/30 shrink-0 transition-all duration-300 group-hover:text-primary group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                   </div>
