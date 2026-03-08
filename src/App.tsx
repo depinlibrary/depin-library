@@ -46,7 +46,6 @@ const App = () => (
             <Route path="/forecasts" element={<Forecasts />} />
             <Route path="/forecasts/:id" element={<ForecastDetail />} />
             <Route path="/notifications" element={<Notifications />} />
-            <Route path="/profile" element={<Profile />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
