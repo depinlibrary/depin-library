@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Timer, ThumbsUp, ThumbsDown, Plus, TrendingUp, Clock, Flame, ChevronLeft, ChevronRight, LogIn, Users, BarChart3, Zap, X, Filter, Trophy, CheckCircle, Circle } from "lucide-react";
+import { Timer, ThumbsUp, ThumbsDown, Plus, TrendingUp, Clock, Flame, ChevronLeft, ChevronRight, LogIn, Users, BarChart3, Zap, X, Filter, Trophy, CheckCircle, Circle, RotateCcw } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -560,8 +560,18 @@ const Forecasts = () => {
       {/* Create Forecast Dialog */}
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
         <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
+          <DialogHeader className="flex flex-row items-center justify-between">
             <DialogTitle className="font-['Space_Grotesk']">Create Forecast</DialogTitle>
+            {(title || description) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => { setTitle(""); setDescription(""); }}
+                className="h-7 gap-1.5 text-xs text-muted-foreground hover:text-foreground -mt-1"
+              >
+                <RotateCcw className="h-3 w-3" /> Reset
+              </Button>
+            )}
           </DialogHeader>
           <div className="space-y-4">
             <div>
