@@ -474,36 +474,6 @@ export type Database = {
           },
         ]
       }
-      portfolio_snapshots: {
-        Row: {
-          created_at: string
-          id: string
-          pnl_percent: number | null
-          snapshot_date: string
-          total_pnl: number | null
-          total_value: number
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          pnl_percent?: number | null
-          snapshot_date?: string
-          total_pnl?: number | null
-          total_value?: number
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          pnl_percent?: number | null
-          snapshot_date?: string
-          total_pnl?: number | null
-          total_value?: number
-          user_id?: string
-        }
-        Relationships: []
-      }
       price_alerts: {
         Row: {
           created_at: string
