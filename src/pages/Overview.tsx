@@ -111,7 +111,7 @@ const Overview = () => {
 
       {/* Recently Added */}
       <section className="container mx-auto px-4 pb-20">
-        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.1 }} variants={stagger}>
+        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0 }} variants={stagger}>
           <motion.div variants={fadeUp} className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-semibold text-foreground font-['Space_Grotesk']">Recently Added</h2>
             <Link to="/explore?sort=newest" className="text-xs font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
