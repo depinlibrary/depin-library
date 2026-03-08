@@ -55,7 +55,7 @@ const fadeUp = {
 
 const Overview = () => {
   const { data: projects = [] } = useProjects();
-  const { data: marketData = {} } = useAllTokenMarketData(30 * 1000); // Refetch every 30 seconds for billboard
+  const { data: marketData = {}, isRefetching } = useAllTokenMarketData(30 * 1000); // Refetch every 30 seconds for billboard
   const { data: topSentiments = [] } = useTopSentiments(6);
   const { data: trendingProjects = [] } = useTrendingProjects(5);
 
