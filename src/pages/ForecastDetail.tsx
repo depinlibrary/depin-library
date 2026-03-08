@@ -18,6 +18,7 @@ import {
   useForecastComments,
   useAddForecastComment,
   useDeleteForecastComment,
+  useEditForecastComment,
   useForecastVoteHistory,
   useRelatedForecasts,
 } from "@/hooks/useForecastDetail";
