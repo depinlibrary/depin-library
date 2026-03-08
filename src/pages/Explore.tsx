@@ -334,7 +334,7 @@ const Explore = () => {
       </section>
 
       {/* Results */}
-      <section className="container mx-auto px-4 py-8 pb-20">
+      <section className="container mx-auto px-4 pt-20 pb-20">
         {/* Results count */}
         <div className="mb-5 flex items-center gap-2">
           <p className="text-sm text-muted-foreground">
