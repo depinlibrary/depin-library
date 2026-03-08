@@ -176,9 +176,12 @@ export function useVoteForecast() {
         { onConflict: "forecast_id,user_id" }
       );
       if (error) throw error;
+      return forecastId;
     },
-    onSuccess: () => {
+    onSuccess: (forecastId) => {
       queryClient.invalidateQueries({ queryKey: ["forecasts"] });
+      queryClient.invalidateQueries({ queryKey: ["forecast-detail", forecastId] });
+      queryClient.invalidateQueries({ queryKey: ["forecast-vote-history", forecastId] });
     },
   });
 }

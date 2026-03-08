@@ -51,12 +51,12 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index }: {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, duration: 0.4 }}
-      className="group relative rounded-xl border border-border bg-card overflow-hidden transition-all hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20"
+      className="group relative rounded-xl border border-border bg-card overflow-hidden transition-all hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20 h-full flex flex-col"
     >
       {/* Top accent line */}
       <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
-      <div className="p-5">
+      <div className="p-5 flex-1 flex flex-col">
         {/* Header: Projects + time badge */}
         <div className="flex items-center gap-2 mb-3">
           <div className="flex items-center -space-x-1.5">
@@ -121,8 +121,9 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index }: {
         </Link>
 
         {forecast.description && (
-          <p className="text-xs text-muted-foreground mb-3 line-clamp-2 leading-relaxed">{forecast.description}</p>
+          <p className="text-xs text-muted-foreground mb-3 line-clamp-2 leading-relaxed min-h-[2.5rem]">{forecast.description}</p>
         )}
+        {!forecast.description && <div className="mb-3 min-h-[2.5rem]" />}
 
         {/* Vote percentage display */}
         <div className="mb-4 mt-auto">
