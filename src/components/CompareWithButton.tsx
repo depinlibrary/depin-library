@@ -85,11 +85,25 @@ const CompareWithButton = ({ currentProjectId, currentProjectName }: CompareWith
               autoFocus
               role="combobox"
               aria-expanded={open}
+              aria-controls="compare-listbox"
               aria-activedescendant={activeIndex >= 0 ? `compare-option-${activeIndex}` : undefined}
+              aria-label={`Search projects to compare with ${currentProjectName}`}
             />
           </div>
         </div>
-        <div ref={listRef} className="max-h-56 overflow-y-auto p-1.5" role="listbox">
+        <div
+          aria-live="assertive"
+          aria-atomic="true"
+          className="sr-only"
+        >
+          {activeIndex >= 0 && activeIndex < filtered.length
+            ? `${filtered[activeIndex].name}, ${filtered[activeIndex].category}, ${activeIndex + 1} of ${filtered.length}`
+            : filtered.length === 0 && search
+              ? "No projects found"
+              : ""
+          }
+        </div>
+        <div ref={listRef} className="max-h-56 overflow-y-auto p-1.5" role="listbox" id="compare-listbox" aria-label="Projects to compare">
           {filtered.length === 0 ? (
             <p className="px-3 py-4 text-center text-xs text-muted-foreground">No projects found</p>
           ) : (
