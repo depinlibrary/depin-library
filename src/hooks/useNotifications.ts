@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { shouldNotify } from "@/hooks/useNotificationPreferences";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect } from "react";
 
@@ -129,6 +130,10 @@ export async function createNotification({
   link?: string;
   metadata?: Record<string, any>;
 }) {
+  // Check user preferences before sending
+  const allowed = await shouldNotify(userId, type);
+  if (!allowed) return;
+
   const { error } = await supabase.from("notifications").insert({
     user_id: userId,
     type,

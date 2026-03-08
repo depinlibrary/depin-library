@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import NotificationPreferencesDialog from "@/components/NotificationPreferencesDialog";
 
 const notificationTypeLabels: Record<string, string> = {
   forecast_comment_reply: "Comment Reply",
@@ -114,16 +115,19 @@ const Notifications = () => {
             </div>
           </div>
 
-          {unreadCount > 0 && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => markAllRead.mutate()}
-              className="gap-1.5"
-            >
-              <CheckCheck className="h-3.5 w-3.5" /> Mark all read
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {unreadCount > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => markAllRead.mutate()}
+                className="gap-1.5"
+              >
+                <CheckCheck className="h-3.5 w-3.5" /> Mark all read
+              </Button>
+            )}
+            <NotificationPreferencesDialog />
+          </div>
         </div>
 
         {/* Filters */}
