@@ -162,6 +162,140 @@ const Navbar = () => {
               </Link>
             );
           })}
+          {/* Explore mega dropdown */}
+          <div
+            className="relative"
+            ref={exploreDropdownRef}
+            onMouseEnter={() => setExploreDropdownOpen(true)}
+            onMouseLeave={() => setExploreDropdownOpen(false)}
+          >
+            <button
+              onClick={() => setExploreDropdownOpen((v) => !v)}
+              className={`relative flex items-center gap-1 rounded-lg px-3 py-1.5 text-[13px] font-medium transition-all ${
+                isExploreActive
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/40"
+              }`}
+            >
+              Explore
+              <ChevronDown className={`h-3 w-3 transition-transform duration-200 ${exploreDropdownOpen ? "rotate-180" : ""}`} />
+              {isExploreActive && (
+                <motion.div
+                  layoutId="nav-indicator"
+                  className="absolute inset-x-1 -bottom-[13px] h-[2px] rounded-full bg-primary"
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
+              )}
+            </button>
+            <AnimatePresence>
+              {exploreDropdownOpen && (
+                <div className="absolute left-1/2 top-full mt-3 z-50" style={{ marginLeft: '-170px' }}>
+                  <motion.div
+                    initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                    transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                    className="w-[340px] rounded-xl border border-border bg-card shadow-xl shadow-background/30 overflow-hidden"
+                  >
+                    {/* Header */}
+                    <div className="px-4 pt-3 pb-2">
+                      <p className="text-[10px] uppercase tracking-[0.15em] font-semibold text-muted-foreground/50">Explore Hub</p>
+                    </div>
+
+                    {/* Links */}
+                    <div className="px-2 pb-2 space-y-0.5">
+                      <Link
+                        to="/explore"
+                        onClick={() => setExploreDropdownOpen(false)}
+                        className={`group/item flex items-center gap-3 rounded-lg px-3 py-3 transition-all ${
+                          location.pathname === "/explore" && !location.search
+                            ? "bg-primary/8 border border-primary/15"
+                            : "hover:bg-secondary/50 border border-transparent"
+                        }`}
+                      >
+                        <div className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors ${
+                          location.pathname === "/explore" && !location.search ? "bg-primary/15" : "bg-secondary group-hover/item:bg-primary/10"
+                        }`}>
+                          <Compass className={`h-4 w-4 ${location.pathname === "/explore" && !location.search ? "text-primary" : "text-muted-foreground group-hover/item:text-primary"} transition-colors`} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="text-[13px] font-semibold text-foreground">Discover Projects</p>
+                            {location.pathname === "/explore" && !location.search && (
+                              <span className="rounded-full bg-primary/15 px-1.5 py-0.5 text-[9px] font-bold text-primary uppercase tracking-wider">Active</span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-muted-foreground mt-0.5">Browse all DePIN projects & categories</p>
+                        </div>
+                        <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/30 group-hover/item:text-muted-foreground transition-all group-hover/item:translate-x-0.5" />
+                      </Link>
+
+                      <Link
+                        to="/explore?sort=newest"
+                        onClick={() => setExploreDropdownOpen(false)}
+                        className={`group/item flex items-center gap-3 rounded-lg px-3 py-3 transition-all ${
+                          location.search === "?sort=newest"
+                            ? "bg-primary/8 border border-primary/15"
+                            : "hover:bg-secondary/50 border border-transparent"
+                        }`}
+                      >
+                        <div className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors ${
+                          location.search === "?sort=newest" ? "bg-primary/15" : "bg-secondary group-hover/item:bg-primary/10"
+                        }`}>
+                          <Sparkles className={`h-4 w-4 ${location.search === "?sort=newest" ? "text-primary" : "text-muted-foreground group-hover/item:text-primary"} transition-colors`} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="text-[13px] font-semibold text-foreground">New Projects</p>
+                            {location.search === "?sort=newest" && (
+                              <span className="rounded-full bg-primary/15 px-1.5 py-0.5 text-[9px] font-bold text-primary uppercase tracking-wider">Active</span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-muted-foreground mt-0.5">Recently added projects in the last 30 days</p>
+                        </div>
+                        <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/30 group-hover/item:text-muted-foreground transition-all group-hover/item:translate-x-0.5" />
+                      </Link>
+
+                      <Link
+                        to="/explore?sort=rating"
+                        onClick={() => setExploreDropdownOpen(false)}
+                        className={`group/item flex items-center gap-3 rounded-lg px-3 py-3 transition-all ${
+                          location.search === "?sort=rating"
+                            ? "bg-primary/8 border border-primary/15"
+                            : "hover:bg-secondary/50 border border-transparent"
+                        }`}
+                      >
+                        <div className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors ${
+                          location.search === "?sort=rating" ? "bg-primary/15" : "bg-secondary group-hover/item:bg-primary/10"
+                        }`}>
+                          <Star className={`h-4 w-4 ${location.search === "?sort=rating" ? "text-primary" : "text-muted-foreground group-hover/item:text-primary"} transition-colors`} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="text-[13px] font-semibold text-foreground">Top Rated</p>
+                            {location.search === "?sort=rating" && (
+                              <span className="rounded-full bg-primary/15 px-1.5 py-0.5 text-[9px] font-bold text-primary uppercase tracking-wider">Active</span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-muted-foreground mt-0.5">Highest community-rated projects</p>
+                        </div>
+                        <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/30 group-hover/item:text-muted-foreground transition-all group-hover/item:translate-x-0.5" />
+                      </Link>
+                    </div>
+
+                    {/* Footer */}
+                    <div className="border-t border-border px-4 py-2.5 flex items-center justify-between bg-secondary/20">
+                      <span className="text-[10px] text-muted-foreground">Discover the DePIN ecosystem</span>
+                      <div className="flex items-center gap-1 text-[10px] font-medium text-primary">
+                        <Compass className="h-3 w-3" />
+                        Browse
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
+              )}
+            </AnimatePresence>
+          </div>
           {/* Market mega dropdown */}
           <div
             className="relative"
