@@ -22,32 +22,6 @@ interface ReviewSectionProps {
   projectName: string;
 }
 
-const StarRating = ({ rating, onRate, interactive = false }: { rating: number; onRate?: (r: number) => void; interactive?: boolean }) => {
-  const [hover, setHover] = useState(0);
-  return (
-    <div className="flex gap-0.5">
-      {[1, 2, 3, 4, 5].map((star) => (
-        <button
-          key={star}
-          type="button"
-          disabled={!interactive}
-          onClick={() => onRate?.(star)}
-          onMouseEnter={() => interactive && setHover(star)}
-          onMouseLeave={() => interactive && setHover(0)}
-          className={interactive ? "cursor-pointer" : "cursor-default"}
-        >
-          <Star
-            className={`h-4 w-4 transition-colors ${
-              star <= (hover || rating)
-                ? "fill-primary text-primary"
-                : "text-muted-foreground/30"
-            }`}
-          />
-        </button>
-      ))}
-    </div>
-  );
-};
 
 /* ── Reply list for a single review ── */
 const ReplyThread = ({ reviewId, showInput = false }: { reviewId: string; showInput?: boolean }) => {
