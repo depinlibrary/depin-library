@@ -20,6 +20,7 @@ import CompareProjects from "./pages/CompareProjects";
 import Forecasts from "./pages/Forecasts";
 import ForecastDetail from "./pages/ForecastDetail";
 import Notifications from "./pages/Notifications";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import ScrollToTop from "./components/ScrollToTop";
 
@@ -43,6 +44,7 @@ const AnimatedRoutes = () => {
         <Route path="/forecasts" element={<PageTransition><Forecasts /></PageTransition>} />
         <Route path="/forecasts/:id" element={<PageTransition><ForecastDetail /></PageTransition>} />
         <Route path="/notifications" element={<PageTransition><Notifications /></PageTransition>} />
+        <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
     </AnimatePresence>
