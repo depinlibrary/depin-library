@@ -190,13 +190,24 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index }: {
       )}
 
       {isEnded && (
-        <div className={`flex items-center justify-center gap-2 border-t border-border py-2.5 ${
+        <div className={`flex items-center justify-between border-t border-border px-4 py-2.5 ${
           finalResult === "yes" ? "bg-primary/5" : "bg-destructive/5"
         }`}>
-          <Trophy className={`h-3.5 w-3.5 ${finalResult === "yes" ? "text-primary" : "text-destructive"}`} />
-          <span className={`text-[11px] font-semibold ${finalResult === "yes" ? "text-primary" : "text-destructive"}`}>
-            Final Result: {finalResult === "yes" ? "Yes" : "No"} ({finalResult === "yes" ? yesPct.toFixed(0) : noPct.toFixed(0)}%)
-          </span>
+          <div className="flex items-center gap-2">
+            <Trophy className={`h-3.5 w-3.5 ${finalResult === "yes" ? "text-primary" : "text-destructive"}`} />
+            <span className={`text-[11px] font-semibold ${finalResult === "yes" ? "text-primary" : "text-destructive"}`}>
+              Result: {finalResult === "yes" ? "Yes" : "No"} ({finalResult === "yes" ? yesPct.toFixed(0) : noPct.toFixed(0)}%)
+            </span>
+          </div>
+          {forecast.user_vote && (
+            <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
+              forecast.user_vote === finalResult
+                ? "bg-green-500/10 text-green-600 dark:text-green-400"
+                : "bg-orange-500/10 text-orange-600 dark:text-orange-400"
+            }`}>
+              {forecast.user_vote === finalResult ? "✓ You were right!" : "✗ Minority vote"}
+            </span>
+          )}
         </div>
       )}
     </motion.div>
