@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Timer, ThumbsUp, ThumbsDown, Plus, TrendingUp, Clock, Flame, ChevronLeft, ChevronRight, LogIn, Users, BarChart3, Zap, X, Filter, Trophy } from "lucide-react";
+import { Timer, ThumbsUp, ThumbsDown, Plus, TrendingUp, Clock, Flame, ChevronLeft, ChevronRight, LogIn, Users, BarChart3, Zap, X, Filter, Trophy, CheckCircle, Circle } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { useForecasts, useCreateForecast, useVoteForecast, type ForecastSortOption, type Forecast } from "@/hooks/useForecasts";
+import { useForecasts, useCreateForecast, useVoteForecast, type ForecastSortOption, type ForecastStatusFilter, type Forecast } from "@/hooks/useForecasts";
 import { useProjects } from "@/hooks/useProjects";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -212,7 +212,8 @@ const Forecasts = () => {
   const [page, setPage] = useState(1);
   const [projectFilter, setProjectFilter] = useState<string>("");
   const [search, setSearch] = useState<string>("");
-  const { data, isLoading } = useForecasts(sort, page, PAGE_SIZE, projectFilter || undefined, search || undefined);
+  const [statusFilter, setStatusFilter] = useState<ForecastStatusFilter>("all");
+  const { data, isLoading } = useForecasts(sort, page, PAGE_SIZE, projectFilter || undefined, search || undefined, statusFilter);
   const createForecast = useCreateForecast();
   const voteForecast = useVoteForecast();
   const [showCreate, setShowCreate] = useState(false);
@@ -353,6 +354,40 @@ const Forecasts = () => {
                   <Icon className="h-3 w-3" /> {label}
                 </button>
               ))}
+            </div>
+            <div className="w-px h-5 bg-border hidden sm:block" />
+            {/* Status filter */}
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={() => { setStatusFilter("all"); setPage(1); }}
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all ${
+                  statusFilter === "all"
+                    ? "border border-primary/30 bg-primary/10 text-primary"
+                    : "border border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary"
+                }`}
+              >
+                All
+              </button>
+              <button
+                onClick={() => { setStatusFilter("active"); setPage(1); }}
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all ${
+                  statusFilter === "active"
+                    ? "border border-primary/30 bg-primary/10 text-primary"
+                    : "border border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary"
+                }`}
+              >
+                <Circle className="h-3 w-3" /> Active
+              </button>
+              <button
+                onClick={() => { setStatusFilter("ended"); setPage(1); }}
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all ${
+                  statusFilter === "ended"
+                    ? "border border-primary/30 bg-primary/10 text-primary"
+                    : "border border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary"
+                }`}
+              >
+                <CheckCircle className="h-3 w-3" /> Ended
+              </button>
             </div>
             <div className="w-px h-5 bg-border hidden sm:block" />
             <div className="flex items-center gap-1.5">
