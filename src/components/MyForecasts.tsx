@@ -186,7 +186,7 @@ export default function MyForecasts() {
                               logoUrl={projB.logo_url}
                               logoEmoji={projB.logo_emoji}
                               name={projB.name}
-                              size="xs"
+                              size="sm"
                             />
                           </>
                         )}
