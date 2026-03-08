@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Timer, ThumbsUp, ThumbsDown, Plus, TrendingUp, Clock, Flame, ChevronLeft, ChevronRight, LogIn, Users, BarChart3, Zap } from "lucide-react";
+import { Timer, ThumbsUp, ThumbsDown, Plus, TrendingUp, Clock, Flame, ChevronLeft, ChevronRight, LogIn, Users, BarChart3, Zap, X, Filter } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -201,7 +201,8 @@ const Forecasts = () => {
   const { data: projects = [] } = useProjects();
   const [sort, setSort] = useState<ForecastSortOption>("newest");
   const [page, setPage] = useState(1);
-  const { data, isLoading } = useForecasts(sort, page, PAGE_SIZE);
+  const [projectFilter, setProjectFilter] = useState<string>("");
+  const { data, isLoading } = useForecasts(sort, page, PAGE_SIZE, projectFilter || undefined);
   const createForecast = useCreateForecast();
   const voteForecast = useVoteForecast();
   const [showCreate, setShowCreate] = useState(false);
@@ -316,20 +317,55 @@ const Forecasts = () => {
       {/* Controls */}
       <section className="sticky top-16 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-3">
-          <div className="flex items-center gap-1.5">
-            {sortOptions.map(({ value, label, icon: Icon }) => (
-              <button
-                key={value}
-                onClick={() => { setSort(value); setPage(1); }}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all ${
-                  sort === value
-                    ? "border border-primary/30 bg-primary/10 text-primary"
-                    : "border border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary"
-                }`}
-              >
-                <Icon className="h-3 w-3" /> {label}
-              </button>
-            ))}
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-1.5">
+              {sortOptions.map(({ value, label, icon: Icon }) => (
+                <button
+                  key={value}
+                  onClick={() => { setSort(value); setPage(1); }}
+                  className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all ${
+                    sort === value
+                      ? "border border-primary/30 bg-primary/10 text-primary"
+                      : "border border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary"
+                  }`}
+                >
+                  <Icon className="h-3 w-3" /> {label}
+                </button>
+              ))}
+            </div>
+            <div className="w-px h-5 bg-border hidden sm:block" />
+            <div className="flex items-center gap-1.5">
+              <Select value={projectFilter} onValueChange={(v) => { setProjectFilter(v === "all" ? "" : v); setPage(1); }}>
+                <SelectTrigger className="h-8 w-[180px] text-[11px] bg-secondary/50 border-border">
+                  <Filter className="h-3 w-3 mr-1.5 text-muted-foreground shrink-0" />
+                  <SelectValue placeholder="All Projects" />
+                </SelectTrigger>
+                <SelectContent position="popper" side="bottom" sideOffset={4}>
+                  <SelectItem value="all">All Projects</SelectItem>
+                  {projects.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      <span className="flex items-center gap-2">
+                        {p.logo_url ? (
+                          <img src={p.logo_url} alt={p.name} className="w-4 h-4 rounded-[7px] overflow-hidden object-contain" />
+                        ) : (
+                          <span className="w-4 h-4 flex items-center justify-center text-xs">{p.logo_emoji}</span>
+                        )}
+                        {p.name}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {projectFilter && (
+                <button
+                  onClick={() => { setProjectFilter(""); setPage(1); }}
+                  className="flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 text-[11px] font-medium text-primary hover:bg-primary/15 transition-colors"
+                >
+                  {projects.find(p => p.id === projectFilter)?.name}
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+            </div>
           </div>
           {user ? (
             <Button size="sm" onClick={() => setShowCreate(true)} className="gap-1.5 rounded-lg">
