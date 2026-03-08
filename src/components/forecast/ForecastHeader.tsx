@@ -92,11 +92,9 @@ export default function ForecastHeader({ forecast, yesPct, totalVotes, isEnded, 
         {/* Meta row + share */}
         <div className="flex items-center justify-between gap-4 pt-4 border-t border-border/50">
           <div className="flex items-center gap-4 text-[11px] text-muted-foreground">
-            <UserStatsHoverCard userId={forecast.creator_user_id} displayName={forecast.creator_name}>
+            <UserStatsHoverCard userId={forecast.creator_user_id} displayName={forecast.creator_name} avatarUrl={forecast.creator_avatar_url}>
               <span className="flex items-center gap-1.5 cursor-pointer hover:text-foreground transition-colors">
-                <span className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center">
-                  <UserIcon className="h-3 w-3 text-primary" />
-                </span>
+                <UserAvatar avatarUrl={forecast.creator_avatar_url} displayName={forecast.creator_name} size="sm" />
                 {forecast.creator_name}
               </span>
             </UserStatsHoverCard>
