@@ -108,7 +108,7 @@ const MiniSparkline = ({ data, positive }: { data: number[] | null; positive: bo
 const BillboardHero = ({
   projects,
   marketData,
-  topSentiments,
+  topForecasts,
   trendingProjects,
   totalCategories,
   totalBlockchains,
