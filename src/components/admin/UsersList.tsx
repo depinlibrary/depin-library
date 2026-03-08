@@ -6,11 +6,13 @@ import { Users, ShieldCheck, ShieldOff } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import UserAvatar from "@/components/UserAvatar";
 
 type UserProfile = {
   id: string;
   user_id: string;
   display_name: string | null;
+  avatar_url?: string | null;
   created_at: string;
   role?: string;
   roleId?: string;
@@ -108,13 +110,16 @@ const UsersList = () => {
             animate={{ opacity: 1 }}
             className="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-3"
           >
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-foreground">
-                {user.display_name || "Anonymous"}
-              </p>
-              <p className="truncate text-xs text-muted-foreground">
-                ID: {user.user_id.slice(0, 8)}...
-              </p>
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <UserAvatar avatarUrl={user.avatar_url} displayName={user.display_name} size="md" />
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-foreground">
+                  {user.display_name || "Anonymous"}
+                </p>
+                <p className="truncate text-xs text-muted-foreground">
+                  ID: {user.user_id.slice(0, 8)}...
+                </p>
+              </div>
             </div>
             <div className="flex items-center gap-3">
               <span

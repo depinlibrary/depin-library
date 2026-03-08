@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { createNotification } from "@/hooks/useNotifications";
 import { Check, X, Clock, Trash2 } from "lucide-react";
 import { format } from "date-fns";
+import UserAvatar from "@/components/UserAvatar";
 
 type DeletionRequest = {
   id: string;
@@ -19,6 +20,7 @@ type DeletionRequest = {
   created_at: string;
   forecast_title?: string;
   user_display_name?: string;
+  user_avatar_url?: string | null;
 };
 
 export default function DeletionRequests() {
@@ -44,16 +46,17 @@ export default function DeletionRequests() {
 
       const [{ data: forecasts }, { data: profiles }] = await Promise.all([
         supabase.from("forecasts").select("id, title").in("id", forecastIds),
-        supabase.from("profiles").select("user_id, display_name").in("user_id", userIds),
+        supabase.from("profiles").select("user_id, display_name, avatar_url").in("user_id", userIds),
       ]);
 
       const forecastMap = new Map((forecasts || []).map((f: any) => [f.id, f.title]));
-      const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p.display_name]));
+      const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, { name: p.display_name, avatar: p.avatar_url }]));
 
       return (data || []).map((r: any) => ({
         ...r,
         forecast_title: forecastMap.get(r.forecast_id) || "Unknown",
-        user_display_name: profileMap.get(r.user_id) || "Unknown",
+        user_display_name: profileMap.get(r.user_id)?.name || "Unknown",
+        user_avatar_url: profileMap.get(r.user_id)?.avatar || null,
       })) as DeletionRequest[];
     },
   });
@@ -121,7 +124,9 @@ export default function DeletionRequests() {
           {requests.map((r) => (
             <div key={r.id} className="rounded-xl border border-border bg-background p-4">
               <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0">
+                <div className="flex items-start gap-3 flex-1 min-w-0">
+                  <UserAvatar avatarUrl={r.user_avatar_url} displayName={r.user_display_name} size="md" className="mt-0.5" />
+                  <div className="flex-1 min-w-0">
                   <h4 className="text-sm font-medium text-foreground line-clamp-1">{r.forecast_title}</h4>
                   <p className="mt-1 text-xs text-muted-foreground">Requested by {r.user_display_name}</p>
                   <p className="mt-1 text-xs text-muted-foreground">{format(new Date(r.created_at), "MMM d, yyyy 'at' h:mm a")}</p>
@@ -133,6 +138,7 @@ export default function DeletionRequests() {
                       <p className="text-xs text-foreground"><span className="font-medium">Admin response:</span> {r.admin_response}</p>
                     </div>
                   )}
+                  </div>
                 </div>
                 {filter === "pending" && (
                   <div className="flex gap-1.5 shrink-0">
