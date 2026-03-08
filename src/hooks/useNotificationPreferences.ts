@@ -23,6 +23,7 @@ const DEFAULT_PREFS = {
   review_like: true,
   forecast_vote: true,
   forecast_result: true,
+  price_alert: true,
 };
 
 export function useNotificationPreferences() {
