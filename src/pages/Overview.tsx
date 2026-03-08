@@ -57,7 +57,14 @@ const fadeUp = {
 const Overview = () => {
   const { data: projects = [] } = useProjects();
   const { data: marketData = {}, isRefetching } = useAllTokenMarketData(30 * 1000); // Refetch every 30 seconds for billboard
-  const { data: topSentiments = [] } = useTopSentiments(6);
+  const { data: forecastData } = useForecasts("votes", 1, 4);
+  const topForecasts = (forecastData?.forecasts || []).map(f => ({
+    id: f.id,
+    title: f.title,
+    total_votes_yes: f.total_votes_yes,
+    total_votes_no: f.total_votes_no,
+    status: f.status || "active",
+  }));
   const { data: trendingProjects = [] } = useTrendingProjects(5);
 
   const quickLinks = [
