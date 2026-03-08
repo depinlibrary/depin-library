@@ -189,7 +189,7 @@ const BillboardHero = ({
 
           {/* Bento Grid */}
           <motion.div 
-            className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 auto-rows-min relative"
+            className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2.5 auto-rows-min relative"
             animate={{ opacity: isRefetching ? [1, 0.7, 1] : 1 }}
             transition={{ duration: 0.8, repeat: isRefetching ? Infinity : 0 }}
           >
