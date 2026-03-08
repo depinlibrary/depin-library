@@ -16,7 +16,7 @@ const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
-  const isMarketActive = location.pathname === "/market" || location.pathname === "/forecasts";
+  const isMarketActive = location.pathname === "/market" || location.pathname === "/forecasts" || location.pathname === "/portfolio";
 
   useEffect(() => {
     if (!user) { setIsAdmin(false); return; }
