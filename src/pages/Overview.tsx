@@ -55,13 +55,6 @@ const Overview = () => {
     { title: "Portfolio", description: "Track your DePIN holdings.", icon: Briefcase, to: "/portfolio", accent: "primary" },
   ];
 
-  const topCategoryNames: Category[] = ["Wireless", "Storage", "Compute", "Sensors", "AI", "Mapping"];
-  const topCategories = topCategoryNames.map((name) => ({
-    name,
-    count: projects.filter((p) => p.category === name).length,
-    Icon: categoryIcons[name],
-  }));
-
   const recentProjects = [...projects]
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, 6);
