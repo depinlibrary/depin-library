@@ -675,7 +675,132 @@ const Portfolio = () => {
             </div>
           </motion.div>
 
-          {/* ── Tab Navigation ── */}
+          {/* ── P&L History Tracker ── */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.18 }}
+            className="mb-6 rounded-xl border border-border bg-card p-5"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
+                  <History className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">P&L History</p>
+                  {cumulativePnl && (
+                    <div className={`flex items-center gap-1 text-xs font-semibold ${cumulativePnl.isPositive ? "text-green-500" : "text-red-500"}`}>
+                      {cumulativePnl.isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                      {cumulativePnl.isPositive ? "+" : ""}{hideBalances ? "••••" : formatValue(Math.abs(cumulativePnl.diff))}
+                      <span className={`inline-flex items-center rounded px-1 py-0.5 text-[10px] font-semibold ${cumulativePnl.isPositive ? "bg-green-500/10" : "bg-red-500/10"}`}>
+                        {cumulativePnl.isPositive ? "+" : ""}{cumulativePnl.pct.toFixed(2)}%
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center gap-0.5 rounded-lg bg-secondary/50 p-0.5">
+                {(["7D", "30D", "90D", "ALL"] as const).map((range) => (
+                  <button
+                    key={range}
+                    onClick={() => setPnlRange(range)}
+                    className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
+                      pnlRange === range
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {range}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {snapshotChartData.length >= 2 ? (
+              <div className="h-[200px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={snapshotChartData}>
+                    <defs>
+                      <linearGradient id="pnlHistGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={cumulativePnl?.isPositive ? "rgb(34,197,94)" : "rgb(239,68,68)"} stopOpacity={0.15} />
+                        <stop offset="100%" stopColor={cumulativePnl?.isPositive ? "rgb(34,197,94)" : "rgb(239,68,68)"} stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <XAxis
+                      dataKey="label"
+                      tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                      tickLine={false}
+                      axisLine={false}
+                      interval="preserveStartEnd"
+                    />
+                    <YAxis
+                      hide
+                      domain={["auto", "auto"]}
+                    />
+                    <Tooltip
+                      formatter={(value: number, name: string) => {
+                        if (name === "value") return [hideBalances ? "••••" : formatValue(value), "Value"];
+                        return [hideBalances ? "••••" : `${value >= 0 ? "+" : ""}${formatValue(Math.abs(value))}`, "Daily P&L"];
+                      }}
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "10px",
+                        color: "hsl(var(--foreground))",
+                        fontSize: "12px",
+                      }}
+                      labelFormatter={(label) => label}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="value"
+                      stroke={cumulativePnl?.isPositive ? "rgb(34,197,94)" : "rgb(239,68,68)"}
+                      strokeWidth={2}
+                      fill="url(#pnlHistGrad)"
+                      dot={false}
+                      name="value"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="flex h-[200px] flex-col items-center justify-center text-center">
+                <History className="h-7 w-7 text-muted-foreground/30 mb-2" />
+                <p className="text-sm font-medium text-foreground">Building your P&L history</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {snapshotChartData.length === 1
+                    ? "First snapshot recorded today. Come back tomorrow to see your trend."
+                    : "Portfolio snapshots are recorded daily when you visit this page."}
+                </p>
+              </div>
+            )}
+
+            {/* Daily P&L table for recent entries */}
+            {snapshotChartData.length >= 2 && (
+              <div className="mt-4 border-t border-border pt-3">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-2">Recent Snapshots</p>
+                <div className="space-y-1.5 max-h-[140px] overflow-y-auto">
+                  {[...snapshotChartData].reverse().slice(0, 10).map((s, i) => (
+                    <div key={i} className="flex items-center justify-between text-xs py-1">
+                      <span className="text-muted-foreground">{s.label}</span>
+                      <div className="flex items-center gap-3">
+                        <span className="text-foreground font-medium tabular-nums">{hideBalances ? "••••" : formatValue(s.value)}</span>
+                        <span className={`font-semibold tabular-nums w-20 text-right ${s.pnl >= 0 ? "text-green-500" : "text-red-500"}`}>
+                          {hideBalances ? "••••" : `${s.pnl >= 0 ? "+" : ""}${formatValue(Math.abs(s.pnl))}`}
+                        </span>
+                        <span className={`text-[10px] font-semibold w-14 text-right tabular-nums ${s.pnlPercent >= 0 ? "text-green-500" : "text-red-500"}`}>
+                          {s.pnlPercent >= 0 ? "+" : ""}{s.pnlPercent.toFixed(2)}%
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </motion.div>
+
+
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
