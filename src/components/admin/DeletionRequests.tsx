@@ -46,16 +46,17 @@ export default function DeletionRequests() {
 
       const [{ data: forecasts }, { data: profiles }] = await Promise.all([
         supabase.from("forecasts").select("id, title").in("id", forecastIds),
-        supabase.from("profiles").select("user_id, display_name").in("user_id", userIds),
+        supabase.from("profiles").select("user_id, display_name, avatar_url").in("user_id", userIds),
       ]);
 
       const forecastMap = new Map((forecasts || []).map((f: any) => [f.id, f.title]));
-      const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p.display_name]));
+      const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, { name: p.display_name, avatar: p.avatar_url }]));
 
       return (data || []).map((r: any) => ({
         ...r,
         forecast_title: forecastMap.get(r.forecast_id) || "Unknown",
-        user_display_name: profileMap.get(r.user_id) || "Unknown",
+        user_display_name: profileMap.get(r.user_id)?.name || "Unknown",
+        user_avatar_url: profileMap.get(r.user_id)?.avatar || null,
       })) as DeletionRequest[];
     },
   });
