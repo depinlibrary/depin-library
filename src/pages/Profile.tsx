@@ -295,7 +295,7 @@ const Profile = () => {
                           <span className="w-8 h-8 rounded-lg flex items-center justify-center text-base bg-secondary shrink-0">{item.project_logo_emoji}</span>
                         )}
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors">
+                          <p className="text-sm font-medium text-foreground truncate transition-colors">
                             {item.forecast_title}
                           </p>
                           <p className="text-xs text-muted-foreground">
