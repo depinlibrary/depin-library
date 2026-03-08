@@ -208,8 +208,7 @@ const Overview = () => {
                 </Link>
               </motion.div>
               );
-            })}
-            ))}
+          </div>
           </div>
         </motion.div>
       </section>
