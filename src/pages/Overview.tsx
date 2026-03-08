@@ -80,6 +80,11 @@ const Overview = () => {
   }));
   const endingSoon = endingSoonData?.forecasts || [];
   const { data: trendingProjects = [] } = useTrendingProjects(5);
+  const { data: spotlightEntries = [] } = useSpotlightProjects();
+
+  const spotlightProjects = spotlightEntries
+    .map((entry) => projects.find((p) => p.id === entry.project_id))
+    .filter(Boolean);
 
   const quickLinks = [
     { title: "Explore", description: "Browse the full DePIN project directory.", icon: Layers, to: "/explore", accent: "primary" },
