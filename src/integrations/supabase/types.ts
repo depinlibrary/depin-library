@@ -294,6 +294,7 @@ export type Database = {
           forecast_comment_like: boolean
           forecast_comment_reply: boolean
           forecast_new_comment: boolean
+          forecast_vote: boolean
           id: string
           review_like: boolean
           updated_at: string
@@ -304,6 +305,7 @@ export type Database = {
           forecast_comment_like?: boolean
           forecast_comment_reply?: boolean
           forecast_new_comment?: boolean
+          forecast_vote?: boolean
           id?: string
           review_like?: boolean
           updated_at?: string
@@ -314,6 +316,7 @@ export type Database = {
           forecast_comment_like?: boolean
           forecast_comment_reply?: boolean
           forecast_new_comment?: boolean
+          forecast_vote?: boolean
           id?: string
           review_like?: boolean
           updated_at?: string
