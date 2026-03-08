@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { ThumbsUp, ThumbsDown, Users, TrendingUp, TrendingDown, BarChart3 } from "lucide-react";
+import { ThumbsUp, ThumbsDown, Users, TrendingUp, TrendingDown, Gauge } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
@@ -10,16 +12,27 @@ interface VoteSectionProps {
   noPct: number;
   totalVotes: number;
   isEnded: boolean;
-  onVote: (vote: "yes" | "no") => void;
+  onVote: (vote: "yes" | "no", confidenceLevel: number) => void;
 }
+
+const confidenceLabels: Record<number, { label: string; color: string }> = {
+  1: { label: "Low", color: "text-muted-foreground" },
+  2: { label: "Moderate", color: "text-yellow-500" },
+  3: { label: "High", color: "text-primary" },
+  4: { label: "Very High", color: "text-primary" },
+  5: { label: "Maximum", color: "text-accent" },
+};
 
 export default function VoteSection({ forecast, yesPct, noPct, totalVotes, isEnded, onVote }: VoteSectionProps) {
   const { user } = useAuth();
+  const [confidence, setConfidence] = useState(3);
 
   const handleVote = (vote: "yes" | "no") => {
     if (!user) { toast.error("Sign in to vote"); return; }
-    onVote(vote);
+    onVote(vote, confidence);
   };
+
+  const confInfo = confidenceLabels[confidence] || confidenceLabels[3];
 
   return (
     <motion.div
@@ -94,6 +107,36 @@ export default function VoteSection({ forecast, yesPct, noPct, totalVotes, isEnd
             )}
           </motion.div>
         </div>
+
+        {/* Confidence slider */}
+        {!isEnded && (
+          <div className="mb-5 rounded-lg bg-secondary/30 border border-border/50 px-4 py-3.5">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-1.5">
+                <Gauge className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-[11px] font-medium text-muted-foreground">Confidence Level</span>
+              </div>
+              <span className={`text-[11px] font-semibold ${confInfo.color}`}>
+                {confInfo.label} ({confidence}/5)
+              </span>
+            </div>
+            <Slider
+              value={[confidence]}
+              onValueChange={(val) => setConfidence(val[0])}
+              min={1}
+              max={5}
+              step={1}
+              className="w-full"
+            />
+            <div className="flex justify-between mt-1.5 px-0.5">
+              {[1, 2, 3, 4, 5].map((n) => (
+                <span key={n} className={`text-[9px] ${confidence === n ? "text-foreground font-semibold" : "text-muted-foreground/50"}`}>
+                  {n}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Vote buttons */}
         {!isEnded ? (
