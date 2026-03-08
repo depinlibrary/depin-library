@@ -114,9 +114,11 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index }: {
         </div>
 
         {/* Title */}
-        <h3 className="text-[13px] font-semibold text-foreground leading-snug mb-2 line-clamp-2">
-          {forecast.title}
-        </h3>
+        <Link to={`/forecasts/${forecast.id}`} className="block">
+          <h3 className="text-[13px] font-semibold text-foreground leading-snug mb-2 line-clamp-2 hover:text-primary transition-colors">
+            {forecast.title}
+          </h3>
+        </Link>
 
         {forecast.description && (
           <p className="text-xs text-muted-foreground mb-3 line-clamp-2 leading-relaxed">{forecast.description}</p>

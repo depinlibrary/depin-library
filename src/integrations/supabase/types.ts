@@ -97,6 +97,41 @@ export type Database = {
         }
         Relationships: []
       }
+      forecast_comments: {
+        Row: {
+          comment_text: string
+          created_at: string
+          forecast_id: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          comment_text: string
+          created_at?: string
+          forecast_id: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          comment_text?: string
+          created_at?: string
+          forecast_id?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forecast_comments_forecast_id_fkey"
+            columns: ["forecast_id"]
+            isOneToOne: false
+            referencedRelation: "forecasts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       forecast_votes: {
         Row: {
           confidence_level: number | null
