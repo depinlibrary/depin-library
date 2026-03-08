@@ -61,7 +61,6 @@ export function useForecasts(sort: ForecastSortOption = "newest", page = 1, page
         default:
           query = query.order("created_at", { ascending: false });
       }
-      }
 
       const { data: forecasts, error } = await query;
       if (error) throw error;
