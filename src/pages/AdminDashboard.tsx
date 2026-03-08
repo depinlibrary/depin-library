@@ -291,6 +291,7 @@ const AdminDashboard = () => {
               {([
                 { key: "projects", label: `All Projects (${projects.length})` },
                 { key: "submissions", label: "Submissions" },
+                { key: "spotlight", label: "Spotlight" },
                 { key: "deletion-requests", label: "Deletion Requests" },
                 { key: "categories", label: "Categories & Blockchains" },
                 { key: "users", label: "Users" },
