@@ -187,3 +187,53 @@ export function useForecastVoteHistory(forecastId: string | undefined) {
     },
   });
 }
+
+export function useRelatedForecasts(forecastId: string | undefined, projectAId: string | undefined, projectBId: string | null | undefined) {
+  return useQuery({
+    queryKey: ["related-forecasts", forecastId, projectAId, projectBId],
+    enabled: !!forecastId && !!projectAId,
+    queryFn: async () => {
+      const projectIds = [projectAId!];
+      if (projectBId) projectIds.push(projectBId);
+
+      const orFilter = projectIds.map(id => `project_a_id.eq.${id},project_b_id.eq.${id}`).join(",");
+
+      const { data: forecasts, error } = await supabase
+        .from("forecasts")
+        .select("*")
+        .or(orFilter)
+        .neq("id", forecastId!)
+        .order("total_votes_yes", { ascending: false })
+        .limit(4);
+      if (error) throw error;
+
+      const pIds = new Set<string>();
+      (forecasts || []).forEach((f: any) => {
+        pIds.add(f.project_a_id);
+        if (f.project_b_id) pIds.add(f.project_b_id);
+      });
+
+      if (pIds.size === 0) return [];
+
+      const { data: projects } = await supabase
+        .from("projects")
+        .select("id, name, slug, logo_url, logo_emoji")
+        .in("id", [...pIds]);
+
+      const pMap: Record<string, any> = {};
+      (projects || []).forEach((p: any) => { pMap[p.id] = p; });
+
+      return (forecasts || []).map((f: any) => ({
+        ...f,
+        project_a_name: pMap[f.project_a_id]?.name || "Unknown",
+        project_a_slug: pMap[f.project_a_id]?.slug,
+        project_a_logo_url: pMap[f.project_a_id]?.logo_url,
+        project_a_logo_emoji: pMap[f.project_a_id]?.logo_emoji || "⬡",
+        project_b_name: f.project_b_id ? pMap[f.project_b_id]?.name || "Unknown" : null,
+        project_b_slug: f.project_b_id ? pMap[f.project_b_id]?.slug : null,
+        project_b_logo_url: f.project_b_id ? pMap[f.project_b_id]?.logo_url : null,
+        project_b_logo_emoji: f.project_b_id ? pMap[f.project_b_id]?.logo_emoji || "⬡" : "⬡",
+      }));
+    },
+  });
+}
