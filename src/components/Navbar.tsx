@@ -49,7 +49,7 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
 
   const isExploreActive = location.pathname === "/explore";
-  const isMarketActive = location.pathname === "/market" || location.pathname === "/forecasts" || location.pathname === "/portfolio";
+  const isMarketActive = ["/market", "/forecasts", "/portfolio"].includes(location.pathname);
 
   useEffect(() => {
     if (!user) { setIsAdmin(false); return; }
