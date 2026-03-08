@@ -359,8 +359,8 @@ const BillboardHero = ({
             </motion.div>
 
             {/* ── Community Sentiment (spans 2 cols) ── */}
-            {topSentiments.length > 0 && (
-              <motion.div variants={fadeUp} className="col-span-2 rounded-xl border border-border bg-card/80 backdrop-blur-sm p-4">
+             {topSentiments.length > 0 && (
+               <motion.div variants={fadeUp} className="col-span-2 rounded-xl border border-border bg-card/50 backdrop-blur-md p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <Users className="h-3.5 w-3.5 text-accent" />
                   <span className="text-xs font-semibold text-foreground">Community Sentiment</span>
