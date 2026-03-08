@@ -63,7 +63,7 @@ const CommentReplyThread = ({ commentId, forecastId }: { commentId: string; fore
             >
               <div className="flex items-center gap-2 mb-0.5">
                 <UserAvatar avatarUrl={reply.avatar_url} displayName={reply.display_name} size="sm" />
-                <UserStatsHoverCard userId={reply.user_id} displayName={reply.display_name || "Anonymous"}>
+                <UserStatsHoverCard userId={reply.user_id} displayName={reply.display_name || "Anonymous"} avatarUrl={reply.avatar_url}>
                   <span className="text-[11px] font-medium text-foreground cursor-pointer hover:text-primary transition-colors">{reply.display_name}</span>
                 </UserStatsHoverCard>
                 <span className="text-[10px] text-muted-foreground">
