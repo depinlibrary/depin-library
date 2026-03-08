@@ -6,8 +6,6 @@ import {
   GitCompare,
   Briefcase,
   ArrowRight,
-  Globe,
-  Shield,
   BookOpen,
   HelpCircle,
   Heart,
