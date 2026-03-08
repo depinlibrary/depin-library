@@ -142,7 +142,7 @@ export default function MyForecasts() {
       <div className="absolute top-0 right-0 w-24 h-24 rounded-bl-[60px] bg-primary/3 pointer-events-none" />
 
       {/* Header */}
-      <div className="relative flex items-center justify-between p-4 md:p-5">
+      <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 md:p-5">
         <div className="flex items-center gap-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10">
             <Activity className="h-3.5 w-3.5 text-primary" />
@@ -154,12 +154,34 @@ export default function MyForecasts() {
             </p>
           </div>
         </div>
-        <Link to="/forecasts?create=true">
-          <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs">
-            <BarChart3 className="h-3.5 w-3.5" />
-            New Forecast
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-0.5 rounded-lg bg-secondary/40 p-0.5">
+            {([
+              { key: "all" as const, label: "All", count: forecasts.length },
+              { key: "active" as const, label: "Active", count: activeCount },
+              { key: "ended" as const, label: "Ended", count: endedCount },
+            ]).map((opt) => (
+              <button
+                key={opt.key}
+                onClick={() => setStatusFilter(opt.key)}
+                className={`rounded-md px-2.5 py-1 text-[11px] font-medium transition-all ${
+                  statusFilter === opt.key
+                    ? "bg-card text-foreground shadow-sm border border-border"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {opt.label}
+                <span className="ml-1 text-[10px] text-muted-foreground">{opt.count}</span>
+              </button>
+            ))}
+          </div>
+          <Link to="/forecasts?create=true">
+            <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs">
+              <BarChart3 className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">New Forecast</span>
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Content */}
