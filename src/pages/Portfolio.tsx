@@ -269,6 +269,11 @@ const Portfolio = () => {
       }));
   }, [portfolioData, totalNetWorth]);
 
+  const topDominance = useMemo(() => {
+    if (chartData.length === 0) return null;
+    return chartData.reduce((top: any, item: any) => (parseFloat(item.percent) > parseFloat(top.percent) ? item : top), chartData[0]);
+  }, [chartData]);
+
   const portfolioSparkline = useMemo(() => {
     const holdingsWithSparkline = portfolioData.filter(
       (h: any) => h.market?.sparkline_7d && Array.isArray(h.market.sparkline_7d) && h.market.sparkline_7d.length > 0
@@ -432,10 +437,10 @@ const Portfolio = () => {
               },
               {
                 label: "Top Dominance",
-                content: chartData[0] ? (
+                content: topDominance ? (
                   <div>
-                    <p className="text-2xl font-bold text-foreground tabular-nums">{chartData[0].percent}%</p>
-                    <p className="text-xs text-muted-foreground">{chartData[0].name}</p>
+                    <p className="text-2xl font-bold text-foreground tabular-nums">{topDominance.percent}%</p>
+                    <p className="text-xs text-muted-foreground">{topDominance.name}</p>
                   </div>
                 ) : null,
               },
