@@ -243,9 +243,7 @@ export default function DiscussionSection({
             return (
               <div key={comment.id} className="px-6 py-4 group/comment hover:bg-secondary/10 transition-colors">
                 <div className="flex items-start gap-3">
-                  <div className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center shrink-0 mt-0.5">
-                    <UserIcon className="h-3.5 w-3.5 text-muted-foreground" />
-                  </div>
+                  <UserAvatar avatarUrl={comment.avatar_url} displayName={comment.display_name} size="sm" className="mt-0.5" />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <UserStatsHoverCard userId={comment.user_id} displayName={comment.display_name || "Anonymous"}>
