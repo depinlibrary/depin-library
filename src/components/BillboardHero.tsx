@@ -345,7 +345,7 @@ const BillboardHero = ({
                   <p className="text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums leading-tight">
                     <AnimatedNumber target={totalBlockchains} />
                   </p>
-                  <p className="text-[9px] text-muted-foreground font-medium">Chains</p>
+                  <p className="text-[10px] text-muted-foreground font-medium">Chains</p>
                 </div>
               </div>
             </div>
