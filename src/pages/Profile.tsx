@@ -382,7 +382,7 @@ const Profile = () => {
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                         placeholder="Min 6 characters"
-                        className="mt-1 h-9 text-sm"
+                        className="mt-1 h-9 text-sm focus-visible:ring-border focus-visible:border-border [&]:focus:border-border [&]:focus:shadow-none"
                       />
                     </div>
                     <div>
@@ -392,7 +392,7 @@ const Profile = () => {
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="Re-enter new password"
-                        className="mt-1 h-9 text-sm"
+                        className="mt-1 h-9 text-sm focus-visible:ring-border focus-visible:border-border [&]:focus:border-border [&]:focus:shadow-none"
                       />
                     </div>
                     <Button
