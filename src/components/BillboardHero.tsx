@@ -12,6 +12,7 @@ import {
   Flame,
   RefreshCw,
   Search,
+  Link as LinkIcon,
 } from "lucide-react";
 import ProjectLogo from "@/components/ProjectLogo";
 import type { Project } from "@/hooks/useProjects";
@@ -224,91 +225,53 @@ const BillboardHero = ({
           {/* Compact Stats Row with animated glow */}
           <motion.div variants={fadeUp} className="mb-4">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              <Link to="/explore" className="group relative flex items-center gap-2.5 rounded-lg border border-border bg-card/40 backdrop-blur-md px-3 py-2.5 transition-all hover:bg-card/60 hover:shadow-lg hover:shadow-primary/20">
-                {/* Animated glow background */}
-                <motion.div
-                  className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                  style={{
-                    background: "linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--primary) / 0.05))",
-                  }}
-                  animate={{ backgroundPosition: ["0% 0%", "100% 100%"] }}
-                  transition={{ duration: 3, repeat: Infinity, repeatType: "reverse" }}
-                />
-                <div className="relative flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 shrink-0">
+              <div className="flex items-center gap-2.5 rounded-lg border border-border bg-card/40 backdrop-blur-md px-3 py-2.5">
+                <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 shrink-0">
                   <Layers className="h-3.5 w-3.5 text-primary" />
                 </div>
-                <div className="relative min-w-0">
+                <div className="min-w-0">
                   <p className="text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums leading-tight">
                     <AnimatedNumber target={projects.length} />
                   </p>
                   <p className="text-[9px] text-muted-foreground font-medium">Projects</p>
                 </div>
-              </Link>
+              </div>
 
-              <Link to="/market" className="group relative flex items-center gap-2.5 rounded-lg border border-border bg-card/40 backdrop-blur-md px-3 py-2.5 transition-all hover:bg-card/60 hover:shadow-lg hover:shadow-primary/20">
-                {/* Animated glow background */}
-                <motion.div
-                  className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                  style={{
-                    background: "linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--primary) / 0.05))",
-                  }}
-                  animate={{ backgroundPosition: ["0% 0%", "100% 100%"] }}
-                  transition={{ duration: 3, repeat: Infinity, repeatType: "reverse" }}
-                />
-                <div className="relative flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 shrink-0">
+              <div className="flex items-center gap-2.5 rounded-lg border border-border bg-card/40 backdrop-blur-md px-3 py-2.5">
+                <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 shrink-0">
                   <BarChart3 className="h-3.5 w-3.5 text-primary" />
                 </div>
-                <div className="relative min-w-0">
+                <div className="min-w-0">
                   <p className="text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums leading-tight">
                     {formatCompact(totalMarketCap)}
                   </p>
                   <p className="text-[9px] text-muted-foreground font-medium">Market Cap</p>
                 </div>
-              </Link>
+              </div>
 
-              <Link to="/market" className="group relative flex items-center gap-2.5 rounded-lg border border-border bg-card/40 backdrop-blur-md px-3 py-2.5 transition-all hover:bg-card/60 hover:shadow-lg hover:shadow-primary/20">
-                {/* Animated glow background */}
-                <motion.div
-                  className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                  style={{
-                    background: "linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--primary) / 0.05))",
-                  }}
-                  animate={{ backgroundPosition: ["0% 0%", "100% 100%"] }}
-                  transition={{ duration: 3, repeat: Infinity, repeatType: "reverse" }}
-                />
-                <div className="relative flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 shrink-0">
+              <div className="flex items-center gap-2.5 rounded-lg border border-border bg-card/40 backdrop-blur-md px-3 py-2.5">
+                <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 shrink-0">
                   <TrendingUp className="h-3.5 w-3.5 text-primary" />
                 </div>
-                <div className="relative min-w-0">
+                <div className="min-w-0">
                   <p className={`text-lg font-bold font-['Space_Grotesk'] tabular-nums leading-tight ${avgChange >= 0 ? "text-neon-green" : "text-destructive"}`}>
                     {avgChange >= 0 ? "+" : ""}{avgChange.toFixed(1)}%
                   </p>
                   <p className="text-[9px] text-muted-foreground font-medium">Avg 24h</p>
                 </div>
-              </Link>
+              </div>
 
-              <Link to="/explore" className="group relative flex items-center gap-2.5 rounded-lg border border-border bg-card/40 backdrop-blur-md px-3 py-2.5 transition-all hover:bg-card/60 hover:shadow-lg hover:shadow-primary/20">
-                {/* Animated glow background */}
-                <motion.div
-                  className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                  style={{
-                    background: "linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--primary) / 0.05))",
-                  }}
-                  animate={{ backgroundPosition: ["0% 0%", "100% 100%"] }}
-                  transition={{ duration: 3, repeat: Infinity, repeatType: "reverse" }}
-                />
-                <div className="relative flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 shrink-0">
-                  <Zap className="h-3.5 w-3.5 text-primary" />
+              <div className="flex items-center gap-2.5 rounded-lg border border-border bg-card/40 backdrop-blur-md px-3 py-2.5">
+                <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 shrink-0">
+                  <LinkIcon className="h-3.5 w-3.5 text-primary" />
                 </div>
-                <div className="relative min-w-0">
+                <div className="min-w-0">
                   <p className="text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums leading-tight">
-                    <AnimatedNumber target={totalCategories} />
-                    <span className="text-xs text-muted-foreground font-normal ml-0.5">/</span>
                     <AnimatedNumber target={totalBlockchains} />
                   </p>
-                  <p className="text-[9px] text-muted-foreground font-medium">Cat / Chains</p>
+                  <p className="text-[9px] text-muted-foreground font-medium">Chains</p>
                 </div>
-              </Link>
+              </div>
             </div>
           </motion.div>
 
