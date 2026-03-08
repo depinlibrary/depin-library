@@ -1,11 +1,12 @@
 import { useState, useRef } from "react";
-import { Navigate, Link } from "react-router-dom";
+import { Navigate, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAvatar } from "@/hooks/useAvatar";
 import { useUserForecastStats } from "@/hooks/useUserForecastStats";
 import { useBookmarks } from "@/hooks/useBookmarks";
 import { useNotificationPreferences, useUpdateNotificationPreferences } from "@/hooks/useNotificationPreferences";
+import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import UserAvatar from "@/components/UserAvatar";
@@ -17,10 +18,14 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import {
   Camera, Check, X, TrendingUp, Target, Clock, BookmarkIcon,
-  Bell, Mail, Shield, Award, BarChart3, CheckCircle2, XCircle, HelpCircle
+  Bell, Mail, Shield, Award, BarChart3, CheckCircle2, XCircle, HelpCircle, Trash2
 } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 
