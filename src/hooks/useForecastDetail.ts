@@ -11,6 +11,7 @@ export type ForecastComment = {
   comment_text: string;
   created_at: string;
   display_name?: string;
+  avatar_url?: string | null;
 };
 
 export type VoteHistoryEntry = {
