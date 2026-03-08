@@ -25,7 +25,7 @@ import {
 import { toast } from "sonner";
 import {
   Camera, Check, X, TrendingUp, Target, Clock, BookmarkIcon,
-  Bell, Mail, Shield, Award, BarChart3, CheckCircle2, XCircle, HelpCircle, Trash2
+  Bell, Mail, Shield, Award, BarChart3, CheckCircle2, XCircle, HelpCircle, Trash2, Lock
 } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 
