@@ -70,9 +70,7 @@ const ReplyThread = ({ reviewId, showInput = false }: { reviewId: string; showIn
             exit={{ opacity: 0, y: -6 }}
             className="flex items-start gap-2"
           >
-            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-secondary-foreground">
-              {(reply.display_name || "A")[0].toUpperCase()}
-            </div>
+            <UserAvatar avatarUrl={reply.avatar_url} displayName={reply.display_name} size="sm" />
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-medium text-foreground">{reply.display_name}</span>
