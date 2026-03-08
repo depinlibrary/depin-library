@@ -370,6 +370,7 @@ export type Database = {
           forecast_result: boolean
           forecast_vote: boolean
           id: string
+          price_alert: boolean
           review_like: boolean
           updated_at: string
           user_id: string
@@ -382,6 +383,7 @@ export type Database = {
           forecast_result?: boolean
           forecast_vote?: boolean
           id?: string
+          price_alert?: boolean
           review_like?: boolean
           updated_at?: string
           user_id: string
@@ -394,6 +396,7 @@ export type Database = {
           forecast_result?: boolean
           forecast_vote?: boolean
           id?: string
+          price_alert?: boolean
           review_like?: boolean
           updated_at?: string
           user_id?: string
