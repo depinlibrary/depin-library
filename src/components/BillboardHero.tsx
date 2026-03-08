@@ -159,7 +159,7 @@ const BillboardHero = ({
         <motion.div initial="hidden" animate="visible" variants={stagger}>
           {/* Title row + Search + CTA */}
           <motion.div variants={fadeUp} className="mb-4 sm:mb-5">
-            <div className="flex flex-col gap-3 sm:gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 sm:gap-4">
               <div>
                 <div className="mb-1.5 inline-flex items-center gap-2 rounded-full border border-border/60 bg-card/50 backdrop-blur-sm px-3 py-0.5">
                   <span className="relative flex h-1.5 w-1.5">
@@ -185,9 +185,9 @@ const BillboardHero = ({
                 </p>
               </div>
 
-              {/* Search + CTA row — stacks on mobile */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                <form onSubmit={handleSearch} className="relative flex-1 sm:max-w-[220px]">
+              {/* Search + CTA — row on desktop, stacked on mobile */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:shrink-0">
+                <form onSubmit={handleSearch} className="relative flex-1 sm:flex-initial sm:w-[220px]">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                   <input
                     type="text"
