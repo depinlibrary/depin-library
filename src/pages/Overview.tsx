@@ -157,7 +157,7 @@ const Overview = () => {
                 All forecasts <ArrowRight className="h-3 w-3" />
               </Link>
             </motion.div>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {endingSoon.map((forecast) => {
                 const totalVotes = forecast.total_votes_yes + forecast.total_votes_no;
                 const yesPct = totalVotes > 0 ? (forecast.total_votes_yes / totalVotes) * 100 : 50;
