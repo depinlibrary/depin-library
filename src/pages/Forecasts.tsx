@@ -121,8 +121,9 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index }: {
         </Link>
 
         {forecast.description && (
-          <p className="text-xs text-muted-foreground mb-3 line-clamp-2 leading-relaxed">{forecast.description}</p>
+          <p className="text-xs text-muted-foreground mb-3 line-clamp-2 leading-relaxed min-h-[2.5rem]">{forecast.description}</p>
         )}
+        {!forecast.description && <div className="mb-3 min-h-[2.5rem]" />}
 
         {/* Vote percentage display */}
         <div className="mb-4 mt-auto">
