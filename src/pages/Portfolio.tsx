@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Trash2, Briefcase, TrendingUp, TrendingDown, Minus, Pencil, Check, X, Wallet, BarChart3, ArrowUpRight, ChevronDown, ChevronUp, Eye, EyeOff, Download, Activity, History } from "lucide-react";
+import { Plus, Trash2, Briefcase, TrendingUp, TrendingDown, Minus, Pencil, Check, X, Wallet, BarChart3, ArrowUpRight, ChevronDown, ChevronUp, Eye, EyeOff, Download, Activity, History, Bell } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, AreaChart, Area, XAxis, YAxis } from "recharts";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Link, Navigate } from "react-router-dom";
 import MyForecasts from "@/components/MyForecasts";
+import PriceAlertsManager from "@/components/PriceAlertsManager";
 
 function formatPrice(price: number | null): string {
   if (price === null || price === undefined) return "—";
@@ -99,7 +100,7 @@ const Portfolio = () => {
   const [sortBy, setSortBy] = useState<"value" | "change" | "name">("value");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [perfRange, setPerfRange] = useState<"1D" | "7D" | "30D" | "90D">("7D");
-  const [activeTab, setActiveTab] = useState<"holdings" | "forecasts">("holdings");
+  const [activeTab, setActiveTab] = useState<"holdings" | "forecasts" | "alerts">("holdings");
 
   const { data: holdings = [], isLoading } = useQuery({
     queryKey: ["portfolio_holdings", user?.id],
@@ -810,6 +811,7 @@ const Portfolio = () => {
             <div className="flex items-center gap-1 rounded-lg bg-secondary/40 p-0.5">
               {([
                 { key: "holdings" as const, label: "Holdings", icon: Wallet },
+                { key: "alerts" as const, label: "Price Alerts", icon: Bell },
                 { key: "forecasts" as const, label: "My Forecasts", icon: Activity },
               ]).map((tab) => (
                 <button
@@ -1151,6 +1153,22 @@ const Portfolio = () => {
                     </div>
                   </>
                 )}
+              </motion.div>
+            )}
+
+            {/* ── Price Alerts Tab ── */}
+            {activeTab === "alerts" && (
+              <motion.div
+                key="alerts"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <PriceAlertsManager
+                  projects={projects}
+                  holdingProjectIds={holdings.map((h: any) => h.project_id)}
+                />
               </motion.div>
             )}
 

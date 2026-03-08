@@ -501,6 +501,53 @@ export type Database = {
         }
         Relationships: []
       }
+      price_alerts: {
+        Row: {
+          created_at: string
+          direction: string
+          id: string
+          is_enabled: boolean
+          last_known_price: number | null
+          last_triggered_at: string | null
+          project_id: string
+          threshold_percent: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          direction?: string
+          id?: string
+          is_enabled?: boolean
+          last_known_price?: number | null
+          last_triggered_at?: string | null
+          project_id: string
+          threshold_percent?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          direction?: string
+          id?: string
+          is_enabled?: boolean
+          last_known_price?: number | null
+          last_triggered_at?: string | null
+          project_id?: string
+          threshold_percent?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "price_alerts_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
