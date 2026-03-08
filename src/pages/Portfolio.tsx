@@ -653,9 +653,9 @@ const Portfolio = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="mb-4 flex items-center justify-between"
+            className="mb-4"
           >
-            <div className="flex items-center gap-1 rounded-lg bg-secondary/40 p-0.5">
+            <div className="flex items-center gap-1 rounded-lg bg-secondary/40 p-0.5 w-fit">
               {([
                 { key: "holdings" as const, label: "Holdings", icon: Wallet },
                 { key: "alerts" as const, label: "Price Alerts", icon: Bell },
@@ -675,12 +675,6 @@ const Portfolio = () => {
                 </button>
               ))}
             </div>
-            {activeTab === "holdings" && portfolioData.length > 0 && (
-              <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={handleExportCSV}>
-                <Download className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Export CSV</span>
-              </Button>
-            )}
           </motion.div>
 
           {/* ── Holdings Tab ── */}
