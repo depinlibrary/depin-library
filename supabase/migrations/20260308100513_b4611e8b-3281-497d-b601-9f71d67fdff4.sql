@@ -1,0 +1,1 @@
+ALTER TABLE public.reviews ALTER COLUMN rating SET DEFAULT 0;

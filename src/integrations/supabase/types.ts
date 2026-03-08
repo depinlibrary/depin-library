@@ -664,7 +664,7 @@ export type Database = {
           created_at?: string
           id?: string
           project_id: string
-          rating: number
+          rating?: number
           review_text?: string | null
           updated_at?: string
           user_id: string
