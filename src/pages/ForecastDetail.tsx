@@ -52,6 +52,49 @@ const ForecastDetail = () => {
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState("");
 
+  // Dynamic OG meta tags
+  useEffect(() => {
+    if (!forecast) return;
+
+    const totalVotes = forecast.total_votes_yes + forecast.total_votes_no;
+    const yesPct = totalVotes > 0 ? ((forecast.total_votes_yes / totalVotes) * 100).toFixed(0) : "50";
+    const projectNames = [forecast.project_a?.name, forecast.project_b?.name].filter(Boolean).join(" vs ");
+
+    const title = `${forecast.title} — DePIN Forecast`;
+    const description = `${yesPct}% Yes · ${totalVotes} votes · ${projectNames} — ${forecast.description?.slice(0, 120) || "Community prediction on DePIN projects"}`;
+    const url = window.location.href;
+
+    document.title = title;
+
+    const setMeta = (property: string, content: string, isName = false) => {
+      const attr = isName ? "name" : "property";
+      let el = document.querySelector(`meta[${attr}="${property}"]`);
+      if (!el) {
+        el = document.createElement("meta");
+        el.setAttribute(attr, property);
+        document.head.appendChild(el);
+      }
+      el.setAttribute("content", content);
+    };
+
+    setMeta("og:title", title);
+    setMeta("og:description", description);
+    setMeta("og:type", "article");
+    setMeta("og:url", url);
+    setMeta("twitter:card", "summary", true);
+    setMeta("twitter:title", title, true);
+    setMeta("twitter:description", description, true);
+    setMeta("description", description, true);
+
+    return () => {
+      document.title = "DePIN Library — Discover Decentralized Infrastructure";
+      setMeta("og:title", "DePIN Library — Discover the DePIN Ecosystem");
+      setMeta("og:description", "Explore, compare, and understand Decentralized Physical Infrastructure Networks — all in one place.");
+      setMeta("og:type", "website");
+      setMeta("description", "The central hub to explore, compare, and understand Decentralized Physical Infrastructure Networks (DePIN).", true);
+    };
+  }, [forecast]);
+
   const handleVote = (vote: "yes" | "no") => {
     if (!user) { toast.error("Sign in to vote"); return; }
     if (!id) return;
