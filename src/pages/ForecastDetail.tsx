@@ -47,7 +47,10 @@ const ForecastDetail = () => {
   const voteForecast = useVoteForecast();
   const addComment = useAddForecastComment();
   const deleteComment = useDeleteForecastComment();
+  const editComment = useEditForecastComment();
   const [commentText, setCommentText] = useState("");
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editingText, setEditingText] = useState("");
 
   const handleVote = (vote: "yes" | "no") => {
     if (!user) { toast.error("Sign in to vote"); return; }
