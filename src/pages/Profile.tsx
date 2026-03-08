@@ -144,7 +144,7 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="container mx-auto px-4 pt-24 pb-12 max-w-4xl">
+      <div className="no-card-hover container mx-auto px-4 pt-24 pb-12 max-w-4xl">
         {/* Profile Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
