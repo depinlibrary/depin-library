@@ -233,7 +233,7 @@ const Explore = () => {
       </section>
 
       {/* Filters & Controls Bar */}
-      <section className="fixed top-16 left-0 right-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
+      <section className="sticky top-16 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center gap-3 flex-wrap">
             {/* Filter icon */}
