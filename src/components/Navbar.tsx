@@ -7,6 +7,8 @@ import { LogOut, Plus, User, Shield, Menu, X, Sun, Moon, ChevronDown, BarChart3,
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState, useRef, useCallback } from "react";
 import NotificationDropdown from "@/components/NotificationDropdown";
+import { useUnreadNotificationCount } from "@/hooks/useNotifications";
+import { Badge } from "@/components/ui/badge";
 
 const SignInButton = () => {
   const [glowing, setGlowing] = useState(true);
