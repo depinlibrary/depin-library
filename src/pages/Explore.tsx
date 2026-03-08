@@ -181,7 +181,7 @@ const Explore = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
 
       {/* Compact Hero with Search */}
@@ -233,7 +233,7 @@ const Explore = () => {
       </section>
 
       {/* Filters & Controls Bar */}
-      <section className="sticky top-16 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
+      <section className="fixed top-16 left-0 right-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center gap-3 flex-wrap">
             {/* Filter icon */}
@@ -334,7 +334,7 @@ const Explore = () => {
       </section>
 
       {/* Results */}
-      <section className="container mx-auto px-4 py-8 pb-20">
+      <section className="container mx-auto px-4 pt-20 pb-20">
         {/* Results count */}
         <div className="mb-5 flex items-center gap-2">
           <p className="text-sm text-muted-foreground">
