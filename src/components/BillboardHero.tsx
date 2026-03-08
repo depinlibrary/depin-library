@@ -223,7 +223,7 @@ const BillboardHero = ({
 
           {/* Compact Stats Row with animated glow */}
           <motion.div variants={fadeUp} className="mb-4">
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               <Link to="/explore" className="group relative flex items-center gap-2.5 rounded-lg border border-border bg-card/40 backdrop-blur-md px-3 py-2.5 transition-all hover:bg-card/60 hover:shadow-lg hover:shadow-primary/20">
                 {/* Animated glow background */}
                 <motion.div
