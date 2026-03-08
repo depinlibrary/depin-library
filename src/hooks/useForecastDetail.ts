@@ -122,19 +122,20 @@ export function useForecastComments(forecastId: string | undefined) {
         .order("created_at", { ascending: true });
       if (error) throw error;
 
-      // Fetch display names for commenters
+      // Fetch display names + avatars for commenters
       const userIds = [...new Set((comments || []).map((c: any) => c.user_id))];
       const { data: profiles } = await supabase
         .from("profiles")
-        .select("user_id, display_name")
+        .select("user_id, display_name, avatar_url")
         .in("user_id", userIds);
 
-      const profileMap: Record<string, string> = {};
-      (profiles || []).forEach((p: any) => { profileMap[p.user_id] = p.display_name || "Anonymous"; });
+      const profileMap: Record<string, { name: string; avatar: string | null }> = {};
+      (profiles || []).forEach((p: any) => { profileMap[p.user_id] = { name: p.display_name || "Anonymous", avatar: p.avatar_url }; });
 
       return (comments || []).map((c: any) => ({
         ...c,
-        display_name: profileMap[c.user_id] || "Anonymous",
+        display_name: profileMap[c.user_id]?.name || "Anonymous",
+        avatar_url: profileMap[c.user_id]?.avatar || null,
       })) as ForecastComment[];
     },
   });
