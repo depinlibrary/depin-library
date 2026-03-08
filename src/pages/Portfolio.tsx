@@ -1156,6 +1156,22 @@ const Portfolio = () => {
               </motion.div>
             )}
 
+            {/* ── Price Alerts Tab ── */}
+            {activeTab === "alerts" && (
+              <motion.div
+                key="alerts"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <PriceAlertsManager
+                  projects={projects}
+                  holdingProjectIds={holdings.map((h: any) => h.project_id)}
+                />
+              </motion.div>
+            )}
+
             {/* ── Forecasts Tab ── */}
             {activeTab === "forecasts" && (
               <motion.div
