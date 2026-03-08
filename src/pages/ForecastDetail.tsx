@@ -555,7 +555,9 @@ const ForecastDetail = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-xs font-medium text-foreground">{comment.display_name}</span>
+                          <UserStatsHoverCard userId={comment.user_id} displayName={comment.display_name || "Anonymous"}>
+                            <span className="text-xs font-medium text-foreground cursor-pointer hover:text-primary transition-colors">{comment.display_name}</span>
+                          </UserStatsHoverCard>
                           <span className="text-[10px] text-muted-foreground">
                             {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
                           </span>
