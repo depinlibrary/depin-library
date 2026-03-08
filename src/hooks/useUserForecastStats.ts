@@ -6,6 +6,7 @@ export type VoteHistoryItem = {
   forecast_title: string;
   project_name: string;
   project_logo_emoji: string;
+  project_logo_url: string | null;
   vote: string;
   voted_at: string;
   end_date: string;
@@ -57,7 +58,7 @@ export function useUserForecastStats(userId: string | undefined) {
       const projectIds = [...new Set((forecasts || []).map((f) => f.project_a_id))];
       const { data: projects } = await supabase
         .from("projects")
-        .select("id, name, logo_emoji")
+        .select("id, name, logo_emoji, logo_url")
         .in("id", projectIds);
 
       const projectMap = Object.fromEntries((projects || []).map((p) => [p.id, p]));
@@ -87,6 +88,7 @@ export function useUserForecastStats(userId: string | undefined) {
           forecast_title: f?.title || "Unknown",
           project_name: project?.name || "Unknown",
           project_logo_emoji: project?.logo_emoji || "⬡",
+          project_logo_url: project?.logo_url || null,
           vote: v.vote,
           voted_at: v.created_at,
           end_date: f?.end_date || "",

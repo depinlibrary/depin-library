@@ -24,8 +24,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import {
-  Camera, Check, X, TrendingUp, Target, Clock, BookmarkIcon,
-  Bell, Mail, Shield, Award, BarChart3, CheckCircle2, XCircle, HelpCircle, Trash2, Lock
+  Camera, Check, X, TrendingUp, Clock, BookmarkIcon,
+  Bell, Mail, Shield, Award, BarChart3, CheckCircle2, XCircle, HelpCircle, Trash2, Lock, Crosshair
 } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 
@@ -132,7 +132,7 @@ const Profile = () => {
 
   const notifOptions = [
     { key: "forecast_vote", label: "Forecast votes", desc: "When someone votes on your forecast", icon: TrendingUp },
-    { key: "forecast_result", label: "Forecast results", desc: "When a forecast you voted on ends", icon: Target },
+    { key: "forecast_result", label: "Forecast results", desc: "When a forecast you voted on ends", icon: Crosshair },
     { key: "forecast_new_comment", label: "New comments", desc: "Comments on your forecasts", icon: Bell },
     { key: "forecast_comment_reply", label: "Comment replies", desc: "Replies to your comments", icon: Mail },
     { key: "forecast_comment_like", label: "Comment likes", desc: "When someone likes your comment", icon: Award },
@@ -217,10 +217,10 @@ const Profile = () => {
                 Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)
               ) : (
                 <>
-                  <StatCard icon={TrendingUp} label="Total Votes" value={forecastStats?.totalVotes ?? 0} />
-                  <StatCard icon={CheckCircle2} label="Correct" value={forecastStats?.correctVotes ?? 0} color="text-emerald-400" />
-                  <StatCard icon={XCircle} label="Incorrect" value={forecastStats?.incorrectVotes ?? 0} color="text-destructive" />
-                  <StatCard icon={Target} label="Accuracy" value={`${forecastStats?.accuracy ?? 0}%`} color="text-primary" />
+                  <StatCard icon={TrendingUp} label="Total Votes" value={forecastStats?.totalVotes ?? 0} color="text-primary" />
+                  <StatCard icon={CheckCircle2} label="Correct" value={forecastStats?.correctVotes ?? 0} color="text-primary" />
+                  <StatCard icon={XCircle} label="Incorrect" value={forecastStats?.incorrectVotes ?? 0} color="text-primary" />
+                  <StatCard icon={Crosshair} label="Accuracy" value={`${forecastStats?.accuracy ?? 0}%`} color="text-primary" />
                 </>
               )}
             </div>
@@ -240,8 +240,8 @@ const Profile = () => {
               </Card>
               <Card className="border-border/50">
                 <CardContent className="p-4 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-accent/10 flex items-center justify-center">
-                    <Clock className="h-5 w-5 text-accent" />
+                   <div className="h-10 w-10 rounded-lg bg-accent/10 flex items-center justify-center">
+                    <Clock className="h-5 w-5 text-primary" />
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-foreground">{forecastStats?.pendingVotes ?? 0}</p>
@@ -278,7 +278,11 @@ const Profile = () => {
                         to={`/forecasts/${item.forecast_id}`}
                         className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors group"
                       >
-                        <span className="text-lg shrink-0">{item.project_logo_emoji}</span>
+                        {item.project_logo_url ? (
+                          <img src={item.project_logo_url} alt={item.project_name} className="w-8 h-8 rounded-lg object-contain bg-secondary shrink-0" />
+                        ) : (
+                          <span className="w-8 h-8 rounded-lg flex items-center justify-center text-base bg-secondary shrink-0">{item.project_logo_emoji}</span>
+                        )}
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors">
                             {item.forecast_title}
