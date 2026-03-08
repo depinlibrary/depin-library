@@ -12,6 +12,7 @@ import {
   ArrowDownRight,
   Crown,
   Flame,
+  RefreshCw,
 } from "lucide-react";
 import ProjectLogo from "@/components/ProjectLogo";
 import type { Project } from "@/hooks/useProjects";
@@ -25,6 +26,7 @@ interface BillboardHeroProps {
   trendingProjects: any[];
   totalCategories: number;
   totalBlockchains: number;
+  isRefetching?: boolean;
 }
 
 const AnimatedNumber = ({ target, suffix = "" }: { target: number; suffix?: string }) => {
@@ -102,6 +104,7 @@ const BillboardHero = ({
   trendingProjects,
   totalCategories,
   totalBlockchains,
+  isRefetching = false,
 }: BillboardHeroProps) => {
   // Compute top market cap projects
   const topMarketCap = [...projects]
@@ -142,7 +145,7 @@ const BillboardHero = ({
       <div className="container relative mx-auto px-4">
         <motion.div initial="hidden" animate="visible" variants={stagger}>
           {/* Title row */}
-          <motion.div variants={fadeUp} className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+           <motion.div variants={fadeUp} className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
             <div>
               <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-border/60 bg-card/50 backdrop-blur-sm px-3 py-1">
                 <span className="relative flex h-2 w-2">
@@ -150,6 +153,15 @@ const BillboardHero = ({
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
                 </span>
                 <span className="text-[10px] font-medium text-muted-foreground tracking-wide uppercase">Live DePIN Intelligence</span>
+                {isRefetching && (
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    className="ml-1 flex items-center"
+                  >
+                    <RefreshCw className="h-3 w-3 text-primary/70" />
+                  </motion.div>
+                )}
               </div>
               <h1 className="text-3xl sm:text-4xl font-bold text-foreground font-['Space_Grotesk'] tracking-tight">
                 DePIN Ecosystem <span className="text-primary">Billboard</span>
