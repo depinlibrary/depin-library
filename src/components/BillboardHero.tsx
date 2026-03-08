@@ -104,6 +104,7 @@ const BillboardHero = ({
   trendingProjects,
   totalCategories,
   totalBlockchains,
+  isRefetching = false,
 }: BillboardHeroProps) => {
   // Compute top market cap projects
   const topMarketCap = [...projects]
