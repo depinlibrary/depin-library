@@ -42,27 +42,6 @@ const categoryIcons: Record<Category, React.ElementType> = {
   VPN: Shield,
 };
 
-// Animated counter
-const AnimatedCounter = ({ target, duration = 1.5 }: { target: number; duration?: number }) => {
-  const [count, setCount] = useState(0);
-  useEffect(() => {
-    let start = 0;
-    const end = target;
-    if (end === 0) return;
-    const stepTime = Math.max(Math.floor((duration * 1000) / end), 16);
-    const timer = setInterval(() => {
-      start += Math.ceil(end / (duration * 60));
-      if (start >= end) {
-        setCount(end);
-        clearInterval(timer);
-      } else {
-        setCount(start);
-      }
-    }, stepTime);
-    return () => clearInterval(timer);
-  }, [target, duration]);
-  return <>{count}</>;
-};
 
 const stagger = {
   hidden: {},
