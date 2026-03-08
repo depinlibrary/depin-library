@@ -82,6 +82,26 @@ const Profile = () => {
     });
   };
 
+  const handleDeleteAccount = async () => {
+    if (confirmText !== "DELETE") return;
+    setDeleting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await supabase.functions.invoke("delete-account", {
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (res.error) throw res.error;
+      await signOut();
+      navigate("/");
+      toast.success("Your account has been deleted");
+    } catch (err) {
+      console.error("Delete account error:", err);
+      toast.error("Failed to delete account. Please try again.");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const notifOptions = [
     { key: "forecast_vote", label: "Forecast votes", desc: "When someone votes on your forecast", icon: TrendingUp },
     { key: "forecast_result", label: "Forecast results", desc: "When a forecast you voted on ends", icon: Target },
