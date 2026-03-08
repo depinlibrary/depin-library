@@ -124,7 +124,9 @@ export default function DeletionRequests() {
           {requests.map((r) => (
             <div key={r.id} className="rounded-xl border border-border bg-background p-4">
               <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0">
+                <div className="flex items-start gap-3 flex-1 min-w-0">
+                  <UserAvatar avatarUrl={r.user_avatar_url} displayName={r.user_display_name} size="md" className="mt-0.5" />
+                  <div className="flex-1 min-w-0">
                   <h4 className="text-sm font-medium text-foreground line-clamp-1">{r.forecast_title}</h4>
                   <p className="mt-1 text-xs text-muted-foreground">Requested by {r.user_display_name}</p>
                   <p className="mt-1 text-xs text-muted-foreground">{format(new Date(r.created_at), "MMM d, yyyy 'at' h:mm a")}</p>
