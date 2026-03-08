@@ -2,7 +2,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { shouldNotify } from "@/hooks/useNotificationPreferences";
 import { useAuth } from "@/contexts/AuthContext";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { toast } from "sonner";
 
 export type Notification = {
   id: string;
@@ -19,21 +20,53 @@ export type Notification = {
 export function useNotifications() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const initialLoadDone = useRef(false);
 
-  // Realtime subscription
+  // Realtime subscription with toast popup for new notifications
   useEffect(() => {
-    if (!user) return;
+    if (!user) { initialLoadDone.current = false; return; }
+
     const channel = supabase
       .channel(`notifications-${user.id}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
+        { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
+        (payload) => {
+          queryClient.invalidateQueries({ queryKey: ["notifications", user.id] });
+          // Show toast popup for new notifications (skip initial load)
+          if (initialLoadDone.current && payload.new) {
+            const n = payload.new as Notification;
+            toast(n.title, {
+              description: n.message,
+              duration: 5000,
+              action: n.link ? { label: "View", onClick: () => window.location.assign(n.link!) } : undefined,
+            });
+          }
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["notifications", user.id] });
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
         () => {
           queryClient.invalidateQueries({ queryKey: ["notifications", user.id] });
         }
       )
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+
+    // Mark initial load done after a short delay so existing rows don't trigger toasts
+    const timer = setTimeout(() => { initialLoadDone.current = true; }, 2000);
+
+    return () => {
+      clearTimeout(timer);
+      supabase.removeChannel(channel);
+    };
   }, [user, queryClient]);
 
   return useQuery({
