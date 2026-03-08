@@ -266,6 +266,7 @@ export type Database = {
           creator_user_id: string
           description: string
           end_date: string
+          end_notifications_sent: boolean
           id: string
           project_a_id: string
           project_b_id: string | null
@@ -279,6 +280,7 @@ export type Database = {
           creator_user_id: string
           description?: string
           end_date: string
+          end_notifications_sent?: boolean
           id?: string
           project_a_id: string
           project_b_id?: string | null
@@ -292,6 +294,7 @@ export type Database = {
           creator_user_id?: string
           description?: string
           end_date?: string
+          end_notifications_sent?: boolean
           id?: string
           project_a_id?: string
           project_b_id?: string | null
@@ -323,6 +326,7 @@ export type Database = {
           forecast_comment_like: boolean
           forecast_comment_reply: boolean
           forecast_new_comment: boolean
+          forecast_result: boolean
           forecast_vote: boolean
           id: string
           review_like: boolean
@@ -334,6 +338,7 @@ export type Database = {
           forecast_comment_like?: boolean
           forecast_comment_reply?: boolean
           forecast_new_comment?: boolean
+          forecast_result?: boolean
           forecast_vote?: boolean
           id?: string
           review_like?: boolean
@@ -345,6 +350,7 @@ export type Database = {
           forecast_comment_like?: boolean
           forecast_comment_reply?: boolean
           forecast_new_comment?: boolean
+          forecast_result?: boolean
           forecast_vote?: boolean
           id?: string
           review_like?: boolean
