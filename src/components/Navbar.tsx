@@ -5,6 +5,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { LogOut, Plus, User, Shield, Menu, X, Sun, Moon, ChevronDown, BarChart3, TrendingUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState, useRef } from "react";
+import NotificationDropdown from "@/components/NotificationDropdown";
 
 const Navbar = () => {
   const { user, signOut } = useAuth();
