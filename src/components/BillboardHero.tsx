@@ -321,7 +321,7 @@ const BillboardHero = ({
                   <p className="text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums leading-tight">
                     {formatCompact(totalMarketCap)}
                   </p>
-                  <p className="text-[9px] text-muted-foreground font-medium">Market Cap</p>
+                  <p className="text-[10px] text-muted-foreground font-medium">Market Cap</p>
                 </div>
               </div>
 
