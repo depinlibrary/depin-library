@@ -77,6 +77,10 @@ const ReplyThread = ({ reviewId, showInput = false }: { reviewId: string; showIn
     }
   };
 
+  const hasReplies = replies.length > 0;
+
+  if (!hasReplies && !showInput) return null;
+
   return (
     <div className="mt-3 space-y-2 border-l-2 border-border pl-4">
       {isLoading && <p className="text-xs text-muted-foreground">Loading replies…</p>}
@@ -109,7 +113,8 @@ const ReplyThread = ({ reviewId, showInput = false }: { reviewId: string; showIn
         ))}
       </AnimatePresence>
 
-      {user ? (
+      {showInput && (
+        user ? (
           <div className="flex items-center gap-2 pt-1">
             <Input
               value={replyText}
@@ -122,10 +127,11 @@ const ReplyThread = ({ reviewId, showInput = false }: { reviewId: string; showIn
               <Send className="h-3.5 w-3.5" />
             </Button>
           </div>
-      ) : (
-        <p className="pt-1 text-xs text-muted-foreground">
-          <Link to="/auth" className="text-primary hover:underline">Sign in</Link> to reply
-        </p>
+        ) : (
+          <p className="pt-1 text-xs text-muted-foreground">
+            <Link to="/auth" className="text-primary hover:underline">Sign in</Link> to reply
+          </p>
+        )
       )}
     </div>
   );
