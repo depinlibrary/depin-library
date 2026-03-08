@@ -175,7 +175,7 @@ const BillboardHero = ({
   const avgChange = changes.length > 0 ? changes.reduce((s, d) => s + (d.price_change_24h || 0), 0) / changes.length : 0;
 
   return (
-    <section className="relative overflow-hidden pt-16 pb-0 sm:pt-24">
+    <section className="relative overflow-hidden pt-20 pb-0 sm:pt-24">
       <div className="absolute inset-0 bg-grid opacity-15 pointer-events-none" />
       <div className="gradient-radial-top absolute inset-0 pointer-events-none" />
 
