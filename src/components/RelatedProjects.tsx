@@ -13,7 +13,7 @@ const RelatedProjects = ({ currentProjectId, category, blockchain }: RelatedProj
   const { data: projects = [] } = useProjects();
 
   const related = projects
-    .filter((p) => p.id !== currentProjectId && (p.category === category || p.blockchain === blockchain))
+    .filter((p) => p.id !== currentProjectId && p.category === category)
     .slice(0, 4);
 
   if (related.length === 0) return null;
