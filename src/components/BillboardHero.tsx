@@ -182,8 +182,8 @@ const BillboardHero = ({
             transition={{ duration: 0.8, repeat: isRefetching ? Infinity : 0 }}
           >
             {/* ── Stat: Total Projects ── */}
-            <motion.div variants={fadeUp}>
-              <Link to="/explore" className="block rounded-xl border border-border bg-card/80 backdrop-blur-sm p-4 flex flex-col justify-between h-full transition-colors hover:border-primary/40 hover:bg-card">
+             <motion.div variants={fadeUp}>
+               <Link to="/explore" className="block rounded-xl border border-border bg-card/50 backdrop-blur-md p-4 flex flex-col justify-between h-full transition-colors hover:bg-card/60">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 mb-3">
                   <Layers className="h-4 w-4 text-primary" />
                 </div>
@@ -195,8 +195,8 @@ const BillboardHero = ({
             </motion.div>
 
             {/* ── Stat: Total Market Cap ── */}
-            <motion.div variants={fadeUp}>
-              <Link to="/market" className="block rounded-xl border border-border bg-card/80 backdrop-blur-sm p-4 flex flex-col justify-between h-full transition-colors hover:border-primary/40 hover:bg-card">
+             <motion.div variants={fadeUp}>
+               <Link to="/market" className="block rounded-xl border border-border bg-card/50 backdrop-blur-md p-4 flex flex-col justify-between h-full transition-colors hover:bg-card/60">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 mb-3">
                   <BarChart3 className="h-4 w-4 text-primary" />
                 </div>
@@ -208,15 +208,11 @@ const BillboardHero = ({
             </motion.div>
 
             {/* ── Stat: Avg 24h Change ── */}
-            <motion.div variants={fadeUp}>
-              <Link to="/market" className="block rounded-xl border border-border bg-card/80 backdrop-blur-sm p-4 flex flex-col justify-between h-full transition-colors hover:border-primary/40 hover:bg-card">
-                <div className={`flex h-8 w-8 items-center justify-center rounded-lg mb-3 ${avgChange >= 0 ? "bg-neon-green/10" : "bg-destructive/10"}`}>
-                  {avgChange >= 0 ? (
-                    <TrendingUp className="h-4 w-4 text-neon-green" />
-                  ) : (
-                    <Activity className="h-4 w-4 text-destructive" />
-                  )}
-                </div>
+             <motion.div variants={fadeUp}>
+               <Link to="/market" className="block rounded-xl border border-border bg-card/50 backdrop-blur-md p-4 flex flex-col justify-between h-full transition-colors hover:bg-card/60">
+                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 mb-3">
+                   <TrendingUp className="h-4 w-4 text-primary" />
+                 </div>
                 <p className={`text-2xl font-bold font-['Space_Grotesk'] tabular-nums ${avgChange >= 0 ? "text-neon-green" : "text-destructive"}`}>
                   {avgChange >= 0 ? "+" : ""}{avgChange.toFixed(1)}%
                 </p>
@@ -225,8 +221,8 @@ const BillboardHero = ({
             </motion.div>
 
             {/* ── Stat: Categories + Chains ── */}
-            <motion.div variants={fadeUp}>
-              <Link to="/explore" className="block rounded-xl border border-border bg-card/80 backdrop-blur-sm p-4 flex flex-col justify-between h-full transition-colors hover:border-primary/40 hover:bg-card">
+             <motion.div variants={fadeUp}>
+               <Link to="/explore" className="block rounded-xl border border-border bg-card/50 backdrop-blur-md p-4 flex flex-col justify-between h-full transition-colors hover:bg-card/60">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/10 mb-3">
                   <Zap className="h-4 w-4 text-accent" />
                 </div>
@@ -246,7 +242,7 @@ const BillboardHero = ({
             </motion.div>
 
             {/* ── Top Market Cap (spans 2 cols) ── */}
-            <motion.div variants={fadeUp} className="col-span-2 rounded-xl border border-border bg-card/80 backdrop-blur-sm p-4">
+             <motion.div variants={fadeUp} className="col-span-2 rounded-xl border border-border bg-card/50 backdrop-blur-md p-4">
               <div className="flex items-center gap-2 mb-3">
                 <Crown className="h-3.5 w-3.5 text-primary" />
                 <span className="text-xs font-semibold text-foreground">Top Market Cap</span>
@@ -280,7 +276,7 @@ const BillboardHero = ({
             </motion.div>
 
             {/* ── Trending Projects ── */}
-            <motion.div variants={fadeUp} className="col-span-2 sm:col-span-2 rounded-xl border border-border bg-card/80 backdrop-blur-sm p-4">
+             <motion.div variants={fadeUp} className="col-span-2 sm:col-span-2 rounded-xl border border-border bg-card/50 backdrop-blur-md p-4">
               <div className="flex items-center gap-2 mb-3">
                 <Flame className="h-3.5 w-3.5 text-primary" />
                 <span className="text-xs font-semibold text-foreground">Trending Now</span>
@@ -313,7 +309,7 @@ const BillboardHero = ({
             </motion.div>
 
             {/* ── Top Gainers ── */}
-            <motion.div variants={fadeUp} className="rounded-xl border border-border bg-card/80 backdrop-blur-sm p-4">
+             <motion.div variants={fadeUp} className="rounded-xl border border-border bg-card/50 backdrop-blur-md p-4">
               <div className="flex items-center gap-1.5 mb-3">
                 <ArrowUpRight className="h-3.5 w-3.5 text-neon-green" />
                 <span className="text-xs font-semibold text-foreground">Top Gainers</span>
@@ -338,7 +334,7 @@ const BillboardHero = ({
             </motion.div>
 
             {/* ── Top Losers ── */}
-            <motion.div variants={fadeUp} className="rounded-xl border border-border bg-card/80 backdrop-blur-sm p-4">
+             <motion.div variants={fadeUp} className="rounded-xl border border-border bg-card/50 backdrop-blur-md p-4">
               <div className="flex items-center gap-1.5 mb-3">
                 <ArrowDownRight className="h-3.5 w-3.5 text-destructive" />
                 <span className="text-xs font-semibold text-foreground">Top Losers</span>
@@ -363,8 +359,8 @@ const BillboardHero = ({
             </motion.div>
 
             {/* ── Community Sentiment (spans 2 cols) ── */}
-            {topSentiments.length > 0 && (
-              <motion.div variants={fadeUp} className="col-span-2 rounded-xl border border-border bg-card/80 backdrop-blur-sm p-4">
+             {topSentiments.length > 0 && (
+               <motion.div variants={fadeUp} className="col-span-2 rounded-xl border border-border bg-card/50 backdrop-blur-md p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <Users className="h-3.5 w-3.5 text-accent" />
                   <span className="text-xs font-semibold text-foreground">Community Sentiment</span>
