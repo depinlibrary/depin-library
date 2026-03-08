@@ -290,6 +290,7 @@ const AdminDashboard = () => {
               {([
                 { key: "projects", label: `All Projects (${projects.length})` },
                 { key: "submissions", label: "Submissions" },
+                { key: "deletion-requests", label: "Deletion Requests" },
                 { key: "categories", label: "Categories & Blockchains" },
                 { key: "users", label: "Users" },
               ] as const).map((t) => (
