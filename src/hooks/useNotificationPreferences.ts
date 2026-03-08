@@ -65,7 +65,7 @@ export function useUpdateNotificationPreferences() {
 
   return useMutation({
     mutationFn: async (updates: Partial<Pick<NotificationPreferences,
-      "forecast_comment_reply" | "forecast_comment_like" | "forecast_new_comment" | "review_like"
+      "forecast_comment_reply" | "forecast_comment_like" | "forecast_new_comment" | "review_like" | "price_alert"
     >>) => {
       if (!user) throw new Error("Not authenticated");
       const { error } = await supabase
