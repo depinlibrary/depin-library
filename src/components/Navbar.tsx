@@ -110,9 +110,7 @@ const Navbar = () => {
 
   const mobileNavLinks = [
     { to: "/", label: "Overview", icon: Home },
-    { to: "/explore", label: "Explore", icon: Compass },
     { to: "/compare", label: "Compare", icon: GitCompare },
-    { to: "/portfolio", label: "Portfolio", icon: Briefcase },
   ];
 
   return (
