@@ -18,7 +18,6 @@ import CompareProjects from "./pages/CompareProjects";
 import Forecasts from "./pages/Forecasts";
 import ForecastDetail from "./pages/ForecastDetail";
 import Notifications from "./pages/Notifications";
-import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import ScrollToTop from "./components/ScrollToTop";
 
