@@ -408,7 +408,7 @@ const BillboardHero = ({
               <motion.div variants={fadeUp} className="col-span-2 sm:col-span-4 lg:col-span-6 rounded-lg border border-border bg-card/40 backdrop-blur-md p-3 sm:p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/10">
-                    <TrendingUp className="h-3.5 w-3.5 text-primary" />
+                    <BarChart3 className="h-3.5 w-3.5 text-primary" />
                   </div>
                   <span className="text-xs font-semibold text-foreground">Top Forecasts</span>
                   <Link to="/forecasts" className="ml-auto text-[10px] font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
