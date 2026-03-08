@@ -152,17 +152,7 @@ const BillboardHero = ({
 
   return (
     <section className="relative overflow-hidden pt-20 pb-0 sm:pt-24">
-      {/* BG effects — CSS-only animations for performance (GPU-composited, no JS repaints) */}
-      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] rounded-full bg-primary/5 blur-[120px] pointer-events-none will-change-transform animate-[drift-slow_20s_ease-in-out_infinite]" />
-      <div className="absolute bottom-0 right-1/4 w-[350px] h-[350px] rounded-full bg-accent/5 blur-[100px] pointer-events-none will-change-transform animate-[drift-slow_25s_ease-in-out_infinite_reverse]" />
-      <div className="absolute top-1/3 right-[10%] w-[250px] h-[250px] rounded-full pointer-events-none will-change-transform animate-[drift-slow_22s_ease-in-out_infinite_2s]" style={{ background: "hsl(var(--neon-green) / 0.04)" }} />
       <div className="absolute inset-0 bg-grid opacity-15" />
-      <div className="gradient-radial-top absolute inset-0" />
-
-      {/* Floating particles — CSS only, 3 instead of 6 */}
-      <div className="absolute rounded-full pointer-events-none w-[3px] h-[3px] will-change-transform animate-[float-particle_6s_ease-in-out_infinite] left-[20%] top-[30%]" style={{ background: "hsl(var(--primary) / 0.4)" }} />
-      <div className="absolute rounded-full pointer-events-none w-[2px] h-[2px] will-change-transform animate-[float-particle_8s_ease-in-out_infinite_1s] left-[55%] top-[25%]" style={{ background: "hsl(var(--accent) / 0.3)" }} />
-      <div className="absolute rounded-full pointer-events-none w-[3px] h-[3px] will-change-transform animate-[float-particle_7s_ease-in-out_infinite_2.5s] left-[78%] top-[50%]" style={{ background: "hsl(var(--primary) / 0.35)" }} />
 
       <div className="container relative mx-auto px-4 pb-6">
         <motion.div initial="hidden" animate="visible" variants={stagger}>
