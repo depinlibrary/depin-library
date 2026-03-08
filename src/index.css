@@ -163,8 +163,19 @@
 .gradient-fade-bottom {
   background: linear-gradient(to bottom, transparent, hsl(var(--background)));
 }
+/* Performance-optimized hero animations (transform-only, GPU-composited) */
+@keyframes drift-slow {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(20px, -15px) scale(1.03); }
+  66% { transform: translate(-10px, 10px) scale(0.97); }
+}
 
-/* Scrollbar */
+@keyframes float-particle {
+  0%, 100% { transform: translate(0, 0); opacity: 0.3; }
+  50% { transform: translate(8px, -15px); opacity: 0.7; }
+}
+
+
 ::-webkit-scrollbar {
   width: 6px;
 }
