@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRightLeft, Search } from "lucide-react";
 import { useProjects } from "@/hooks/useProjects";
@@ -17,27 +17,60 @@ const CompareWithButton = ({ currentProjectId, currentProjectName }: CompareWith
   const { data: projects = [] } = useProjects();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [activeIndex, setActiveIndex] = useState(-1);
+  const listRef = useRef<HTMLDivElement>(null);
 
   const filtered = projects
     .filter((p) => p.id !== currentProjectId)
     .filter((p) => p.name.toLowerCase().includes(search.toLowerCase()))
     .slice(0, 6);
 
-  const handleSelect = (projectId: string) => {
+  const handleSelect = useCallback((projectId: string) => {
     setOpen(false);
     setSearch("");
+    setActiveIndex(-1);
     navigate(`/compare?a=${currentProjectId}&b=${projectId}`);
+  }, [currentProjectId, navigate]);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (filtered.length === 0) return;
+
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        setActiveIndex((prev) => (prev < filtered.length - 1 ? prev + 1 : 0));
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        setActiveIndex((prev) => (prev > 0 ? prev - 1 : filtered.length - 1));
+        break;
+      case "Enter":
+        e.preventDefault();
+        if (activeIndex >= 0 && activeIndex < filtered.length) {
+          handleSelect(filtered[activeIndex].id);
+        }
+        break;
+      case "Escape":
+        setOpen(false);
+        break;
+    }
+  }, [filtered, activeIndex, handleSelect]);
+
+  // Reset active index when search changes
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    setActiveIndex(-1);
   };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={(v) => { setOpen(v); if (!v) { setSearch(""); setActiveIndex(-1); } }}>
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm" className="gap-1.5">
           <ArrowRightLeft className="h-3.5 w-3.5" />
           Compare
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-72 p-0" align="end">
+      <PopoverContent className="w-72 p-0" align="end" onKeyDown={handleKeyDown}>
         <div className="border-b border-border p-3">
           <p className="mb-2 text-xs text-muted-foreground">
             Compare <span className="font-medium text-foreground">{currentProjectName}</span> with…
@@ -47,21 +80,29 @@ const CompareWithButton = ({ currentProjectId, currentProjectName }: CompareWith
             <Input
               placeholder="Search projects…"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="h-8 pl-8 text-sm"
               autoFocus
+              role="combobox"
+              aria-expanded={open}
+              aria-activedescendant={activeIndex >= 0 ? `compare-option-${activeIndex}` : undefined}
             />
           </div>
         </div>
-        <div className="max-h-56 overflow-y-auto p-1.5">
+        <div ref={listRef} className="max-h-56 overflow-y-auto p-1.5" role="listbox">
           {filtered.length === 0 ? (
             <p className="px-3 py-4 text-center text-xs text-muted-foreground">No projects found</p>
           ) : (
-            filtered.map((p) => (
+            filtered.map((p, i) => (
               <button
                 key={p.id}
+                id={`compare-option-${i}`}
+                role="option"
+                aria-selected={i === activeIndex}
                 onClick={() => handleSelect(p.id)}
-                className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left transition-colors hover:bg-secondary"
+                className={`flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left transition-colors ${
+                  i === activeIndex ? "bg-secondary" : "hover:bg-secondary"
+                }`}
               >
                 <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="sm" />
                 <div className="min-w-0 flex-1">
