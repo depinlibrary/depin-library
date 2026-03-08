@@ -512,7 +512,7 @@ const BillboardHero = ({
                               </>
                             )}
                           </div>
-                          <span className="text-[9px] font-medium text-muted-foreground tabular-nums">
+                          <span className="text-[10px] font-medium text-muted-foreground tabular-nums">
                             {totalVotes} vote{totalVotes !== 1 ? "s" : ""}
                           </span>
                         </div>
