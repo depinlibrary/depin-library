@@ -170,7 +170,7 @@ const ManageSpotlight = () => {
       )}
 
       <p className="text-[10px] text-muted-foreground">
-        Spotlighted projects appear in a dedicated section on the homepage. Max recommended: 6 projects.
+        Spotlighted projects appear in a dedicated section on the homepage. {spotlight.length}/{MAX_SPOTLIGHT} slots used.
       </p>
     </div>
   );
