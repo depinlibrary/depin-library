@@ -143,7 +143,6 @@ const ReviewSection = ({ projectId, projectName }: ReviewSectionProps) => {
   const { data: reviews = [], isLoading } = useReviews(projectId);
   const createReview = useCreateReview();
   const deleteReview = useDeleteReview();
-  const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
 
   const reviewIds = reviews.map((r) => r.id);
