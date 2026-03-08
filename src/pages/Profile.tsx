@@ -299,7 +299,7 @@ const Profile = () => {
                             {item.forecast_title}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            Voted <Badge variant={item.vote === "yes" ? "default" : "secondary"} className="text-[10px] px-1.5 py-0 ml-1">{item.vote.toUpperCase()}</Badge>
+                            Voted <Badge variant={item.vote === "yes" ? "default" : "destructive"} className="text-[10px] px-1.5 py-0 ml-1">{item.vote.toUpperCase()}</Badge>
                             <span className="ml-2">{formatDistanceToNow(new Date(item.voted_at), { addSuffix: true })}</span>
                           </p>
                         </div>

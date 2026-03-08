@@ -150,7 +150,7 @@ const ProfileActivityCharts = ({ history, totalVotes, correctVotes, incorrectVot
                 <div className="pt-1 border-t border-border/50">
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-muted-foreground">Best Streak</span>
-                    <span className="text-sm font-semibold text-primary">🔥 {bestStreak}</span>
+                    <span className="text-sm font-semibold text-primary">{bestStreak}</span>
                   </div>
                 </div>
               </div>
