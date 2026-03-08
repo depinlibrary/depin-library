@@ -57,6 +57,7 @@ export default function MyForecasts() {
   const [editDescription, setEditDescription] = useState("");
   const [deleteRequestForecast, setDeleteRequestForecast] = useState<UserForecast | null>(null);
   const [deleteReason, setDeleteReason] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "ended">("all");
 
   const { data: forecasts = [], isLoading } = useQuery({
     queryKey: ["my-forecasts", user?.id],
