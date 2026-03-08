@@ -337,9 +337,42 @@ const Navbar = () => {
                             <Camera className="h-3.5 w-3.5 text-foreground" />
                           </button>
                         </div>
-                        <div className="min-w-0">
-                          <p className="text-xs font-semibold text-foreground truncate">{user.email}</p>
-                          <p className="text-[10px] text-muted-foreground mt-0.5">{uploading ? "Uploading…" : "Signed in"}</p>
+                        <div className="min-w-0 flex-1">
+                          {editingName ? (
+                            <form
+                              className="flex items-center gap-1"
+                              onSubmit={async (e) => {
+                                e.preventDefault();
+                                await updateDisplayName(nameInput);
+                                setEditingName(false);
+                              }}
+                            >
+                              <input
+                                autoFocus
+                                value={nameInput}
+                                onChange={(e) => setNameInput(e.target.value.slice(0, 50))}
+                                onKeyDown={(e) => { if (e.key === "Escape") setEditingName(false); }}
+                                className="w-full bg-secondary/50 border border-border rounded px-1.5 py-0.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
+                                maxLength={50}
+                              />
+                              <button type="submit" className="shrink-0 p-0.5 rounded hover:bg-primary/15 transition-colors">
+                                <Check className="h-3 w-3 text-primary" />
+                              </button>
+                            </form>
+                          ) : (
+                            <div className="flex items-center gap-1 group/name">
+                              <p className="text-xs font-semibold text-foreground truncate">
+                                {displayName || user.email?.split("@")[0]}
+                              </p>
+                              <button
+                                onClick={() => { setNameInput(displayName || ""); setEditingName(true); }}
+                                className="shrink-0 p-0.5 rounded opacity-0 group-hover/name:opacity-100 hover:bg-secondary/50 transition-all"
+                              >
+                                <Pencil className="h-2.5 w-2.5 text-muted-foreground" />
+                              </button>
+                            </div>
+                          )}
+                          <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{uploading ? "Uploading…" : user.email}</p>
                         </div>
                       </div>
                       <div className="py-1.5 px-1.5">
