@@ -395,6 +395,14 @@ const Navbar = () => {
                           </Link>
                         )}
                         <Link
+                          to="/portfolio"
+                          onClick={() => setProfileDropdownOpen(false)}
+                          className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-muted-foreground hover:bg-secondary/50 hover:text-foreground transition-all"
+                        >
+                          <Briefcase className="h-3.5 w-3.5" />
+                          Portfolio
+                        </Link>
+                        <Link
                           to="/submit"
                           onClick={() => setProfileDropdownOpen(false)}
                           className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-muted-foreground hover:bg-secondary/50 hover:text-foreground transition-all"
