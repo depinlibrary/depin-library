@@ -252,6 +252,16 @@ const Profile = () => {
               </Card>
             </div>
 
+            {/* Charts */}
+            {!statsLoading && forecastStats && forecastStats.totalVotes > 0 && (
+              <ProfileActivityCharts
+                history={forecastStats.history}
+                totalVotes={forecastStats.totalVotes}
+                correctVotes={forecastStats.correctVotes}
+                incorrectVotes={forecastStats.incorrectVotes}
+              />
+            )}
+
             {/* Recent Forecast Activity */}
             <Card className="border-border/50">
               <CardHeader>
