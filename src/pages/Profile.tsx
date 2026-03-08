@@ -240,8 +240,8 @@ const Profile = () => {
               </Card>
               <Card className="border-border/50">
                 <CardContent className="p-4 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-accent/10 flex items-center justify-center">
-                    <Clock className="h-5 w-5 text-accent" />
+                   <div className="h-10 w-10 rounded-lg bg-accent/10 flex items-center justify-center">
+                    <Clock className="h-5 w-5 text-primary" />
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-foreground">{forecastStats?.pendingVotes ?? 0}</p>
