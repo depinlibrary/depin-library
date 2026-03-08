@@ -57,6 +57,7 @@ export default function MyForecasts() {
   const [editDescription, setEditDescription] = useState("");
   const [deleteRequestForecast, setDeleteRequestForecast] = useState<UserForecast | null>(null);
   const [deleteReason, setDeleteReason] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "ended">("all");
 
   const { data: forecasts = [], isLoading } = useQuery({
     queryKey: ["my-forecasts", user?.id],
@@ -124,6 +125,15 @@ export default function MyForecasts() {
   const projectMap = new Map((projects as any[]).map((p) => [p.id, p]));
   const getDeletionStatus = (forecastId: string) => deletionRequests.find((r: any) => r.forecast_id === forecastId);
 
+  const filteredForecasts = forecasts.filter((f) => {
+    if (statusFilter === "all") return true;
+    const isEnded = new Date(f.end_date) <= new Date();
+    return statusFilter === "ended" ? isEnded : !isEnded;
+  });
+
+  const activeCount = forecasts.filter((f) => new Date(f.end_date) > new Date()).length;
+  const endedCount = forecasts.length - activeCount;
+
   if (!user) return null;
 
   return (
@@ -132,7 +142,7 @@ export default function MyForecasts() {
       <div className="absolute top-0 right-0 w-24 h-24 rounded-bl-[60px] bg-primary/3 pointer-events-none" />
 
       {/* Header */}
-      <div className="relative flex items-center justify-between p-4 md:p-5">
+      <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 md:p-5">
         <div className="flex items-center gap-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10">
             <Activity className="h-3.5 w-3.5 text-primary" />
@@ -144,12 +154,34 @@ export default function MyForecasts() {
             </p>
           </div>
         </div>
-        <Link to="/forecasts?create=true">
-          <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs">
-            <BarChart3 className="h-3.5 w-3.5" />
-            New Forecast
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-0.5 rounded-lg bg-secondary/40 p-0.5">
+            {([
+              { key: "all" as const, label: "All", count: forecasts.length },
+              { key: "active" as const, label: "Active", count: activeCount },
+              { key: "ended" as const, label: "Ended", count: endedCount },
+            ]).map((opt) => (
+              <button
+                key={opt.key}
+                onClick={() => setStatusFilter(opt.key)}
+                className={`rounded-md px-2.5 py-1 text-[11px] font-medium transition-all ${
+                  statusFilter === opt.key
+                    ? "bg-card text-foreground shadow-sm border border-border"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {opt.label}
+                <span className="ml-1 text-[10px] text-muted-foreground">{opt.count}</span>
+              </button>
+            ))}
+          </div>
+          <Link to="/forecasts?create=true">
+            <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs">
+              <BarChart3 className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">New Forecast</span>
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Content */}
@@ -172,7 +204,7 @@ export default function MyForecasts() {
         <div className="px-4 pb-4 md:px-5 md:pb-5">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <AnimatePresence>
-              {forecasts.map((f, i) => {
+              {filteredForecasts.map((f, i) => {
                 const projA = projectMap.get(f.project_a_id) as any;
                 const projB = f.project_b_id ? (projectMap.get(f.project_b_id) as any) : null;
                 const canEdit = isWithin24Hours(f.created_at);
