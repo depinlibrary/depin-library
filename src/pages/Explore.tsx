@@ -265,7 +265,7 @@ const Explore = () => {
               value={selectedBlockchain || "all"}
               onValueChange={(v) => setSelectedBlockchain(v === "all" ? null : v)}
             >
-              <SelectTrigger className="h-8 w-[150px] text-xs border-border bg-card/60">
+              <SelectTrigger className="h-8 w-[150px] text-xs border-border bg-card/60 focus:border-border focus:shadow-none [&]:focus-within:border-border [&]:focus-within:shadow-none">
                 <SelectValue placeholder="All Blockchains" />
               </SelectTrigger>
               <SelectContent>
