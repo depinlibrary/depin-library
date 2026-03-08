@@ -653,9 +653,9 @@ const Portfolio = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="mb-4 flex items-center justify-between"
+            className="mb-4"
           >
-            <div className="flex items-center gap-1 rounded-lg bg-secondary/40 p-0.5">
+            <div className="flex items-center gap-1 rounded-lg bg-secondary/40 p-0.5 w-fit">
               {([
                 { key: "holdings" as const, label: "Holdings", icon: Wallet },
                 { key: "alerts" as const, label: "Price Alerts", icon: Bell },
@@ -675,12 +675,6 @@ const Portfolio = () => {
                 </button>
               ))}
             </div>
-            {activeTab === "holdings" && portfolioData.length > 0 && (
-              <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={handleExportCSV}>
-                <Download className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Export CSV</span>
-              </Button>
-            )}
           </motion.div>
 
           {/* ── Holdings Tab ── */}
@@ -692,22 +686,37 @@ const Portfolio = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
-                className="rounded-xl border border-border bg-card overflow-hidden"
+                className="group relative rounded-xl border border-border bg-card overflow-hidden"
               >
-                <div className="flex items-center justify-between p-4 md:p-5 border-b border-border">
-                  <div>
-                    <h2 className="text-base font-semibold text-foreground">Your Assets</h2>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">{holdings.length} token{holdings.length !== 1 ? "s" : ""}</p>
+                <div className="absolute top-0 right-0 w-24 h-24 rounded-bl-[60px] bg-primary/3 pointer-events-none" />
+
+                <div className="relative flex items-center justify-between p-4 md:p-5">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10">
+                      <Wallet className="h-3.5 w-3.5 text-primary" />
+                    </div>
+                    <div>
+                      <h2 className="text-sm font-semibold text-foreground">Your Assets</h2>
+                      <p className="text-[10px] text-muted-foreground">{holdings.length} token{holdings.length !== 1 ? "s" : ""}</p>
+                    </div>
                   </div>
-                  <Button
-                    onClick={() => setShowAddForm(!showAddForm)}
-                    variant={showAddForm ? "secondary" : "default"}
-                    size="sm"
-                    className="gap-1.5 h-8 text-xs"
-                  >
-                    {showAddForm ? <X className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
-                    {showAddForm ? "Cancel" : "Add Asset"}
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    {portfolioData.length > 0 && (
+                      <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs" onClick={handleExportCSV}>
+                        <Download className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline">CSV</span>
+                      </Button>
+                    )}
+                    <Button
+                      onClick={() => setShowAddForm(!showAddForm)}
+                      variant={showAddForm ? "secondary" : "outline"}
+                      size="sm"
+                      className="gap-1.5 h-8 text-xs"
+                    >
+                      {showAddForm ? <X className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
+                      {showAddForm ? "Cancel" : "Add Asset"}
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Add form */}
@@ -720,43 +729,45 @@ const Portfolio = () => {
                       transition={{ duration: 0.2 }}
                       className="overflow-hidden"
                     >
-                      <div className="p-4 md:p-5 border-b border-border bg-secondary/20">
-                        <div className="flex flex-col sm:flex-row sm:items-end gap-3">
-                          <div className="flex-1 min-w-0">
-                            <label className="text-[11px] text-muted-foreground mb-1 block">Project</label>
-                            <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
-                              <SelectTrigger className="h-9 text-sm focus:ring-0 focus:ring-offset-0">
-                                <SelectValue placeholder="Select a DePIN project" />
-                              </SelectTrigger>
-                              <SelectContent side="bottom" avoidCollisions={false}>
-                                {projects.map((p) => (
-                                  <SelectItem key={p.id} value={p.id}>
-                                    <span className="flex items-center gap-2">
-                                      {p.logo_url && <img src={p.logo_url} alt="" className="w-4 h-4 rounded-[4px] object-contain" />}
-                                      {p.name} ({p.token})
-                                    </span>
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                      <div className="px-4 pb-4 md:px-5 md:pb-5">
+                        <div className="rounded-lg border border-border bg-secondary/20 p-4">
+                          <div className="flex flex-col sm:flex-row sm:items-end gap-3">
+                            <div className="flex-1 min-w-0">
+                              <label className="text-[11px] text-muted-foreground mb-1 block">Project</label>
+                              <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
+                                <SelectTrigger className="h-9 text-sm focus:ring-0 focus:ring-offset-0">
+                                  <SelectValue placeholder="Select a DePIN project" />
+                                </SelectTrigger>
+                                <SelectContent side="bottom" avoidCollisions={false}>
+                                  {projects.map((p) => (
+                                    <SelectItem key={p.id} value={p.id}>
+                                      <span className="flex items-center gap-2">
+                                        {p.logo_url && <img src={p.logo_url} alt="" className="w-4 h-4 rounded-[4px] object-contain" />}
+                                        {p.name} ({p.token})
+                                      </span>
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="w-full sm:w-[160px]">
+                              <label className="text-[11px] text-muted-foreground mb-1 block">Token Amount</label>
+                              <Input
+                                type="number"
+                                min="0"
+                                step="any"
+                                placeholder="e.g. 1000"
+                                value={tokenAmount}
+                                onChange={(e) => setTokenAmount(e.target.value)}
+                                onKeyDown={(e) => { if (e.key === "Enter") handleAddHolding(); }}
+                                className="h-9 text-sm"
+                              />
+                            </div>
+                            <Button onClick={handleAddHolding} disabled={addHolding.isPending} className="h-9 gap-1.5 w-full sm:w-auto">
+                              <Plus className="h-3.5 w-3.5" />
+                              Add
+                            </Button>
                           </div>
-                          <div className="w-full sm:w-[160px]">
-                            <label className="text-[11px] text-muted-foreground mb-1 block">Token Amount</label>
-                            <Input
-                              type="number"
-                              min="0"
-                              step="any"
-                              placeholder="e.g. 1000"
-                              value={tokenAmount}
-                              onChange={(e) => setTokenAmount(e.target.value)}
-                              onKeyDown={(e) => { if (e.key === "Enter") handleAddHolding(); }}
-                              className="h-9 text-sm"
-                            />
-                          </div>
-                          <Button onClick={handleAddHolding} disabled={addHolding.isPending} className="h-9 gap-1.5 w-full sm:w-auto">
-                            <Plus className="h-3.5 w-3.5" />
-                            Add
-                          </Button>
                         </div>
                       </div>
                     </motion.div>
@@ -766,177 +777,78 @@ const Portfolio = () => {
                 {isLoading ? (
                   <div className="p-12 text-center">
                     <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-                      <div className="h-4 w-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                      <div className="h-4 w-4 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin" />
                       Loading holdings...
                     </div>
                   </div>
                 ) : portfolioData.length === 0 ? (
                   <div className="p-12 md:p-16 text-center">
                     <div className="mx-auto h-14 w-14 rounded-2xl bg-secondary/50 flex items-center justify-center mb-3">
-                      <Briefcase className="h-7 w-7 text-muted-foreground/40" />
+                      <Briefcase className="h-7 w-7 text-muted-foreground/30" />
                     </div>
                     <p className="text-sm font-medium text-foreground mb-1">No holdings yet</p>
                     <p className="text-xs text-muted-foreground mb-4">Start building your DePIN portfolio</p>
-                    <Button onClick={() => setShowAddForm(true)} size="sm" className="gap-1.5 h-8 text-xs">
+                    <Button onClick={() => setShowAddForm(true)} variant="outline" size="sm" className="gap-1.5 h-8 text-xs">
                       <Plus className="h-3.5 w-3.5" />
                       Add your first asset
                     </Button>
                   </div>
                 ) : (
                   <>
-                    {/* Desktop table */}
-                    <div className="hidden md:block overflow-x-auto">
-                      <table className="w-full">
-                        <thead>
-                          <tr className="border-b border-border bg-secondary/20">
-                            <th className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground w-8">#</th>
-                            <th
-                              className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
-                              onClick={() => toggleSort("name")}
-                            >
-                              <span className="flex items-center gap-1">Name <SortIcon column="name" /></span>
-                            </th>
-                            <th className="px-3 py-3 text-right text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">Price</th>
-                            <th
-                              className="px-3 py-3 text-right text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
-                              onClick={() => toggleSort("change")}
-                            >
-                              <span className="flex items-center justify-end gap-1">24h % <SortIcon column="change" /></span>
-                            </th>
-                            <th className="px-3 py-3 text-right text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">7d</th>
-                            <th className="px-3 py-3 text-right text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">Amount</th>
-                            <th
-                              className="px-3 py-3 text-right text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
-                              onClick={() => toggleSort("value")}
-                            >
-                              <span className="flex items-center justify-end gap-1">Value <SortIcon column="value" /></span>
-                            </th>
-                            <th className="px-3 py-3 text-right text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">PnL (24h)</th>
-                            <th className="px-3 py-3 w-16"></th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {portfolioData.map((h: any, idx: number) => {
-                            const sparkline = h.market?.sparkline_7d;
-                            const sparkArr = Array.isArray(sparkline) ? sparkline : null;
-                            const change = h.market?.price_change_24h ?? 0;
-                            return (
-                              <motion.tr
-                                key={h.id}
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ delay: idx * 0.03 }}
-                                className="border-b border-border/30 transition-colors hover:bg-secondary/20 group"
-                              >
-                                <td className="px-4 py-3 text-xs text-muted-foreground tabular-nums">{idx + 1}</td>
-                                <td className="px-4 py-3">
-                                  {h.project ? (
-                                    <Link to={`/project/${h.project.slug}`} className="flex items-center gap-2.5 group/link">
-                                      <ProjectLogo logoUrl={h.project.logo_url} logoEmoji={h.project.logo_emoji} name={h.project.name} size="sm" />
-                                      <div>
-                                        <p className="text-sm font-medium text-foreground group-hover/link:text-primary transition-colors">{h.project.name}</p>
-                                        <p className="text-[11px] text-muted-foreground">{h.project.token}</p>
-                                      </div>
-                                    </Link>
-                                  ) : (
-                                    <span className="text-sm text-muted-foreground">Unknown</span>
-                                  )}
-                                </td>
-                                <td className="px-3 py-3 text-right text-sm font-medium text-foreground tabular-nums">
-                                  {formatPrice(h.market?.price_usd ?? null)}
-                                </td>
-                                <td className="px-3 py-3 text-right">
-                                  <div className="flex justify-end">
-                                    <ChangeIndicator change={h.market?.price_change_24h ?? null} />
-                                  </div>
-                                </td>
-                                <td className="px-3 py-3">
-                                  <div className="flex justify-end">
-                                    {sparkArr && <MiniSparkline data={sparkArr as number[]} isPositive={change >= 0} />}
-                                  </div>
-                                </td>
-                                <td className="px-3 py-3 text-right">
-                                  {editingId === h.id ? (
-                                    <Input
-                                      type="number"
-                                      min="0"
-                                      step="any"
-                                      value={editAmount}
-                                      onChange={(e) => setEditAmount(e.target.value)}
-                                      onKeyDown={(e) => {
-                                        if (e.key === "Enter") handleSaveEdit(h.id);
-                                        if (e.key === "Escape") handleCancelEdit();
-                                      }}
-                                      autoFocus
-                                      className="h-7 w-24 ml-auto text-right text-xs"
-                                    />
-                                  ) : (
-                                    <span className="text-sm text-foreground tabular-nums">
-                                      {hideBalances ? "••••" : Number(h.token_amount).toLocaleString(undefined, { maximumFractionDigits: 4 })}
-                                    </span>
-                                  )}
-                                </td>
-                                <td className="px-3 py-3 text-right text-sm font-bold text-foreground tabular-nums">
-                                  {hideBalances ? "••••" : formatValue(h.value)}
-                                </td>
-                                <td className="px-3 py-3 text-right">
-                                  {h.pnl24h !== null ? (
-                                    <span className={`text-sm font-semibold tabular-nums ${h.pnl24h >= 0 ? "text-green-500" : "text-red-500"}`}>
-                                      {hideBalances ? "••••" : `${h.pnl24h >= 0 ? "+" : ""}${formatValue(Math.abs(h.pnl24h))}`}
-                                    </span>
-                                  ) : (
-                                    <span className="text-sm text-muted-foreground">—</span>
-                                  )}
-                                </td>
-                                <td className="px-3 py-3 text-right">
-                                  <div className="flex items-center justify-end gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    {editingId === h.id ? (
-                                      <>
-                                        <button onClick={() => handleSaveEdit(h.id)} className="rounded-md p-1.5 text-green-500 transition-colors hover:bg-green-500/10">
-                                          <Check className="h-3.5 w-3.5" />
-                                        </button>
-                                        <button onClick={handleCancelEdit} className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-secondary">
-                                          <X className="h-3.5 w-3.5" />
-                                        </button>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <button onClick={() => handleStartEdit(h.id, h.token_amount)} className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground">
-                                          <Pencil className="h-3.5 w-3.5" />
-                                        </button>
-                                        <button onClick={() => deleteHolding.mutate(h.id)} className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive">
-                                          <Trash2 className="h-3.5 w-3.5" />
-                                        </button>
-                                      </>
-                                    )}
-                                  </div>
-                                </td>
-                              </motion.tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
+                    {/* Sort controls */}
+                    <div className="flex items-center gap-2 px-4 md:px-5 pb-3">
+                      <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Sort by</span>
+                      <div className="flex items-center gap-0.5 rounded-lg bg-secondary/50 p-0.5">
+                        {(["value", "change", "name"] as const).map((col) => (
+                          <button
+                            key={col}
+                            onClick={() => toggleSort(col)}
+                            className={`flex items-center gap-0.5 px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
+                              sortBy === col
+                                ? "bg-secondary text-foreground shadow-sm"
+                                : "text-muted-foreground hover:text-foreground"
+                            }`}
+                          >
+                            {col === "value" ? "Value" : col === "change" ? "24h %" : "Name"}
+                            {sortBy === col && (sortDir === "desc" ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />)}
+                          </button>
+                        ))}
+                      </div>
                     </div>
 
-                    {/* Mobile card layout */}
-                    <div className="md:hidden divide-y divide-border/30">
-                      {portfolioData.map((h: any, idx: number) => {
-                        const change = h.market?.price_change_24h ?? 0;
-                        return (
-                          <motion.div
-                            key={h.id}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: idx * 0.03 }}
-                            className="p-4 transition-colors hover:bg-secondary/10"
-                          >
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="flex items-center gap-2.5 min-w-0">
+                    {/* Desktop table */}
+                    <div className="hidden md:block">
+                      <div className="grid grid-cols-[2.5rem_1fr_5.5rem_5rem_5rem_5.5rem_6rem_5.5rem_3.5rem] gap-0 px-5 py-2.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground border-t border-border">
+                        <span>#</span>
+                        <span>Asset</span>
+                        <span className="text-right">Price</span>
+                        <span className="text-right">24h %</span>
+                        <span className="text-right">7d</span>
+                        <span className="text-right">Amount</span>
+                        <span className="text-right">Value</span>
+                        <span className="text-right">PnL 24h</span>
+                        <span></span>
+                      </div>
+                      <div className="divide-y divide-border/30">
+                        {portfolioData.map((h: any, idx: number) => {
+                          const sparkline = h.market?.sparkline_7d;
+                          const sparkArr = Array.isArray(sparkline) ? sparkline : null;
+                          const change = h.market?.price_change_24h ?? 0;
+                          return (
+                            <motion.div
+                              key={h.id}
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{ delay: idx * 0.03 }}
+                              className="grid grid-cols-[2.5rem_1fr_5.5rem_5rem_5rem_5.5rem_6rem_5.5rem_3.5rem] gap-0 items-center px-5 py-3 transition-colors hover:bg-secondary/10 group"
+                            >
+                              <span className="text-xs text-muted-foreground tabular-nums">{idx + 1}</span>
+                              <div>
                                 {h.project ? (
-                                  <Link to={`/project/${h.project.slug}`} className="flex items-center gap-2.5 min-w-0">
+                                  <Link to={`/project/${h.project.slug}`} className="flex items-center gap-2.5 group/link">
                                     <ProjectLogo logoUrl={h.project.logo_url} logoEmoji={h.project.logo_emoji} name={h.project.name} size="sm" />
                                     <div className="min-w-0">
-                                      <p className="text-sm font-medium text-foreground truncate">{h.project.name}</p>
+                                      <p className="text-sm font-medium text-foreground group-hover/link:text-primary transition-colors truncate">{h.project.name}</p>
                                       <p className="text-[11px] text-muted-foreground">{h.project.token}</p>
                                     </div>
                                   </Link>
@@ -944,31 +856,16 @@ const Portfolio = () => {
                                   <span className="text-sm text-muted-foreground">Unknown</span>
                                 )}
                               </div>
-                              <div className="flex items-center gap-1">
-                                {editingId === h.id ? (
-                                  <>
-                                    <button onClick={() => handleSaveEdit(h.id)} className="rounded-md p-1.5 text-green-500">
-                                      <Check className="h-4 w-4" />
-                                    </button>
-                                    <button onClick={handleCancelEdit} className="rounded-md p-1.5 text-muted-foreground">
-                                      <X className="h-4 w-4" />
-                                    </button>
-                                  </>
-                                ) : (
-                                  <>
-                                    <button onClick={() => handleStartEdit(h.id, h.token_amount)} className="rounded-md p-1.5 text-muted-foreground">
-                                      <Pencil className="h-4 w-4" />
-                                    </button>
-                                    <button onClick={() => deleteHolding.mutate(h.id)} className="rounded-md p-1.5 text-muted-foreground">
-                                      <Trash2 className="h-4 w-4" />
-                                    </button>
-                                  </>
-                                )}
+                              <span className="text-right text-sm font-medium text-foreground tabular-nums">
+                                {formatPrice(h.market?.price_usd ?? null)}
+                              </span>
+                              <div className="flex justify-end">
+                                <ChangeIndicator change={h.market?.price_change_24h ?? null} />
                               </div>
-                            </div>
-                            <div className="grid grid-cols-3 gap-2 text-xs">
-                              <div>
-                                <p className="text-muted-foreground mb-0.5">Amount</p>
+                              <div className="flex justify-end">
+                                {sparkArr && <MiniSparkline data={sparkArr as number[]} isPositive={change >= 0} />}
+                              </div>
+                              <div className="text-right">
                                 {editingId === h.id ? (
                                   <Input
                                     type="number"
@@ -976,27 +873,134 @@ const Portfolio = () => {
                                     step="any"
                                     value={editAmount}
                                     onChange={(e) => setEditAmount(e.target.value)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter") handleSaveEdit(h.id);
+                                      if (e.key === "Escape") handleCancelEdit();
+                                    }}
                                     autoFocus
-                                    className="h-6 w-full text-xs"
+                                    className="h-7 w-24 ml-auto text-right text-xs"
                                   />
                                 ) : (
-                                  <p className="font-medium text-foreground tabular-nums">
-                                    {hideBalances ? "••••" : Number(h.token_amount).toLocaleString(undefined, { maximumFractionDigits: 2 })}
-                                  </p>
+                                  <span className="text-sm text-foreground tabular-nums">
+                                    {hideBalances ? "••••" : Number(h.token_amount).toLocaleString(undefined, { maximumFractionDigits: 4 })}
+                                  </span>
                                 )}
                               </div>
-                              <div className="text-center">
-                                <p className="text-muted-foreground mb-0.5">Value</p>
-                                <p className="font-bold text-foreground tabular-nums">{hideBalances ? "••••" : formatValue(h.value)}</p>
-                              </div>
+                              <span className="text-right text-sm font-bold text-foreground tabular-nums">
+                                {hideBalances ? "••••" : formatValue(h.value)}
+                              </span>
                               <div className="text-right">
-                                <p className="text-muted-foreground mb-0.5">24h</p>
-                                <ChangeIndicator change={h.market?.price_change_24h ?? null} />
+                                {h.pnl24h !== null ? (
+                                  <span className={`text-sm font-semibold tabular-nums ${h.pnl24h >= 0 ? "text-green-500" : "text-red-500"}`}>
+                                    {hideBalances ? "••••" : `${h.pnl24h >= 0 ? "+" : ""}${formatValue(Math.abs(h.pnl24h))}`}
+                                  </span>
+                                ) : (
+                                  <span className="text-sm text-muted-foreground">—</span>
+                                )}
                               </div>
+                              <div className="flex items-center justify-end gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                {editingId === h.id ? (
+                                  <>
+                                    <button onClick={() => handleSaveEdit(h.id)} className="rounded-md p-1.5 text-green-500 transition-colors hover:bg-green-500/10">
+                                      <Check className="h-3.5 w-3.5" />
+                                    </button>
+                                    <button onClick={handleCancelEdit} className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-secondary">
+                                      <X className="h-3.5 w-3.5" />
+                                    </button>
+                                  </>
+                                ) : (
+                                  <>
+                                    <button onClick={() => handleStartEdit(h.id, h.token_amount)} className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground">
+                                      <Pencil className="h-3.5 w-3.5" />
+                                    </button>
+                                    <button onClick={() => deleteHolding.mutate(h.id)} className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive">
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </button>
+                                  </>
+                                )}
+                              </div>
+                            </motion.div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Mobile card layout */}
+                    <div className="md:hidden px-4 pb-4 space-y-2">
+                      {portfolioData.map((h: any, idx: number) => (
+                        <motion.div
+                          key={h.id}
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: idx * 0.03 }}
+                          className="rounded-lg border border-border/50 bg-secondary/10 p-3.5 transition-colors hover:bg-secondary/20"
+                        >
+                          <div className="flex items-center justify-between mb-2.5">
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              {h.project ? (
+                                <Link to={`/project/${h.project.slug}`} className="flex items-center gap-2.5 min-w-0">
+                                  <ProjectLogo logoUrl={h.project.logo_url} logoEmoji={h.project.logo_emoji} name={h.project.name} size="sm" />
+                                  <div className="min-w-0">
+                                    <p className="text-sm font-medium text-foreground truncate">{h.project.name}</p>
+                                    <p className="text-[11px] text-muted-foreground">{h.project.token}</p>
+                                  </div>
+                                </Link>
+                              ) : (
+                                <span className="text-sm text-muted-foreground">Unknown</span>
+                              )}
                             </div>
-                          </motion.div>
-                        );
-                      })}
+                            <div className="flex items-center gap-0.5">
+                              {editingId === h.id ? (
+                                <>
+                                  <button onClick={() => handleSaveEdit(h.id)} className="rounded-md p-1.5 text-green-500">
+                                    <Check className="h-4 w-4" />
+                                  </button>
+                                  <button onClick={handleCancelEdit} className="rounded-md p-1.5 text-muted-foreground">
+                                    <X className="h-4 w-4" />
+                                  </button>
+                                </>
+                              ) : (
+                                <>
+                                  <button onClick={() => handleStartEdit(h.id, h.token_amount)} className="rounded-md p-1.5 text-muted-foreground">
+                                    <Pencil className="h-3.5 w-3.5" />
+                                  </button>
+                                  <button onClick={() => deleteHolding.mutate(h.id)} className="rounded-md p-1.5 text-muted-foreground">
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-3 gap-2 text-xs">
+                            <div>
+                              <p className="text-[10px] text-muted-foreground mb-0.5">Amount</p>
+                              {editingId === h.id ? (
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  step="any"
+                                  value={editAmount}
+                                  onChange={(e) => setEditAmount(e.target.value)}
+                                  autoFocus
+                                  className="h-6 w-full text-xs"
+                                />
+                              ) : (
+                                <p className="font-medium text-foreground tabular-nums">
+                                  {hideBalances ? "••••" : Number(h.token_amount).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                                </p>
+                              )}
+                            </div>
+                            <div className="text-center">
+                              <p className="text-[10px] text-muted-foreground mb-0.5">Value</p>
+                              <p className="font-bold text-foreground tabular-nums">{hideBalances ? "••••" : formatValue(h.value)}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-[10px] text-muted-foreground mb-0.5">24h</p>
+                              <ChangeIndicator change={h.market?.price_change_24h ?? null} />
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
                     </div>
                   </>
                 )}
