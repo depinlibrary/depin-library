@@ -76,16 +76,11 @@ const Notifications = () => {
     };
   }, [notifications, filter, typeFilter]);
 
-  const getDateLabel = (dateKey: string) => {
-    const date = new Date(dateKey);
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    if (dateKey === format(today, "yyyy-MM-dd")) return "Today";
-    if (dateKey === format(yesterday, "yyyy-MM-dd")) return "Yesterday";
-    return format(date, "MMMM d, yyyy");
-  };
+  // Memoized handlers
+  const handleMarkRead = (id: string) => markRead.mutate(id);
+  const handleDelete = (id: string) => deleteNotification.mutate(id);
+  const handleFilterChange = (newFilter: "all" | "unread") => setFilter(newFilter);
+  const handleTypeFilterChange = (type: string) => setTypeFilter(type);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
