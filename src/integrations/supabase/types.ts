@@ -196,6 +196,47 @@ export type Database = {
           },
         ]
       }
+      forecast_deletion_requests: {
+        Row: {
+          admin_response: string | null
+          created_at: string
+          forecast_id: string
+          id: string
+          reason: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_response?: string | null
+          created_at?: string
+          forecast_id: string
+          id?: string
+          reason: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_response?: string | null
+          created_at?: string
+          forecast_id?: string
+          id?: string
+          reason?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forecast_deletion_requests_forecast_id_fkey"
+            columns: ["forecast_id"]
+            isOneToOne: false
+            referencedRelation: "forecasts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       forecast_reply_likes: {
         Row: {
           created_at: string

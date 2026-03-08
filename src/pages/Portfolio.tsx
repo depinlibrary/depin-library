@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Link, Navigate } from "react-router-dom";
+import MyForecasts from "@/components/MyForecasts";
 
 function formatPrice(price: number | null): string {
   if (price === null || price === undefined) return "—";
@@ -832,6 +833,9 @@ const Portfolio = () => {
               </div>
             )}
           </motion.div>
+
+          {/* My Forecasts Section */}
+          <MyForecasts />
         </div>
       </div>
       <Footer />

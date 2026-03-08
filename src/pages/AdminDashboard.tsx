@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { ManageCategories, ManageBlockchains } from "@/components/admin/ManageCategories";
 import UsersList from "@/components/admin/UsersList";
+import DeletionRequests from "@/components/admin/DeletionRequests";
 
 import { useDynamicOptions } from "@/hooks/useDynamicOptions";
 
@@ -60,7 +61,7 @@ const AdminDashboard = () => {
   const { categories: CATEGORIES, blockchains: BLOCKCHAINS } = useDynamicOptions();
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<"projects" | "submissions" | "categories" | "users">("projects");
+  const [tab, setTab] = useState<"projects" | "submissions" | "categories" | "users" | "deletion-requests">("projects");
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [filter, setFilter] = useState<"pending" | "approved" | "rejected">("pending");
   const [projects, setProjects] = useState<Project[]>([]);
@@ -289,6 +290,7 @@ const AdminDashboard = () => {
               {([
                 { key: "projects", label: `All Projects (${projects.length})` },
                 { key: "submissions", label: "Submissions" },
+                { key: "deletion-requests", label: "Deletion Requests" },
                 { key: "categories", label: "Categories & Blockchains" },
                 { key: "users", label: "Users" },
               ] as const).map((t) => (
@@ -574,6 +576,13 @@ const AdminDashboard = () => {
             )}
 
             {tab === "users" && <UsersList />}
+
+            {tab === "deletion-requests" && (
+              <div className="rounded-xl border border-border bg-card p-5">
+                <h3 className="mb-4 text-lg font-semibold text-foreground">Forecast Deletion Requests</h3>
+                <DeletionRequests />
+              </div>
+            )}
           </motion.div>
         </div>
       </div>
