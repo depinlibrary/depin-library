@@ -42,6 +42,7 @@ const ForecastDetail = () => {
   const { data: forecast, isLoading } = useForecastDetail(id);
   const { data: comments = [], isLoading: commentsLoading } = useForecastComments(id);
   const { data: voteHistory = [] } = useForecastVoteHistory(id);
+  const { data: relatedForecasts = [] } = useRelatedForecasts(id, forecast?.project_a_id, forecast?.project_b_id);
   const voteForecast = useVoteForecast();
   const addComment = useAddForecastComment();
   const deleteComment = useDeleteForecastComment();
