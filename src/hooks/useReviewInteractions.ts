@@ -38,7 +38,7 @@ export function useToggleReviewLike() {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async ({ reviewId, isLiked }: { reviewId: string; isLiked: boolean }) => {
+    mutationFn: async ({ reviewId, isLiked, projectSlug }: { reviewId: string; isLiked: boolean; projectSlug: string }) => {
       if (!user) throw new Error("Must be logged in");
       if (isLiked) {
         const { error } = await supabase
@@ -52,6 +52,32 @@ export function useToggleReviewLike() {
           .from("review_likes")
           .insert({ review_id: reviewId, user_id: user.id });
         if (error) throw error;
+
+        // Notify review author
+        const { data: review } = await supabase
+          .from("reviews")
+          .select("user_id")
+          .eq("id", reviewId)
+          .single();
+
+        if (review && review.user_id !== user.id) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("display_name")
+            .eq("user_id", user.id)
+            .single();
+          
+          const likerName = profile?.display_name || "Someone";
+
+          await createNotification({
+            userId: review.user_id,
+            type: "review_like",
+            title: "Your comment was liked",
+            message: `${likerName} liked your comment`,
+            link: `/project/${projectSlug}`,
+            metadata: { reviewId, projectSlug },
+          });
+        }
       }
     },
     onSuccess: () => {
