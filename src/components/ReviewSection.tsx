@@ -164,12 +164,12 @@ const ReviewSection = ({ projectId, projectName }: ReviewSectionProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (rating === 0) {
-      toast.error("Please select a rating");
+    if (!reviewText.trim()) {
+      toast.error("Please write a comment");
       return;
     }
     try {
-      await createReview.mutateAsync({ projectId, rating, reviewText });
+      await createReview.mutateAsync({ projectId, rating: 0, reviewText });
       toast.success("Review submitted!");
       setRating(0);
       setReviewText("");
