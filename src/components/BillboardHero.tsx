@@ -199,14 +199,23 @@ const BillboardHero = ({
             </div>
           </motion.div>
 
-          {/* Compact Stats Row */}
+          {/* Compact Stats Row with animated glow */}
           <motion.div variants={fadeUp} className="mb-4">
             <div className="grid grid-cols-4 gap-2">
-              <Link to="/explore" className="group flex items-center gap-2.5 rounded-lg border border-border bg-card/40 backdrop-blur-md px-3 py-2.5 transition-colors hover:bg-card/60">
-                <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 shrink-0">
+              <Link to="/explore" className="group relative flex items-center gap-2.5 rounded-lg border border-border bg-card/40 backdrop-blur-md px-3 py-2.5 transition-all hover:bg-card/60 hover:shadow-lg hover:shadow-primary/20">
+                {/* Animated glow background */}
+                <motion.div
+                  className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                  style={{
+                    background: "linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--primary) / 0.05))",
+                  }}
+                  animate={{ backgroundPosition: ["0% 0%", "100% 100%"] }}
+                  transition={{ duration: 3, repeat: Infinity, repeatType: "reverse" }}
+                />
+                <div className="relative flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 shrink-0">
                   <Layers className="h-3.5 w-3.5 text-primary" />
                 </div>
-                <div className="min-w-0">
+                <div className="relative min-w-0">
                   <p className="text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums leading-tight">
                     <AnimatedNumber target={projects.length} />
                   </p>
@@ -214,11 +223,20 @@ const BillboardHero = ({
                 </div>
               </Link>
 
-              <Link to="/market" className="group flex items-center gap-2.5 rounded-lg border border-border bg-card/40 backdrop-blur-md px-3 py-2.5 transition-colors hover:bg-card/60">
-                <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 shrink-0">
+              <Link to="/market" className="group relative flex items-center gap-2.5 rounded-lg border border-border bg-card/40 backdrop-blur-md px-3 py-2.5 transition-all hover:bg-card/60 hover:shadow-lg hover:shadow-primary/20">
+                {/* Animated glow background */}
+                <motion.div
+                  className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                  style={{
+                    background: "linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--primary) / 0.05))",
+                  }}
+                  animate={{ backgroundPosition: ["0% 0%", "100% 100%"] }}
+                  transition={{ duration: 3, repeat: Infinity, repeatType: "reverse" }}
+                />
+                <div className="relative flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 shrink-0">
                   <BarChart3 className="h-3.5 w-3.5 text-primary" />
                 </div>
-                <div className="min-w-0">
+                <div className="relative min-w-0">
                   <p className="text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums leading-tight">
                     {formatCompact(totalMarketCap)}
                   </p>
@@ -226,11 +244,20 @@ const BillboardHero = ({
                 </div>
               </Link>
 
-              <Link to="/market" className="group flex items-center gap-2.5 rounded-lg border border-border bg-card/40 backdrop-blur-md px-3 py-2.5 transition-colors hover:bg-card/60">
-                <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 shrink-0">
+              <Link to="/market" className="group relative flex items-center gap-2.5 rounded-lg border border-border bg-card/40 backdrop-blur-md px-3 py-2.5 transition-all hover:bg-card/60 hover:shadow-lg hover:shadow-primary/20">
+                {/* Animated glow background */}
+                <motion.div
+                  className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                  style={{
+                    background: "linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--primary) / 0.05))",
+                  }}
+                  animate={{ backgroundPosition: ["0% 0%", "100% 100%"] }}
+                  transition={{ duration: 3, repeat: Infinity, repeatType: "reverse" }}
+                />
+                <div className="relative flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 shrink-0">
                   <TrendingUp className="h-3.5 w-3.5 text-primary" />
                 </div>
-                <div className="min-w-0">
+                <div className="relative min-w-0">
                   <p className={`text-lg font-bold font-['Space_Grotesk'] tabular-nums leading-tight ${avgChange >= 0 ? "text-neon-green" : "text-destructive"}`}>
                     {avgChange >= 0 ? "+" : ""}{avgChange.toFixed(1)}%
                   </p>
@@ -238,11 +265,20 @@ const BillboardHero = ({
                 </div>
               </Link>
 
-              <Link to="/explore" className="group flex items-center gap-2.5 rounded-lg border border-border bg-card/40 backdrop-blur-md px-3 py-2.5 transition-colors hover:bg-card/60">
-                <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 shrink-0">
+              <Link to="/explore" className="group relative flex items-center gap-2.5 rounded-lg border border-border bg-card/40 backdrop-blur-md px-3 py-2.5 transition-all hover:bg-card/60 hover:shadow-lg hover:shadow-primary/20">
+                {/* Animated glow background */}
+                <motion.div
+                  className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                  style={{
+                    background: "linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--primary) / 0.05))",
+                  }}
+                  animate={{ backgroundPosition: ["0% 0%", "100% 100%"] }}
+                  transition={{ duration: 3, repeat: Infinity, repeatType: "reverse" }}
+                />
+                <div className="relative flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 shrink-0">
                   <Zap className="h-3.5 w-3.5 text-primary" />
                 </div>
-                <div className="min-w-0">
+                <div className="relative min-w-0">
                   <p className="text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums leading-tight">
                     <AnimatedNumber target={totalCategories} />
                     <span className="text-xs text-muted-foreground font-normal ml-0.5">/</span>
