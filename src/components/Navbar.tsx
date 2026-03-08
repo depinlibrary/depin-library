@@ -10,8 +10,11 @@ const Navbar = () => {
   const { user, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isAdmin, setIsAdmin] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  
+  const isMarketActive = location.pathname === "/market" || location.pathname === "/forecasts";
 
   useEffect(() => {
     if (!user) { setIsAdmin(false); return; }
