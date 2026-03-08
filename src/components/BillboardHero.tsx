@@ -474,7 +474,7 @@ const BillboardHero = ({
                       </Link>
                     );
                   })}
-                  {topLosers.length === 0 && <p className="text-[9px] text-muted-foreground">No data yet</p>}
+                  {topLosers.length === 0 && <p className="text-[10px] text-muted-foreground">No data yet</p>}
                 </div>
               </div>
             </motion.div>
