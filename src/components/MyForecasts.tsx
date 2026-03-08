@@ -46,7 +46,7 @@ function timeLeftToEdit(createdAt: string): string {
 export default function MyForecasts() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const { projects } = useProjects();
+  const { data: projects = [] } = useProjects();
   const [editForecast, setEditForecast] = useState<UserForecast | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
