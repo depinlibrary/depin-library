@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trash2, ThumbsUp, MessageSquare, Send } from "lucide-react";
+import UserAvatar from "@/components/UserAvatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useReviews, useCreateReview, useDeleteReview, type Review } from "@/hooks/useReviews";
 import {
@@ -69,9 +70,7 @@ const ReplyThread = ({ reviewId, showInput = false }: { reviewId: string; showIn
             exit={{ opacity: 0, y: -6 }}
             className="flex items-start gap-2"
           >
-            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-secondary-foreground">
-              {(reply.display_name || "A")[0].toUpperCase()}
-            </div>
+            <UserAvatar avatarUrl={reply.avatar_url} displayName={reply.display_name} size="sm" />
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-medium text-foreground">{reply.display_name}</span>
@@ -214,9 +213,7 @@ const ReviewSection = ({ projectId, projectName, projectSlug }: ReviewSectionPro
               >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-xs font-bold text-secondary-foreground">
-                      {(review.display_name || "A")[0].toUpperCase()}
-                    </div>
+                    <UserAvatar avatarUrl={review.avatar_url} displayName={review.display_name} size="md" />
                     <div>
                       <p className="text-sm font-medium text-foreground">{review.display_name}</p>
                     </div>

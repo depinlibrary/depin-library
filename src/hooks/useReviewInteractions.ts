@@ -93,6 +93,7 @@ export type ReviewReply = {
   reply_text: string;
   created_at: string;
   display_name?: string;
+  avatar_url?: string | null;
 };
 
 export function useReviewReplies(reviewId: string) {
@@ -112,15 +113,16 @@ export function useReviewReplies(reviewId: string) {
 
       const { data: profiles } = await supabase
         .from("profiles")
-        .select("user_id, display_name")
+        .select("user_id, display_name, avatar_url")
         .in("user_id", userIds);
 
-      const nameMap: Record<string, string> = {};
-      (profiles || []).forEach((p: any) => { nameMap[p.user_id] = p.display_name || "Anonymous"; });
+      const profileMap: Record<string, { name: string; avatar: string | null }> = {};
+      (profiles || []).forEach((p: any) => { profileMap[p.user_id] = { name: p.display_name || "Anonymous", avatar: p.avatar_url }; });
 
       return (replies || []).map((r: any) => ({
         ...r,
-        display_name: nameMap[r.user_id] || "Anonymous",
+        display_name: profileMap[r.user_id]?.name || "Anonymous",
+        avatar_url: profileMap[r.user_id]?.avatar || null,
       }));
     },
     enabled: !!reviewId,

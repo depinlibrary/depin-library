@@ -5,6 +5,7 @@ import {
   MessageSquare, Send, Trash2, User as UserIcon,
   Pencil, Check, X, Heart, MessageCircle
 } from "lucide-react";
+import UserAvatar from "@/components/UserAvatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -61,6 +62,7 @@ const CommentReplyThread = ({ commentId, forecastId }: { commentId: string; fore
               className="ml-6 pl-3 border-l-2 border-border/60 py-2 group/reply"
             >
               <div className="flex items-center gap-2 mb-0.5">
+                <UserAvatar avatarUrl={reply.avatar_url} displayName={reply.display_name} size="sm" />
                 <UserStatsHoverCard userId={reply.user_id} displayName={reply.display_name || "Anonymous"}>
                   <span className="text-[11px] font-medium text-foreground cursor-pointer hover:text-primary transition-colors">{reply.display_name}</span>
                 </UserStatsHoverCard>
@@ -241,9 +243,7 @@ export default function DiscussionSection({
             return (
               <div key={comment.id} className="px-6 py-4 group/comment hover:bg-secondary/10 transition-colors">
                 <div className="flex items-start gap-3">
-                  <div className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center shrink-0 mt-0.5">
-                    <UserIcon className="h-3.5 w-3.5 text-muted-foreground" />
-                  </div>
+                  <UserAvatar avatarUrl={comment.avatar_url} displayName={comment.display_name} size="sm" className="mt-0.5" />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <UserStatsHoverCard userId={comment.user_id} displayName={comment.display_name || "Anonymous"}>
