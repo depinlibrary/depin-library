@@ -506,16 +506,22 @@ const Portfolio = () => {
           </div>
 
           {/* ── Charts Section ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-            className="mb-6 grid gap-4 lg:grid-cols-5"
-          >
+          <div className="mb-6 grid gap-3 lg:grid-cols-5">
             {/* Allocation donut */}
-            <div className="lg:col-span-2 rounded-xl border border-border bg-card p-5">
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Allocation</p>
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.26 }}
+              className="group relative lg:col-span-2 rounded-xl border border-border bg-card p-5 overflow-hidden transition-all"
+            >
+              <div className="absolute top-0 right-0 w-20 h-20 rounded-bl-[50px] bg-accent/5 transition-all group-hover:bg-accent/8" />
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-1.5">
+                  <div className="flex h-5 w-5 items-center justify-center rounded-md bg-accent/10">
+                    <BarChart3 className="h-3 w-3 text-accent" />
+                  </div>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Allocation</p>
+                </div>
                 <span className="text-[11px] text-muted-foreground">{chartData.length} asset{chartData.length !== 1 ? "s" : ""}</span>
               </div>
               {chartData.length > 0 ? (
@@ -530,21 +536,21 @@ const Portfolio = () => {
                         </Pie>
                         <Tooltip
                           formatter={(value: number) => [formatValue(value), ""]}
-                          contentStyle={{ backgroundColor: "hsl(220, 18%, 10%)", border: "1px solid hsl(220, 14%, 18%)", borderRadius: "10px", color: "hsl(210, 20%, 92%)", fontSize: "12px" }}
-                          itemStyle={{ color: "hsl(210, 20%, 92%)" }}
-                          labelStyle={{ color: "hsl(210, 20%, 92%)" }}
+                          contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "10px", color: "hsl(var(--foreground))", fontSize: "12px" }}
+                          itemStyle={{ color: "hsl(var(--foreground))" }}
+                          labelStyle={{ color: "hsl(var(--foreground))" }}
                         />
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
-                  <div className="mt-3 space-y-1.5">
+                  <div className="mt-4 space-y-2">
                     {chartData.slice(0, 6).map((item: any, i: number) => (
-                      <div key={i} className="flex items-center justify-between text-sm">
+                      <div key={i} className="flex items-center justify-between">
                         <div className="flex items-center gap-2 min-w-0">
-                          <span className="h-2 w-2 rounded-full flex-shrink-0" style={{ backgroundColor: CHART_COLORS[i % CHART_COLORS.length] }} />
+                          <span className="h-2.5 w-2.5 rounded-[3px] flex-shrink-0" style={{ backgroundColor: CHART_COLORS[i % CHART_COLORS.length] }} />
                           <span className="text-foreground text-xs font-medium truncate">{item.name}</span>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2.5">
                           <span className="text-muted-foreground text-[11px] tabular-nums">{hideBalances ? "••••" : formatCompact(item.value)}</span>
                           <span className="text-foreground font-semibold text-xs w-11 text-right tabular-nums">{item.percent}%</span>
                         </div>
@@ -553,19 +559,31 @@ const Portfolio = () => {
                   </div>
                 </>
               ) : (
-                <div className="flex h-[180px] items-center justify-center text-xs text-muted-foreground">
-                  Add holdings to see allocation
+                <div className="flex h-[180px] flex-col items-center justify-center text-center">
+                  <BarChart3 className="h-6 w-6 text-muted-foreground/20 mb-2" />
+                  <p className="text-xs text-muted-foreground">Add holdings to see allocation</p>
                 </div>
               )}
-            </div>
+            </motion.div>
 
             {/* Performance chart */}
-            <div className="lg:col-span-3 rounded-xl border border-border bg-card p-5">
-              <div className="flex items-center justify-between mb-3">
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="group relative lg:col-span-3 rounded-xl border border-border bg-card p-5 overflow-hidden transition-all"
+            >
+              <div className="absolute top-0 right-0 w-20 h-20 rounded-bl-[50px] bg-primary/5 transition-all group-hover:bg-primary/8" />
+              <div className="flex items-center justify-between mb-4">
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Performance</p>
+                  <div className="flex items-center gap-1.5">
+                    <div className="flex h-5 w-5 items-center justify-center rounded-md bg-primary/10">
+                      <Activity className="h-3 w-3 text-primary" />
+                    </div>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Performance</p>
+                  </div>
                   {portfolioSparkline?.hasData && (
-                    <div className={`flex items-center gap-1 mt-0.5 text-sm font-semibold ${portfolioSparkline.isPositive ? "text-green-500" : "text-red-500"}`}>
+                    <div className={`flex items-center gap-1 mt-1.5 ml-6.5 text-sm font-semibold ${portfolioSparkline.isPositive ? "text-green-500" : "text-red-500"}`}>
                       {portfolioSparkline.isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                       {portfolioSparkline.isPositive ? "+" : ""}{portfolioSparkline.changePercent.toFixed(2)}%
                     </div>
@@ -578,7 +596,7 @@ const Portfolio = () => {
                       onClick={() => setPerfRange(range)}
                       className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
                         perfRange === range
-                          ? "bg-primary text-primary-foreground shadow-sm"
+                          ? "bg-secondary text-foreground shadow-sm"
                           : "text-muted-foreground hover:text-foreground"
                       }`}
                     >
@@ -617,17 +635,18 @@ const Portfolio = () => {
                 </div>
               ) : portfolioSparkline && !portfolioSparkline.hasData ? (
                 <div className="flex h-[240px] flex-col items-center justify-center text-center">
-                  <BarChart3 className="h-7 w-7 text-muted-foreground/30 mb-2" />
+                  <BarChart3 className="h-6 w-6 text-muted-foreground/20 mb-2" />
                   <p className="text-sm font-medium text-foreground">{perfRange} data not available</p>
                   <p className="text-xs text-muted-foreground mt-1">Historical data is limited to 7 days. Select 1D or 7D.</p>
                 </div>
               ) : (
-                <div className="flex h-[240px] items-center justify-center text-xs text-muted-foreground">
-                  Add holdings with market data to see performance
+                <div className="flex h-[240px] flex-col items-center justify-center text-center">
+                  <Activity className="h-6 w-6 text-muted-foreground/20 mb-2" />
+                  <p className="text-xs text-muted-foreground">Add holdings with market data to see performance</p>
                 </div>
               )}
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
 
 
           <motion.div
