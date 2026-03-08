@@ -97,6 +97,70 @@ export type Database = {
         }
         Relationships: []
       }
+      forecast_comment_likes: {
+        Row: {
+          comment_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          comment_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          comment_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forecast_comment_likes_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "forecast_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forecast_comment_replies: {
+        Row: {
+          comment_id: string
+          created_at: string
+          id: string
+          reply_text: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          comment_id: string
+          created_at?: string
+          id?: string
+          reply_text: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          comment_id?: string
+          created_at?: string
+          id?: string
+          reply_text?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forecast_comment_replies_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "forecast_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       forecast_comments: {
         Row: {
           comment_text: string

@@ -519,7 +519,7 @@ const Forecasts = () => {
                   <SelectTrigger className="mt-1.5 h-9">
                     <SelectValue placeholder="Select project" />
                   </SelectTrigger>
-                  <SelectContent position="popper" side="bottom" sideOffset={4}>
+                  <SelectContent position="popper" side="bottom" sideOffset={4} avoidCollisions={false} className="max-h-60">
                     {projects.map((p) => (
                       <SelectItem key={p.id} value={p.id}>
                         <span className="flex items-center gap-2">
@@ -541,7 +541,7 @@ const Forecasts = () => {
                   <SelectTrigger className="mt-1.5 h-9">
                     <SelectValue placeholder="Select project" />
                   </SelectTrigger>
-                  <SelectContent position="popper" side="bottom" sideOffset={4}>
+                  <SelectContent position="popper" side="bottom" sideOffset={4} avoidCollisions={false} className="max-h-60">
                     <SelectItem value="none">None</SelectItem>
                     {projects.filter((p) => p.id !== projectAId).map((p) => (
                       <SelectItem key={p.id} value={p.id}>
