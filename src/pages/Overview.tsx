@@ -76,6 +76,7 @@ const fadeUp = {
 
 const Overview = () => {
   const { data: projects = [] } = useProjects();
+  const { data: marketData = {} } = useAllTokenMarketData();
   const { data: topSentiments = [] } = useTopSentiments(6);
   const { data: trendingProjects = [] } = useTrendingProjects(5);
 
