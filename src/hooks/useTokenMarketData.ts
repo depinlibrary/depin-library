@@ -30,7 +30,7 @@ export function useTokenMarketData(projectId?: string) {
   });
 }
 
-export function useAllTokenMarketData() {
+export function useAllTokenMarketData(refetchInterval: number = 10 * 60 * 1000) {
   return useQuery({
     queryKey: ["all-token-market-data"],
     queryFn: async (): Promise<Record<string, TokenMarketData>> => {
@@ -42,6 +42,6 @@ export function useAllTokenMarketData() {
       (data || []).forEach((d: any) => { map[d.project_id] = d as TokenMarketData; });
       return map;
     },
-    refetchInterval: 10 * 60 * 1000,
+    refetchInterval,
   });
 }
