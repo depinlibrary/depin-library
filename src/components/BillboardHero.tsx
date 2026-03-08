@@ -432,7 +432,7 @@ const BillboardHero = ({
               <div className="rounded-lg border border-border bg-card/40 backdrop-blur-md p-3">
                 <div className="flex items-center gap-1 mb-2">
                   <ArrowUpRight className="h-3 w-3 text-neon-green" />
-                  <span className="text-[11px] font-semibold text-foreground">Gainers</span>
+                  <span className="text-xs font-semibold text-foreground">Gainers</span>
                 </div>
                 <div className="space-y-2">
                   {topGainers.map((p) => {
