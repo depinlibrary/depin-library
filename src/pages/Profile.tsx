@@ -217,10 +217,10 @@ const Profile = () => {
                 Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)
               ) : (
                 <>
-                  <StatCard icon={TrendingUp} label="Total Votes" value={forecastStats?.totalVotes ?? 0} />
-                  <StatCard icon={CheckCircle2} label="Correct" value={forecastStats?.correctVotes ?? 0} color="text-emerald-400" />
-                  <StatCard icon={XCircle} label="Incorrect" value={forecastStats?.incorrectVotes ?? 0} color="text-destructive" />
-                  <StatCard icon={Target} label="Accuracy" value={`${forecastStats?.accuracy ?? 0}%`} color="text-primary" />
+                  <StatCard icon={TrendingUp} label="Total Votes" value={forecastStats?.totalVotes ?? 0} color="text-primary" />
+                  <StatCard icon={CheckCircle2} label="Correct" value={forecastStats?.correctVotes ?? 0} color="text-primary" />
+                  <StatCard icon={XCircle} label="Incorrect" value={forecastStats?.incorrectVotes ?? 0} color="text-primary" />
+                  <StatCard icon={Crosshair} label="Accuracy" value={`${forecastStats?.accuracy ?? 0}%`} color="text-primary" />
                 </>
               )}
             </div>
