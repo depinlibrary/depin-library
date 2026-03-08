@@ -43,6 +43,7 @@ const App = () => (
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/compare" element={<CompareProjects />} />
             <Route path="/forecasts" element={<Forecasts />} />
+            <Route path="/forecasts/:id" element={<ForecastDetail />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
