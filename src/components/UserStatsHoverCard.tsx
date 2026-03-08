@@ -11,7 +11,7 @@ interface UserStatsHoverCardProps {
   children: React.ReactNode;
 }
 
-const UserStatsHoverCard = ({ userId, displayName, children }: UserStatsHoverCardProps) => {
+const UserStatsHoverCard = ({ userId, displayName, avatarUrl, children }: UserStatsHoverCardProps) => {
   const { data: stats, isLoading } = useUserForecastStats(userId);
 
   const accuracyColor = (stats?.accuracy ?? 0) >= 60
