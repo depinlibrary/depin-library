@@ -399,7 +399,7 @@ const BillboardHero = ({
                             </>
                           )}
                         </div>
-                        <span className="text-xs font-semibold text-foreground flex-1 truncate">{f.title}</span>
+                        <span className="text-xs font-semibold text-foreground flex-1 truncate" title={f.title}>{f.title}</span>
                         <div className="relative w-24 shrink-0 group/bar">
                           <div className="h-2 rounded-full bg-secondary overflow-hidden flex">
                             <motion.div
