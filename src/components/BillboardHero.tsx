@@ -5,8 +5,6 @@ import {
   BarChart3,
   Layers,
   Zap,
-  Activity,
-  Users,
   ArrowRight,
   ArrowUpRight,
   ArrowDownRight,
