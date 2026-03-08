@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect } from "react";
+import { createNotification } from "@/hooks/useNotifications";
 
 export type ForecastComment = {
   id: string;
@@ -134,6 +135,32 @@ export function useAddForecastComment() {
         comment_text: commentText,
       });
       if (error) throw error;
+
+      // Notify forecast creator
+      const { data: forecast } = await supabase
+        .from("forecasts")
+        .select("creator_user_id, title")
+        .eq("id", forecastId)
+        .single();
+
+      if (forecast && forecast.creator_user_id !== user.id) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("display_name")
+          .eq("user_id", user.id)
+          .single();
+        
+        const commenterName = profile?.display_name || "Someone";
+
+        await createNotification({
+          userId: forecast.creator_user_id,
+          type: "forecast_new_comment",
+          title: "New comment on your forecast",
+          message: `${commenterName} commented: "${commentText.slice(0, 80)}${commentText.length > 80 ? "..." : ""}"`,
+          link: `/forecasts/${forecastId}`,
+          metadata: { forecastId },
+        });
+      }
     },
     onSuccess: (_, vars) => {
       queryClient.invalidateQueries({ queryKey: ["forecast-comments", vars.forecastId] });
