@@ -301,7 +301,7 @@ const Portfolio = () => {
     const endVal = points[points.length - 1];
     const changePercent = startVal > 0 ? ((endVal - startVal) / startVal) * 100 : 0;
     const isPositive = changePercent >= 0;
-    const hasData = perfRange === "1D" || perfRange === "7D";
+    const hasData = points.length >= 2;
 
     return { points, changePercent, isPositive, hasData };
   }, [portfolioData, perfRange]);
