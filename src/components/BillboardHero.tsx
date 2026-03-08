@@ -309,7 +309,7 @@ const BillboardHero = ({
             </motion.div>
 
             {/* ── Top Gainers ── */}
-            <motion.div variants={fadeUp} className="rounded-xl border border-border bg-card/80 backdrop-blur-sm p-4">
+             <motion.div variants={fadeUp} className="rounded-xl border border-border bg-card/50 backdrop-blur-md p-4">
               <div className="flex items-center gap-1.5 mb-3">
                 <ArrowUpRight className="h-3.5 w-3.5 text-neon-green" />
                 <span className="text-xs font-semibold text-foreground">Top Gainers</span>
