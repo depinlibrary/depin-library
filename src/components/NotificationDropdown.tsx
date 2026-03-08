@@ -136,6 +136,15 @@ const NotificationDropdown = () => {
                 ))
               )}
             </div>
+
+            {/* Footer */}
+            <Link
+              to="/notifications"
+              onClick={() => setOpen(false)}
+              className="block px-4 py-3 border-t border-border text-center text-xs font-medium text-primary hover:bg-secondary/50 transition-colors"
+            >
+              View all notifications
+            </Link>
           </motion.div>
         )}
       </AnimatePresence>
