@@ -418,7 +418,7 @@ const BillboardHero = ({
                         <p className="text-[10px] text-muted-foreground truncate">{p.category}</p>
                       </div>
                       {m?.price_usd && (
-                        <span className="text-[10px] font-medium text-muted-foreground tabular-nums">{formatPrice(m.price_usd)}</span>
+                        <span className="text-xs font-medium text-muted-foreground tabular-nums">{formatPrice(m.price_usd)}</span>
                       )}
                     </Link>
                   );
