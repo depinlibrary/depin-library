@@ -5,8 +5,6 @@ import {
   BarChart3,
   Layers,
   Zap,
-  Activity,
-  Users,
   ArrowRight,
   ArrowUpRight,
   ArrowDownRight,
@@ -19,10 +17,18 @@ import type { Project } from "@/hooks/useProjects";
 import type { TokenMarketData } from "@/hooks/useTokenMarketData";
 import { useEffect, useState } from "react";
 
+interface TopForecast {
+  id: string;
+  title: string;
+  total_votes_yes: number;
+  total_votes_no: number;
+  status: string;
+}
+
 interface BillboardHeroProps {
   projects: Project[];
   marketData: Record<string, TokenMarketData>;
-  topSentiments: any[];
+  topForecasts: TopForecast[];
   trendingProjects: any[];
   totalCategories: number;
   totalBlockchains: number;
@@ -100,7 +106,7 @@ const MiniSparkline = ({ data, positive }: { data: number[] | null; positive: bo
 const BillboardHero = ({
   projects,
   marketData,
-  topSentiments,
+  topForecasts,
   trendingProjects,
   totalCategories,
   totalBlockchains,
@@ -131,8 +137,8 @@ const BillboardHero = ({
   const changes = Object.values(marketData).filter((d) => d.price_change_24h !== null);
   const avgChange = changes.length > 0 ? changes.reduce((s, d) => s + (d.price_change_24h || 0), 0) / changes.length : 0;
 
-  // Active forecasts (sentiment as proxy for activity)
-  const totalSentimentVotes = topSentiments.reduce((s: number, t: any) => s + (t.total_votes || 0), 0);
+  // Total forecast votes
+  const totalForecastVotes = topForecasts.reduce((s, f) => s + f.total_votes_yes + f.total_votes_no, 0);
 
   return (
     <section className="relative overflow-hidden pt-24 pb-8 sm:pt-28 sm:pb-12">
@@ -223,8 +229,8 @@ const BillboardHero = ({
             {/* ── Stat: Categories + Chains ── */}
              <motion.div variants={fadeUp}>
                <Link to="/explore" className="block rounded-xl border border-border bg-card/50 backdrop-blur-md p-4 flex flex-col justify-between h-full transition-colors hover:bg-card/60">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/10 mb-3">
-                  <Zap className="h-4 w-4 text-accent" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 mb-3">
+                   <Zap className="h-4 w-4 text-primary" />
                 </div>
                 <div className="flex items-baseline gap-2">
                   <p className="text-2xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums">
@@ -358,40 +364,43 @@ const BillboardHero = ({
               </div>
             </motion.div>
 
-            {/* ── Community Sentiment (spans 2 cols) ── */}
-             {topSentiments.length > 0 && (
+            {/* ── Top Forecasts (spans 2 cols) ── */}
+             {topForecasts.length > 0 && (
                <motion.div variants={fadeUp} className="col-span-2 rounded-xl border border-border bg-card/50 backdrop-blur-md p-4">
                 <div className="flex items-center gap-2 mb-3">
-                  <Users className="h-3.5 w-3.5 text-accent" />
-                  <span className="text-xs font-semibold text-foreground">Community Sentiment</span>
-                  <span className="ml-auto text-[10px] text-muted-foreground tabular-nums">{totalSentimentVotes} votes</span>
+                  <TrendingUp className="h-3.5 w-3.5 text-primary" />
+                  <span className="text-xs font-semibold text-foreground">Top Forecasts</span>
+                  <Link to="/forecasts" className="ml-auto text-[10px] text-muted-foreground hover:text-primary transition-colors">
+                    View all →
+                  </Link>
                 </div>
                 <div className="space-y-2">
-                  {topSentiments.slice(0, 4).map((s: any) => {
-                    const isBullish = s.bullish_percentage >= 50;
+                  {topForecasts.slice(0, 4).map((f) => {
+                    const totalVotes = f.total_votes_yes + f.total_votes_no;
+                    const yesPercent = totalVotes > 0 ? (f.total_votes_yes / totalVotes) * 100 : 50;
                     return (
                       <Link
-                        key={s.project_id}
-                        to={`/project/${s.project_slug}`}
+                        key={f.id}
+                        to={`/forecasts/${f.id}`}
                         className="group flex items-center gap-3 rounded-lg px-2 py-1 transition-colors hover:bg-secondary/50"
                       >
-                        <span className="text-xs font-semibold text-foreground w-24 truncate">{s.project_name}</span>
-                        <div className="flex-1 h-2 rounded-full bg-secondary overflow-hidden flex">
+                        <span className="text-xs font-semibold text-foreground flex-1 truncate">{f.title}</span>
+                        <div className="w-24 h-2 rounded-full bg-secondary overflow-hidden flex shrink-0">
                           <motion.div
                             className="h-full bg-neon-green rounded-l-full"
                             initial={{ width: 0 }}
-                            animate={{ width: `${s.bullish_percentage}%` }}
+                            animate={{ width: `${yesPercent}%` }}
                             transition={{ duration: 0.8, ease: "easeOut" }}
                           />
                           <motion.div
                             className="h-full bg-destructive rounded-r-full"
                             initial={{ width: 0 }}
-                            animate={{ width: `${100 - s.bullish_percentage}%` }}
+                            animate={{ width: `${100 - yesPercent}%` }}
                             transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
                           />
                         </div>
-                        <span className={`text-[10px] font-bold tabular-nums w-12 text-right ${isBullish ? "text-neon-green" : "text-destructive"}`}>
-                          {s.bullish_percentage.toFixed(0)}%
+                        <span className="text-[10px] font-bold tabular-nums text-muted-foreground w-10 text-right">
+                          {totalVotes}
                         </span>
                       </Link>
                     );
