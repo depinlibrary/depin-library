@@ -116,7 +116,7 @@ export default function MyForecasts() {
     onError: () => toast.error("Failed to submit deletion request"),
   });
 
-  const projectMap = new Map(projects.map((p) => [p.id, p]));
+  const projectMap = new Map((projects as any[]).map((p) => [p.id, p]));
 
   const getDeletionStatus = (forecastId: string) => {
     return deletionRequests.find((r: any) => r.forecast_id === forecastId);
