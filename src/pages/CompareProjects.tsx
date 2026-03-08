@@ -427,7 +427,12 @@ const CompareProjects = () => {
                     Create a community forecast about {projectA.name} vs {projectB.name} and let others vote on the outcome.
                   </p>
                   <Button
-                    onClick={() => navigate(`/forecasts?create=true&a=${projectAId}&b=${projectBId}`)}
+                    onClick={() => {
+                      const title = `${projectA?.name} vs ${projectB?.name}: ${result.conclusion.slice(0, 80)}${result.conclusion.length > 80 ? '...' : ''}`;
+                      const desc = `Summary: ${result.summary}\n\nLong-term outlook: ${result.long_term_outlook}\n\nKey risks: ${result.risks.join('; ')}`;
+                      sessionStorage.setItem('forecast_prefill', JSON.stringify({ title, description: desc }));
+                      navigate(`/forecasts?create=true&a=${projectAId}&b=${projectBId}`);
+                    }}
                     className="gap-2"
                   >
                     <TrendingUp className="w-4 h-4" /> Create Forecast
