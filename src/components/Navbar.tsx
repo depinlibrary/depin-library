@@ -109,6 +109,8 @@ const Navbar = () => {
     { to: "/", label: "Overview" },
     { to: "/compare", label: "Compare" },
   ];
+  
+  const unreadCount = useUnreadNotificationCount();
 
   const mobileNavLinks = [
     { to: "/", label: "Overview", icon: Home },
