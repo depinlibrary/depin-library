@@ -110,47 +110,6 @@ const MiniSparkline = ({ data, positive }: { data: number[] | null; positive: bo
   );
 };
 
-/* ── Live Price Ticker ── */
-const PriceTicker = ({ projects, marketData }: { projects: Project[]; marketData: Record<string, TokenMarketData> }) => {
-  const tickerProjects = projects.filter((p) => marketData[p.id]?.price_usd);
-  if (tickerProjects.length === 0) return null;
-
-  // Duplicate for seamless loop
-  const items = [...tickerProjects, ...tickerProjects];
-
-  return (
-    <div className="relative overflow-hidden border-y border-border/40 bg-card/30 backdrop-blur-sm">
-      <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
-      <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
-      <motion.div
-        className="flex items-center gap-6 py-2 whitespace-nowrap"
-        animate={{ x: ["0%", "-50%"] }}
-        transition={{ duration: tickerProjects.length * 4, repeat: Infinity, ease: "linear" }}
-      >
-        {items.map((p, i) => {
-          const m = marketData[p.id];
-          const change = m?.price_change_24h || 0;
-          return (
-            <Link
-              key={`${p.id}-${i}`}
-              to={`/project/${p.slug}`}
-              className="flex items-center gap-2 shrink-0 hover:opacity-80 transition-opacity"
-            >
-              <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="xs" />
-              <span className="text-[11px] font-semibold text-foreground">{p.token || p.name}</span>
-              <span className="text-[11px] font-medium text-muted-foreground tabular-nums">
-                {formatPrice(m?.price_usd || null)}
-              </span>
-              <span className={`text-[10px] font-bold tabular-nums ${change >= 0 ? "text-neon-green" : "text-destructive"}`}>
-                {change >= 0 ? "+" : ""}{change.toFixed(1)}%
-              </span>
-            </Link>
-          );
-        })}
-      </motion.div>
-    </div>
-  );
-};
 
 const BillboardHero = ({
   projects,
