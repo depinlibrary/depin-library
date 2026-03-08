@@ -27,19 +27,29 @@ export type Forecast = {
 
 export type ForecastSortOption = "votes" | "newest" | "ending_soon";
 
-export function useForecasts(sort: ForecastSortOption = "newest", page = 1, pageSize = 12) {
+export function useForecasts(sort: ForecastSortOption = "newest", page = 1, pageSize = 12, projectFilter?: string) {
   return useQuery({
-    queryKey: ["forecasts", sort, page],
+    queryKey: ["forecasts", sort, page, projectFilter],
     queryFn: async (): Promise<{ forecasts: Forecast[]; total: number }> => {
       // Get total count
-      const { count } = await supabase
+      let countQuery = supabase
         .from("forecasts")
         .select("*", { count: "exact", head: true });
+
+      if (projectFilter) {
+        countQuery = countQuery.or(`project_a_id.eq.${projectFilter},project_b_id.eq.${projectFilter}`);
+      }
+
+      const { count } = await countQuery;
 
       let query = supabase
         .from("forecasts")
         .select("*")
         .range((page - 1) * pageSize, page * pageSize - 1);
+
+      if (projectFilter) {
+        query = query.or(`project_a_id.eq.${projectFilter},project_b_id.eq.${projectFilter}`);
+      }
 
       switch (sort) {
         case "votes":
@@ -50,6 +60,7 @@ export function useForecasts(sort: ForecastSortOption = "newest", page = 1, page
           break;
         default:
           query = query.order("created_at", { ascending: false });
+      }
       }
 
       const { data: forecasts, error } = await query;
