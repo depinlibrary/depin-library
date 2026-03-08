@@ -187,7 +187,7 @@ const SubmitProject = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label className="text-foreground">Category *</Label>
                   <Select value={form.category} onValueChange={(v) => update("category", v)}>
@@ -208,7 +208,7 @@ const SubmitProject = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label className="text-foreground">Token Symbol</Label>
                   <Input value={form.token} onChange={(e) => update("token", e.target.value)} placeholder="e.g. HNT" className="mt-1" />
