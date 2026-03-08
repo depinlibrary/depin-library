@@ -166,59 +166,67 @@ const BillboardHero = ({
           {/* Bento Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 auto-rows-min">
             {/* ── Stat: Total Projects ── */}
-            <motion.div variants={fadeUp} className="rounded-xl border border-border bg-card/80 backdrop-blur-sm p-4 flex flex-col justify-between">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 mb-3">
-                <Layers className="h-4 w-4 text-primary" />
-              </div>
-              <p className="text-2xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums">
-                <AnimatedNumber target={projects.length} />
-              </p>
-              <p className="text-[10px] text-muted-foreground font-medium mt-0.5">Projects Tracked</p>
+            <motion.div variants={fadeUp}>
+              <Link to="/explore" className="block rounded-xl border border-border bg-card/80 backdrop-blur-sm p-4 flex flex-col justify-between h-full transition-colors hover:border-primary/40 hover:bg-card">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 mb-3">
+                  <Layers className="h-4 w-4 text-primary" />
+                </div>
+                <p className="text-2xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums">
+                  <AnimatedNumber target={projects.length} />
+                </p>
+                <p className="text-[10px] text-muted-foreground font-medium mt-0.5">Projects Tracked</p>
+              </Link>
             </motion.div>
 
             {/* ── Stat: Total Market Cap ── */}
-            <motion.div variants={fadeUp} className="rounded-xl border border-border bg-card/80 backdrop-blur-sm p-4 flex flex-col justify-between">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 mb-3">
-                <BarChart3 className="h-4 w-4 text-primary" />
-              </div>
-              <p className="text-2xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums">
-                {formatCompact(totalMarketCap)}
-              </p>
-              <p className="text-[10px] text-muted-foreground font-medium mt-0.5">Total Market Cap</p>
+            <motion.div variants={fadeUp}>
+              <Link to="/market" className="block rounded-xl border border-border bg-card/80 backdrop-blur-sm p-4 flex flex-col justify-between h-full transition-colors hover:border-primary/40 hover:bg-card">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 mb-3">
+                  <BarChart3 className="h-4 w-4 text-primary" />
+                </div>
+                <p className="text-2xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums">
+                  {formatCompact(totalMarketCap)}
+                </p>
+                <p className="text-[10px] text-muted-foreground font-medium mt-0.5">Total Market Cap</p>
+              </Link>
             </motion.div>
 
             {/* ── Stat: Avg 24h Change ── */}
-            <motion.div variants={fadeUp} className="rounded-xl border border-border bg-card/80 backdrop-blur-sm p-4 flex flex-col justify-between">
-              <div className={`flex h-8 w-8 items-center justify-center rounded-lg mb-3 ${avgChange >= 0 ? "bg-neon-green/10" : "bg-destructive/10"}`}>
-                {avgChange >= 0 ? (
-                  <TrendingUp className="h-4 w-4 text-neon-green" />
-                ) : (
-                  <Activity className="h-4 w-4 text-destructive" />
-                )}
-              </div>
-              <p className={`text-2xl font-bold font-['Space_Grotesk'] tabular-nums ${avgChange >= 0 ? "text-neon-green" : "text-destructive"}`}>
-                {avgChange >= 0 ? "+" : ""}{avgChange.toFixed(1)}%
-              </p>
-              <p className="text-[10px] text-muted-foreground font-medium mt-0.5">Avg 24h Change</p>
+            <motion.div variants={fadeUp}>
+              <Link to="/market" className="block rounded-xl border border-border bg-card/80 backdrop-blur-sm p-4 flex flex-col justify-between h-full transition-colors hover:border-primary/40 hover:bg-card">
+                <div className={`flex h-8 w-8 items-center justify-center rounded-lg mb-3 ${avgChange >= 0 ? "bg-neon-green/10" : "bg-destructive/10"}`}>
+                  {avgChange >= 0 ? (
+                    <TrendingUp className="h-4 w-4 text-neon-green" />
+                  ) : (
+                    <Activity className="h-4 w-4 text-destructive" />
+                  )}
+                </div>
+                <p className={`text-2xl font-bold font-['Space_Grotesk'] tabular-nums ${avgChange >= 0 ? "text-neon-green" : "text-destructive"}`}>
+                  {avgChange >= 0 ? "+" : ""}{avgChange.toFixed(1)}%
+                </p>
+                <p className="text-[10px] text-muted-foreground font-medium mt-0.5">Avg 24h Change</p>
+              </Link>
             </motion.div>
 
             {/* ── Stat: Categories + Chains ── */}
-            <motion.div variants={fadeUp} className="rounded-xl border border-border bg-card/80 backdrop-blur-sm p-4 flex flex-col justify-between">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/10 mb-3">
-                <Zap className="h-4 w-4 text-accent" />
-              </div>
-              <div className="flex items-baseline gap-2">
-                <p className="text-2xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums">
-                  <AnimatedNumber target={totalCategories} />
-                </p>
-                <span className="text-muted-foreground text-[10px]">categories</span>
-              </div>
-              <div className="flex items-baseline gap-2 mt-0.5">
-                <p className="text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums">
-                  <AnimatedNumber target={totalBlockchains} />
-                </p>
-                <span className="text-muted-foreground text-[10px]">blockchains</span>
-              </div>
+            <motion.div variants={fadeUp}>
+              <Link to="/explore" className="block rounded-xl border border-border bg-card/80 backdrop-blur-sm p-4 flex flex-col justify-between h-full transition-colors hover:border-primary/40 hover:bg-card">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/10 mb-3">
+                  <Zap className="h-4 w-4 text-accent" />
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <p className="text-2xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums">
+                    <AnimatedNumber target={totalCategories} />
+                  </p>
+                  <span className="text-muted-foreground text-[10px]">categories</span>
+                </div>
+                <div className="flex items-baseline gap-2 mt-0.5">
+                  <p className="text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums">
+                    <AnimatedNumber target={totalBlockchains} />
+                  </p>
+                  <span className="text-muted-foreground text-[10px]">blockchains</span>
+                </div>
+              </Link>
             </motion.div>
 
             {/* ── Top Market Cap (spans 2 cols) ── */}
