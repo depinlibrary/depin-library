@@ -288,10 +288,26 @@ const Navbar = () => {
               <div className="relative" ref={profileDropdownRef}>
                 <button
                   onClick={() => setProfileDropdownOpen((v) => !v)}
-                  className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/15 border border-primary/30 transition-all hover:bg-primary/25 hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/15 border border-primary/30 transition-all hover:bg-primary/25 hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 overflow-hidden"
                   aria-label="Profile menu"
                 >
-                  <User className="h-3.5 w-3.5 text-primary" />
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="Avatar" className="h-8 w-8 rounded-full object-cover" />
+                  ) : (
+                    <User className="h-3.5 w-3.5 text-primary" />
+                  )}
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) uploadAvatar(file);
+                    e.target.value = "";
+                  }}
+                />
                 </button>
                 <AnimatePresence>
                   {profileDropdownOpen && (
