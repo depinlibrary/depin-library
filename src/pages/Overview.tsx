@@ -147,54 +147,120 @@ const Overview = () => {
         </motion.div>
       </section>
 
-      {/* Spotlight Projects */}
+      {/* ✦ Spotlight Projects — Premium Showcase */}
       {spotlightProjects.length > 0 && (
-        <section className="container mx-auto px-4 pb-16">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-50px" }} variants={stagger}>
-            <motion.div variants={fadeUp} className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <Star className="h-5 w-5 text-primary fill-primary" />
-                <h2 className="text-xl font-semibold text-foreground font-['Space_Grotesk']">Spotlight</h2>
-                <div className="h-px flex-1 bg-border/50" />
+        <section className="relative overflow-hidden py-16">
+          {/* Animated gradient background */}
+          <div className="absolute inset-0 pointer-events-none">
+            <motion.div
+              className="absolute inset-0 opacity-30"
+              style={{ background: "radial-gradient(ellipse 80% 60% at 50% 40%, hsl(var(--primary) / 0.15), transparent)" }}
+              animate={{ scale: [1, 1.1, 1], opacity: [0.2, 0.35, 0.2] }}
+              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+            />
+          </div>
+
+          <div className="container relative mx-auto px-4">
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-50px" }} variants={stagger}>
+              {/* Section Header */}
+              <motion.div variants={fadeUp} className="text-center mb-10">
+                <motion.div
+                  className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 backdrop-blur-sm px-4 py-1.5 mb-4"
+                  animate={{ boxShadow: ["0 0 0px hsl(var(--primary) / 0)", "0 0 20px hsl(var(--primary) / 0.15)", "0 0 0px hsl(var(--primary) / 0)"] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
+                  </span>
+                  <span className="text-[10px] font-semibold text-primary tracking-widest uppercase">Featured Projects</span>
+                </motion.div>
+                <h2 className="text-2xl sm:text-3xl font-bold text-foreground font-['Space_Grotesk'] tracking-tight">
+                  In the <span className="text-primary">Spotlight</span>
+                </h2>
+                <p className="mt-2 text-sm text-muted-foreground max-w-md mx-auto">
+                  Hand-picked projects making waves in the DePIN ecosystem.
+                </p>
+              </motion.div>
+
+              {/* Spotlight Cards Grid */}
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {spotlightProjects.map((project, i) => {
+                  if (!project) return null;
+                  const m = marketData[project.id];
+                  const change = m?.price_change_24h || 0;
+                  return (
+                    <motion.div
+                      key={project.id}
+                      variants={fadeUp}
+                      whileHover={{ y: -6, transition: { duration: 0.25 } }}
+                      className="h-full"
+                    >
+                      <Link
+                        to={`/project/${project.slug}`}
+                        className="group relative flex flex-col rounded-xl border border-border bg-card overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 hover:border-primary/30 h-full"
+                      >
+                        {/* Top gradient accent bar */}
+                        <div className="h-1 w-full" style={{ background: "linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)), hsl(var(--primary)))" }} />
+
+                        {/* Hover glow overlay */}
+                        <motion.div
+                          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                          style={{ background: "radial-gradient(circle at 50% 0%, hsl(var(--primary) / 0.08), transparent 70%)" }}
+                        />
+
+                        <div className="relative p-5 flex flex-col flex-1">
+                          {/* Rank badge */}
+                          <div className="absolute top-4 right-4 flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary text-[10px] font-bold">
+                            #{i + 1}
+                          </div>
+
+                          {/* Logo + Info */}
+                          <div className="flex items-start gap-3.5 mb-4">
+                            <div className="relative">
+                              <motion.div
+                                className="absolute -inset-1 rounded-full bg-primary/20 blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                              />
+                              <div className="relative">
+                                <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="md" />
+                              </div>
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <h3 className="text-base font-bold text-foreground group-hover:text-primary transition-colors truncate">{project.name}</h3>
+                              <span className="inline-block mt-1 rounded-full bg-secondary px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                                {project.category}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Tagline */}
+                          <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 mb-4 flex-1">{project.tagline}</p>
+
+                          {/* Price bar */}
+                          <div className="flex items-center justify-between pt-3 border-t border-border/50">
+                            {m?.price_usd ? (
+                              <>
+                                <span className="text-sm font-bold text-foreground tabular-nums">
+                                  ${m.price_usd >= 1 ? m.price_usd.toFixed(2) : m.price_usd.toFixed(4)}
+                                </span>
+                                <span className={`inline-flex items-center gap-1 text-xs font-bold tabular-nums px-2 py-0.5 rounded-full ${
+                                  change >= 0 ? "text-neon-green bg-neon-green/10" : "text-destructive bg-destructive/10"
+                                }`}>
+                                  {change >= 0 ? "+" : ""}{change.toFixed(1)}%
+                                </span>
+                              </>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">Explore project →</span>
+                            )}
+                          </div>
+                        </div>
+                      </Link>
+                    </motion.div>
+                  );
+                })}
               </div>
             </motion.div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {spotlightProjects.map((project) => {
-                if (!project) return null;
-                const m = marketData[project.id];
-                const change = m?.price_change_24h || 0;
-                return (
-                  <motion.div key={project.id} variants={fadeUp} className="h-full">
-                    <Link
-                      to={`/project/${project.slug}`}
-                      className="group flex items-center gap-4 rounded-xl border border-border bg-card p-4 transition-all hover:shadow-md hover:bg-card/80 hover:border-primary/20 h-full"
-                    >
-                      <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="md" />
-                      <div className="min-w-0 flex-1">
-                        <h3 className="text-sm font-semibold text-foreground truncate">{project.name}</h3>
-                        <p className="text-[11px] text-muted-foreground truncate">{project.tagline}</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-[10px] font-medium text-muted-foreground">{project.category}</span>
-                          {m?.price_usd && (
-                            <>
-                              <span className="text-[10px] text-muted-foreground/50">•</span>
-                              <span className="text-[10px] font-medium tabular-nums text-muted-foreground">
-                                ${m.price_usd >= 1 ? m.price_usd.toFixed(2) : m.price_usd.toFixed(4)}
-                              </span>
-                              <span className={`text-[10px] font-bold tabular-nums ${change >= 0 ? "text-neon-green" : "text-destructive"}`}>
-                                {change >= 0 ? "+" : ""}{change.toFixed(1)}%
-                              </span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                      <ArrowRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-primary group-hover:translate-x-1 transition-all shrink-0" />
-                    </Link>
-                  </motion.div>
-                );
-              })}
-            </div>
-          </motion.div>
+          </div>
         </section>
       )}
 

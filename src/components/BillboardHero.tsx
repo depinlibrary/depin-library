@@ -440,17 +440,19 @@ const BillboardHero = ({
               </div>
             </motion.div>
 
-            {/* ── Top Forecasts (spans full width on large) ── */}
+            {/* ── Top Forecasts — Enhanced (spans full width) ── */}
             {topForecasts.length > 0 && (
-              <motion.div variants={fadeUp} className="col-span-2 sm:col-span-4 lg:col-span-6 rounded-lg border border-border bg-card/40 backdrop-blur-md p-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <TrendingUp className="h-3 w-3 text-primary" />
-                  <span className="text-[11px] font-semibold text-foreground">Top Forecasts</span>
-                  <Link to="/forecasts" className="ml-auto text-[9px] text-muted-foreground hover:text-primary transition-colors">
-                    View all →
+              <motion.div variants={fadeUp} className="col-span-2 sm:col-span-4 lg:col-span-6 rounded-lg border border-border bg-card/40 backdrop-blur-md p-3 sm:p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/10">
+                    <TrendingUp className="h-3.5 w-3.5 text-primary" />
+                  </div>
+                  <span className="text-xs font-semibold text-foreground">Top Forecasts</span>
+                  <Link to="/forecasts" className="ml-auto text-[10px] font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
+                    View all <ArrowRight className="h-3 w-3" />
                   </Link>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
                   {topForecasts.slice(0, 4).map((f) => {
                     const totalVotes = f.total_votes_yes + f.total_votes_no;
                     const yesPercent = totalVotes > 0 ? (f.total_votes_yes / totalVotes) * 100 : 50;
@@ -458,24 +460,43 @@ const BillboardHero = ({
                       <Link
                         key={f.id}
                         to={`/forecasts/${f.id}`}
-                        className="group flex flex-col gap-2 rounded-md bg-secondary/30 px-2.5 py-2 transition-colors hover:bg-secondary/50"
+                        className="group relative flex flex-col gap-2.5 rounded-lg border border-border/50 bg-secondary/20 px-3 py-3 transition-all hover:bg-secondary/40 hover:border-primary/20 hover:shadow-md hover:shadow-primary/5"
                       >
-                        <div className="flex items-center gap-1.5">
-                          <ProjectLogo logoUrl={f.project_a_logo_url || null} logoEmoji={f.project_a_logo_emoji || "⬡"} name={f.project_a_name || "Project"} size="xs" />
-                          {f.project_b_name && (
-                            <>
-                              <span className="text-[7px] font-bold text-muted-foreground uppercase">vs</span>
-                              <ProjectLogo logoUrl={f.project_b_logo_url || null} logoEmoji={f.project_b_logo_emoji || "⬡"} name={f.project_b_name} size="xs" />
-                            </>
-                          )}
-                        </div>
-                        <p className="text-[10px] font-semibold text-foreground line-clamp-2 leading-snug">{f.title}</p>
-                        <div className="mt-auto flex items-center gap-2">
-                          <div className="flex-1 h-1.5 rounded-full bg-secondary overflow-hidden flex">
-                            <div className="h-full bg-neon-green rounded-l-full" style={{ width: `${yesPercent}%` }} />
-                            <div className="h-full bg-destructive rounded-r-full" style={{ width: `${100 - yesPercent}%` }} />
+                        {/* Project logos */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <ProjectLogo logoUrl={f.project_a_logo_url || null} logoEmoji={f.project_a_logo_emoji || "⬡"} name={f.project_a_name || "Project"} size="xs" />
+                            {f.project_b_name && (
+                              <>
+                                <span className="text-[7px] font-bold text-muted-foreground uppercase">vs</span>
+                                <ProjectLogo logoUrl={f.project_b_logo_url || null} logoEmoji={f.project_b_logo_emoji || "⬡"} name={f.project_b_name} size="xs" />
+                              </>
+                            )}
                           </div>
-                          <span className="text-[9px] font-bold tabular-nums text-muted-foreground">{totalVotes}</span>
+                          <span className="text-[9px] font-medium text-muted-foreground tabular-nums">
+                            {totalVotes} vote{totalVotes !== 1 ? "s" : ""}
+                          </span>
+                        </div>
+
+                        {/* Title */}
+                        <p className="text-[11px] font-semibold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">{f.title}</p>
+
+                        {/* Vote bar with labels */}
+                        <div className="mt-auto space-y-1.5">
+                          <div className="relative h-2 rounded-full bg-secondary overflow-hidden">
+                            <motion.div
+                              className="absolute inset-y-0 left-0 rounded-l-full"
+                              style={{ width: `${yesPercent}%`, background: "hsl(var(--neon-green))" }}
+                              initial={{ width: 0 }}
+                              whileInView={{ width: `${yesPercent}%` }}
+                              viewport={{ once: true }}
+                              transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+                            />
+                          </div>
+                          <div className="flex items-center justify-between text-[10px]">
+                            <span className="font-bold text-neon-green">Yes {yesPercent.toFixed(0)}%</span>
+                            <span className="font-bold text-muted-foreground">No {(100 - yesPercent).toFixed(0)}%</span>
+                          </div>
                         </div>
                       </Link>
                     );
