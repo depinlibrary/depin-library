@@ -197,12 +197,11 @@ const ReviewSection = ({ projectId, projectName }: ReviewSectionProps) => {
       {user ? (
         !userHasReview ? (
           <form onSubmit={handleSubmit} className="rounded-xl border border-border bg-card p-5 space-y-4">
-            <p className="text-sm font-medium text-foreground">Rate {projectName}</p>
-            <StarRating rating={rating} onRate={setRating} interactive />
+            <p className="text-sm font-medium text-foreground">Comment on {projectName}</p>
             <Textarea
               value={reviewText}
               onChange={(e) => setReviewText(e.target.value)}
-              placeholder="Write your review (optional)..."
+              placeholder="Share your thoughts…"
               className="min-h-[80px] resize-none"
             />
             <Button type="submit" size="sm" disabled={createReview.isPending}>
