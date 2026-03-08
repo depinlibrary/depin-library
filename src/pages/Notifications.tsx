@@ -99,11 +99,11 @@ const Notifications = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 shrink-0">
-              <Bell className="h-5 w-5 text-primary" />
+              <Bell className="h-5 w-5 text-primary" aria-hidden="true" />
             </div>
             <div>
               <h1 className="text-xl font-bold text-foreground font-['Space_Grotesk']">Notifications</h1>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground" aria-live="polite">
                 {unreadCount > 0 ? `${unreadCount} unread` : "All caught up!"}
               </p>
             </div>
@@ -115,9 +115,10 @@ const Notifications = () => {
                 variant="outline"
                 size="sm"
                 onClick={() => markAllRead.mutate()}
-                className="gap-1.5"
+                className="gap-1.5 focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                aria-label="Mark all notifications as read"
               >
-                <CheckCheck className="h-3.5 w-3.5" /> Mark all read
+                <CheckCheck className="h-3.5 w-3.5" aria-hidden="true" /> Mark all read
               </Button>
             )}
             <NotificationPreferencesDialog />
