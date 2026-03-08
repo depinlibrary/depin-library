@@ -24,8 +24,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import {
-  Camera, Check, X, TrendingUp, Target, Clock, BookmarkIcon,
-  Bell, Mail, Shield, Award, BarChart3, CheckCircle2, XCircle, HelpCircle, Trash2, Lock
+  Camera, Check, X, TrendingUp, Clock, BookmarkIcon,
+  Bell, Mail, Shield, Award, BarChart3, CheckCircle2, XCircle, HelpCircle, Trash2, Lock, Crosshair
 } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 
