@@ -12,6 +12,7 @@ import {
   Flame,
   RefreshCw,
   Search,
+  Link as LinkIcon,
 } from "lucide-react";
 import ProjectLogo from "@/components/ProjectLogo";
 import type { Project } from "@/hooks/useProjects";
