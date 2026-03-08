@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { CalendarDays, Timer, User as UserIcon, ExternalLink, Copy, Share2, Clock } from "lucide-react";
+import { CalendarDays, Timer, ExternalLink, Copy, Share2, Clock } from "lucide-react";
+import UserAvatar from "@/components/UserAvatar";
 import UserStatsHoverCard from "@/components/UserStatsHoverCard";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";

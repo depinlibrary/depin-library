@@ -75,7 +75,7 @@ export function useForecastDetail(forecastId: string | undefined) {
       // Get creator display name
       const { data: creatorProfile } = await supabase
         .from("profiles")
-        .select("display_name")
+        .select("display_name, avatar_url")
         .eq("user_id", forecast.creator_user_id)
         .maybeSingle();
 
@@ -85,6 +85,7 @@ export function useForecastDetail(forecastId: string | undefined) {
         project_b: forecast.project_b_id ? projectMap[forecast.project_b_id] || null : null,
         user_vote: userVote,
         creator_name: creatorProfile?.display_name || "Anonymous",
+        creator_avatar_url: (creatorProfile as any)?.avatar_url ?? null,
         avg_confidence_yes: avgConfidenceYes,
         avg_confidence_no: avgConfidenceNo,
       };
