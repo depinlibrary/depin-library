@@ -144,7 +144,7 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="container mx-auto px-4 pt-24 pb-12 max-w-4xl">
+      <div className="no-card-hover container mx-auto px-4 pt-24 pb-12 max-w-4xl">
         {/* Profile Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -287,7 +287,7 @@ const Profile = () => {
                       <Link
                         key={item.forecast_id + item.voted_at}
                         to={`/forecasts/${item.forecast_id}`}
-                        className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors group"
+                        className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 transition-colors group"
                       >
                         {item.project_logo_url ? (
                           <img src={item.project_logo_url} alt={item.project_name} className="w-8 h-8 rounded-lg object-contain bg-secondary shrink-0" />
@@ -295,7 +295,7 @@ const Profile = () => {
                           <span className="w-8 h-8 rounded-lg flex items-center justify-center text-base bg-secondary shrink-0">{item.project_logo_emoji}</span>
                         )}
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors">
+                          <p className="text-sm font-medium text-foreground truncate transition-colors">
                             {item.forecast_title}
                           </p>
                           <p className="text-xs text-muted-foreground">
@@ -341,7 +341,7 @@ const Profile = () => {
                     {notifOptions.map((opt) => {
                       const val = (notifPrefs as any)?.[opt.key] ?? true;
                       return (
-                        <div key={opt.key} className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/30 transition-colors">
+                        <div key={opt.key} className="flex items-center justify-between p-3 rounded-lg transition-colors">
                           <div className="flex items-center gap-3">
                             <opt.icon className="h-4 w-4 text-muted-foreground" />
                             <div>

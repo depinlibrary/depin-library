@@ -227,6 +227,12 @@ body {
               0 4px 12px -4px hsl(var(--foreground) / 0.06);
 }
 
+/* Disable card hover lift inside profile page */
+.no-card-hover .card-hover:hover {
+  transform: none;
+  box-shadow: none;
+}
+
 /* Button press effect */
 .btn-press {
   transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1),
