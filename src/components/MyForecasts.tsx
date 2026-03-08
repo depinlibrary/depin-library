@@ -127,11 +127,17 @@ export default function MyForecasts() {
   const projectMap = new Map((projects as any[]).map((p) => [p.id, p]));
   const getDeletionStatus = (forecastId: string) => deletionRequests.find((r: any) => r.forecast_id === forecastId);
 
-  const filteredForecasts = forecasts.filter((f) => {
-    if (statusFilter === "all") return true;
-    const isEnded = new Date(f.end_date) <= new Date();
-    return statusFilter === "ended" ? isEnded : !isEnded;
-  });
+  const filteredForecasts = forecasts
+    .filter((f) => {
+      if (statusFilter === "all") return true;
+      const isEnded = new Date(f.end_date) <= new Date();
+      return statusFilter === "ended" ? isEnded : !isEnded;
+    })
+    .sort((a, b) => {
+      if (sortBy === "votes") return (b.total_votes_yes + b.total_votes_no) - (a.total_votes_yes + a.total_votes_no);
+      if (sortBy === "ending") return new Date(a.end_date).getTime() - new Date(b.end_date).getTime();
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
 
   const activeCount = forecasts.filter((f) => new Date(f.end_date) > new Date()).length;
   const endedCount = forecasts.length - activeCount;
