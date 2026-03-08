@@ -5,6 +5,7 @@ import {
   MessageSquare, Send, Trash2, User as UserIcon,
   Pencil, Check, X, Heart, MessageCircle
 } from "lucide-react";
+import UserAvatar from "@/components/UserAvatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
