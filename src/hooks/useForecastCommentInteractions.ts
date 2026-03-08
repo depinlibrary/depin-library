@@ -110,12 +110,42 @@ export function useCreateForecastCommentReply() {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async ({ commentId, replyText }: { commentId: string; replyText: string }) => {
+    mutationFn: async ({ commentId, replyText, forecastId }: { commentId: string; replyText: string; forecastId: string }) => {
       if (!user) throw new Error("Must be logged in");
+      
+      // Insert the reply
       const { error } = await supabase
         .from("forecast_comment_replies")
         .insert({ comment_id: commentId, user_id: user.id, reply_text: replyText });
       if (error) throw error;
+
+      // Fetch comment author to notify them
+      const { data: comment } = await supabase
+        .from("forecast_comments")
+        .select("user_id, forecast_id")
+        .eq("id", commentId)
+        .single();
+
+      // Don't notify if replying to own comment
+      if (comment && comment.user_id !== user.id) {
+        // Get replier's display name
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("display_name")
+          .eq("user_id", user.id)
+          .single();
+        
+        const replierName = profile?.display_name || "Someone";
+
+        await createNotification({
+          userId: comment.user_id,
+          type: "forecast_comment_reply",
+          title: "New reply to your comment",
+          message: `${replierName} replied: "${replyText.slice(0, 100)}${replyText.length > 100 ? "..." : ""}"`,
+          link: `/forecasts/${forecastId}`,
+          metadata: { commentId, forecastId },
+        });
+      }
     },
     onSuccess: (_, { commentId }) => {
       queryClient.invalidateQueries({ queryKey: ["forecast-comment-replies", commentId] });
