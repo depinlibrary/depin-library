@@ -63,7 +63,7 @@ const CommentReplyThread = ({ commentId, forecastId }: { commentId: string; fore
             >
               <div className="flex items-center gap-2 mb-0.5">
                 <UserAvatar avatarUrl={reply.avatar_url} displayName={reply.display_name} size="sm" />
-                <UserStatsHoverCard userId={reply.user_id} displayName={reply.display_name || "Anonymous"}>
+                <UserStatsHoverCard userId={reply.user_id} displayName={reply.display_name || "Anonymous"} avatarUrl={reply.avatar_url}>
                   <span className="text-[11px] font-medium text-foreground cursor-pointer hover:text-primary transition-colors">{reply.display_name}</span>
                 </UserStatsHoverCard>
                 <span className="text-[10px] text-muted-foreground">
@@ -246,7 +246,7 @@ export default function DiscussionSection({
                   <UserAvatar avatarUrl={comment.avatar_url} displayName={comment.display_name} size="sm" className="mt-0.5" />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <UserStatsHoverCard userId={comment.user_id} displayName={comment.display_name || "Anonymous"}>
+                      <UserStatsHoverCard userId={comment.user_id} displayName={comment.display_name || "Anonymous"} avatarUrl={comment.avatar_url}>
                         <span className="text-xs font-semibold text-foreground cursor-pointer hover:text-primary transition-colors">{comment.display_name}</span>
                       </UserStatsHoverCard>
                       <span className="text-[10px] text-muted-foreground">

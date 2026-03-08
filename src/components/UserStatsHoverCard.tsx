@@ -2,14 +2,16 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/h
 import { Target, CheckCircle, XCircle, Clock, BarChart3 } from "lucide-react";
 import { useUserForecastStats } from "@/hooks/useUserForecastStats";
 import { Skeleton } from "@/components/ui/skeleton";
+import UserAvatar from "@/components/UserAvatar";
 
 interface UserStatsHoverCardProps {
   userId: string;
   displayName: string;
+  avatarUrl?: string | null;
   children: React.ReactNode;
 }
 
-const UserStatsHoverCard = ({ userId, displayName, children }: UserStatsHoverCardProps) => {
+const UserStatsHoverCard = ({ userId, displayName, avatarUrl, children }: UserStatsHoverCardProps) => {
   const { data: stats, isLoading } = useUserForecastStats(userId);
 
   const accuracyColor = (stats?.accuracy ?? 0) >= 60
@@ -27,9 +29,7 @@ const UserStatsHoverCard = ({ userId, displayName, children }: UserStatsHoverCar
         <div className="space-y-3">
           {/* Header */}
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center text-sm">
-              {displayName.charAt(0).toUpperCase()}
-            </div>
+            <UserAvatar avatarUrl={avatarUrl} displayName={displayName} size="md" />
             <div>
               <p className="text-sm font-medium text-foreground">{displayName}</p>
               <p className="text-[10px] text-muted-foreground">Forecaster Stats</p>
