@@ -1,8 +1,7 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link, Navigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { Bell, Check, Trash2, ArrowLeft, CheckCheck, Filter } from "lucide-react";
-import { formatDistanceToNow, format } from "date-fns";
+import { Bell, ArrowLeft, CheckCheck } from "lucide-react";
+import { format } from "date-fns";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -15,21 +14,10 @@ import {
   useDeleteNotification,
   Notification,
 } from "@/hooks/useNotifications";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import NotificationPreferencesDialog from "@/components/NotificationPreferencesDialog";
-
-const notificationTypeLabels: Record<string, string> = {
-  forecast_comment_reply: "Comment Reply",
-  forecast_comment_like: "Comment Like",
-  forecast_new_comment: "New Comment",
-  review_like: "Review Like",
-};
+import { NotificationGroup } from "@/components/notifications/NotificationGroup";
+import { NotificationFilters } from "@/components/notifications/NotificationFilters";
+import { NotificationEmpty } from "@/components/notifications/NotificationEmpty";
 
 const Notifications = () => {
   const { user, loading: authLoading } = useAuth();
