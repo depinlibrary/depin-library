@@ -388,6 +388,7 @@ const Forecasts = () => {
               >
                 <CheckCircle className="h-3 w-3" /> Ended
               </button>
+            </div>
             <div className="w-px h-5 bg-border hidden sm:block" />
             <div className="flex items-center gap-1.5">
               <Select value={projectFilter} onValueChange={(v) => { setProjectFilter(v === "all" ? "" : v); setPage(1); }}>
