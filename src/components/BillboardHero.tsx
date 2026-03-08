@@ -390,14 +390,18 @@ const BillboardHero = ({
                         to={`/forecasts/${f.id}`}
                         className="group grid grid-cols-[auto_1fr_auto_auto] items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-secondary/50"
                       >
-                        <div className="flex items-center gap-0.5 shrink-0 w-[60px] justify-center">
-                          <ProjectLogo logoUrl={f.project_a_logo_url || null} logoEmoji={f.project_a_logo_emoji || "⬡"} name={f.project_a_name || "Project"} size="xs" />
-                          {f.project_b_name && (
-                            <>
-                              <span className="text-[7px] font-bold text-muted-foreground uppercase">vs</span>
-                              <ProjectLogo logoUrl={f.project_b_logo_url || null} logoEmoji={f.project_b_logo_emoji || "⬡"} name={f.project_b_name} size="xs" />
-                            </>
-                          )}
+                        <div className="flex items-center shrink-0 w-[52px]">
+                          <div className="flex items-center justify-start gap-0.5 w-full">
+                            <ProjectLogo logoUrl={f.project_a_logo_url || null} logoEmoji={f.project_a_logo_emoji || "⬡"} name={f.project_a_name || "Project"} size="xs" />
+                            {f.project_b_name ? (
+                              <>
+                                <span className="text-[7px] font-bold text-muted-foreground uppercase">vs</span>
+                                <ProjectLogo logoUrl={f.project_b_logo_url || null} logoEmoji={f.project_b_logo_emoji || "⬡"} name={f.project_b_name} size="xs" />
+                              </>
+                            ) : (
+                              <span className="w-[26px]" />
+                            )}
+                          </div>
                         </div>
                         <span className="text-xs font-semibold text-foreground truncate" title={f.title}>{f.title}</span>
                         <div className="relative w-20 shrink-0 group/bar">
