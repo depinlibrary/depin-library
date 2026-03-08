@@ -240,7 +240,7 @@ const ReviewSection = ({ projectId, projectName, projectSlug }: ReviewSectionPro
                   <button
                     onClick={() => {
                       if (!user) { toast.error("Sign in to like"); return; }
-                      toggleLike.mutate({ reviewId: review.id, isLiked: likeInfo.userLiked });
+                      toggleLike.mutate({ reviewId: review.id, isLiked: likeInfo.userLiked, projectSlug });
                     }}
                     className={`flex items-center gap-1.5 text-xs transition-colors ${
                       likeInfo.userLiked
