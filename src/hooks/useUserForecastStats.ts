@@ -58,7 +58,7 @@ export function useUserForecastStats(userId: string | undefined) {
       const projectIds = [...new Set((forecasts || []).map((f) => f.project_a_id))];
       const { data: projects } = await supabase
         .from("projects")
-        .select("id, name, logo_emoji")
+        .select("id, name, logo_emoji, logo_url")
         .in("id", projectIds);
 
       const projectMap = Object.fromEntries((projects || []).map((p) => [p.id, p]));
