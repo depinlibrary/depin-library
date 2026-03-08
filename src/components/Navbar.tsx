@@ -151,6 +151,7 @@ const Navbar = () => {
 
           {user ? (
             <>
+              <NotificationDropdown />
               {isAdmin && (
                 <Link to="/admin" className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
                   <Shield className="h-3.5 w-3.5" />
