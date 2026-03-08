@@ -662,8 +662,9 @@ const Navbar = () => {
           >
             <div className="container mx-auto px-4 py-3 flex flex-col gap-0.5">
               {/* Navigation links */}
-              {mobileNavLinks.map((link) => {
+               {mobileNavLinks.map((link) => {
                 const active = isActive(link.to);
+                const showBadge = link.to === "/notifications" && unreadCount > 0;
                 return (
                   <Link
                     key={link.to}
@@ -677,10 +678,17 @@ const Navbar = () => {
                   >
                     <link.icon className={`h-4 w-4 ${active ? "text-primary" : ""}`} />
                     {link.label}
-                    {active && <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />}
+                    <div className="ml-auto flex items-center gap-2">
+                      {showBadge && (
+                        <Badge variant="destructive" className="h-4 min-w-4 px-1 text-[10px] font-bold">
+                          {unreadCount > 99 ? '99+' : unreadCount}
+                        </Badge>
+                      )}
+                      {active && <div className="h-1.5 w-1.5 rounded-full bg-primary" />}
+                    </div>
                   </Link>
                 );
-              })}
+               })}
 
               {/* Explore section */}
               <div className="mt-1 mb-1">
