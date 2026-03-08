@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { createNotification } from "@/hooks/useNotifications";
 import { Check, X, Clock, Trash2 } from "lucide-react";
 import { format } from "date-fns";
+import UserAvatar from "@/components/UserAvatar";
 
 type DeletionRequest = {
   id: string;
