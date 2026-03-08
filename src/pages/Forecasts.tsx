@@ -560,8 +560,18 @@ const Forecasts = () => {
       {/* Create Forecast Dialog */}
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
         <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
+          <DialogHeader className="flex flex-row items-center justify-between">
             <DialogTitle className="font-['Space_Grotesk']">Create Forecast</DialogTitle>
+            {(title || description) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => { setTitle(""); setDescription(""); }}
+                className="h-7 gap-1.5 text-xs text-muted-foreground hover:text-foreground -mt-1"
+              >
+                <RotateCcw className="h-3 w-3" /> Reset
+              </Button>
+            )}
           </DialogHeader>
           <div className="space-y-4">
             <div>
