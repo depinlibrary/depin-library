@@ -312,6 +312,12 @@ const Portfolio = () => {
     return withChange.reduce((worst: any, h: any) => (h.market.price_change_24h < (worst.market?.price_change_24h ?? Infinity)) ? h : worst, withChange[0]);
   }, [portfolioData]);
 
+  const topHolding = useMemo(() => {
+    const withValue = portfolioData.filter((h: any) => h.value > 0 && h.project);
+    if (withValue.length === 0) return null;
+    return withValue.reduce((top: any, h: any) => h.value > top.value ? h : top, withValue[0]);
+  }, [portfolioData]);
+
   if (authLoading) return null;
   if (!user) return <Navigate to="/auth?redirect=/portfolio" replace />;
 
