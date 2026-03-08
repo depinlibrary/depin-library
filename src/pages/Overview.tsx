@@ -67,6 +67,9 @@ const Overview = () => {
     project_a_logo_url: f.project_a_logo_url,
     project_a_logo_emoji: f.project_a_logo_emoji,
     project_a_name: f.project_a_name,
+    project_b_logo_url: f.project_b_logo_url,
+    project_b_logo_emoji: f.project_b_logo_emoji,
+    project_b_name: f.project_b_name,
   }));
   const { data: trendingProjects = [] } = useTrendingProjects(5);
 
