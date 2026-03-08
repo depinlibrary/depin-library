@@ -29,6 +29,8 @@ export function useUserForecastStats(userId: string | undefined) {
   return useQuery({
     queryKey: ["user-forecast-stats", userId],
     enabled: !!userId,
+    staleTime: 5 * 60 * 1000, // 5 minutes - won't refetch if data is fresh
+    gcTime: 10 * 60 * 1000, // 10 minutes - keep in cache even when unused
     queryFn: async (): Promise<UserForecastStats> => {
       // Get all votes by this user
       const { data: votes, error: votesError } = await supabase
