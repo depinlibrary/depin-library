@@ -139,8 +139,8 @@ const BillboardHero = ({
   const changes = Object.values(marketData).filter((d) => d.price_change_24h !== null);
   const avgChange = changes.length > 0 ? changes.reduce((s, d) => s + (d.price_change_24h || 0), 0) / changes.length : 0;
 
-  // Active forecasts (sentiment as proxy for activity)
-  const totalSentimentVotes = topSentiments.reduce((s: number, t: any) => s + (t.total_votes || 0), 0);
+  // Total forecast votes
+  const totalForecastVotes = topForecasts.reduce((s, f) => s + f.total_votes_yes + f.total_votes_no, 0);
 
   return (
     <section className="relative overflow-hidden pt-24 pb-8 sm:pt-28 sm:pb-12">
