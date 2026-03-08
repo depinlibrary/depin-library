@@ -157,9 +157,9 @@ export default function MyForecasts() {
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-0.5 rounded-lg bg-secondary/40 p-0.5">
             {([
-              { key: "all" as const, label: "All", count: forecasts.length },
-              { key: "active" as const, label: "Active", count: activeCount },
-              { key: "ended" as const, label: "Ended", count: endedCount },
+              { key: "all" as const, label: "All" },
+              { key: "active" as const, label: "Active" },
+              { key: "ended" as const, label: "Ended" },
             ]).map((opt) => (
               <button
                 key={opt.key}
@@ -171,7 +171,6 @@ export default function MyForecasts() {
                 }`}
               >
                 {opt.label}
-                <span className="ml-1 text-[10px] text-muted-foreground">{opt.count}</span>
               </button>
             ))}
           </div>
