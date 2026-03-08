@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Star, Trash2, ThumbsUp, MessageSquare, Send, ChevronDown, ChevronUp } from "lucide-react";
+import { Star, Trash2, ThumbsUp, MessageSquare, Send } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useReviews, useCreateReview, useDeleteReview, type Review } from "@/hooks/useReviews";
 import {
@@ -50,7 +50,7 @@ const StarRating = ({ rating, onRate, interactive = false }: { rating: number; o
 };
 
 /* ── Reply list for a single review ── */
-const ReplyThread = ({ reviewId }: { reviewId: string }) => {
+const ReplyThread = ({ reviewId, showInput = false }: { reviewId: string; showInput?: boolean }) => {
   const { user } = useAuth();
   const { data: replies = [], isLoading } = useReviewReplies(reviewId);
   const createReply = useCreateReviewReply();
@@ -76,6 +76,10 @@ const ReplyThread = ({ reviewId }: { reviewId: string }) => {
       toast.error("Failed to delete reply");
     }
   };
+
+  const hasReplies = replies.length > 0;
+
+  if (!hasReplies && !showInput) return null;
 
   return (
     <div className="mt-3 space-y-2 border-l-2 border-border pl-4">
@@ -109,7 +113,8 @@ const ReplyThread = ({ reviewId }: { reviewId: string }) => {
         ))}
       </AnimatePresence>
 
-      {user ? (
+      {showInput && (
+        user ? (
           <div className="flex items-center gap-2 pt-1">
             <Input
               value={replyText}
@@ -122,10 +127,11 @@ const ReplyThread = ({ reviewId }: { reviewId: string }) => {
               <Send className="h-3.5 w-3.5" />
             </Button>
           </div>
-      ) : (
-        <p className="pt-1 text-xs text-muted-foreground">
-          <Link to="/auth" className="text-primary hover:underline">Sign in</Link> to reply
-        </p>
+        ) : (
+          <p className="pt-1 text-xs text-muted-foreground">
+            <Link to="/auth" className="text-primary hover:underline">Sign in</Link> to reply
+          </p>
+        )
       )}
     </div>
   );
@@ -280,7 +286,6 @@ const ReviewSection = ({ projectId, projectName }: ReviewSectionProps) => {
                   >
                     <MessageSquare className="h-3.5 w-3.5" />
                     Reply
-                    {repliesOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
                   </button>
 
                   <span className="ml-auto text-[10px] text-text-dim">
@@ -288,17 +293,17 @@ const ReviewSection = ({ projectId, projectName }: ReviewSectionProps) => {
                   </span>
                 </div>
 
-                {/* Reply thread */}
+                {/* Replies always visible */}
+                <ReplyThread reviewId={review.id} showInput={repliesOpen} />
+
+                {/* Toggle reply input */}
                 <AnimatePresence>
                   {repliesOpen && (
                     <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="overflow-hidden"
-                    >
-                      <ReplyThread reviewId={review.id} />
-                    </motion.div>
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                    />
                   )}
                 </AnimatePresence>
               </motion.div>
