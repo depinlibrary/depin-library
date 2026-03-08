@@ -62,7 +62,6 @@ const ReplyThread = ({ reviewId }: { reviewId: string }) => {
     try {
       await createReply.mutateAsync({ reviewId, replyText: replyText.trim() });
       setReplyText("");
-      setShowForm(false);
       toast.success("Reply posted");
     } catch {
       toast.error("Failed to post reply");
