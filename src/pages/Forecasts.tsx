@@ -56,7 +56,7 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index }: {
       {/* Top accent line */}
       <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
-      <div className="p-5">
+      <div className="p-5 flex-1 flex flex-col">
         {/* Header: Projects + time badge */}
         <div className="flex items-center gap-2 mb-3">
           <div className="flex items-center -space-x-1.5">
