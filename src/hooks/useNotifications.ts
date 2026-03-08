@@ -130,6 +130,10 @@ export async function createNotification({
   link?: string;
   metadata?: Record<string, any>;
 }) {
+  // Check user preferences before sending
+  const allowed = await shouldNotify(userId, type);
+  if (!allowed) return;
+
   const { error } = await supabase.from("notifications").insert({
     user_id: userId,
     type,
