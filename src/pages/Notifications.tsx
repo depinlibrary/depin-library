@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import NotificationPreferencesDialog from "@/components/NotificationPreferencesDialog";
 
 const notificationTypeLabels: Record<string, string> = {
   forecast_comment_reply: "Comment Reply",
