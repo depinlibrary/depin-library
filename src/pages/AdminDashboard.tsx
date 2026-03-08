@@ -576,6 +576,13 @@ const AdminDashboard = () => {
             )}
 
             {tab === "users" && <UsersList />}
+
+            {tab === "deletion-requests" && (
+              <div className="rounded-xl border border-border bg-card p-5">
+                <h3 className="mb-4 text-lg font-semibold text-foreground">Forecast Deletion Requests</h3>
+                <DeletionRequests />
+              </div>
+            )}
           </motion.div>
         </div>
       </div>
