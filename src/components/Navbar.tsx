@@ -427,6 +427,24 @@ const Navbar = () => {
               )}
             </AnimatePresence>
           </div>
+          {/* Compare link */}
+          <Link
+            to="/compare"
+            className={`relative rounded-lg px-3 py-1.5 text-[13px] font-medium transition-all ${
+              isActive("/compare")
+                ? "text-foreground"
+                : "text-muted-foreground hover:text-foreground hover:bg-secondary/40"
+            }`}
+          >
+            Compare
+            {isActive("/compare") && (
+              <motion.div
+                layoutId="nav-indicator"
+                className="absolute inset-x-1 -bottom-[13px] h-[2px] rounded-full bg-primary"
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              />
+            )}
+          </Link>
         </nav>
 
         {/* Desktop auth actions — right */}
