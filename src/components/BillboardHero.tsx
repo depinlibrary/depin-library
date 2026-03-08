@@ -309,7 +309,7 @@ const BillboardHero = ({
                   <p className="text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums leading-tight">
                     <AnimatedNumber target={projects.length} />
                   </p>
-                  <p className="text-[9px] text-muted-foreground font-medium">Projects</p>
+                  <p className="text-[10px] text-muted-foreground font-medium">Projects</p>
                 </div>
               </div>
 
@@ -321,7 +321,7 @@ const BillboardHero = ({
                   <p className="text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums leading-tight">
                     {formatCompact(totalMarketCap)}
                   </p>
-                  <p className="text-[9px] text-muted-foreground font-medium">Market Cap</p>
+                  <p className="text-[10px] text-muted-foreground font-medium">Market Cap</p>
                 </div>
               </div>
 
@@ -333,7 +333,7 @@ const BillboardHero = ({
                   <p className={`text-lg font-bold font-['Space_Grotesk'] tabular-nums leading-tight ${avgChange >= 0 ? "text-neon-green" : "text-destructive"}`}>
                     {avgChange >= 0 ? "+" : ""}{avgChange.toFixed(1)}%
                   </p>
-                  <p className="text-[9px] text-muted-foreground font-medium">Avg 24h</p>
+                  <p className="text-[10px] text-muted-foreground font-medium">Avg 24h</p>
                 </div>
               </div>
 
@@ -345,7 +345,7 @@ const BillboardHero = ({
                   <p className="text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums leading-tight">
                     <AnimatedNumber target={totalBlockchains} />
                   </p>
-                  <p className="text-[9px] text-muted-foreground font-medium">Chains</p>
+                  <p className="text-[10px] text-muted-foreground font-medium">Chains</p>
                 </div>
               </div>
             </div>
@@ -361,8 +361,8 @@ const BillboardHero = ({
             <motion.div variants={fadeUp} className="col-span-2 rounded-lg border border-border bg-card/40 backdrop-blur-md p-3">
               <div className="flex items-center gap-2 mb-2">
                 <Crown className="h-3 w-3 text-primary" />
-                <span className="text-[11px] font-semibold text-foreground">Top Market Cap</span>
-                <Link to="/market" className="ml-auto text-[9px] text-muted-foreground hover:text-primary transition-colors">
+                <span className="text-xs font-semibold text-foreground">Top Market Cap</span>
+                <Link to="/market" className="ml-auto text-[10px] text-muted-foreground hover:text-primary transition-colors">
                   View all →
                 </Link>
               </div>
@@ -375,15 +375,15 @@ const BillboardHero = ({
                       to={`/project/${p.slug}`}
                       className="group flex items-center gap-2 rounded-md px-1.5 py-1 transition-colors hover:bg-secondary/50"
                     >
-                      <span className="text-[9px] font-bold text-muted-foreground w-3 text-center">{i + 1}</span>
+                      <span className="text-[10px] font-bold text-muted-foreground w-3 text-center">{i + 1}</span>
                       <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="xs" />
                       <div className="min-w-0 flex-1">
-                        <p className="text-[11px] font-semibold text-foreground truncate">{p.name}</p>
+                        <p className="text-xs font-semibold text-foreground truncate">{p.name}</p>
                       </div>
                       <span className="hidden sm:block"><MiniSparkline data={m?.sparkline_7d || null} positive={(m?.price_change_24h || 0) >= 0} /></span>
                       <div className="text-right shrink-0">
-                        <p className="text-[10px] font-medium text-muted-foreground tabular-nums">{formatCompact(m?.market_cap_usd || 0)}</p>
-                        <p className={`text-[9px] font-bold tabular-nums ${(m?.price_change_24h || 0) >= 0 ? "text-neon-green" : "text-destructive"}`}>
+                        <p className="text-xs font-medium text-muted-foreground tabular-nums">{formatCompact(m?.market_cap_usd || 0)}</p>
+                        <p className={`text-[10px] font-bold tabular-nums ${(m?.price_change_24h || 0) >= 0 ? "text-neon-green" : "text-destructive"}`}>
                           {(m?.price_change_24h || 0) >= 0 ? "+" : ""}{(m?.price_change_24h || 0).toFixed(1)}%
                         </p>
                       </div>
@@ -397,8 +397,8 @@ const BillboardHero = ({
             <motion.div variants={fadeUp} className="col-span-2 rounded-lg border border-border bg-card/40 backdrop-blur-md p-3">
               <div className="flex items-center gap-2 mb-2">
                 <Flame className="h-3 w-3 text-primary" />
-                <span className="text-[11px] font-semibold text-foreground">Trending Now</span>
-                <Link to="/explore" className="ml-auto text-[9px] text-muted-foreground hover:text-primary transition-colors">
+                <span className="text-xs font-semibold text-foreground">Trending Now</span>
+                <Link to="/explore" className="ml-auto text-[10px] text-muted-foreground hover:text-primary transition-colors">
                   View all →
                 </Link>
               </div>
@@ -411,14 +411,14 @@ const BillboardHero = ({
                       to={`/project/${p.slug}`}
                       className="group flex items-center gap-2 rounded-md px-1.5 py-1 transition-colors hover:bg-secondary/50"
                     >
-                      <span className="text-[9px] font-bold text-muted-foreground w-3 text-center">{i + 1}</span>
+                      <span className="text-[10px] font-bold text-muted-foreground w-3 text-center">{i + 1}</span>
                       <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="xs" />
                       <div className="min-w-0 flex-1">
-                        <p className="text-[11px] font-semibold text-foreground truncate">{p.name}</p>
-                        <p className="text-[9px] text-muted-foreground truncate">{p.category}</p>
+                        <p className="text-xs font-semibold text-foreground truncate">{p.name}</p>
+                        <p className="text-[10px] text-muted-foreground truncate">{p.category}</p>
                       </div>
                       {m?.price_usd && (
-                        <span className="text-[10px] font-medium text-muted-foreground tabular-nums">{formatPrice(m.price_usd)}</span>
+                        <span className="text-xs font-medium text-muted-foreground tabular-nums">{formatPrice(m.price_usd)}</span>
                       )}
                     </Link>
                   );
@@ -432,7 +432,7 @@ const BillboardHero = ({
               <div className="rounded-lg border border-border bg-card/40 backdrop-blur-md p-3">
                 <div className="flex items-center gap-1 mb-2">
                   <ArrowUpRight className="h-3 w-3 text-neon-green" />
-                  <span className="text-[11px] font-semibold text-foreground">Gainers</span>
+                  <span className="text-xs font-semibold text-foreground">Gainers</span>
                 </div>
                 <div className="space-y-2">
                   {topGainers.map((p) => {
@@ -441,15 +441,15 @@ const BillboardHero = ({
                       <Link key={p.id} to={`/project/${p.slug}`} className="group flex items-center gap-1.5 hover:opacity-80 transition-opacity">
                         <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="xs" />
                         <div className="min-w-0 flex-1">
-                          <p className="text-[10px] font-semibold text-foreground truncate">{p.name}</p>
-                          <p className="text-[9px] font-bold text-neon-green tabular-nums">
+                          <p className="text-xs font-semibold text-foreground truncate">{p.name}</p>
+                          <p className="text-[10px] font-bold text-neon-green tabular-nums">
                             +{(m?.price_change_24h || 0).toFixed(1)}%
                           </p>
                         </div>
                       </Link>
                     );
                   })}
-                  {topGainers.length === 0 && <p className="text-[9px] text-muted-foreground">No data yet</p>}
+                  {topGainers.length === 0 && <p className="text-[10px] text-muted-foreground">No data yet</p>}
                 </div>
               </div>
 
@@ -457,7 +457,7 @@ const BillboardHero = ({
               <div className="rounded-lg border border-border bg-card/40 backdrop-blur-md p-3">
                 <div className="flex items-center gap-1 mb-2">
                   <ArrowDownRight className="h-3 w-3 text-destructive" />
-                  <span className="text-[11px] font-semibold text-foreground">Losers</span>
+                  <span className="text-xs font-semibold text-foreground">Losers</span>
                 </div>
                 <div className="space-y-2">
                   {topLosers.map((p) => {
@@ -466,15 +466,15 @@ const BillboardHero = ({
                       <Link key={p.id} to={`/project/${p.slug}`} className="group flex items-center gap-1.5 hover:opacity-80 transition-opacity">
                         <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="xs" />
                         <div className="min-w-0 flex-1">
-                          <p className="text-[10px] font-semibold text-foreground truncate">{p.name}</p>
-                          <p className="text-[9px] font-bold text-destructive tabular-nums">
+                          <p className="text-xs font-semibold text-foreground truncate">{p.name}</p>
+                          <p className="text-[10px] font-bold text-destructive tabular-nums">
                             {(m?.price_change_24h || 0).toFixed(1)}%
                           </p>
                         </div>
                       </Link>
                     );
                   })}
-                  {topLosers.length === 0 && <p className="text-[9px] text-muted-foreground">No data yet</p>}
+                  {topLosers.length === 0 && <p className="text-[10px] text-muted-foreground">No data yet</p>}
                 </div>
               </div>
             </motion.div>
@@ -512,13 +512,13 @@ const BillboardHero = ({
                               </>
                             )}
                           </div>
-                          <span className="text-[9px] font-medium text-muted-foreground tabular-nums">
+                          <span className="text-[10px] font-medium text-muted-foreground tabular-nums">
                             {totalVotes} vote{totalVotes !== 1 ? "s" : ""}
                           </span>
                         </div>
 
                         {/* Title */}
-                        <p className="text-[11px] font-semibold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">{f.title}</p>
+                        <p className="text-xs font-semibold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">{f.title}</p>
 
                         {/* Vote bar with labels */}
                         <div className="mt-auto space-y-1.5">
@@ -532,7 +532,7 @@ const BillboardHero = ({
                               transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
                             />
                           </div>
-                          <div className="flex items-center justify-between text-[10px]">
+                          <div className="flex items-center justify-between text-xs">
                             <span className="font-bold text-neon-green">Yes {yesPercent.toFixed(0)}%</span>
                             <span className="font-bold text-muted-foreground">No {(100 - yesPercent).toFixed(0)}%</span>
                           </div>
