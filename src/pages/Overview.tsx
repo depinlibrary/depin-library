@@ -20,6 +20,7 @@ import { useProjects } from "@/hooks/useProjects";
 import { useAllTokenMarketData } from "@/hooks/useTokenMarketData";
 import { useTrendingProjects } from "@/hooks/useSentiment";
 import { useForecasts } from "@/hooks/useForecasts";
+import { useSpotlightProjects } from "@/hooks/useSpotlightProjects";
 
 
 const stagger = {
