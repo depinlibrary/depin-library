@@ -185,9 +185,9 @@ const BillboardHero = ({
                 </p>
               </div>
 
-              {/* Search + CTA row — stacks on mobile */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                <form onSubmit={handleSearch} className="relative flex-1 sm:max-w-[220px]">
+              {/* Search + CTA — row on desktop, stacked on mobile */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:shrink-0">
+                <form onSubmit={handleSearch} className="relative flex-1 sm:flex-initial sm:w-[220px]">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                   <input
                     type="text"
