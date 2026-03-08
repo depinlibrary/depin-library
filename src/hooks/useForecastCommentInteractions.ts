@@ -40,7 +40,7 @@ export function useToggleForecastCommentLike() {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async ({ commentId, isLiked }: { commentId: string; isLiked: boolean }) => {
+    mutationFn: async ({ commentId, isLiked, forecastId }: { commentId: string; isLiked: boolean; forecastId: string }) => {
       if (!user) throw new Error("Must be logged in");
       if (isLiked) {
         const { error } = await supabase
@@ -54,6 +54,32 @@ export function useToggleForecastCommentLike() {
           .from("forecast_comment_likes")
           .insert({ comment_id: commentId, user_id: user.id });
         if (error) throw error;
+
+        // Notify comment author
+        const { data: comment } = await supabase
+          .from("forecast_comments")
+          .select("user_id")
+          .eq("id", commentId)
+          .single();
+
+        if (comment && comment.user_id !== user.id) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("display_name")
+            .eq("user_id", user.id)
+            .single();
+          
+          const likerName = profile?.display_name || "Someone";
+
+          await createNotification({
+            userId: comment.user_id,
+            type: "forecast_comment_like",
+            title: "Your comment was liked",
+            message: `${likerName} liked your comment`,
+            link: `/forecasts/${forecastId}`,
+            metadata: { commentId, forecastId },
+          });
+        }
       }
     },
     onSuccess: () => {
