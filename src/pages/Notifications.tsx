@@ -135,97 +135,36 @@ const Notifications = () => {
 
         {/* Notifications list */}
         {isLoading ? (
-          <div className="space-y-4">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-20 w-full rounded-xl" />
-            ))}
+          <div className="space-y-6">
+            <div className="space-y-3">
+              <Skeleton className="h-4 w-16" />
+              <div className="rounded-xl border border-border bg-card overflow-hidden divide-y divide-border">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <Skeleton key={i} className="h-20 w-full" />
+                ))}
+              </div>
+            </div>
+            <div className="space-y-3">
+              <Skeleton className="h-4 w-20" />
+              <div className="rounded-xl border border-border bg-card overflow-hidden divide-y divide-border">
+                {Array.from({ length: 2 }).map((_, i) => (
+                  <Skeleton key={i} className="h-20 w-full" />
+                ))}
+              </div>
+            </div>
           </div>
         ) : filteredNotifications.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="rounded-xl border border-border bg-card p-12 text-center"
-          >
-            <Bell className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-            <h3 className="text-base font-semibold text-foreground mb-1">
-              {filter === "unread" ? "No unread notifications" : "No notifications yet"}
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              {filter === "unread"
-                ? "You're all caught up!"
-                : "When you receive notifications, they'll appear here."}
-            </p>
-          </motion.div>
+          <NotificationEmpty filter={filter} />
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-6" role="feed" aria-live="polite" aria-label="Notifications">
             {sortedDateKeys.map((dateKey) => (
-              <div key={dateKey}>
-                <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                  {getDateLabel(dateKey)}
-                </h2>
-                <div className="rounded-xl border border-border bg-card overflow-hidden divide-y divide-border">
-                  <AnimatePresence>
-                    {groupedNotifications[dateKey].map((notification) => (
-                      <motion.div
-                        key={notification.id}
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className={`relative group px-4 py-4 transition-colors ${
-                          notification.is_read ? "bg-transparent" : "bg-primary/5"
-                        }`}
-                      >
-                        {notification.link ? (
-                          <Link
-                            to={notification.link}
-                            onClick={() => !notification.is_read && markRead.mutate(notification.id)}
-                            className="block"
-                          >
-                            <NotificationContent notification={notification} />
-                          </Link>
-                        ) : (
-                          <div onClick={() => !notification.is_read && markRead.mutate(notification.id)}>
-                            <NotificationContent notification={notification} />
-                          </div>
-                        )}
-
-                        {/* Actions */}
-                        <div className="absolute top-3 right-3 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          {!notification.is_read && (
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                markRead.mutate(notification.id);
-                              }}
-                              className="p-1.5 rounded-md hover:bg-secondary text-muted-foreground hover:text-foreground"
-                              title="Mark as read"
-                            >
-                              <Check className="h-3.5 w-3.5" />
-                            </button>
-                          )}
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              deleteNotification.mutate(notification.id);
-                            }}
-                            className="p-1.5 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
-                            title="Delete"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-
-                        {/* Unread indicator */}
-                        {!notification.is_read && (
-                          <span className="absolute left-1.5 top-1/2 -translate-y-1/2 h-2 w-2 rounded-full bg-primary" />
-                        )}
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
-                </div>
-              </div>
+              <NotificationGroup
+                key={dateKey}
+                dateKey={dateKey}
+                notifications={groupedNotifications[dateKey]}
+                onMarkRead={handleMarkRead}
+                onDelete={handleDelete}
+              />
             ))}
           </div>
         )}
