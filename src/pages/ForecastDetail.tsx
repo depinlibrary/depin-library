@@ -602,7 +602,7 @@ const ForecastDetail = () => {
                         )}
 
                         {/* Reply thread */}
-                        <CommentReplyThread commentId={comment.id} />
+                        <CommentReplyThread commentId={comment.id} forecastId={forecast.id} />
                       </div>
                     </div>
                   </div>
