@@ -148,7 +148,57 @@ const Overview = () => {
         </motion.div>
       </section>
 
-      {/* Forecasts Ending Soon */}
+      {/* Spotlight Projects */}
+      {spotlightProjects.length > 0 && (
+        <section className="container mx-auto px-4 pb-16">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-50px" }} variants={stagger}>
+            <motion.div variants={fadeUp} className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <Star className="h-5 w-5 text-primary fill-primary" />
+                <h2 className="text-xl font-semibold text-foreground font-['Space_Grotesk']">Spotlight</h2>
+                <div className="h-px flex-1 bg-border/50" />
+              </div>
+            </motion.div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {spotlightProjects.map((project) => {
+                if (!project) return null;
+                const m = marketData[project.id];
+                const change = m?.price_change_24h || 0;
+                return (
+                  <motion.div key={project.id} variants={fadeUp} className="h-full">
+                    <Link
+                      to={`/project/${project.slug}`}
+                      className="group flex items-center gap-4 rounded-xl border border-border bg-card p-4 transition-all hover:shadow-md hover:bg-card/80 hover:border-primary/20 h-full"
+                    >
+                      <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="md" />
+                      <div className="min-w-0 flex-1">
+                        <h3 className="text-sm font-semibold text-foreground truncate">{project.name}</h3>
+                        <p className="text-[11px] text-muted-foreground truncate">{project.tagline}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-[10px] font-medium text-muted-foreground">{project.category}</span>
+                          {m?.price_usd && (
+                            <>
+                              <span className="text-[10px] text-muted-foreground/50">•</span>
+                              <span className="text-[10px] font-medium tabular-nums text-muted-foreground">
+                                ${m.price_usd >= 1 ? m.price_usd.toFixed(2) : m.price_usd.toFixed(4)}
+                              </span>
+                              <span className={`text-[10px] font-bold tabular-nums ${change >= 0 ? "text-neon-green" : "text-destructive"}`}>
+                                {change >= 0 ? "+" : ""}{change.toFixed(1)}%
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      <ArrowRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-primary group-hover:translate-x-1 transition-all shrink-0" />
+                    </Link>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.div>
+        </section>
+      )}
+
       {endingSoon.length > 0 && (
         <section className="container mx-auto px-4 pb-16">
           <motion.div initial="hidden" animate="visible" variants={stagger}>
