@@ -96,7 +96,9 @@ const CommentReplyThread = ({ commentId, forecastId }: { commentId: string; fore
               className="ml-6 pl-3 border-l-2 border-border py-2 group/reply"
             >
               <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-[11px] font-medium text-foreground">{reply.display_name}</span>
+                <UserStatsHoverCard userId={reply.user_id} displayName={reply.display_name || "Anonymous"}>
+                  <span className="text-[11px] font-medium text-foreground cursor-pointer hover:text-primary transition-colors">{reply.display_name}</span>
+                </UserStatsHoverCard>
                 <span className="text-[10px] text-muted-foreground">
                   {formatDistanceToNow(new Date(reply.created_at), { addSuffix: true })}
                 </span>
