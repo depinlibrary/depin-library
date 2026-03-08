@@ -2,10 +2,12 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/h
 import { Target, CheckCircle, XCircle, Clock, BarChart3 } from "lucide-react";
 import { useUserForecastStats } from "@/hooks/useUserForecastStats";
 import { Skeleton } from "@/components/ui/skeleton";
+import UserAvatar from "@/components/UserAvatar";
 
 interface UserStatsHoverCardProps {
   userId: string;
   displayName: string;
+  avatarUrl?: string | null;
   children: React.ReactNode;
 }
 
