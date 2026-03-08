@@ -28,7 +28,7 @@ const Profile = () => {
   const { user, loading: authLoading } = useAuth();
   const { avatarUrl, displayName, uploading, uploadAvatar, updateDisplayName } = useAvatar();
   const { data: forecastStats, isLoading: statsLoading } = useUserForecastStats(user?.id);
-  const { bookmarks } = useBookmarks();
+  const { data: bookmarks } = useBookmarks();
   const { data: notifPrefs, isLoading: prefsLoading } = useNotificationPreferences();
   const updatePrefs = useUpdateNotificationPreferences();
 
