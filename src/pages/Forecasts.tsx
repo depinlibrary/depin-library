@@ -399,7 +399,7 @@ const Forecasts = () => {
                 <Filter className="h-3 w-3 mr-1 text-muted-foreground shrink-0" />
                 <SelectValue placeholder="Project" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent position="popper" side="bottom" sideOffset={4}>
                 <SelectItem value="all">All Projects</SelectItem>
                 {projects.map((p) => (
                   <SelectItem key={p.id} value={p.id}>
