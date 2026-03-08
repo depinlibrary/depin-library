@@ -244,6 +244,18 @@ const Forecasts = () => {
       const b = searchParams.get("b");
       if (a) setProjectAId(a);
       if (b) setProjectBId(b);
+
+      // Pre-fill from comparison results
+      const prefill = sessionStorage.getItem('forecast_prefill');
+      if (prefill) {
+        try {
+          const { title: prefillTitle, description: prefillDesc } = JSON.parse(prefill);
+          if (prefillTitle) setTitle(prefillTitle);
+          if (prefillDesc) setDescription(prefillDesc);
+        } catch {}
+        sessionStorage.removeItem('forecast_prefill');
+      }
+
       setSearchParams({}, { replace: true });
     }
   }, [searchParams, user]);
