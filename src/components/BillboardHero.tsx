@@ -414,7 +414,7 @@ const BillboardHero = ({
                       <span className="text-[10px] font-bold text-muted-foreground w-3 text-center">{i + 1}</span>
                       <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="xs" />
                       <div className="min-w-0 flex-1">
-                        <p className="text-[11px] font-semibold text-foreground truncate">{p.name}</p>
+                        <p className="text-xs font-semibold text-foreground truncate">{p.name}</p>
                         <p className="text-[9px] text-muted-foreground truncate">{p.category}</p>
                       </div>
                       {m?.price_usd && (
