@@ -175,7 +175,7 @@ const ProjectDetail = () => {
                     <ProjectRatings projectId={project.id} projectName={project.name} />
                   </TabsContent>
                   <TabsContent value="reviews">
-                    <ReviewSection projectId={project.id} projectName={project.name} />
+                    <ReviewSection projectId={project.id} projectName={project.name} projectSlug={project.slug} />
                   </TabsContent>
                 </Tabs>
               </motion.div>

@@ -588,7 +588,7 @@ const ForecastDetail = () => {
                               <button
                                 onClick={() => {
                                   if (!user) { toast.error("Sign in to like"); return; }
-                                  toggleLike.mutate({ commentId: comment.id, isLiked: likeInfo.userLiked });
+                                  toggleLike.mutate({ commentId: comment.id, isLiked: likeInfo.userLiked, forecastId: forecast.id });
                                 }}
                                 className={`flex items-center gap-1 text-[11px] transition-colors ${
                                   likeInfo.userLiked ? "text-primary" : "text-muted-foreground hover:text-foreground"
