@@ -419,13 +419,20 @@ const Navbar = () => {
               </div>
             </>
           ) : (
-            <Link
-              to="/auth"
-              className="flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-1.5 text-xs font-semibold text-primary-foreground transition-all hover:bg-primary/90"
+            <motion.div
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.97 }}
             >
-              <User className="h-3 w-3" />
-              Sign In
-            </Link>
+              <Link
+                to="/auth"
+                className="group relative flex items-center gap-2 overflow-hidden rounded-lg bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:shadow-md hover:shadow-primary/30"
+              >
+                <span className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-foreground/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700" />
+                <User className="h-3.5 w-3.5" />
+                Sign In
+                <ArrowRight className="h-3 w-3 opacity-0 -ml-1 group-hover:opacity-100 group-hover:ml-0 transition-all duration-200" />
+              </Link>
+            </motion.div>
           )}
         </div>
 
@@ -556,13 +563,18 @@ const Navbar = () => {
                     </button>
                   </>
                 ) : (
-                  <Link
-                    to="/auth"
-                    onClick={() => setMobileOpen(false)}
-                    className="flex items-center justify-center gap-1.5 rounded-lg bg-primary px-3 py-2.5 text-sm font-semibold text-primary-foreground"
-                  >
-                    <User className="h-4 w-4" /> Sign In
-                  </Link>
+                  <motion.div whileTap={{ scale: 0.97 }}>
+                    <Link
+                      to="/auth"
+                      onClick={() => setMobileOpen(false)}
+                      className="group relative flex items-center justify-center gap-2 overflow-hidden rounded-lg bg-primary px-3 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/20"
+                    >
+                      <span className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-foreground/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700" />
+                      <User className="h-4 w-4" />
+                      Sign In
+                      <ArrowRight className="h-3.5 w-3.5 opacity-70" />
+                    </Link>
+                  </motion.div>
                 )}
               </div>
             </div>
