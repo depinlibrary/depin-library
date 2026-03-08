@@ -147,13 +147,14 @@ const Navbar = () => {
             </button>
             <AnimatePresence>
               {marketDropdownOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 8, scale: 0.96 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 8, scale: 0.96 }}
-                  transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                  className="absolute left-1/2 -translate-x-1/2 top-full mt-3 w-[340px] rounded-xl border border-border bg-card shadow-xl shadow-background/30 overflow-hidden"
-                >
+                <div className="absolute left-1/2 top-full mt-3 z-50" style={{ marginLeft: '-170px' }}>
+                  <motion.div
+                    initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                    transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                    className="w-[340px] rounded-xl border border-border bg-card shadow-xl shadow-background/30 overflow-hidden"
+                  >
                   {/* Header */}
                   <div className="px-4 pt-3 pb-2">
                     <p className="text-[10px] uppercase tracking-[0.15em] font-semibold text-muted-foreground/50">Market Hub</p>
@@ -249,6 +250,7 @@ const Navbar = () => {
                     </div>
                   </div>
                 </motion.div>
+                </div>
               )}
             </AnimatePresence>
           </div>
