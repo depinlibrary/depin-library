@@ -185,7 +185,7 @@ const Explore = () => {
       <Navbar />
 
       {/* Compact Hero with Search */}
-      <section className="relative overflow-hidden pt-28 pb-8">
+      <section className="relative pt-28 pb-8">
         <div className="absolute inset-0 bg-grid opacity-30" />
         <div className="gradient-radial-top absolute inset-0" />
         <div className="container relative mx-auto px-4">
