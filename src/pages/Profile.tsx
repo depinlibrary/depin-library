@@ -341,7 +341,7 @@ const Profile = () => {
                     {notifOptions.map((opt) => {
                       const val = (notifPrefs as any)?.[opt.key] ?? true;
                       return (
-                        <div key={opt.key} className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/30 transition-colors">
+                        <div key={opt.key} className="flex items-center justify-between p-3 rounded-lg transition-colors">
                           <div className="flex items-center gap-3">
                             <opt.icon className="h-4 w-4 text-muted-foreground" />
                             <div>
