@@ -269,6 +269,11 @@ const Portfolio = () => {
       }));
   }, [portfolioData, totalNetWorth]);
 
+  const topDominance = useMemo(() => {
+    if (chartData.length === 0) return null;
+    return chartData.reduce((top: any, item: any) => (parseFloat(item.percent) > parseFloat(top.percent) ? item : top), chartData[0]);
+  }, [chartData]);
+
   const portfolioSparkline = useMemo(() => {
     const holdingsWithSparkline = portfolioData.filter(
       (h: any) => h.market?.sparkline_7d && Array.isArray(h.market.sparkline_7d) && h.market.sparkline_7d.length > 0
