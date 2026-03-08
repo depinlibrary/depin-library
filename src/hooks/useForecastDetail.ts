@@ -43,7 +43,7 @@ export function useForecastDetail(forecastId: string | undefined) {
       const projectMap: Record<string, any> = {};
       (projects || []).forEach((p: any) => { projectMap[p.id] = p; });
 
-      // Get user vote
+      // Get user vote + avg confidence stats
       const { data: { session } } = await supabase.auth.getSession();
       let userVote: string | null = null;
       if (session?.user) {
@@ -54,6 +54,21 @@ export function useForecastDetail(forecastId: string | undefined) {
           .eq("user_id", session.user.id)
           .maybeSingle();
         userVote = vote?.vote || null;
+      }
+
+      // Fetch all votes with confidence to compute averages
+      const { data: allVotes } = await supabase
+        .from("forecast_votes")
+        .select("vote, confidence_level")
+        .eq("forecast_id", forecastId!);
+
+      let avgConfidenceYes: number | null = null;
+      let avgConfidenceNo: number | null = null;
+      if (allVotes && allVotes.length > 0) {
+        const yesVotes = allVotes.filter(v => v.vote === "yes" && v.confidence_level != null);
+        const noVotes = allVotes.filter(v => v.vote === "no" && v.confidence_level != null);
+        if (yesVotes.length > 0) avgConfidenceYes = yesVotes.reduce((s, v) => s + v.confidence_level!, 0) / yesVotes.length;
+        if (noVotes.length > 0) avgConfidenceNo = noVotes.reduce((s, v) => s + v.confidence_level!, 0) / noVotes.length;
       }
 
       // Get creator display name
@@ -69,6 +84,8 @@ export function useForecastDetail(forecastId: string | undefined) {
         project_b: forecast.project_b_id ? projectMap[forecast.project_b_id] || null : null,
         user_vote: userVote,
         creator_name: creatorProfile?.display_name || "Anonymous",
+        avg_confidence_yes: avgConfidenceYes,
+        avg_confidence_no: avgConfidenceNo,
       };
     },
   });
