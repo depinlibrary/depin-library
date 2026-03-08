@@ -245,7 +245,6 @@ const ReviewSection = ({ projectId, projectName }: ReviewSectionProps) => {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-foreground">{review.display_name}</p>
-                      <StarRating rating={review.rating} />
                     </div>
                   </div>
                   {user?.id === review.user_id && (
