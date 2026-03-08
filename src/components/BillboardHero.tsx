@@ -532,7 +532,7 @@ const BillboardHero = ({
                               transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
                             />
                           </div>
-                          <div className="flex items-center justify-between text-[10px]">
+                          <div className="flex items-center justify-between text-xs">
                             <span className="font-bold text-neon-green">Yes {yesPercent.toFixed(0)}%</span>
                             <span className="font-bold text-muted-foreground">No {(100 - yesPercent).toFixed(0)}%</span>
                           </div>
