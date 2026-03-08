@@ -152,7 +152,8 @@ const BillboardHero = ({
 
   return (
     <section className="relative overflow-hidden pt-20 pb-0 sm:pt-24">
-      <div className="absolute inset-0 bg-grid opacity-15" />
+      <div className="absolute inset-0 bg-grid opacity-15 pointer-events-none" />
+      <div className="gradient-radial-top absolute inset-0 pointer-events-none" />
 
       <div className="container relative mx-auto px-4 pb-6">
         <motion.div initial="hidden" animate="visible" variants={stagger}>
