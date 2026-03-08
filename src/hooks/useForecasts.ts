@@ -180,13 +180,14 @@ export function useVoteForecast() {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async ({ forecastId, vote }: { forecastId: string; vote: "yes" | "no" }) => {
+    mutationFn: async ({ forecastId, vote, confidenceLevel }: { forecastId: string; vote: "yes" | "no"; confidenceLevel?: number }) => {
       if (!user) throw new Error("Must be logged in");
       const { error } = await supabase.from("forecast_votes").upsert(
         {
           forecast_id: forecastId,
           user_id: user.id,
           vote,
+          confidence_level: confidenceLevel ?? null,
         },
         { onConflict: "forecast_id,user_id" }
       );

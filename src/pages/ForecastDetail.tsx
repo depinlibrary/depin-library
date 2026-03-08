@@ -93,10 +93,10 @@ const ForecastDetail = () => {
     };
   }, [forecast]);
 
-  const handleVote = (vote: "yes" | "no") => {
+  const handleVote = (vote: "yes" | "no", confidenceLevel: number) => {
     if (!user) { toast.error("Sign in to vote"); return; }
     if (!id) return;
-    voteForecast.mutate({ forecastId: id, vote });
+    voteForecast.mutate({ forecastId: id, vote, confidenceLevel });
   };
 
   const handleAddComment = async () => {
