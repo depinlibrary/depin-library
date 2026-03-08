@@ -358,7 +358,7 @@ const Forecasts = () => {
                 placeholder="Search by title..."
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                className="h-8 w-full text-xs placeholder:text-muted-foreground/60 bg-secondary/50 border-border"
+                className="h-8 sm:h-10 w-full text-xs placeholder:text-muted-foreground/60 bg-secondary/50 border-border"
               />
             </div>
             {user ? (
