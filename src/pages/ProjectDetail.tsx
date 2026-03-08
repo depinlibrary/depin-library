@@ -105,7 +105,7 @@ const ProjectDetail = () => {
                     </span>
                   )}
                   <div className="ml-auto flex items-center gap-2">
-                    <CompareWithButton currentProjectId={project.id} currentProjectName={project.name} />
+                    <CompareWithButton currentProjectId={project.id} currentProjectName={project.name} currentCategory={project.category} />
                     {user && (
                       <button
                         onClick={() => toggleBookmark.mutate({ projectId: project.id, isBookmarked })}
