@@ -44,6 +44,18 @@ Deno.serve(async (req) => {
       marketMap[m.project_id] = m;
     });
 
+    // Fetch notification preferences for all alert users
+    const userIds = [...new Set(alerts.map((a: any) => a.user_id))];
+    const { data: prefsData } = await supabase
+      .from("notification_preferences")
+      .select("user_id, price_alert")
+      .in("user_id", userIds);
+
+    const prefsMap: Record<string, boolean> = {};
+    (prefsData || []).forEach((p: any) => {
+      prefsMap[p.user_id] = p.price_alert;
+    });
+
     let triggered = 0;
 
     for (const alert of alerts) {
@@ -79,6 +91,17 @@ Deno.serve(async (req) => {
         const lastTriggered = new Date(alert.last_triggered_at).getTime();
         const oneHourAgo = Date.now() - 60 * 60 * 1000;
         if (lastTriggered > oneHourAgo) continue;
+      }
+
+      // Respect user's notification preference (default true if no prefs row)
+      const wantsAlert = prefsMap[alert.user_id] ?? true;
+      if (!wantsAlert) {
+        // Still update baseline price so alerts don't pile up when re-enabled
+        await supabase
+          .from("price_alerts")
+          .update({ last_known_price: currentPrice, updated_at: new Date().toISOString() })
+          .eq("id", alert.id);
+        continue;
       }
 
       // Create notification
