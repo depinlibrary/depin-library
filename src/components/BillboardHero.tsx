@@ -182,8 +182,8 @@ const BillboardHero = ({
             transition={{ duration: 0.8, repeat: isRefetching ? Infinity : 0 }}
           >
             {/* ── Stat: Total Projects ── */}
-            <motion.div variants={fadeUp}>
-              <Link to="/explore" className="block rounded-xl border border-border bg-card/80 backdrop-blur-sm p-4 flex flex-col justify-between h-full transition-colors hover:border-primary/40 hover:bg-card">
+             <motion.div variants={fadeUp}>
+               <Link to="/explore" className="block rounded-xl border border-border bg-card/50 backdrop-blur-md p-4 flex flex-col justify-between h-full transition-colors hover:bg-card/60">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 mb-3">
                   <Layers className="h-4 w-4 text-primary" />
                 </div>
