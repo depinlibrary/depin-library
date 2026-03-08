@@ -123,13 +123,36 @@ const BillboardHero = ({
 }: BillboardHeroProps) => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchFocused, setSearchFocused] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+
+  const filteredProjects = searchQuery.trim().length >= 1
+    ? projects.filter((p) =>
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.blockchain.toLowerCase().includes(searchQuery.toLowerCase())
+      ).slice(0, 6)
+    : [];
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       navigate(`/explore?search=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery("");
+      setSearchFocused(false);
     }
   };
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setSearchFocused(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   // Compute top market cap projects
   const topMarketCap = [...projects]
