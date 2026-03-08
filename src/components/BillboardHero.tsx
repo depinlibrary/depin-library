@@ -372,7 +372,7 @@ const BillboardHero = ({
 
             {/* ── Top Forecasts (spans 2 cols) ── */}
              {topForecasts.length > 0 && (
-               <motion.div variants={fadeUp} className="col-span-2 rounded-xl border border-border bg-card/50 backdrop-blur-md p-4">
+               <motion.div variants={fadeUp} className="col-span-2 rounded-xl border border-border bg-card/50 backdrop-blur-md p-3">
                 <div className="flex items-center gap-2 mb-3">
                   <TrendingUp className="h-3.5 w-3.5 text-primary" />
                   <span className="text-xs font-semibold text-foreground">Top Forecasts</span>
