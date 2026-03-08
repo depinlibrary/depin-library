@@ -237,9 +237,9 @@ const Explore = () => {
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto scrollbar-none -mx-4 px-4 pb-0.5">
             {/* Filter icon */}
-            <div className="flex items-center gap-1.5 text-muted-foreground shrink-0">
+            <div className="hidden lg:flex items-center gap-1.5 text-muted-foreground shrink-0">
               <SlidersHorizontal className="h-4 w-4" />
-              <span className="text-xs font-medium hidden sm:inline">Filters</span>
+              <span className="text-xs font-medium">Filters</span>
             </div>
 
             {/* Category Dropdown */}
