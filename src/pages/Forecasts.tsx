@@ -372,14 +372,59 @@ const Forecasts = () => {
             )}
           </div>
 
-          {/* Bottom row: Filters (scrollable on mobile) */}
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none -mx-4 px-4 pb-0.5">
+          {/* Mobile: Dropdown filters */}
+          <div className="flex items-center gap-2 sm:hidden">
+            <Select value={sort} onValueChange={(v) => { setSort(v as ForecastSortOption); setPage(1); }}>
+              <SelectTrigger className="h-8 flex-1 text-[11px] bg-secondary/50 border-border">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                {sortOptions.map(({ value, label }) => (
+                  <SelectItem key={value} value={value}>{label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v as ForecastStatusFilter); setPage(1); }}>
+              <SelectTrigger className="h-8 flex-1 text-[11px] bg-secondary/50 border-border">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="ended">Ended</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={projectFilter || "all"} onValueChange={(v) => { setProjectFilter(v === "all" ? "" : v); setPage(1); }}>
+              <SelectTrigger className="h-8 flex-1 text-[11px] bg-secondary/50 border-border">
+                <Filter className="h-3 w-3 mr-1 text-muted-foreground shrink-0" />
+                <SelectValue placeholder="Project" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Projects</SelectItem>
+                {projects.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    <span className="flex items-center gap-2">
+                      {p.logo_url ? (
+                        <img src={p.logo_url} alt={p.name} className="w-4 h-4 rounded-[7px] overflow-hidden object-contain" />
+                      ) : (
+                        <span className="w-4 h-4 flex items-center justify-center text-xs">{p.logo_emoji}</span>
+                      )}
+                      {p.name}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Desktop: Button filters (hidden on mobile) */}
+          <div className="hidden sm:flex items-center gap-2 overflow-x-auto scrollbar-none pb-0.5">
             <div className="flex items-center gap-1.5 shrink-0">
               {sortOptions.map(({ value, label, icon: Icon }) => (
                 <button
                   key={value}
                   onClick={() => { setSort(value); setPage(1); }}
-                  className={`flex items-center gap-1.5 rounded-lg px-2.5 sm:px-3 py-1.5 text-[11px] font-medium transition-all whitespace-nowrap ${
+                  className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all whitespace-nowrap ${
                     sort === value
                       ? "border border-primary/30 bg-primary/10 text-primary"
                       : "border border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary"
@@ -389,12 +434,11 @@ const Forecasts = () => {
                 </button>
               ))}
             </div>
-            <div className="w-px h-5 bg-border shrink-0 hidden sm:block" />
-            {/* Status filter */}
+            <div className="w-px h-5 bg-border shrink-0" />
             <div className="flex items-center gap-1.5 shrink-0">
               <button
                 onClick={() => { setStatusFilter("all"); setPage(1); }}
-                className={`flex items-center gap-1.5 rounded-lg px-2.5 sm:px-3 py-1.5 text-[11px] font-medium transition-all whitespace-nowrap ${
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all whitespace-nowrap ${
                   statusFilter === "all"
                     ? "border border-primary/30 bg-primary/10 text-primary"
                     : "border border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary"
@@ -404,7 +448,7 @@ const Forecasts = () => {
               </button>
               <button
                 onClick={() => { setStatusFilter("active"); setPage(1); }}
-                className={`flex items-center gap-1.5 rounded-lg px-2.5 sm:px-3 py-1.5 text-[11px] font-medium transition-all whitespace-nowrap ${
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all whitespace-nowrap ${
                   statusFilter === "active"
                     ? "border border-primary/30 bg-primary/10 text-primary"
                     : "border border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary"
@@ -414,7 +458,7 @@ const Forecasts = () => {
               </button>
               <button
                 onClick={() => { setStatusFilter("ended"); setPage(1); }}
-                className={`flex items-center gap-1.5 rounded-lg px-2.5 sm:px-3 py-1.5 text-[11px] font-medium transition-all whitespace-nowrap ${
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all whitespace-nowrap ${
                   statusFilter === "ended"
                     ? "border border-primary/30 bg-primary/10 text-primary"
                     : "border border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary"
@@ -423,10 +467,10 @@ const Forecasts = () => {
                 <CheckCircle className="h-3 w-3" /> Ended
               </button>
             </div>
-            <div className="w-px h-5 bg-border shrink-0 hidden sm:block" />
+            <div className="w-px h-5 bg-border shrink-0" />
             <div className="flex items-center gap-1.5 shrink-0">
-              <Select value={projectFilter} onValueChange={(v) => { setProjectFilter(v === "all" ? "" : v); setPage(1); }}>
-                <SelectTrigger className="h-8 w-[140px] sm:w-[180px] text-[11px] bg-secondary/50 border-border">
+              <Select value={projectFilter || "all"} onValueChange={(v) => { setProjectFilter(v === "all" ? "" : v); setPage(1); }}>
+                <SelectTrigger className="h-8 w-[180px] text-[11px] bg-secondary/50 border-border">
                   <Filter className="h-3 w-3 mr-1.5 text-muted-foreground shrink-0" />
                   <SelectValue placeholder="All Projects" />
                 </SelectTrigger>
