@@ -443,12 +443,12 @@ const Portfolio = () => {
               },
               {
                 label: "Top Holding",
-                content: portfolioData[0]?.project ? (
+                content: topHolding?.project ? (
                   <div className="flex items-center gap-2">
-                    <ProjectLogo logoUrl={portfolioData[0].project.logo_url} logoEmoji={portfolioData[0].project.logo_emoji} name={portfolioData[0].project.name} size="sm" />
+                    <ProjectLogo logoUrl={topHolding.project.logo_url} logoEmoji={topHolding.project.logo_emoji} name={topHolding.project.name} size="sm" />
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-foreground truncate">{portfolioData[0].project.token}</p>
-                      <p className="text-xs text-muted-foreground">{hideBalances ? "••••" : formatCompact(portfolioData[0].value)}</p>
+                      <p className="text-sm font-semibold text-foreground truncate">{topHolding.project.token}</p>
+                      <p className="text-xs text-muted-foreground">{hideBalances ? "••••" : formatCompact(topHolding.value)}</p>
                     </div>
                   </div>
                 ) : null,
