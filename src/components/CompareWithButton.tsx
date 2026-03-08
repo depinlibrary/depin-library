@@ -115,7 +115,7 @@ const CompareWithButton = ({ currentProjectId, currentProjectName }: CompareWith
                 aria-selected={i === activeIndex}
                 onClick={() => handleSelect(p.id)}
                 className={`flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left transition-colors ${
-                  i === activeIndex ? "bg-secondary" : "hover:bg-secondary"
+                  i === activeIndex ? "bg-secondary ring-2 ring-primary/50 ring-offset-1 ring-offset-card" : "hover:bg-secondary"
                 }`}
               >
                 <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="sm" />
