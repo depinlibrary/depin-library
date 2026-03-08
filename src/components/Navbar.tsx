@@ -376,6 +376,14 @@ const Navbar = () => {
                         </div>
                       </div>
                       <div className="py-1.5 px-1.5">
+                        <Link
+                          to="/profile"
+                          onClick={() => setProfileDropdownOpen(false)}
+                          className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-muted-foreground hover:bg-secondary/50 hover:text-foreground transition-all"
+                        >
+                          <User className="h-3.5 w-3.5" />
+                          My Profile
+                        </Link>
                         {isAdmin && (
                           <Link
                             to="/admin"
