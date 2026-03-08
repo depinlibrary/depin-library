@@ -346,26 +346,38 @@ const Portfolio = () => {
             transition={{ duration: 0.5 }}
             className="mb-6"
           >
-            <div className="rounded-2xl border border-border bg-card p-6 md:p-8 relative overflow-hidden">
-              <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-primary/5 blur-[80px] pointer-events-none" />
-              <div className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full bg-accent/5 blur-[60px] pointer-events-none" />
+            <div className="group relative rounded-xl border border-border bg-card overflow-hidden">
+              {/* Decorative corner accent */}
+              <div className="absolute top-0 right-0 w-24 h-24 rounded-bl-[60px] bg-primary/3 pointer-events-none" />
 
-              <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                <div className="flex-1">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground mb-1">Portfolio Value</p>
-                  <div className="flex items-center gap-2 mb-3">
+              <div className="relative p-4 md:p-5">
+                {/* Header row */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10">
+                      <Briefcase className="h-3.5 w-3.5 text-primary" />
+                    </div>
+                    <div>
+                      <h2 className="text-sm font-semibold text-foreground">Portfolio Value</h2>
+                      <p className="text-[10px] text-muted-foreground">{holdings.length} asset{holdings.length !== 1 ? "s" : ""} tracked</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setHideBalances(!hideBalances)}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-secondary/30 transition-colors"
+                  >
+                    {hideBalances ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                  </button>
+                </div>
+
+                {/* Value display */}
+                <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+                  <div>
                     <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight tabular-nums">
                       {hideBalances ? "••••••" : formatValue(totalNetWorth)}
                     </h1>
-                    <button
-                      onClick={() => setHideBalances(!hideBalances)}
-                      className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
-                    >
-                      {hideBalances ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
                   </div>
-
-                  <div className="flex flex-wrap items-center gap-4 text-sm">
+                  <div className="flex flex-wrap items-center gap-3">
                     <div className="flex items-center gap-1.5">
                       <span className="text-[11px] text-muted-foreground">24h PnL</span>
                       {totalPnl24h !== null ? (
@@ -379,11 +391,6 @@ const Portfolio = () => {
                           {Math.abs(pnlPercent).toFixed(2)}%
                         </span>
                       )}
-                    </div>
-                    <div className="h-3.5 w-px bg-border hidden sm:block" />
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[11px] text-muted-foreground">Assets</span>
-                      <span className="text-sm font-semibold text-foreground">{holdings.length}</span>
                     </div>
                   </div>
                 </div>
