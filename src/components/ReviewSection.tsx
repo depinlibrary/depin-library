@@ -20,6 +20,7 @@ import { toast } from "sonner";
 interface ReviewSectionProps {
   projectId: string;
   projectName: string;
+  projectSlug: string;
 }
 
 
