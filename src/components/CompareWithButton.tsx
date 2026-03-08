@@ -10,9 +10,10 @@ import { Input } from "@/components/ui/input";
 interface CompareWithButtonProps {
   currentProjectId: string;
   currentProjectName: string;
+  currentCategory: string;
 }
 
-const CompareWithButton = ({ currentProjectId, currentProjectName }: CompareWithButtonProps) => {
+const CompareWithButton = ({ currentProjectId, currentProjectName, currentCategory }: CompareWithButtonProps) => {
   const navigate = useNavigate();
   const { data: projects = [] } = useProjects();
   const [open, setOpen] = useState(false);
@@ -22,6 +23,7 @@ const CompareWithButton = ({ currentProjectId, currentProjectName }: CompareWith
 
   const filtered = projects
     .filter((p) => p.id !== currentProjectId)
+    .filter((p) => p.category === currentCategory)
     .filter((p) => p.name.toLowerCase().includes(search.toLowerCase()))
     .slice(0, 6);
 
