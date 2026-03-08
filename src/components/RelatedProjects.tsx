@@ -31,7 +31,7 @@ const RelatedProjects = ({ currentProjectId, category, blockchain }: RelatedProj
             <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="sm" />
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium text-foreground">{p.name}</p>
-              <p className="truncate text-xs text-muted-foreground">{p.category}</p>
+              <p className="truncate text-xs text-muted-foreground">{p.category} · {p.blockchain}</p>
             </div>
             {p.avg_rating && p.avg_rating > 0 && (
               <span className="flex items-center gap-0.5 text-xs text-muted-foreground">
