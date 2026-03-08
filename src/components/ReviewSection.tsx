@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Star, Trash2, ThumbsUp, MessageSquare, Send } from "lucide-react";
+import { Trash2, ThumbsUp, MessageSquare, Send } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useReviews, useCreateReview, useDeleteReview, type Review } from "@/hooks/useReviews";
 import {
@@ -22,32 +22,6 @@ interface ReviewSectionProps {
   projectName: string;
 }
 
-const StarRating = ({ rating, onRate, interactive = false }: { rating: number; onRate?: (r: number) => void; interactive?: boolean }) => {
-  const [hover, setHover] = useState(0);
-  return (
-    <div className="flex gap-0.5">
-      {[1, 2, 3, 4, 5].map((star) => (
-        <button
-          key={star}
-          type="button"
-          disabled={!interactive}
-          onClick={() => onRate?.(star)}
-          onMouseEnter={() => interactive && setHover(star)}
-          onMouseLeave={() => interactive && setHover(0)}
-          className={interactive ? "cursor-pointer" : "cursor-default"}
-        >
-          <Star
-            className={`h-4 w-4 transition-colors ${
-              star <= (hover || rating)
-                ? "fill-primary text-primary"
-                : "text-muted-foreground/30"
-            }`}
-          />
-        </button>
-      ))}
-    </div>
-  );
-};
 
 /* ── Reply list for a single review ── */
 const ReplyThread = ({ reviewId, showInput = false }: { reviewId: string; showInput?: boolean }) => {
@@ -143,7 +117,6 @@ const ReviewSection = ({ projectId, projectName }: ReviewSectionProps) => {
   const { data: reviews = [], isLoading } = useReviews(projectId);
   const createReview = useCreateReview();
   const deleteReview = useDeleteReview();
-  const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
 
   const reviewIds = reviews.map((r) => r.id);
@@ -164,14 +137,14 @@ const ReviewSection = ({ projectId, projectName }: ReviewSectionProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (rating === 0) {
-      toast.error("Please select a rating");
+    if (!reviewText.trim()) {
+      toast.error("Please write a comment");
       return;
     }
     try {
-      await createReview.mutateAsync({ projectId, rating, reviewText });
-      toast.success("Review submitted!");
-      setRating(0);
+      await createReview.mutateAsync({ projectId, rating: 0, reviewText });
+      toast.success("Comment posted!");
+      setReviewText("");
       setReviewText("");
     } catch (err: any) {
       toast.error(err.message || "Failed to submit review");
@@ -190,19 +163,18 @@ const ReviewSection = ({ projectId, projectName }: ReviewSectionProps) => {
   return (
     <div className="space-y-6">
       <h2 className="text-lg font-semibold text-foreground">
-        Reviews {reviews.length > 0 && `(${reviews.length})`}
+        Comments {reviews.length > 0 && `(${reviews.length})`}
       </h2>
 
       {/* Write review */}
       {user ? (
         !userHasReview ? (
           <form onSubmit={handleSubmit} className="rounded-xl border border-border bg-card p-5 space-y-4">
-            <p className="text-sm font-medium text-foreground">Rate {projectName}</p>
-            <StarRating rating={rating} onRate={setRating} interactive />
+            <p className="text-sm font-medium text-foreground">Comment on {projectName}</p>
             <Textarea
               value={reviewText}
               onChange={(e) => setReviewText(e.target.value)}
-              placeholder="Write your review (optional)..."
+              placeholder="Share your thoughts…"
               className="min-h-[80px] resize-none"
             />
             <Button type="submit" size="sm" disabled={createReview.isPending}>
@@ -246,7 +218,6 @@ const ReviewSection = ({ projectId, projectName }: ReviewSectionProps) => {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-foreground">{review.display_name}</p>
-                      <StarRating rating={review.rating} />
                     </div>
                   </div>
                   {user?.id === review.user_id && (
