@@ -202,7 +202,8 @@ const Forecasts = () => {
   const [sort, setSort] = useState<ForecastSortOption>("newest");
   const [page, setPage] = useState(1);
   const [projectFilter, setProjectFilter] = useState<string>("");
-  const { data, isLoading } = useForecasts(sort, page, PAGE_SIZE, projectFilter || undefined);
+  const [search, setSearch] = useState<string>("");
+  const { data, isLoading } = useForecasts(sort, page, PAGE_SIZE, projectFilter || undefined, search || undefined);
   const createForecast = useCreateForecast();
   const voteForecast = useVoteForecast();
   const [showCreate, setShowCreate] = useState(false);
@@ -318,6 +319,12 @@ const Forecasts = () => {
       <section className="sticky top-16 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-2 flex-wrap">
+            <Input
+              placeholder="Search by title..."
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              className="h-8 w-[180px] text-xs placeholder:text-muted-foreground/60 bg-secondary/50 border-border"
+            />
             <div className="flex items-center gap-1.5">
               {sortOptions.map(({ value, label, icon: Icon }) => (
                 <button
