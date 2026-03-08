@@ -398,7 +398,7 @@ const Portfolio = () => {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="group relative rounded-xl border border-border bg-card p-4 overflow-hidden transition-all hover:border-primary/30 hover:shadow-[0_0_20px_-6px_hsl(var(--primary)/0.15)]"
+              className="group relative rounded-xl border border-border bg-card p-4 overflow-hidden transition-all"
             >
               <div className="absolute top-0 right-0 w-16 h-16 rounded-bl-[40px] bg-green-500/5 transition-all group-hover:bg-green-500/10" />
               <div className="flex items-center gap-1.5 mb-3">
