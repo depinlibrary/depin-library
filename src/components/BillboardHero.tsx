@@ -208,15 +208,11 @@ const BillboardHero = ({
             </motion.div>
 
             {/* ── Stat: Avg 24h Change ── */}
-            <motion.div variants={fadeUp}>
-              <Link to="/market" className="block rounded-xl border border-border bg-card/80 backdrop-blur-sm p-4 flex flex-col justify-between h-full transition-colors hover:border-primary/40 hover:bg-card">
-                <div className={`flex h-8 w-8 items-center justify-center rounded-lg mb-3 ${avgChange >= 0 ? "bg-neon-green/10" : "bg-destructive/10"}`}>
-                  {avgChange >= 0 ? (
-                    <TrendingUp className="h-4 w-4 text-neon-green" />
-                  ) : (
-                    <Activity className="h-4 w-4 text-destructive" />
-                  )}
-                </div>
+             <motion.div variants={fadeUp}>
+               <Link to="/market" className="block rounded-xl border border-border bg-card/50 backdrop-blur-md p-4 flex flex-col justify-between h-full transition-colors hover:bg-card/60">
+                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 mb-3">
+                   <TrendingUp className="h-4 w-4 text-primary" />
+                 </div>
                 <p className={`text-2xl font-bold font-['Space_Grotesk'] tabular-nums ${avgChange >= 0 ? "text-neon-green" : "text-destructive"}`}>
                   {avgChange >= 0 ? "+" : ""}{avgChange.toFixed(1)}%
                 </p>
