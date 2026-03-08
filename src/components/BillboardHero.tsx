@@ -361,7 +361,7 @@ const BillboardHero = ({
             <motion.div variants={fadeUp} className="col-span-2 rounded-lg border border-border bg-card/40 backdrop-blur-md p-3">
               <div className="flex items-center gap-2 mb-2">
                 <Crown className="h-3 w-3 text-primary" />
-                <span className="text-[11px] font-semibold text-foreground">Top Market Cap</span>
+                <span className="text-xs font-semibold text-foreground">Top Market Cap</span>
                 <Link to="/market" className="ml-auto text-[9px] text-muted-foreground hover:text-primary transition-colors">
                   View all →
                 </Link>
