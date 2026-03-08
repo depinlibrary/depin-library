@@ -141,6 +141,24 @@ export function useAddForecastComment() {
   });
 }
 
+export function useEditForecastComment() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ commentId, forecastId, commentText }: { commentId: string; forecastId: string; commentText: string }) => {
+      const { error } = await supabase
+        .from("forecast_comments")
+        .update({ comment_text: commentText, updated_at: new Date().toISOString() })
+        .eq("id", commentId);
+      if (error) throw error;
+      return forecastId;
+    },
+    onSuccess: (forecastId) => {
+      queryClient.invalidateQueries({ queryKey: ["forecast-comments", forecastId] });
+    },
+  });
+}
+
 export function useDeleteForecastComment() {
   const queryClient = useQueryClient();
 

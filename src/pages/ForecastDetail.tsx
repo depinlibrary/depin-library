@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, ThumbsUp, ThumbsDown, Users, Timer, MessageSquare,
-  Send, Trash2, CalendarDays, User as UserIcon, ArrowRight
+  Send, Trash2, CalendarDays, User as UserIcon, ArrowRight, Pencil, Check, X
 } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import Navbar from "@/components/Navbar";
@@ -18,6 +18,7 @@ import {
   useForecastComments,
   useAddForecastComment,
   useDeleteForecastComment,
+  useEditForecastComment,
   useForecastVoteHistory,
   useRelatedForecasts,
 } from "@/hooks/useForecastDetail";
@@ -46,7 +47,10 @@ const ForecastDetail = () => {
   const voteForecast = useVoteForecast();
   const addComment = useAddForecastComment();
   const deleteComment = useDeleteForecastComment();
+  const editComment = useEditForecastComment();
   const [commentText, setCommentText] = useState("");
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editingText, setEditingText] = useState("");
 
   const handleVote = (vote: "yes" | "no") => {
     if (!user) { toast.error("Sign in to vote"); return; }
@@ -348,16 +352,63 @@ const ForecastDetail = () => {
                         <span className="text-[10px] text-muted-foreground">
                           {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
                         </span>
-                        {user?.id === comment.user_id && (
-                          <button
-                            onClick={() => deleteComment.mutate({ commentId: comment.id, forecastId: forecast.id })}
-                            className="ml-auto opacity-0 group-hover/comment:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </button>
+                        {user?.id === comment.user_id && editingCommentId !== comment.id && (
+                          <div className="ml-auto flex items-center gap-1 opacity-0 group-hover/comment:opacity-100 transition-opacity">
+                            <button
+                              onClick={() => { setEditingCommentId(comment.id); setEditingText(comment.comment_text); }}
+                              className="text-muted-foreground hover:text-foreground"
+                            >
+                              <Pencil className="h-3 w-3" />
+                            </button>
+                            <button
+                              onClick={() => deleteComment.mutate({ commentId: comment.id, forecastId: forecast.id })}
+                              className="text-muted-foreground hover:text-destructive"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </button>
+                          </div>
                         )}
                       </div>
-                      <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{comment.comment_text}</p>
+                      {editingCommentId === comment.id ? (
+                        <div className="space-y-2">
+                          <Textarea
+                            value={editingText}
+                            onChange={(e) => setEditingText(e.target.value)}
+                            className="min-h-[60px] text-sm bg-background resize-none"
+                            autoFocus
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && editingText.trim()) {
+                                editComment.mutate({ commentId: comment.id, forecastId: forecast.id, commentText: editingText.trim() });
+                                setEditingCommentId(null);
+                              }
+                              if (e.key === "Escape") setEditingCommentId(null);
+                            }}
+                          />
+                          <div className="flex items-center gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 text-xs gap-1"
+                              onClick={() => setEditingCommentId(null)}
+                            >
+                              <X className="h-3 w-3" /> Cancel
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="h-7 text-xs gap-1"
+                              disabled={!editingText.trim() || editComment.isPending}
+                              onClick={() => {
+                                editComment.mutate({ commentId: comment.id, forecastId: forecast.id, commentText: editingText.trim() });
+                                setEditingCommentId(null);
+                              }}
+                            >
+                              <Check className="h-3 w-3" /> Save
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{comment.comment_text}</p>
+                      )}
                     </div>
                   </div>
                 </div>
