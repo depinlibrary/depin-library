@@ -162,10 +162,10 @@ const Overview = () => {
                 const totalVotes = forecast.total_votes_yes + forecast.total_votes_no;
                 const yesPct = totalVotes > 0 ? (forecast.total_votes_yes / totalVotes) * 100 : 50;
                 return (
-                  <motion.div key={forecast.id} variants={fadeUp}>
+                  <motion.div key={forecast.id} variants={fadeUp} className="h-full">
                     <Link
                       to={`/forecasts/${forecast.id}`}
-                      className="group flex flex-col gap-3 rounded-xl border border-border bg-card p-5 transition-all hover:shadow-md hover:bg-card/80 hover:border-primary/20"
+                      className="group flex flex-col justify-between rounded-xl border border-border bg-card p-5 transition-all hover:shadow-md hover:bg-card/80 hover:border-primary/20 h-full"
                     >
                       {/* Header: logos + countdown */}
                       <div className="flex items-center justify-between">
