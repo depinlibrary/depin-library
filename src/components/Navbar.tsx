@@ -87,6 +87,9 @@ const Navbar = () => {
       if (marketDropdownRef.current && !marketDropdownRef.current.contains(e.target as Node)) {
         setMarketDropdownOpen(false);
       }
+      if (exploreDropdownRef.current && !exploreDropdownRef.current.contains(e.target as Node)) {
+        setExploreDropdownOpen(false);
+      }
       if (profileDropdownRef.current && !profileDropdownRef.current.contains(e.target as Node)) {
         setProfileDropdownOpen(false);
       }
