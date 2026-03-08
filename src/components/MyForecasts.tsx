@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import { Pencil, Trash2, Clock, AlertTriangle, CheckCircle, XCircle, BarChart3, Users, Trophy, Activity } from "lucide-react";
@@ -58,6 +59,7 @@ export default function MyForecasts() {
   const [deleteRequestForecast, setDeleteRequestForecast] = useState<UserForecast | null>(null);
   const [deleteReason, setDeleteReason] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "ended">("all");
+  const [sortBy, setSortBy] = useState<"newest" | "votes" | "ending">("newest");
 
   const { data: forecasts = [], isLoading } = useQuery({
     queryKey: ["my-forecasts", user?.id],
@@ -125,11 +127,17 @@ export default function MyForecasts() {
   const projectMap = new Map((projects as any[]).map((p) => [p.id, p]));
   const getDeletionStatus = (forecastId: string) => deletionRequests.find((r: any) => r.forecast_id === forecastId);
 
-  const filteredForecasts = forecasts.filter((f) => {
-    if (statusFilter === "all") return true;
-    const isEnded = new Date(f.end_date) <= new Date();
-    return statusFilter === "ended" ? isEnded : !isEnded;
-  });
+  const filteredForecasts = forecasts
+    .filter((f) => {
+      if (statusFilter === "all") return true;
+      const isEnded = new Date(f.end_date) <= new Date();
+      return statusFilter === "ended" ? isEnded : !isEnded;
+    })
+    .sort((a, b) => {
+      if (sortBy === "votes") return (b.total_votes_yes + b.total_votes_no) - (a.total_votes_yes + a.total_votes_no);
+      if (sortBy === "ending") return new Date(a.end_date).getTime() - new Date(b.end_date).getTime();
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
 
   const activeCount = forecasts.filter((f) => new Date(f.end_date) > new Date()).length;
   const endedCount = forecasts.length - activeCount;
@@ -174,6 +182,16 @@ export default function MyForecasts() {
               </button>
             ))}
           </div>
+          <Select value={sortBy} onValueChange={(v) => setSortBy(v as any)}>
+            <SelectTrigger className="h-8 w-[130px] text-[11px] focus:ring-0 focus:ring-offset-0">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent side="bottom" avoidCollisions={false}>
+              <SelectItem value="newest">Newest first</SelectItem>
+              <SelectItem value="votes">Most votes</SelectItem>
+              <SelectItem value="ending">Ending soon</SelectItem>
+            </SelectContent>
+          </Select>
           <Link to="/forecasts?create=true">
             <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs">
               <BarChart3 className="h-3.5 w-3.5" />
