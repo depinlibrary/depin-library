@@ -84,8 +84,8 @@ const ProjectDetail = () => {
         <div className="container relative mx-auto max-w-5xl px-4">
           {/* Back + Share row */}
           <motion.div {...fadeUp} className="mb-8 flex items-center justify-between">
-            <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
-              <ArrowLeft className="h-4 w-4" /> Back to library
+            <Link to="/explore" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
+              <ArrowLeft className="h-4 w-4" /> Back to explore
             </Link>
             <ShareButtons title={project.name} description={project.tagline} />
           </motion.div>
