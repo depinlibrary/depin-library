@@ -20,6 +20,7 @@ type DeletionRequest = {
   created_at: string;
   forecast_title?: string;
   user_display_name?: string;
+  user_avatar_url?: string | null;
 };
 
 export default function DeletionRequests() {
