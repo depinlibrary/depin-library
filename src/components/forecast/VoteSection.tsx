@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import confetti from "canvas-confetti";
 
 interface VoteSectionProps {
   forecast: any;
