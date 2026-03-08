@@ -356,6 +356,39 @@ const Forecasts = () => {
               ))}
             </div>
             <div className="w-px h-5 bg-border hidden sm:block" />
+            {/* Status filter */}
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={() => { setStatusFilter("all"); setPage(1); }}
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all ${
+                  statusFilter === "all"
+                    ? "border border-primary/30 bg-primary/10 text-primary"
+                    : "border border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary"
+                }`}
+              >
+                All
+              </button>
+              <button
+                onClick={() => { setStatusFilter("active"); setPage(1); }}
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all ${
+                  statusFilter === "active"
+                    ? "border border-primary/30 bg-primary/10 text-primary"
+                    : "border border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary"
+                }`}
+              >
+                <Circle className="h-3 w-3" /> Active
+              </button>
+              <button
+                onClick={() => { setStatusFilter("ended"); setPage(1); }}
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all ${
+                  statusFilter === "ended"
+                    ? "border border-primary/30 bg-primary/10 text-primary"
+                    : "border border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary"
+                }`}
+              >
+                <CheckCircle className="h-3 w-3" /> Ended
+              </button>
+            <div className="w-px h-5 bg-border hidden sm:block" />
             <div className="flex items-center gap-1.5">
               <Select value={projectFilter} onValueChange={(v) => { setProjectFilter(v === "all" ? "" : v); setPage(1); }}>
                 <SelectTrigger className="h-8 w-[180px] text-[11px] bg-secondary/50 border-border">
