@@ -16,11 +16,11 @@ import { toast } from "sonner";
 
 const PAGE_SIZE = 12;
 
-const sortOptions: {value: ForecastSortOption;label: string;icon: typeof Flame;}[] = [
-{ value: "votes", label: "Most Votes", icon: Flame },
-{ value: "newest", label: "Newest", icon: Clock },
-{ value: "ending_soon", label: "Ending Soon", icon: Timer }];
-
+const sortOptions: { value: ForecastSortOption; label: string; icon: typeof Flame }[] = [
+  { value: "votes", label: "Most Votes", icon: Flame },
+  { value: "newest", label: "Newest", icon: Clock },
+  { value: "ending_soon", label: "Ending Soon", icon: Timer },
+];
 
 function getTimeRemaining(endDate: string): string {
   const now = new Date();
@@ -34,14 +34,14 @@ function getTimeRemaining(endDate: string): string {
   return `${hours}h left`;
 }
 
-const ForecastCard = ({ forecast, onVote, isAuthenticated, index
-
-
-
-
-}: {forecast: Forecast;onVote: (id: string, vote: "yes" | "no") => void;isAuthenticated: boolean;index: number;}) => {
+const ForecastCard = ({ forecast, onVote, isAuthenticated, index }: {
+  forecast: Forecast;
+  onVote: (id: string, vote: "yes" | "no") => void;
+  isAuthenticated: boolean;
+  index: number;
+}) => {
   const totalVotes = forecast.total_votes_yes + forecast.total_votes_no;
-  const yesPct = totalVotes > 0 ? forecast.total_votes_yes / totalVotes * 100 : 50;
+  const yesPct = totalVotes > 0 ? (forecast.total_votes_yes / totalVotes) * 100 : 50;
   const noPct = 100 - yesPct;
   const isEnded = new Date(forecast.end_date) <= new Date();
   const timeLeft = getTimeRemaining(forecast.end_date);
@@ -51,64 +51,64 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, duration: 0.4 }}
-      className="group relative rounded-xl border border-border bg-card overflow-hidden transition-all hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20">
-      
+      className="group relative rounded-xl border border-border bg-card overflow-hidden transition-all hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20 h-full flex flex-col"
+    >
       {/* Top accent line */}
       <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
-      <div className="p-5">
+      <div className="p-5 flex-1 flex flex-col">
         {/* Header: Projects + time badge */}
         <div className="flex items-center gap-2 mb-3">
           <div className="flex items-center -space-x-1.5">
-            {forecast.project_a_logo_url ?
-            <img
-              src={forecast.project_a_logo_url}
-              alt={forecast.project_a_name}
-              className="w-7 h-7 rounded-[7px] overflow-hidden object-contain border-2 border-card bg-secondary relative z-10" /> :
-
-
-            <span className="w-7 h-7 rounded-[7px] overflow-hidden flex items-center justify-center text-sm border-2 border-card bg-secondary relative z-10">
+            {forecast.project_a_logo_url ? (
+              <img
+                src={forecast.project_a_logo_url}
+                alt={forecast.project_a_name}
+                className="w-7 h-7 rounded-[7px] overflow-hidden object-contain border-2 border-card bg-secondary relative z-10"
+              />
+            ) : (
+              <span className="w-7 h-7 rounded-[7px] overflow-hidden flex items-center justify-center text-sm border-2 border-card bg-secondary relative z-10">
                 {forecast.project_a_logo_emoji || "⬡"}
               </span>
-            }
+            )}
             {forecast.project_b_name && (
-            forecast.project_b_logo_url ?
-            <img
-              src={forecast.project_b_logo_url}
-              alt={forecast.project_b_name}
-              className="w-7 h-7 rounded-[7px] overflow-hidden object-contain border-2 border-card bg-secondary relative z-0" /> :
-
-
-            <span className="w-7 h-7 rounded-[7px] overflow-hidden flex items-center justify-center text-sm border-2 border-card bg-secondary relative z-0">
+              forecast.project_b_logo_url ? (
+                <img
+                  src={forecast.project_b_logo_url}
+                  alt={forecast.project_b_name}
+                  className="w-7 h-7 rounded-[7px] overflow-hidden object-contain border-2 border-card bg-secondary relative z-0"
+                />
+              ) : (
+                <span className="w-7 h-7 rounded-[7px] overflow-hidden flex items-center justify-center text-sm border-2 border-card bg-secondary relative z-0">
                   {forecast.project_b_logo_emoji || "⬡"}
-                </span>)
-
-            }
+                </span>
+              )
+            )}
           </div>
           <div className="flex items-center gap-1.5 flex-1 min-w-0">
             <Link
               to={`/project/${forecast.project_a_slug}`}
-              className="text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors truncate">
-              
+              className="text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors truncate"
+            >
               {forecast.project_a_name}
             </Link>
-            {forecast.project_b_name &&
-            <>
+            {forecast.project_b_name && (
+              <>
                 <span className="text-muted-foreground/40 text-[10px]">vs</span>
                 <Link
-                to={`/project/${forecast.project_b_slug}`}
-                className="text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors truncate">
-                
+                  to={`/project/${forecast.project_b_slug}`}
+                  className="text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors truncate"
+                >
                   {forecast.project_b_name}
                 </Link>
               </>
-            }
+            )}
           </div>
           <span className={`shrink-0 rounded-md px-2 py-0.5 text-[10px] font-semibold tracking-wide ${
-          isEnded ?
-          "bg-muted text-muted-foreground" :
-          "bg-primary/10 text-primary"}`
-          }>
+            isEnded
+              ? "bg-muted text-muted-foreground"
+              : "bg-primary/10 text-primary"
+          }`}>
             {timeLeft}
           </span>
         </div>
@@ -120,9 +120,10 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index
           </h3>
         </Link>
 
-        {forecast.description &&
-        <p className="text-xs text-muted-foreground mb-3 line-clamp-2 leading-relaxed">{forecast.description}</p>
-        }
+        {forecast.description && (
+          <p className="text-xs text-muted-foreground mb-3 line-clamp-2 leading-relaxed min-h-[2.5rem]">{forecast.description}</p>
+        )}
+        {!forecast.description && <div className="mb-3 min-h-[2.5rem]" />}
 
         {/* Vote percentage display */}
         <div className="mb-4 mt-auto">
@@ -142,58 +143,58 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index
               animate={{ width: `${yesPct}%` }}
               transition={{ duration: 0.8, ease: "easeOut" }}
               className="h-full rounded-l-full"
-              style={{ background: "hsl(var(--primary))" }} />
-            
+              style={{ background: "hsl(var(--primary))" }}
+            />
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${noPct}%` }}
               transition={{ duration: 0.8, ease: "easeOut" }}
-              className="h-full rounded-r-full bg-destructive/60" />
-            
+              className="h-full rounded-r-full bg-destructive/60"
+            />
           </div>
           <div className="flex items-center justify-center gap-1.5 mt-2">
             <Users className="h-3 w-3 text-muted-foreground/50" />
-            
-
-            
+            <span className="text-[11px] text-muted-foreground">
+              {totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}
+            </span>
           </div>
         </div>
       </div>
 
       {/* Vote buttons — separated footer */}
-      {!isEnded &&
-      <div className="flex border-t border-border">
+      {!isEnded && (
+        <div className="flex border-t border-border">
           <button
-          onClick={() => isAuthenticated ? onVote(forecast.id, "yes") : toast.error("Sign in to vote")}
-          className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-all ${
-          forecast.user_vote === "yes" ?
-          "bg-primary/10 text-primary" :
-          "text-muted-foreground hover:bg-primary/5 hover:text-primary"}`
-          }>
-          
+            onClick={() => isAuthenticated ? onVote(forecast.id, "yes") : toast.error("Sign in to vote")}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-all ${
+              forecast.user_vote === "yes"
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:bg-primary/5 hover:text-primary"
+            }`}
+          >
             <ThumbsUp className="h-3.5 w-3.5" /> Yes
           </button>
           <div className="w-px bg-border" />
           <button
-          onClick={() => isAuthenticated ? onVote(forecast.id, "no") : toast.error("Sign in to vote")}
-          className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-all ${
-          forecast.user_vote === "no" ?
-          "bg-destructive/10 text-destructive" :
-          "text-muted-foreground hover:bg-destructive/5 hover:text-destructive"}`
-          }>
-          
+            onClick={() => isAuthenticated ? onVote(forecast.id, "no") : toast.error("Sign in to vote")}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-all ${
+              forecast.user_vote === "no"
+                ? "bg-destructive/10 text-destructive"
+                : "text-muted-foreground hover:bg-destructive/5 hover:text-destructive"
+            }`}
+          >
             <ThumbsDown className="h-3.5 w-3.5" /> No
           </button>
         </div>
-      }
+      )}
 
-      {isEnded &&
-      <div className="flex items-center justify-center border-t border-border py-2.5">
+      {isEnded && (
+        <div className="flex items-center justify-center border-t border-border py-2.5">
           <span className="text-[11px] font-medium text-muted-foreground">Forecast ended</span>
         </div>
-      }
-    </motion.div>);
-
+      )}
+    </motion.div>
+  );
 };
 
 const Forecasts = () => {
@@ -236,7 +237,7 @@ const Forecasts = () => {
   // Stats
   const stats = useMemo(() => {
     const totalVotes = forecasts.reduce((sum, f) => sum + f.total_votes_yes + f.total_votes_no, 0);
-    const activeCount = forecasts.filter((f) => new Date(f.end_date) > new Date()).length;
+    const activeCount = forecasts.filter(f => new Date(f.end_date) > new Date()).length;
     return { total, totalVotes, activeCount };
   }, [forecasts, total]);
 
@@ -245,10 +246,10 @@ const Forecasts = () => {
   };
 
   const handleCreate = async () => {
-    if (!title.trim()) {toast.error("Title required");return;}
-    if (!projectAId) {toast.error("Select a project");return;}
-    if (!endDate) {toast.error("End date required");return;}
-    if (new Date(endDate) <= new Date()) {toast.error("End date must be in the future");return;}
+    if (!title.trim()) { toast.error("Title required"); return; }
+    if (!projectAId) { toast.error("Select a project"); return; }
+    if (!endDate) { toast.error("End date required"); return; }
+    if (new Date(endDate) <= new Date()) { toast.error("End date must be in the future"); return; }
 
     try {
       await createForecast.mutateAsync({
@@ -256,7 +257,7 @@ const Forecasts = () => {
         description: description.trim(),
         projectAId,
         projectBId: projectBId && projectBId !== "none" ? projectBId : undefined,
-        endDate: new Date(endDate).toISOString()
+        endDate: new Date(endDate).toISOString(),
       });
       toast.success("Forecast created!");
       setShowCreate(false);
@@ -297,8 +298,8 @@ const Forecasts = () => {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className="flex items-center justify-center gap-6 sm:gap-10">
-            
+            className="flex items-center justify-center gap-6 sm:gap-10"
+          >
             <div className="text-center">
               <p className="text-xl sm:text-2xl font-bold text-foreground font-['Space_Grotesk']">{stats.total}</p>
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mt-0.5">Forecasts</p>
@@ -324,76 +325,76 @@ const Forecasts = () => {
             <Input
               placeholder="Search by title..."
               value={search}
-              onChange={(e) => {setSearch(e.target.value);setPage(1);}}
-              className="h-8 w-[180px] text-xs placeholder:text-muted-foreground/60 bg-secondary/50 border-border" />
-            
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              className="h-8 w-[180px] text-xs placeholder:text-muted-foreground/60 bg-secondary/50 border-border"
+            />
             <div className="flex items-center gap-1.5">
-              {sortOptions.map(({ value, label, icon: Icon }) =>
-              <button
-                key={value}
-                onClick={() => {setSort(value);setPage(1);}}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all ${
-                sort === value ?
-                "border border-primary/30 bg-primary/10 text-primary" :
-                "border border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary"}`
-                }>
-                
+              {sortOptions.map(({ value, label, icon: Icon }) => (
+                <button
+                  key={value}
+                  onClick={() => { setSort(value); setPage(1); }}
+                  className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all ${
+                    sort === value
+                      ? "border border-primary/30 bg-primary/10 text-primary"
+                      : "border border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary"
+                  }`}
+                >
                   <Icon className="h-3 w-3" /> {label}
                 </button>
-              )}
+              ))}
             </div>
             <div className="w-px h-5 bg-border hidden sm:block" />
             <div className="flex items-center gap-1.5">
-              <Select value={projectFilter} onValueChange={(v) => {setProjectFilter(v === "all" ? "" : v);setPage(1);}}>
+              <Select value={projectFilter} onValueChange={(v) => { setProjectFilter(v === "all" ? "" : v); setPage(1); }}>
                 <SelectTrigger className="h-8 w-[180px] text-[11px] bg-secondary/50 border-border">
                   <Filter className="h-3 w-3 mr-1.5 text-muted-foreground shrink-0" />
                   <SelectValue placeholder="All Projects" />
                 </SelectTrigger>
                 <SelectContent position="popper" side="bottom" sideOffset={4}>
                   <SelectItem value="all">All Projects</SelectItem>
-                  {projects.map((p) =>
-                  <SelectItem key={p.id} value={p.id}>
+                  {projects.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
                       <span className="flex items-center gap-2">
-                        {p.logo_url ?
-                      <img src={p.logo_url} alt={p.name} className="w-4 h-4 rounded-[7px] overflow-hidden object-contain" /> :
-
-                      <span className="w-4 h-4 flex items-center justify-center text-xs">{p.logo_emoji}</span>
-                      }
+                        {p.logo_url ? (
+                          <img src={p.logo_url} alt={p.name} className="w-4 h-4 rounded-[7px] overflow-hidden object-contain" />
+                        ) : (
+                          <span className="w-4 h-4 flex items-center justify-center text-xs">{p.logo_emoji}</span>
+                        )}
                         {p.name}
                       </span>
                     </SelectItem>
-                  )}
+                  ))}
                 </SelectContent>
               </Select>
-              {projectFilter &&
-              <button
-                onClick={() => {setProjectFilter("");setPage(1);}}
-                className="flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 text-[11px] font-medium text-primary hover:bg-primary/15 transition-colors">
-                
-                  {projects.find((p) => p.id === projectFilter)?.name}
+              {projectFilter && (
+                <button
+                  onClick={() => { setProjectFilter(""); setPage(1); }}
+                  className="flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 text-[11px] font-medium text-primary hover:bg-primary/15 transition-colors"
+                >
+                  {projects.find(p => p.id === projectFilter)?.name}
                   <X className="h-3 w-3" />
                 </button>
-              }
+              )}
             </div>
           </div>
-          {user ?
-          <Button size="sm" onClick={() => setShowCreate(true)} className="gap-1.5 rounded-lg">
+          {user ? (
+            <Button size="sm" onClick={() => setShowCreate(true)} className="gap-1.5 rounded-lg">
               <Plus className="h-3.5 w-3.5" /> Create Forecast
-            </Button> :
-
-          <Link to="/auth" className="flex items-center gap-1.5 rounded-lg bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground">
+            </Button>
+          ) : (
+            <Link to="/auth" className="flex items-center gap-1.5 rounded-lg bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground">
               <LogIn className="h-3 w-3" /> Sign in to create
             </Link>
-          }
+          )}
         </div>
       </section>
 
       {/* Forecast Grid */}
       <section className="container mx-auto px-4 py-8 flex-1">
-        {isLoading ?
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 6 }).map((_, i) =>
-          <div key={i} className="animate-pulse rounded-xl border border-border bg-card overflow-hidden">
+        {isLoading ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="animate-pulse rounded-xl border border-border bg-card overflow-hidden">
                 <div className="p-5 space-y-3">
                   <div className="flex items-center gap-2">
                     <div className="w-7 h-7 rounded-[7px] bg-secondary" />
@@ -405,14 +406,14 @@ const Forecasts = () => {
                 </div>
                 <div className="h-10 border-t border-border bg-secondary/30" />
               </div>
-          )}
-          </div> :
-        forecasts.length === 0 ?
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-center py-20">
-          
+            ))}
+          </div>
+        ) : forecasts.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center py-20"
+          >
             <div className="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center mx-auto mb-4">
               <BarChart3 className="h-7 w-7 text-muted-foreground/40" />
             </div>
@@ -420,71 +421,71 @@ const Forecasts = () => {
             <p className="text-sm text-muted-foreground mb-5 max-w-xs mx-auto">
               Be the first to create a prediction and let the community vote on it.
             </p>
-            {user ?
-          <Button onClick={() => setShowCreate(true)} className="gap-1.5">
+            {user ? (
+              <Button onClick={() => setShowCreate(true)} className="gap-1.5">
                 <Plus className="h-3.5 w-3.5" /> Create First Forecast
-              </Button> :
-
-          <Link to="/auth" className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground">
+              </Button>
+            ) : (
+              <Link to="/auth" className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground">
                 <LogIn className="h-3.5 w-3.5" /> Sign in to create
               </Link>
-          }
-          </motion.div> :
-
-        <>
+            )}
+          </motion.div>
+        ) : (
+          <>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <AnimatePresence mode="popLayout">
-                {forecasts.map((forecast, i) =>
-              <ForecastCard
-                key={forecast.id}
-                forecast={forecast}
-                onVote={handleVote}
-                isAuthenticated={!!user}
-                index={i} />
-
-              )}
+                {forecasts.map((forecast, i) => (
+                  <ForecastCard
+                    key={forecast.id}
+                    forecast={forecast}
+                    onVote={handleVote}
+                    isAuthenticated={!!user}
+                    index={i}
+                  />
+                ))}
               </AnimatePresence>
             </div>
 
             {/* Pagination */}
-            {totalPages > 1 &&
-          <div className="flex items-center justify-center gap-3 mt-10">
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-3 mt-10">
                 <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-              className="flex items-center gap-1.5 rounded-lg border border-border bg-card px-3.5 py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-secondary disabled:opacity-40 disabled:pointer-events-none">
-              
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="flex items-center gap-1.5 rounded-lg border border-border bg-card px-3.5 py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-secondary disabled:opacity-40 disabled:pointer-events-none"
+                >
                   <ChevronLeft className="h-3.5 w-3.5" /> Previous
                 </button>
                 <div className="flex items-center gap-1">
                   {Array.from({ length: Math.min(totalPages, 5) }).map((_, i) => {
-                const pageNum = i + 1;
-                return (
-                  <button
-                    key={pageNum}
-                    onClick={() => setPage(pageNum)}
-                    className={`w-8 h-8 rounded-lg text-xs font-medium transition-all ${
-                    page === pageNum ?
-                    "bg-primary text-primary-foreground" :
-                    "text-muted-foreground hover:bg-secondary hover:text-foreground"}`
-                    }>
-                    
+                    const pageNum = i + 1;
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setPage(pageNum)}
+                        className={`w-8 h-8 rounded-lg text-xs font-medium transition-all ${
+                          page === pageNum
+                            ? "bg-primary text-primary-foreground"
+                            : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                        }`}
+                      >
                         {pageNum}
-                      </button>);
-
-              })}
+                      </button>
+                    );
+                  })}
                 </div>
                 <button
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-              className="flex items-center gap-1.5 rounded-lg border border-border bg-card px-3.5 py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-secondary disabled:opacity-40 disabled:pointer-events-none">
-              
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  className="flex items-center gap-1.5 rounded-lg border border-border bg-card px-3.5 py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-secondary disabled:opacity-40 disabled:pointer-events-none"
+                >
                   Next <ChevronRight className="h-3.5 w-3.5" />
                 </button>
               </div>
-          }
+            )}
           </>
-        }
+        )}
       </section>
 
       {/* Create Forecast Dialog */}
@@ -500,8 +501,8 @@ const Forecasts = () => {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Will Hivemapper surpass Helium nodes by 2026?"
-                className="mt-1.5" />
-              
+                className="mt-1.5"
+              />
             </div>
             <div>
               <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Description</label>
@@ -509,8 +510,8 @@ const Forecasts = () => {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Additional context about this prediction..."
-                className="mt-1.5 min-h-[80px] resize-none" />
-              
+                className="mt-1.5 min-h-[80px] resize-none"
+              />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -519,19 +520,19 @@ const Forecasts = () => {
                   <SelectTrigger className="mt-1.5 h-9">
                     <SelectValue placeholder="Select project" />
                   </SelectTrigger>
-                  <SelectContent position="popper" side="bottom" sideOffset={4}>
-                    {projects.map((p) =>
-                    <SelectItem key={p.id} value={p.id}>
+                  <SelectContent position="popper" side="bottom" sideOffset={4} avoidCollisions={false} className="max-h-60">
+                    {projects.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>
                         <span className="flex items-center gap-2">
-                          {p.logo_url ?
-                        <img src={p.logo_url} alt={p.name} className="w-5 h-5 rounded-[7px] overflow-hidden object-contain" /> :
-
-                        <span className="w-5 h-5 flex items-center justify-center text-sm">{p.logo_emoji}</span>
-                        }
+                          {p.logo_url ? (
+                            <img src={p.logo_url} alt={p.name} className="w-5 h-5 rounded-[7px] overflow-hidden object-contain" />
+                          ) : (
+                            <span className="w-5 h-5 flex items-center justify-center text-sm">{p.logo_emoji}</span>
+                          )}
                           {p.name}
                         </span>
                       </SelectItem>
-                    )}
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -541,20 +542,20 @@ const Forecasts = () => {
                   <SelectTrigger className="mt-1.5 h-9">
                     <SelectValue placeholder="Select project" />
                   </SelectTrigger>
-                  <SelectContent position="popper" side="bottom" sideOffset={4}>
+                  <SelectContent position="popper" side="bottom" sideOffset={4} avoidCollisions={false} className="max-h-60">
                     <SelectItem value="none">None</SelectItem>
-                    {projects.filter((p) => p.id !== projectAId).map((p) =>
-                    <SelectItem key={p.id} value={p.id}>
+                    {projects.filter((p) => p.id !== projectAId).map((p) => (
+                      <SelectItem key={p.id} value={p.id}>
                         <span className="flex items-center gap-2">
-                          {p.logo_url ?
-                        <img src={p.logo_url} alt={p.name} className="w-5 h-5 rounded-[7px] overflow-hidden object-contain" /> :
-
-                        <span className="w-5 h-5 flex items-center justify-center text-sm">{p.logo_emoji}</span>
-                        }
+                          {p.logo_url ? (
+                            <img src={p.logo_url} alt={p.name} className="w-5 h-5 rounded-[7px] overflow-hidden object-contain" />
+                          ) : (
+                            <span className="w-5 h-5 flex items-center justify-center text-sm">{p.logo_emoji}</span>
+                          )}
                           {p.name}
                         </span>
                       </SelectItem>
-                    )}
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -566,8 +567,8 @@ const Forecasts = () => {
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
                 min={new Date().toISOString().split("T")[0]}
-                className="mt-1.5" />
-              
+                className="mt-1.5"
+              />
             </div>
           </div>
           <DialogFooter>
@@ -580,8 +581,8 @@ const Forecasts = () => {
       </Dialog>
 
       <Footer />
-    </div>);
-
+    </div>
+  );
 };
 
 export default Forecasts;
