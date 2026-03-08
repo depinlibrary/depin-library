@@ -19,6 +19,7 @@ import {
   useAddForecastComment,
   useDeleteForecastComment,
   useForecastVoteHistory,
+  useRelatedForecasts,
 } from "@/hooks/useForecastDetail";
 import { toast } from "sonner";
 import { format, formatDistanceToNow } from "date-fns";
