@@ -26,6 +26,9 @@ interface TopForecast {
   project_a_logo_url?: string | null;
   project_a_logo_emoji?: string;
   project_a_name?: string;
+  project_b_logo_url?: string | null;
+  project_b_logo_emoji?: string;
+  project_b_name?: string | null;
 }
 
 interface BillboardHeroProps {
