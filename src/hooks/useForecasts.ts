@@ -26,11 +26,14 @@ export type Forecast = {
 };
 
 export type ForecastSortOption = "votes" | "newest" | "ending_soon";
+export type ForecastStatusFilter = "all" | "active" | "ended";
 
-export function useForecasts(sort: ForecastSortOption = "newest", page = 1, pageSize = 12, projectFilter?: string, search?: string) {
+export function useForecasts(sort: ForecastSortOption = "newest", page = 1, pageSize = 12, projectFilter?: string, search?: string, statusFilter: ForecastStatusFilter = "all") {
   return useQuery({
-    queryKey: ["forecasts", sort, page, projectFilter, search],
+    queryKey: ["forecasts", sort, page, projectFilter, search, statusFilter],
     queryFn: async (): Promise<{ forecasts: Forecast[]; total: number }> => {
+      const now = new Date().toISOString();
+      
       // Get total count
       let countQuery = supabase
         .from("forecasts")
@@ -42,6 +45,12 @@ export function useForecasts(sort: ForecastSortOption = "newest", page = 1, page
 
       if (search) {
         countQuery = countQuery.ilike("title", `%${search}%`);
+      }
+
+      if (statusFilter === "active") {
+        countQuery = countQuery.gt("end_date", now);
+      } else if (statusFilter === "ended") {
+        countQuery = countQuery.lte("end_date", now);
       }
 
       const { count } = await countQuery;
@@ -59,12 +68,18 @@ export function useForecasts(sort: ForecastSortOption = "newest", page = 1, page
         query = query.ilike("title", `%${search}%`);
       }
 
+      if (statusFilter === "active") {
+        query = query.gt("end_date", now);
+      } else if (statusFilter === "ended") {
+        query = query.lte("end_date", now);
+      }
+
       switch (sort) {
         case "votes":
           query = query.order("total_votes_yes", { ascending: false });
           break;
         case "ending_soon":
-          query = query.eq("status", "active").order("end_date", { ascending: true });
+          query = query.gt("end_date", now).order("end_date", { ascending: true });
           break;
         default:
           query = query.order("created_at", { ascending: false });
