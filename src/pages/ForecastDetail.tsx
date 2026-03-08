@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, ThumbsUp, ThumbsDown, Users, Timer, MessageSquare,
-  Send, Trash2, CalendarDays, User as UserIcon, ArrowRight, Pencil, Check, X, Share2, Copy, ExternalLink
+  Send, Trash2, CalendarDays, User as UserIcon, ArrowRight, Pencil, Check, X, Share2, Copy, ExternalLink,
+  Heart, MessageCircle
 } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import Navbar from "@/components/Navbar";
@@ -22,6 +23,13 @@ import {
   useForecastVoteHistory,
   useRelatedForecasts,
 } from "@/hooks/useForecastDetail";
+import {
+  useForecastCommentLikes,
+  useToggleForecastCommentLike,
+  useForecastCommentReplies,
+  useCreateForecastCommentReply,
+  useDeleteForecastCommentReply,
+} from "@/hooks/useForecastCommentInteractions";
 import { toast } from "sonner";
 import { format, formatDistanceToNow } from "date-fns";
 
@@ -37,6 +45,96 @@ function getTimeRemaining(endDate: string): string {
   return `${hours}h left`;
 }
 
+// ── Reply Thread Component ──
+const CommentReplyThread = ({ commentId }: { commentId: string }) => {
+  const { user } = useAuth();
+  const { data: replies = [], isLoading } = useForecastCommentReplies(commentId);
+  const createReply = useCreateForecastCommentReply();
+  const deleteReply = useDeleteForecastCommentReply();
+  const [replyText, setReplyText] = useState("");
+  const [showInput, setShowInput] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!replyText.trim()) return;
+    if (!user) { toast.error("Sign in to reply"); return; }
+    try {
+      await createReply.mutateAsync({ commentId, replyText: replyText.trim() });
+      setReplyText("");
+      setShowInput(false);
+      toast.success("Reply posted");
+    } catch {
+      toast.error("Failed to post reply");
+    }
+  };
+
+  return (
+    <div className="mt-2">
+      {/* Replies list */}
+      <AnimatePresence>
+        {replies.map((reply) => (
+          <motion.div
+            key={reply.id}
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="ml-6 pl-3 border-l-2 border-border py-2 group/reply"
+          >
+            <div className="flex items-center gap-2 mb-0.5">
+              <span className="text-[11px] font-medium text-foreground">{reply.display_name}</span>
+              <span className="text-[10px] text-muted-foreground">
+                {formatDistanceToNow(new Date(reply.created_at), { addSuffix: true })}
+              </span>
+              {user?.id === reply.user_id && (
+                <button
+                  onClick={() => deleteReply.mutate({ replyId: reply.id, commentId })}
+                  className="ml-auto opacity-0 group-hover/reply:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </button>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">{reply.reply_text}</p>
+          </motion.div>
+        ))}
+      </AnimatePresence>
+
+      {/* Reply input toggle */}
+      {showInput ? (
+        <div className="ml-6 mt-2 space-y-2">
+          <Textarea
+            value={replyText}
+            onChange={(e) => setReplyText(e.target.value)}
+            placeholder="Write a reply..."
+            className="min-h-[60px] text-xs bg-background resize-none"
+            autoFocus
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSubmit();
+              if (e.key === "Escape") { setShowInput(false); setReplyText(""); }
+            }}
+          />
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => { setShowInput(false); setReplyText(""); }}>
+              Cancel
+            </Button>
+            <Button size="sm" className="h-7 text-xs gap-1" disabled={!replyText.trim() || createReply.isPending} onClick={handleSubmit}>
+              <Send className="h-3 w-3" /> Reply
+            </Button>
+          </div>
+        </div>
+      ) : (
+        user && (
+          <button
+            onClick={() => setShowInput(true)}
+            className="ml-6 mt-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+          >
+            <MessageCircle className="h-3 w-3" /> Reply
+          </button>
+        )
+      )}
+    </div>
+  );
+};
+
 const ForecastDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
@@ -51,6 +149,11 @@ const ForecastDetail = () => {
   const [commentText, setCommentText] = useState("");
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState("");
+
+  // Likes
+  const commentIds = useMemo(() => comments.map((c) => c.id), [comments]);
+  const { data: likesMap = {} } = useForecastCommentLikes(commentIds);
+  const toggleLike = useToggleForecastCommentLike();
 
   // Dynamic OG meta tags
   useEffect(() => {
@@ -409,79 +512,102 @@ const ForecastDetail = () => {
                 <p className="text-sm text-muted-foreground">No comments yet. Be the first to share your thoughts!</p>
               </div>
             ) : (
-              comments.map((comment) => (
-                <div key={comment.id} className="px-6 py-4 group/comment">
-                  <div className="flex items-start gap-3">
-                    <div className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center shrink-0 mt-0.5">
-                      <UserIcon className="h-3.5 w-3.5 text-muted-foreground" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs font-medium text-foreground">{comment.display_name}</span>
-                        <span className="text-[10px] text-muted-foreground">
-                          {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
-                        </span>
-                        {user?.id === comment.user_id && editingCommentId !== comment.id && (
-                          <div className="ml-auto flex items-center gap-1 opacity-0 group-hover/comment:opacity-100 transition-opacity">
-                            <button
-                              onClick={() => { setEditingCommentId(comment.id); setEditingText(comment.comment_text); }}
-                              className="text-muted-foreground hover:text-foreground"
-                            >
-                              <Pencil className="h-3 w-3" />
-                            </button>
-                            <button
-                              onClick={() => deleteComment.mutate({ commentId: comment.id, forecastId: forecast.id })}
-                              className="text-muted-foreground hover:text-destructive"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </button>
-                          </div>
-                        )}
+              comments.map((comment) => {
+                const likeInfo = likesMap[comment.id] || { count: 0, userLiked: false };
+                return (
+                  <div key={comment.id} className="px-6 py-4 group/comment">
+                    <div className="flex items-start gap-3">
+                      <div className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center shrink-0 mt-0.5">
+                        <UserIcon className="h-3.5 w-3.5 text-muted-foreground" />
                       </div>
-                      {editingCommentId === comment.id ? (
-                        <div className="space-y-2">
-                          <Textarea
-                            value={editingText}
-                            onChange={(e) => setEditingText(e.target.value)}
-                            className="min-h-[60px] text-sm bg-background resize-none"
-                            autoFocus
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && editingText.trim()) {
-                                editComment.mutate({ commentId: comment.id, forecastId: forecast.id, commentText: editingText.trim() });
-                                setEditingCommentId(null);
-                              }
-                              if (e.key === "Escape") setEditingCommentId(null);
-                            }}
-                          />
-                          <div className="flex items-center gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="h-7 text-xs gap-1"
-                              onClick={() => setEditingCommentId(null)}
-                            >
-                              <X className="h-3 w-3" /> Cancel
-                            </Button>
-                            <Button
-                              size="sm"
-                              className="h-7 text-xs gap-1"
-                              disabled={!editingText.trim() || editComment.isPending}
-                              onClick={() => {
-                                editComment.mutate({ commentId: comment.id, forecastId: forecast.id, commentText: editingText.trim() });
-                                setEditingCommentId(null);
-                              }}
-                            >
-                              <Check className="h-3 w-3" /> Save
-                            </Button>
-                          </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xs font-medium text-foreground">{comment.display_name}</span>
+                          <span className="text-[10px] text-muted-foreground">
+                            {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+                          </span>
+                          {user?.id === comment.user_id && editingCommentId !== comment.id && (
+                            <div className="ml-auto flex items-center gap-1 opacity-0 group-hover/comment:opacity-100 transition-opacity">
+                              <button
+                                onClick={() => { setEditingCommentId(comment.id); setEditingText(comment.comment_text); }}
+                                className="text-muted-foreground hover:text-foreground"
+                              >
+                                <Pencil className="h-3 w-3" />
+                              </button>
+                              <button
+                                onClick={() => deleteComment.mutate({ commentId: comment.id, forecastId: forecast.id })}
+                                className="text-muted-foreground hover:text-destructive"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </button>
+                            </div>
+                          )}
                         </div>
-                      ) : (
-                        <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{comment.comment_text}</p>
-                      )}
+                        {editingCommentId === comment.id ? (
+                          <div className="space-y-2">
+                            <Textarea
+                              value={editingText}
+                              onChange={(e) => setEditingText(e.target.value)}
+                              className="min-h-[60px] text-sm bg-background resize-none"
+                              autoFocus
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && editingText.trim()) {
+                                  editComment.mutate({ commentId: comment.id, forecastId: forecast.id, commentText: editingText.trim() });
+                                  setEditingCommentId(null);
+                                }
+                                if (e.key === "Escape") setEditingCommentId(null);
+                              }}
+                            />
+                            <div className="flex items-center gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 text-xs gap-1"
+                                onClick={() => setEditingCommentId(null)}
+                              >
+                                <X className="h-3 w-3" /> Cancel
+                              </Button>
+                              <Button
+                                size="sm"
+                                className="h-7 text-xs gap-1"
+                                disabled={!editingText.trim() || editComment.isPending}
+                                onClick={() => {
+                                  editComment.mutate({ commentId: comment.id, forecastId: forecast.id, commentText: editingText.trim() });
+                                  setEditingCommentId(null);
+                                }}
+                              >
+                                <Check className="h-3 w-3" /> Save
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{comment.comment_text}</p>
+                            {/* Like button */}
+                            <div className="flex items-center gap-3 mt-2">
+                              <button
+                                onClick={() => {
+                                  if (!user) { toast.error("Sign in to like"); return; }
+                                  toggleLike.mutate({ commentId: comment.id, isLiked: likeInfo.userLiked });
+                                }}
+                                className={`flex items-center gap-1 text-[11px] transition-colors ${
+                                  likeInfo.userLiked ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                                }`}
+                              >
+                                <Heart className={`h-3.5 w-3.5 ${likeInfo.userLiked ? "fill-primary" : ""}`} />
+                                {likeInfo.count > 0 && <span>{likeInfo.count}</span>}
+                              </button>
+                            </div>
+                          </>
+                        )}
+
+                        {/* Reply thread */}
+                        <CommentReplyThread commentId={comment.id} />
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </motion.div>
