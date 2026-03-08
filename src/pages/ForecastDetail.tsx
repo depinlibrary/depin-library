@@ -29,6 +29,8 @@ import {
   useForecastCommentReplies,
   useCreateForecastCommentReply,
   useDeleteForecastCommentReply,
+  useForecastReplyLikes,
+  useToggleForecastReplyLike,
 } from "@/hooks/useForecastCommentInteractions";
 import { toast } from "sonner";
 import { format, formatDistanceToNow } from "date-fns";
