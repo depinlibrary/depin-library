@@ -99,7 +99,7 @@ const Portfolio = () => {
   const [sortBy, setSortBy] = useState<"value" | "change" | "name">("value");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [perfRange, setPerfRange] = useState<"1D" | "7D" | "30D" | "90D">("7D");
-  const [activeTab, setActiveTab] = useState<"holdings" | "forecasts">("holdings");
+  const [activeTab, setActiveTab] = useState<"holdings" | "forecasts" | "alerts">("holdings");
 
   const { data: holdings = [], isLoading } = useQuery({
     queryKey: ["portfolio_holdings", user?.id],
