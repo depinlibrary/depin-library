@@ -36,6 +36,24 @@ export function useNotifications() {
           // Show toast popup for new notifications (skip initial load)
           if (initialLoadDone.current && payload.new) {
             const n = payload.new as Notification;
+            // Sound feedback
+            try {
+              const ctx = new AudioContext();
+              const osc = ctx.createOscillator();
+              const gain = ctx.createGain();
+              osc.connect(gain);
+              gain.connect(ctx.destination);
+              osc.frequency.value = 880;
+              osc.type = "sine";
+              gain.gain.setValueAtTime(0.3, ctx.currentTime);
+              gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+              osc.start(ctx.currentTime);
+              osc.stop(ctx.currentTime + 0.3);
+            } catch {}
+            // Vibration feedback
+            if (navigator.vibrate) {
+              navigator.vibrate([100, 50, 100]);
+            }
             toast(n.title, {
               description: n.message,
               duration: 5000,
