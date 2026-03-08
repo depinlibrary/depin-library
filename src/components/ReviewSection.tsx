@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Star, Trash2, ThumbsUp, MessageSquare, Send, ChevronDown, ChevronUp } from "lucide-react";
+import { Star, Trash2, ThumbsUp, MessageSquare, Send } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useReviews, useCreateReview, useDeleteReview, type Review } from "@/hooks/useReviews";
 import {
