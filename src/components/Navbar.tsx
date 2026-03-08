@@ -117,6 +117,7 @@ const Navbar = () => {
     { to: "/explore", label: "Explore", icon: Compass },
     { to: "/market", label: "Market", icon: BarChart3 },
     { to: "/compare", label: "Compare", icon: GitCompare },
+    ...(user ? [{ to: "/notifications", label: "Notifications", icon: Bell }] : []),
   ];
 
   return (
