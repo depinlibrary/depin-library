@@ -400,19 +400,25 @@ const BillboardHero = ({
                           )}
                         </div>
                         <span className="text-xs font-semibold text-foreground flex-1 truncate">{f.title}</span>
-                        <div className="w-24 h-2 rounded-full bg-secondary overflow-hidden flex shrink-0">
-                          <motion.div
-                            className="h-full bg-neon-green rounded-l-full"
-                            initial={{ width: 0 }}
-                            animate={{ width: `${yesPercent}%` }}
-                            transition={{ duration: 0.8, ease: "easeOut" }}
-                          />
-                          <motion.div
-                            className="h-full bg-destructive rounded-r-full"
-                            initial={{ width: 0 }}
-                            animate={{ width: `${100 - yesPercent}%` }}
-                            transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
-                          />
+                        <div className="relative w-24 shrink-0 group/bar">
+                          <div className="h-2 rounded-full bg-secondary overflow-hidden flex">
+                            <motion.div
+                              className="h-full bg-neon-green rounded-l-full"
+                              initial={{ width: 0 }}
+                              animate={{ width: `${yesPercent}%` }}
+                              transition={{ duration: 0.8, ease: "easeOut" }}
+                            />
+                            <motion.div
+                              className="h-full bg-destructive rounded-r-full"
+                              initial={{ width: 0 }}
+                              animate={{ width: `${100 - yesPercent}%` }}
+                              transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
+                            />
+                          </div>
+                          <div className="absolute -top-6 left-0 right-0 flex justify-between opacity-0 group-hover/bar:opacity-100 transition-opacity pointer-events-none">
+                            <span className="text-[8px] font-bold text-neon-green">{yesPercent.toFixed(0)}% Yes</span>
+                            <span className="text-[8px] font-bold text-destructive">{(100 - yesPercent).toFixed(0)}% No</span>
+                          </div>
                         </div>
                         <span className="text-[10px] font-bold tabular-nums text-muted-foreground w-10 text-right">
                           {totalVotes}
