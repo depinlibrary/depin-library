@@ -125,7 +125,32 @@ const Overview = () => {
             </Link>
           </motion.div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {recentProjects.map((project) => (
+            {recentProjects.map((project) => {
+              const md = marketData[project.id];
+              const sparkline: number[] = md?.sparkline_7d && Array.isArray(md.sparkline_7d) ? (md.sparkline_7d as number[]) : [];
+              const isUp = sparkline.length >= 2 ? sparkline[sparkline.length - 1] >= sparkline[0] : true;
+              const sparkColor = isUp ? "rgb(34,197,94)" : "rgb(239,68,68)";
+              
+              // Build SVG path from sparkline data
+              let sparkPath = "";
+              let sparkArea = "";
+              if (sparkline.length > 1) {
+                const min = Math.min(...sparkline);
+                const max = Math.max(...sparkline);
+                const range = max - min || 1;
+                const w = 120;
+                const h = 32;
+                const step = w / (sparkline.length - 1);
+                const points = sparkline.map((v, i) => {
+                  const x = i * step;
+                  const y = h - ((v - min) / range) * (h - 4) - 2;
+                  return `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`;
+                });
+                sparkPath = points.join(" ");
+                sparkArea = `${sparkPath} L${w},${h} L0,${h} Z`;
+              }
+
+              return (
               <motion.div key={project.id} variants={fadeUp}>
                 <Link
                   to={`/project/${project.slug}`}
@@ -142,10 +167,27 @@ const Overview = () => {
                       <h3 className="font-semibold text-foreground text-sm group-hover:text-primary transition-colors truncate">
                         {project.name}
                       </h3>
-                      {marketData[project.id] && <TokenPriceBadge data={marketData[project.id]} compact />}
+                      {md && <TokenPriceBadge data={md} compact />}
                     </div>
                     <ArrowUpRight className="h-4 w-4 text-muted-foreground/30 shrink-0 transition-all duration-300 group-hover:text-primary group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                   </div>
+
+                  {/* 7-day sparkline */}
+                  {sparkPath && (
+                    <div className="relative mb-3 rounded-lg bg-secondary/30 px-2 py-1.5">
+                      <svg width="100%" height="32" viewBox="0 0 120 32" preserveAspectRatio="none" className="block">
+                        <defs>
+                          <linearGradient id={`spark-${project.id}`} x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor={sparkColor} stopOpacity="0.15" />
+                            <stop offset="100%" stopColor={sparkColor} stopOpacity="0" />
+                          </linearGradient>
+                        </defs>
+                        <path d={sparkArea} fill={`url(#spark-${project.id})`} />
+                        <path d={sparkPath} fill="none" stroke={sparkColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      <span className="absolute top-1 right-2 text-[9px] font-medium text-muted-foreground">7d</span>
+                    </div>
+                  )}
                   
                   <p className="relative text-xs text-muted-foreground line-clamp-2 leading-relaxed mb-4 flex-1">{project.tagline}</p>
                   
@@ -165,7 +207,8 @@ const Overview = () => {
                   </div>
                 </Link>
               </motion.div>
-            ))}
+              );
+            })}
           </div>
         </motion.div>
       </section>
