@@ -100,7 +100,17 @@ const Overview = () => {
     .slice(0, 6);
 
   const totalCategories = new Set(projects.map((p) => p.category)).size;
-  const totalBlockchains = new Set(projects.map((p) => p.blockchain)).size;
+
+  const { data: totalBlockchains = 0 } = useQuery({
+    queryKey: ["blockchains-count"],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("blockchains")
+        .select("*", { count: "exact", head: true });
+      if (error) throw error;
+      return count || 0;
+    },
+  });
 
   return (
     <div className="min-h-screen bg-background">
