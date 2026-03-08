@@ -106,6 +106,30 @@ const Profile = () => {
     }
   };
 
+  const handleChangePassword = async () => {
+    if (newPassword.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+    setChangingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      toast.success("Password updated successfully");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to update password");
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
   const notifOptions = [
     { key: "forecast_vote", label: "Forecast votes", desc: "When someone votes on your forecast", icon: TrendingUp },
     { key: "forecast_result", label: "Forecast results", desc: "When a forecast you voted on ends", icon: Target },
