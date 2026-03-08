@@ -235,9 +235,9 @@ const Explore = () => {
       {/* Filters & Controls Bar */}
       <section className="sticky top-16 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
         <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto scrollbar-none -mx-4 px-4 pb-0.5">
             {/* Filter icon */}
-            <div className="flex items-center gap-1.5 text-muted-foreground">
+            <div className="flex items-center gap-1.5 text-muted-foreground shrink-0">
               <SlidersHorizontal className="h-4 w-4" />
               <span className="text-xs font-medium hidden sm:inline">Filters</span>
             </div>
@@ -247,7 +247,7 @@ const Explore = () => {
               value={selectedCategory || "all"}
               onValueChange={(v) => setSelectedCategory(v === "all" ? null : v)}
             >
-              <SelectTrigger className="h-8 w-[150px] text-xs border-border bg-card/60 focus:border-border focus:shadow-none [&]:focus-within:border-border [&]:focus-within:shadow-none">
+              <SelectTrigger className="h-8 w-[120px] sm:w-[150px] text-xs border-border bg-card/60 focus:border-border focus:shadow-none [&]:focus-within:border-border [&]:focus-within:shadow-none shrink-0">
                 <SelectValue placeholder="All Categories" />
               </SelectTrigger>
               <SelectContent>
@@ -265,7 +265,7 @@ const Explore = () => {
               value={selectedBlockchain || "all"}
               onValueChange={(v) => setSelectedBlockchain(v === "all" ? null : v)}
             >
-              <SelectTrigger className="h-8 w-[150px] text-xs border-border bg-card/60 focus:border-border focus:shadow-none [&]:focus-within:border-border [&]:focus-within:shadow-none">
+              <SelectTrigger className="h-8 w-[120px] sm:w-[150px] text-xs border-border bg-card/60 focus:border-border focus:shadow-none [&]:focus-within:border-border [&]:focus-within:shadow-none shrink-0">
                 <SelectValue placeholder="All Blockchains" />
               </SelectTrigger>
               <SelectContent>
@@ -282,7 +282,7 @@ const Explore = () => {
             {hasActiveFilters && (
               <button
                 onClick={clearFilters}
-                className="flex items-center gap-1 rounded-full border border-destructive/30 bg-destructive/10 px-2.5 py-1 text-[11px] font-medium text-destructive transition-colors hover:bg-destructive/20"
+                className="flex items-center gap-1 rounded-full border border-destructive/30 bg-destructive/10 px-2.5 py-1 text-[11px] font-medium text-destructive transition-colors hover:bg-destructive/20 shrink-0"
               >
                 <X className="h-3 w-3" />
                 Clear all
@@ -290,17 +290,17 @@ const Explore = () => {
             )}
 
             {/* Spacer */}
-            <div className="ml-auto flex items-center gap-2">
+            <div className="ml-auto flex items-center gap-2 shrink-0">
               {/* Sort controls */}
               <div className="flex items-center gap-1">
-                <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
+                <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground hidden sm:block" />
                 {availableSorts.map((option) => {
                   const { label, icon: Icon } = sortLabels[option];
                   return (
                     <button
                       key={option}
                       onClick={() => setSortBy(option)}
-                      className={`flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition-all ${
+                      className={`flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition-all whitespace-nowrap ${
                          sortBy === option
                           ? "border border-border bg-secondary text-foreground"
                           : "text-muted-foreground hover:text-foreground"

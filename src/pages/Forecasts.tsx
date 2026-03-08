@@ -350,25 +350,36 @@ const Forecasts = () => {
 
       {/* Controls */}
       <section className="sticky top-16 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-4">
-          {/* Search bar - left side, stretched */}
-          <div className="flex-1 max-w-md">
-            <Input
-              placeholder="Search by title..."
-              value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              className="h-8 w-full text-xs placeholder:text-muted-foreground/60 bg-secondary/50 border-border"
-            />
+        <div className="container mx-auto px-4 py-3 space-y-3">
+          {/* Top row: Search + Create button */}
+          <div className="flex items-center gap-3">
+            <div className="flex-1 min-w-0">
+              <Input
+                placeholder="Search by title..."
+                value={search}
+                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                className="h-8 w-full text-xs placeholder:text-muted-foreground/60 bg-secondary/50 border-border"
+              />
+            </div>
+            {user ? (
+              <Button size="sm" onClick={() => setShowCreate(true)} className="gap-1.5 rounded-lg shrink-0">
+                <Plus className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Create Forecast</span><span className="sm:hidden">Create</span>
+              </Button>
+            ) : (
+              <Link to="/auth" className="flex items-center gap-1.5 rounded-lg bg-primary px-3 sm:px-4 py-1.5 text-xs font-semibold text-primary-foreground shrink-0">
+                <LogIn className="h-3 w-3" /> <span className="hidden sm:inline">Sign in to create</span><span className="sm:hidden">Sign in</span>
+              </Link>
+            )}
           </div>
 
-          {/* Filters - right side */}
-          <div className="flex items-center gap-2 flex-wrap">
-            <div className="flex items-center gap-1.5">
+          {/* Bottom row: Filters (scrollable on mobile) */}
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none -mx-4 px-4 pb-0.5">
+            <div className="flex items-center gap-1.5 shrink-0">
               {sortOptions.map(({ value, label, icon: Icon }) => (
                 <button
                   key={value}
                   onClick={() => { setSort(value); setPage(1); }}
-                  className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all ${
+                  className={`flex items-center gap-1.5 rounded-lg px-2.5 sm:px-3 py-1.5 text-[11px] font-medium transition-all whitespace-nowrap ${
                     sort === value
                       ? "border border-primary/30 bg-primary/10 text-primary"
                       : "border border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary"
@@ -378,12 +389,12 @@ const Forecasts = () => {
                 </button>
               ))}
             </div>
-            <div className="w-px h-5 bg-border hidden sm:block" />
+            <div className="w-px h-5 bg-border shrink-0 hidden sm:block" />
             {/* Status filter */}
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 shrink-0">
               <button
                 onClick={() => { setStatusFilter("all"); setPage(1); }}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all ${
+                className={`flex items-center gap-1.5 rounded-lg px-2.5 sm:px-3 py-1.5 text-[11px] font-medium transition-all whitespace-nowrap ${
                   statusFilter === "all"
                     ? "border border-primary/30 bg-primary/10 text-primary"
                     : "border border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary"
@@ -393,7 +404,7 @@ const Forecasts = () => {
               </button>
               <button
                 onClick={() => { setStatusFilter("active"); setPage(1); }}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all ${
+                className={`flex items-center gap-1.5 rounded-lg px-2.5 sm:px-3 py-1.5 text-[11px] font-medium transition-all whitespace-nowrap ${
                   statusFilter === "active"
                     ? "border border-primary/30 bg-primary/10 text-primary"
                     : "border border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary"
@@ -403,7 +414,7 @@ const Forecasts = () => {
               </button>
               <button
                 onClick={() => { setStatusFilter("ended"); setPage(1); }}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all ${
+                className={`flex items-center gap-1.5 rounded-lg px-2.5 sm:px-3 py-1.5 text-[11px] font-medium transition-all whitespace-nowrap ${
                   statusFilter === "ended"
                     ? "border border-primary/30 bg-primary/10 text-primary"
                     : "border border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary"
@@ -412,10 +423,10 @@ const Forecasts = () => {
                 <CheckCircle className="h-3 w-3" /> Ended
               </button>
             </div>
-            <div className="w-px h-5 bg-border hidden sm:block" />
-            <div className="flex items-center gap-1.5">
+            <div className="w-px h-5 bg-border shrink-0 hidden sm:block" />
+            <div className="flex items-center gap-1.5 shrink-0">
               <Select value={projectFilter} onValueChange={(v) => { setProjectFilter(v === "all" ? "" : v); setPage(1); }}>
-                <SelectTrigger className="h-8 w-[180px] text-[11px] bg-secondary/50 border-border">
+                <SelectTrigger className="h-8 w-[140px] sm:w-[180px] text-[11px] bg-secondary/50 border-border">
                   <Filter className="h-3 w-3 mr-1.5 text-muted-foreground shrink-0" />
                   <SelectValue placeholder="All Projects" />
                 </SelectTrigger>
@@ -438,7 +449,7 @@ const Forecasts = () => {
               {projectFilter && (
                 <button
                   onClick={() => { setProjectFilter(""); setPage(1); }}
-                  className="flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 text-[11px] font-medium text-primary hover:bg-primary/15 transition-colors"
+                  className="flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 text-[11px] font-medium text-primary hover:bg-primary/15 transition-colors whitespace-nowrap"
                 >
                   {projects.find(p => p.id === projectFilter)?.name}
                   <X className="h-3 w-3" />
@@ -446,15 +457,6 @@ const Forecasts = () => {
               )}
             </div>
           </div>
-          {user ? (
-            <Button size="sm" onClick={() => setShowCreate(true)} className="gap-1.5 rounded-lg">
-              <Plus className="h-3.5 w-3.5" /> Create Forecast
-            </Button>
-          ) : (
-            <Link to="/auth" className="flex items-center gap-1.5 rounded-lg bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground">
-              <LogIn className="h-3 w-3" /> Sign in to create
-            </Link>
-          )}
         </div>
       </section>
 
