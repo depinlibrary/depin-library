@@ -138,6 +138,7 @@ export default function DeletionRequests() {
                       <p className="text-xs text-foreground"><span className="font-medium">Admin response:</span> {r.admin_response}</p>
                     </div>
                   )}
+                  </div>
                 </div>
                 {filter === "pending" && (
                   <div className="flex gap-1.5 shrink-0">
