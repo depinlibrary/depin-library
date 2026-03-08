@@ -18,6 +18,10 @@ export type Forecast = {
   project_b_name?: string;
   project_a_slug?: string;
   project_b_slug?: string;
+  project_a_logo_url?: string | null;
+  project_a_logo_emoji?: string;
+  project_b_logo_url?: string | null;
+  project_b_logo_emoji?: string;
   user_vote?: string | null;
 };
 
