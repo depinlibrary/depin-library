@@ -2,10 +2,12 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import PageTransition from "@/components/PageTransition";
 import Overview from "./pages/Overview";
 import Explore from "./pages/Explore";
 import ProjectDetail from "./pages/ProjectDetail";
@@ -23,6 +25,30 @@ import ScrollToTop from "./components/ScrollToTop";
 
 const queryClient = new QueryClient();
 
+const AnimatedRoutes = () => {
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<PageTransition><Overview /></PageTransition>} />
+        <Route path="/explore" element={<PageTransition><Explore /></PageTransition>} />
+        <Route path="/project/:slug" element={<PageTransition><ProjectDetail /></PageTransition>} />
+        <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
+        <Route path="/submit" element={<PageTransition><SubmitProject /></PageTransition>} />
+        <Route path="/portfolio" element={<PageTransition><Portfolio /></PageTransition>} />
+        <Route path="/market" element={<PageTransition><MarketOverview /></PageTransition>} />
+        <Route path="/admin" element={<PageTransition><AdminDashboard /></PageTransition>} />
+        <Route path="/compare" element={<PageTransition><CompareProjects /></PageTransition>} />
+        <Route path="/forecasts" element={<PageTransition><Forecasts /></PageTransition>} />
+        <Route path="/forecasts/:id" element={<PageTransition><ForecastDetail /></PageTransition>} />
+        <Route path="/notifications" element={<PageTransition><Notifications /></PageTransition>} />
+        <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
+      </Routes>
+    </AnimatePresence>
+  );
+};
+
 const App = () => (
   <ErrorBoundary>
   <ThemeProvider>
@@ -33,21 +59,7 @@ const App = () => (
       <BrowserRouter>
         <ScrollToTop />
         <AuthProvider>
-          <Routes>
-            <Route path="/" element={<Overview />} />
-            <Route path="/explore" element={<Explore />} />
-            <Route path="/project/:slug" element={<ProjectDetail />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/submit" element={<SubmitProject />} />
-            <Route path="/portfolio" element={<Portfolio />} />
-            <Route path="/market" element={<MarketOverview />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/compare" element={<CompareProjects />} />
-            <Route path="/forecasts" element={<Forecasts />} />
-            <Route path="/forecasts/:id" element={<ForecastDetail />} />
-            <Route path="/notifications" element={<Notifications />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <AnimatedRoutes />
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
