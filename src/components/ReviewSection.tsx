@@ -56,7 +56,6 @@ const ReplyThread = ({ reviewId }: { reviewId: string }) => {
   const createReply = useCreateReviewReply();
   const deleteReply = useDeleteReviewReply();
   const [replyText, setReplyText] = useState("");
-  const [showForm, setShowForm] = useState(false);
 
   const handleSubmit = async () => {
     if (!replyText.trim()) return;
