@@ -16,14 +16,14 @@ import {
   Car,
   Globe,
   Shield,
-  Zap,
   Users,
-  Activity,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProjectLogo from "@/components/ProjectLogo";
+import BillboardHero from "@/components/BillboardHero";
 import { useProjects } from "@/hooks/useProjects";
+import { useAllTokenMarketData } from "@/hooks/useTokenMarketData";
 import { useTopSentiments, useTrendingProjects } from "@/hooks/useSentiment";
 import { CATEGORIES } from "@/data/projects";
 import type { Category } from "@/data/projects";
