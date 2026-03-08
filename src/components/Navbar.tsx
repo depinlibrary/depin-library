@@ -137,29 +137,24 @@ const Navbar = () => {
 
         {/* Desktop nav links — centered */}
         <nav className="hidden md:flex flex-1 items-center justify-center gap-1">
-          {navLinks.map((link) => {
-            const active = isActive(link.to);
-            return (
-              <Link
-                key={link.to}
-                to={link.to}
-                className={`relative rounded-lg px-3 py-1.5 text-[13px] font-medium transition-all ${
-                  active
-                    ? "text-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/40"
-                }`}
-              >
-                {link.label}
-                {active && (
-                  <motion.div
-                    layoutId="nav-indicator"
-                    className="absolute inset-x-1 -bottom-[13px] h-[2px] rounded-full bg-primary"
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  />
-                )}
-              </Link>
-            );
-          })}
+          {/* Overview link */}
+          <Link
+            to="/"
+            className={`relative rounded-lg px-3 py-1.5 text-[13px] font-medium transition-all ${
+              isActive("/")
+                ? "text-foreground"
+                : "text-muted-foreground hover:text-foreground hover:bg-secondary/40"
+            }`}
+          >
+            Overview
+            {isActive("/") && (
+              <motion.div
+                layoutId="nav-indicator"
+                className="absolute inset-x-1 -bottom-[13px] h-[2px] rounded-full bg-primary"
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              />
+            )}
+          </Link>
           {/* Explore mega dropdown */}
           <div
             className="relative"
