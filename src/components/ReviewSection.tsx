@@ -280,7 +280,6 @@ const ReviewSection = ({ projectId, projectName }: ReviewSectionProps) => {
                   >
                     <MessageSquare className="h-3.5 w-3.5" />
                     Reply
-                    {repliesOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
                   </button>
 
                   <span className="ml-auto text-[10px] text-text-dim">
@@ -288,17 +287,17 @@ const ReviewSection = ({ projectId, projectName }: ReviewSectionProps) => {
                   </span>
                 </div>
 
-                {/* Reply thread */}
+                {/* Replies always visible */}
+                <ReplyThread reviewId={review.id} showInput={repliesOpen} />
+
+                {/* Toggle reply input */}
                 <AnimatePresence>
                   {repliesOpen && (
                     <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="overflow-hidden"
-                    >
-                      <ReplyThread reviewId={review.id} />
-                    </motion.div>
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                    />
                   )}
                 </AnimatePresence>
               </motion.div>
