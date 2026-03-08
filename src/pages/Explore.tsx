@@ -247,7 +247,7 @@ const Explore = () => {
               value={selectedCategory || "all"}
               onValueChange={(v) => setSelectedCategory(v === "all" ? null : v)}
             >
-              <SelectTrigger className="h-8 w-[150px] text-xs border-border bg-card/60">
+              <SelectTrigger className="h-8 w-[150px] text-xs border-border bg-card/60 focus:border-border focus:shadow-none [&]:focus-within:border-border [&]:focus-within:shadow-none">
                 <SelectValue placeholder="All Categories" />
               </SelectTrigger>
               <SelectContent>
