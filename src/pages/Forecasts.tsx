@@ -45,6 +45,7 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index }: {
   const noPct = 100 - yesPct;
   const isEnded = new Date(forecast.end_date) <= new Date();
   const timeLeft = getTimeRemaining(forecast.end_date);
+  const finalResult = isEnded ? (yesPct >= 50 ? "yes" : "no") : null;
 
   return (
     <motion.div
