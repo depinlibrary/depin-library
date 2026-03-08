@@ -382,7 +382,7 @@ const BillboardHero = ({
                       </div>
                       <span className="hidden sm:block"><MiniSparkline data={m?.sparkline_7d || null} positive={(m?.price_change_24h || 0) >= 0} /></span>
                       <div className="text-right shrink-0">
-                        <p className="text-[10px] font-medium text-muted-foreground tabular-nums">{formatCompact(m?.market_cap_usd || 0)}</p>
+                        <p className="text-xs font-medium text-muted-foreground tabular-nums">{formatCompact(m?.market_cap_usd || 0)}</p>
                         <p className={`text-[9px] font-bold tabular-nums ${(m?.price_change_24h || 0) >= 0 ? "text-neon-green" : "text-destructive"}`}>
                           {(m?.price_change_24h || 0) >= 0 ? "+" : ""}{(m?.price_change_24h || 0).toFixed(1)}%
                         </p>
