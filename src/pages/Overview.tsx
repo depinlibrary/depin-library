@@ -64,6 +64,9 @@ const Overview = () => {
     total_votes_yes: f.total_votes_yes,
     total_votes_no: f.total_votes_no,
     status: f.status || "active",
+    project_a_logo_url: f.project_a_logo_url,
+    project_a_logo_emoji: f.project_a_logo_emoji,
+    project_a_name: f.project_a_name,
   }));
   const { data: trendingProjects = [] } = useTrendingProjects(5);
 
