@@ -368,6 +368,45 @@ const Profile = () => {
                   </div>
                 </div>
 
+                {/* Change Password */}
+                <div className="mt-4 pt-4 border-t border-border/50">
+                  <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <Lock className="h-4 w-4 text-primary" />
+                    Change Password
+                  </h4>
+                  <div className="space-y-3 max-w-sm">
+                    <div>
+                      <Label className="text-xs text-muted-foreground">New Password</Label>
+                      <Input
+                        type="password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="Min 6 characters"
+                        className="mt-1 h-9 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Confirm New Password</Label>
+                      <Input
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="Re-enter new password"
+                        className="mt-1 h-9 text-sm"
+                      />
+                    </div>
+                    <Button
+                      size="sm"
+                      onClick={handleChangePassword}
+                      disabled={changingPassword || !newPassword || !confirmPassword}
+                      className="gap-2"
+                    >
+                      <Lock className="h-3.5 w-3.5" />
+                      {changingPassword ? "Updating…" : "Update Password"}
+                    </Button>
+                  </div>
+                </div>
+
                 {/* Danger Zone */}
                 <div className="mt-6 pt-4 border-t border-destructive/20">
                   <h4 className="text-sm font-semibold text-destructive mb-2 flex items-center gap-2">
