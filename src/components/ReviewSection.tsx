@@ -113,7 +113,7 @@ const ReplyThread = ({ reviewId, showInput = false }: { reviewId: string; showIn
 };
 
 /* ── Main ReviewSection ── */
-const ReviewSection = ({ projectId, projectName }: ReviewSectionProps) => {
+const ReviewSection = ({ projectId, projectName, projectSlug }: ReviewSectionProps) => {
   const { user } = useAuth();
   const { data: reviews = [], isLoading } = useReviews(projectId);
   const createReview = useCreateReview();
