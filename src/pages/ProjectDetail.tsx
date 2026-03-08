@@ -1,6 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, ExternalLink, Globe, Layers, Coins, Calendar, Activity, Star, Bookmark, Twitter } from "lucide-react";
+import CompareWithButton from "@/components/CompareWithButton";
 import { useProject } from "@/hooks/useProjects";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBookmarks, useToggleBookmark } from "@/hooks/useBookmarks";
@@ -103,14 +104,17 @@ const ProjectDetail = () => {
                       <span className="text-xs font-normal text-muted-foreground">({ratingsData?.averages?.count})</span>
                     </span>
                   )}
-                  {user && (
-                    <button
-                      onClick={() => toggleBookmark.mutate({ projectId: project.id, isBookmarked })}
-                      className="ml-auto rounded-lg border border-border bg-card p-2 transition-colors hover:bg-secondary"
-                    >
-                      <Bookmark className={`h-4 w-4 ${isBookmarked ? "fill-primary text-primary" : "text-muted-foreground"}`} />
-                    </button>
-                  )}
+                  <div className="ml-auto flex items-center gap-2">
+                    <CompareWithButton currentProjectId={project.id} currentProjectName={project.name} />
+                    {user && (
+                      <button
+                        onClick={() => toggleBookmark.mutate({ projectId: project.id, isBookmarked })}
+                        className="rounded-lg border border-border bg-card p-2 transition-colors hover:bg-secondary"
+                      >
+                        <Bookmark className={`h-4 w-4 ${isBookmarked ? "fill-primary text-primary" : "text-muted-foreground"}`} />
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <p className="mt-1 text-base text-muted-foreground">{project.tagline}</p>
               </div>
