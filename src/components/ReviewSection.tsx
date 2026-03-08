@@ -190,7 +190,7 @@ const ReviewSection = ({ projectId, projectName }: ReviewSectionProps) => {
   return (
     <div className="space-y-6">
       <h2 className="text-lg font-semibold text-foreground">
-        Reviews {reviews.length > 0 && `(${reviews.length})`}
+        Comments {reviews.length > 0 && `(${reviews.length})`}
       </h2>
 
       {/* Write review */}
