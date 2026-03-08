@@ -291,9 +291,26 @@ const Explore = () => {
 
             {/* Spacer */}
             <div className="ml-auto flex items-center gap-2 shrink-0">
-              {/* Sort controls */}
-              <div className="flex items-center gap-1">
-                <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground hidden sm:block" />
+              {/* Sort controls - Mobile: dropdown */}
+              <div className="sm:hidden">
+                <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
+                  <SelectTrigger className="h-8 w-[110px] text-xs border-border bg-card/60 shrink-0">
+                    <ArrowUpDown className="h-3 w-3 mr-1 text-muted-foreground shrink-0" />
+                    <SelectValue placeholder="Sort" />
+                  </SelectTrigger>
+                  <SelectContent position="popper" side="bottom" sideOffset={4}>
+                    {availableSorts.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {sortLabels[option].label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Sort controls - Desktop/Tablet: buttons */}
+              <div className="hidden sm:flex items-center gap-1">
+                <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
                 {availableSorts.map((option) => {
                   const { label, icon: Icon } = sortLabels[option];
                   return (
@@ -307,7 +324,7 @@ const Explore = () => {
                       }`}
                     >
                       <Icon className="h-3 w-3" />
-                      <span className="hidden sm:inline">{label}</span>
+                      <span>{label}</span>
                     </button>
                   );
                 })}
