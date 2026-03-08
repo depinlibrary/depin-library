@@ -162,58 +162,64 @@ const Overview = () => {
                 const totalVotes = forecast.total_votes_yes + forecast.total_votes_no;
                 const yesPct = totalVotes > 0 ? (forecast.total_votes_yes / totalVotes) * 100 : 50;
                 return (
-                  <motion.div key={forecast.id} variants={fadeUp}>
+                  <motion.div key={forecast.id} variants={fadeUp} className="h-full">
                     <Link
                       to={`/forecasts/${forecast.id}`}
-                      className="group flex flex-col gap-3 rounded-xl border border-border bg-card p-5 transition-all hover:shadow-md hover:bg-card/80 hover:border-primary/20"
+                      className="group flex flex-col justify-between rounded-xl border border-border bg-card p-5 transition-all hover:shadow-md hover:bg-card/80 hover:border-primary/20 h-full"
                     >
-                      {/* Header: logos + countdown */}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1.5">
-                          <ProjectLogo
-                            logoUrl={forecast.project_a_logo_url}
-                            logoEmoji={forecast.project_a_logo_emoji || "⬡"}
-                            name={forecast.project_a_name || ""}
-                            size="xs"
-                          />
-                          {forecast.project_b_name && (
-                            <>
-                              <span className="text-[8px] font-bold text-muted-foreground uppercase">vs</span>
-                              <ProjectLogo
-                                logoUrl={forecast.project_b_logo_url}
-                                logoEmoji={forecast.project_b_logo_emoji || "⬡"}
-                                name={forecast.project_b_name}
-                                size="xs"
-                              />
-                            </>
-                          )}
+                      {/* Top section - flexible height */}
+                      <div className="flex flex-col gap-3">
+                        {/* Header: logos + countdown */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <ProjectLogo
+                              logoUrl={forecast.project_a_logo_url}
+                              logoEmoji={forecast.project_a_logo_emoji || "⬡"}
+                              name={forecast.project_a_name || ""}
+                              size="xs"
+                            />
+                            {forecast.project_b_name && (
+                              <>
+                                <span className="text-[8px] font-bold text-muted-foreground uppercase">vs</span>
+                                <ProjectLogo
+                                  logoUrl={forecast.project_b_logo_url}
+                                  logoEmoji={forecast.project_b_logo_emoji || "⬡"}
+                                  name={forecast.project_b_name}
+                                  size="xs"
+                                />
+                              </>
+                            )}
+                          </div>
+                          <CountdownBadge endDate={forecast.end_date} />
                         </div>
-                        <CountdownBadge endDate={forecast.end_date} />
+
+                        {/* Title */}
+                        <h3 className="text-sm font-semibold text-foreground line-clamp-2 leading-snug">
+                          {forecast.title}
+                        </h3>
                       </div>
 
-                      {/* Title */}
-                      <h3 className="text-sm font-semibold text-foreground line-clamp-2 leading-snug">
-                        {forecast.title}
-                      </h3>
-
-                      {/* Vote bar + stats */}
-                      <div className="flex items-center gap-3">
-                        <div className="relative flex-1 h-2 rounded-full bg-secondary overflow-hidden">
-                          <div
-                            className="absolute inset-y-0 left-0 rounded-full bg-primary transition-all"
-                            style={{ width: `${yesPct}%` }}
-                          />
+                      {/* Bottom section - always aligned */}
+                      <div className="flex flex-col gap-2 mt-3">
+                        {/* Vote bar + stats */}
+                        <div className="flex items-center gap-3">
+                          <div className="relative flex-1 h-2 rounded-full bg-secondary overflow-hidden">
+                            <div
+                              className="absolute inset-y-0 left-0 rounded-full bg-primary transition-all"
+                              style={{ width: `${yesPct}%` }}
+                            />
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <Users className="h-3 w-3 text-muted-foreground" />
+                            <span className="text-[10px] font-bold text-muted-foreground tabular-nums">{totalVotes}</span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1 shrink-0">
-                          <Users className="h-3 w-3 text-muted-foreground" />
-                          <span className="text-[10px] font-bold text-muted-foreground tabular-nums">{totalVotes}</span>
-                        </div>
-                      </div>
 
-                      {/* Yes/No labels */}
-                      <div className="flex items-center justify-between text-[10px]">
-                        <span className="font-semibold text-primary">Yes {yesPct.toFixed(0)}%</span>
-                        <span className="font-semibold text-muted-foreground">No {(100 - yesPct).toFixed(0)}%</span>
+                        {/* Yes/No labels */}
+                        <div className="flex items-center justify-between text-[10px]">
+                          <span className="font-semibold text-primary">Yes {yesPct.toFixed(0)}%</span>
+                          <span className="font-semibold text-muted-foreground">No {(100 - yesPct).toFixed(0)}%</span>
+                        </div>
                       </div>
                     </Link>
                   </motion.div>
