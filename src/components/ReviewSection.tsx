@@ -56,14 +56,12 @@ const ReplyThread = ({ reviewId }: { reviewId: string }) => {
   const createReply = useCreateReviewReply();
   const deleteReply = useDeleteReviewReply();
   const [replyText, setReplyText] = useState("");
-  const [showForm, setShowForm] = useState(false);
 
   const handleSubmit = async () => {
     if (!replyText.trim()) return;
     try {
       await createReply.mutateAsync({ reviewId, replyText: replyText.trim() });
       setReplyText("");
-      setShowForm(false);
       toast.success("Reply posted");
     } catch {
       toast.error("Failed to post reply");
@@ -111,9 +109,8 @@ const ReplyThread = ({ reviewId }: { reviewId: string }) => {
         ))}
       </AnimatePresence>
 
-      {user && (
-        showForm ? (
-          <div className="flex items-center gap-2">
+      {user ? (
+          <div className="flex items-center gap-2 pt-1">
             <Input
               value={replyText}
               onChange={(e) => setReplyText(e.target.value)}
@@ -121,11 +118,14 @@ const ReplyThread = ({ reviewId }: { reviewId: string }) => {
               className="h-8 text-xs"
               onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSubmit()}
             />
-            <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={handleSubmit} disabled={createReply.isPending}>
+            <Button size="sm" variant="ghost" className="h-8 w-8 p-0 shrink-0" onClick={handleSubmit} disabled={createReply.isPending || !replyText.trim()}>
               <Send className="h-3.5 w-3.5" />
             </Button>
           </div>
-        ) : null
+      ) : (
+        <p className="pt-1 text-xs text-muted-foreground">
+          <Link to="/auth" className="text-primary hover:underline">Sign in</Link> to reply
+        </p>
       )}
     </div>
   );
