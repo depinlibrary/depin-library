@@ -235,7 +235,68 @@ const Explore = () => {
       {/* Filters & Controls Bar */}
       <section className="sticky top-16 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
         <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto scrollbar-none -mx-4 px-4 pb-0.5">
+          {/* Mobile: stacked, no scroll */}
+          <div className="flex sm:hidden items-center gap-2">
+            <Select
+              value={selectedCategory || "all"}
+              onValueChange={(v) => setSelectedCategory(v === "all" ? null : v)}
+            >
+              <SelectTrigger className="h-8 flex-1 min-w-0 text-xs border-border bg-card/60">
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent position="popper" side="bottom" sideOffset={4}>
+                <SelectItem value="all">All Categories</SelectItem>
+                {dbCategories.map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    {cat} ({categoryCounts[cat] || 0})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={selectedBlockchain || "all"}
+              onValueChange={(v) => setSelectedBlockchain(v === "all" ? null : v)}
+            >
+              <SelectTrigger className="h-8 flex-1 min-w-0 text-xs border-border bg-card/60">
+                <SelectValue placeholder="Blockchain" />
+              </SelectTrigger>
+              <SelectContent position="popper" side="bottom" sideOffset={4}>
+                <SelectItem value="all">All Blockchains</SelectItem>
+                {dbBlockchains.map((blockchain) => (
+                  <SelectItem key={blockchain} value={blockchain}>
+                    {blockchain} ({blockchainCounts[blockchain] || 0})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
+              <SelectTrigger className="h-8 flex-1 min-w-0 text-xs border-border bg-card/60">
+                <ArrowUpDown className="h-3 w-3 mr-1 text-muted-foreground shrink-0" />
+                <SelectValue placeholder="Sort" />
+              </SelectTrigger>
+              <SelectContent position="popper" side="bottom" sideOffset={4}>
+                {availableSorts.map((option) => (
+                  <SelectItem key={option} value={option}>
+                    {sortLabels[option].label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {hasActiveFilters && (
+              <button
+                onClick={clearFilters}
+                className="flex items-center gap-1 rounded-full border border-destructive/30 bg-destructive/10 px-2 py-1 text-[11px] font-medium text-destructive shrink-0"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            )}
+          </div>
+
+          {/* Desktop/Tablet: original horizontal layout */}
+          <div className="hidden sm:flex items-center gap-3 overflow-x-auto scrollbar-none pb-0.5">
             {/* Filter icon */}
             <div className="hidden lg:flex items-center gap-1.5 text-muted-foreground shrink-0">
               <SlidersHorizontal className="h-4 w-4" />
@@ -247,7 +308,7 @@ const Explore = () => {
               value={selectedCategory || "all"}
               onValueChange={(v) => setSelectedCategory(v === "all" ? null : v)}
             >
-              <SelectTrigger className="h-8 w-[120px] sm:w-[150px] text-xs border-border bg-card/60 focus:border-border focus:shadow-none [&]:focus-within:border-border [&]:focus-within:shadow-none shrink-0">
+              <SelectTrigger className="h-8 w-[150px] text-xs border-border bg-card/60 focus:border-border focus:shadow-none shrink-0">
                 <SelectValue placeholder="All Categories" />
               </SelectTrigger>
               <SelectContent>
@@ -265,7 +326,7 @@ const Explore = () => {
               value={selectedBlockchain || "all"}
               onValueChange={(v) => setSelectedBlockchain(v === "all" ? null : v)}
             >
-              <SelectTrigger className="h-8 w-[120px] sm:w-[150px] text-xs border-border bg-card/60 focus:border-border focus:shadow-none [&]:focus-within:border-border [&]:focus-within:shadow-none shrink-0">
+              <SelectTrigger className="h-8 w-[150px] text-xs border-border bg-card/60 focus:border-border focus:shadow-none shrink-0">
                 <SelectValue placeholder="All Blockchains" />
               </SelectTrigger>
               <SelectContent>
@@ -291,25 +352,8 @@ const Explore = () => {
 
             {/* Spacer */}
             <div className="ml-auto flex items-center gap-2 shrink-0">
-              {/* Sort controls - Mobile: dropdown */}
-              <div className="sm:hidden">
-                <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
-                  <SelectTrigger className="h-8 w-[110px] text-xs border-border bg-card/60 shrink-0">
-                    <ArrowUpDown className="h-3 w-3 mr-1 text-muted-foreground shrink-0" />
-                    <SelectValue placeholder="Sort" />
-                  </SelectTrigger>
-                  <SelectContent position="popper" side="bottom" sideOffset={4}>
-                    {availableSorts.map((option) => (
-                      <SelectItem key={option} value={option}>
-                        {sortLabels[option].label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Sort controls - Desktop/Tablet: buttons */}
-              <div className="hidden sm:flex items-center gap-1">
+              {/* Sort controls */}
+              <div className="flex items-center gap-1">
                 <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
                 {availableSorts.map((option) => {
                   const { label, icon: Icon } = sortLabels[option];
@@ -331,7 +375,7 @@ const Explore = () => {
               </div>
 
               {/* View toggle */}
-              <div className="hidden sm:flex items-center rounded-lg border border-border bg-card/60 p-0.5">
+              <div className="flex items-center rounded-lg border border-border bg-card/60 p-0.5">
                 <button
                   onClick={() => setViewMode("grid")}
                   className={`rounded-md p-1.5 transition-colors ${viewMode === "grid" ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground"}`}
