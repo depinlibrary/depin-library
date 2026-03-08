@@ -2,7 +2,8 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
-import { LogOut, Plus, User, Shield, Menu, X, Sun, Moon, ChevronDown, BarChart3, TrendingUp, Compass, GitCompare, Briefcase, Home, Zap, ArrowRight, LineChart } from "lucide-react";
+import { useAvatar } from "@/hooks/useAvatar";
+import { LogOut, Plus, User, Shield, Menu, X, Sun, Moon, ChevronDown, BarChart3, TrendingUp, Compass, GitCompare, Briefcase, Home, Zap, ArrowRight, LineChart, Camera } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState, useRef, useCallback } from "react";
 import NotificationDropdown from "@/components/NotificationDropdown";
@@ -10,6 +11,8 @@ import NotificationDropdown from "@/components/NotificationDropdown";
 const Navbar = () => {
   const { user, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { avatarUrl, uploading, uploadAvatar } = useAvatar();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const [isAdmin, setIsAdmin] = useState(false);
@@ -285,11 +288,26 @@ const Navbar = () => {
               <div className="relative" ref={profileDropdownRef}>
                 <button
                   onClick={() => setProfileDropdownOpen((v) => !v)}
-                  className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/15 border border-primary/30 transition-all hover:bg-primary/25 hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/15 border border-primary/30 transition-all hover:bg-primary/25 hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 overflow-hidden"
                   aria-label="Profile menu"
                 >
-                  <User className="h-3.5 w-3.5 text-primary" />
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="Avatar" className="h-8 w-8 rounded-full object-cover" />
+                  ) : (
+                    <User className="h-3.5 w-3.5 text-primary" />
+                  )}
                 </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) uploadAvatar(file);
+                    e.target.value = "";
+                  }}
+                />
                 <AnimatePresence>
                   {profileDropdownOpen && (
                     <motion.div
@@ -299,10 +317,28 @@ const Navbar = () => {
                       transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
                       className="absolute right-0 top-full mt-2 z-50 w-56 rounded-xl border border-border bg-card shadow-xl shadow-background/30 overflow-hidden"
                     >
-                      {/* User info */}
-                      <div className="px-4 py-3 border-b border-border/50">
-                        <p className="text-xs font-semibold text-foreground truncate">{user.email}</p>
-                        <p className="text-[10px] text-muted-foreground mt-0.5">Signed in</p>
+                      {/* User info with avatar */}
+                      <div className="px-4 py-3 border-b border-border/50 flex items-center gap-3">
+                        <div className="relative group/avatar shrink-0">
+                          <div className="h-10 w-10 rounded-full bg-primary/15 border border-primary/30 overflow-hidden flex items-center justify-center">
+                            {avatarUrl ? (
+                              <img src={avatarUrl} alt="Avatar" className="h-10 w-10 rounded-full object-cover" />
+                            ) : (
+                              <User className="h-4 w-4 text-primary" />
+                            )}
+                          </div>
+                          <button
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={uploading}
+                            className="absolute inset-0 flex items-center justify-center rounded-full bg-background/70 opacity-0 group-hover/avatar:opacity-100 transition-opacity"
+                          >
+                            <Camera className="h-3.5 w-3.5 text-foreground" />
+                          </button>
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-semibold text-foreground truncate">{user.email}</p>
+                          <p className="text-[10px] text-muted-foreground mt-0.5">{uploading ? "Uploading…" : "Signed in"}</p>
+                        </div>
                       </div>
                       <div className="py-1.5 px-1.5">
                         {isAdmin && (
