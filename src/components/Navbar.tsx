@@ -11,6 +11,8 @@ import NotificationDropdown from "@/components/NotificationDropdown";
 const Navbar = () => {
   const { user, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { avatarUrl, uploading, uploadAvatar } = useAvatar();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const [isAdmin, setIsAdmin] = useState(false);
