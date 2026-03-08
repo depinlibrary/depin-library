@@ -286,10 +286,14 @@ const Navbar = () => {
                     {/* Footer */}
                     <div className="border-t border-border px-4 py-2.5 flex items-center justify-between bg-secondary/20">
                       <span className="text-[10px] text-muted-foreground">Discover the DePIN ecosystem</span>
-                      <div className="flex items-center gap-1 text-[10px] font-medium text-primary">
-                        <Compass className="h-3 w-3" />
-                        Browse
-                      </div>
+                      <Link
+                        to="/submit"
+                        onClick={() => setExploreDropdownOpen(false)}
+                        className="flex items-center gap-1 text-[10px] font-medium text-primary hover:text-primary/80 transition-colors"
+                      >
+                        <Plus className="h-3 w-3" />
+                        Submit Project
+                      </Link>
                     </div>
                   </motion.div>
                 </div>
