@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Timer, ThumbsUp, ThumbsDown, Plus, TrendingUp, Clock, Flame, ChevronLeft, ChevronRight, LogIn, Users, BarChart3, Zap, X, Filter } from "lucide-react";
+import { Timer, ThumbsUp, ThumbsDown, Plus, TrendingUp, Clock, Flame, ChevronLeft, ChevronRight, LogIn, Users, BarChart3, Zap, X, Filter, Trophy } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -45,6 +45,7 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index }: {
   const noPct = 100 - yesPct;
   const isEnded = new Date(forecast.end_date) <= new Date();
   const timeLeft = getTimeRemaining(forecast.end_date);
+  const finalResult = isEnded ? (yesPct >= 50 ? "yes" : "no") : null;
 
   return (
     <motion.div
@@ -189,8 +190,13 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index }: {
       )}
 
       {isEnded && (
-        <div className="flex items-center justify-center border-t border-border py-2.5">
-          <span className="text-[11px] font-medium text-muted-foreground">Forecast ended</span>
+        <div className={`flex items-center justify-center gap-2 border-t border-border py-2.5 ${
+          finalResult === "yes" ? "bg-primary/5" : "bg-destructive/5"
+        }`}>
+          <Trophy className={`h-3.5 w-3.5 ${finalResult === "yes" ? "text-primary" : "text-destructive"}`} />
+          <span className={`text-[11px] font-semibold ${finalResult === "yes" ? "text-primary" : "text-destructive"}`}>
+            Final Result: {finalResult === "yes" ? "Yes" : "No"} ({finalResult === "yes" ? yesPct.toFixed(0) : noPct.toFixed(0)}%)
+          </span>
         </div>
       )}
     </motion.div>
