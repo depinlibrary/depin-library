@@ -279,13 +279,6 @@ const Navbar = () => {
           {user ? (
             <>
               <NotificationDropdown />
-              <Link
-                to="/submit"
-                className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-foreground transition-all hover:bg-secondary/50"
-              >
-                <Plus className="h-3 w-3" />
-                Submit
-              </Link>
               {/* Profile avatar dropdown */}
               <div className="relative" ref={profileDropdownRef}>
                 <button
