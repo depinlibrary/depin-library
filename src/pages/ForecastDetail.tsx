@@ -223,9 +223,9 @@ const ForecastDetail = () => {
               <div className="flex items-center gap-1.5">
                 <button
                   onClick={() => {
-                    const url = window.location.href;
+                    const ogUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/og-forecast?id=${forecast.id}&site=${encodeURIComponent(window.location.origin)}`;
                     const text = `${forecast.title} — ${yesPct.toFixed(0)}% Yes | ${totalVotes} votes`;
-                    window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, "_blank", "noopener,noreferrer,width=550,height=420");
+                    window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(ogUrl)}`, "_blank", "noopener,noreferrer,width=550,height=420");
                   }}
                   className="flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
                   title="Share on X"
@@ -234,7 +234,8 @@ const ForecastDetail = () => {
                 </button>
                 <button
                   onClick={() => {
-                    navigator.clipboard.writeText(window.location.href);
+                    const ogUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/og-forecast?id=${forecast.id}&site=${encodeURIComponent(window.location.origin)}`;
+                    navigator.clipboard.writeText(ogUrl);
                     toast.success("Link copied!");
                   }}
                   className="flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
