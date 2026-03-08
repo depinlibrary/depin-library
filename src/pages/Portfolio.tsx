@@ -392,71 +392,118 @@ const Portfolio = () => {
           </motion.div>
 
           {/* ── Stats Cards ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.08 }}
-            className="mb-6 grid grid-cols-2 lg:grid-cols-4 gap-3"
-          >
-            {[
-              {
-                label: "Best (24h)",
-                content: bestPerformer?.project ? (
-                  <div className="flex items-center gap-2">
-                    <ProjectLogo logoUrl={bestPerformer.project.logo_url} logoEmoji={bestPerformer.project.logo_emoji} name={bestPerformer.project.name} size="sm" />
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-foreground truncate">{bestPerformer.project.token}</p>
+          <div className="mb-6 grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {/* Best 24h */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="group relative rounded-xl border border-border bg-card p-4 overflow-hidden transition-all hover:border-primary/30 hover:shadow-[0_0_20px_-6px_hsl(var(--primary)/0.15)]"
+            >
+              <div className="absolute top-0 right-0 w-16 h-16 rounded-bl-[40px] bg-green-500/5 transition-all group-hover:bg-green-500/10" />
+              <div className="flex items-center gap-1.5 mb-3">
+                <div className="flex h-5 w-5 items-center justify-center rounded-md bg-green-500/10">
+                  <TrendingUp className="h-3 w-3 text-green-500" />
+                </div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Best 24h</p>
+              </div>
+              {bestPerformer?.project ? (
+                <div className="flex items-center gap-2.5">
+                  <ProjectLogo logoUrl={bestPerformer.project.logo_url} logoEmoji={bestPerformer.project.logo_emoji} name={bestPerformer.project.name} size="sm" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-foreground truncate">{bestPerformer.project.name}</p>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <span className="text-[11px] text-muted-foreground">{bestPerformer.project.token}</span>
                       <ChangeIndicator change={bestPerformer.market?.price_change_24h ?? null} />
                     </div>
                   </div>
-                ) : null,
-              },
-              {
-                label: "Worst (24h)",
-                content: worstPerformer?.project ? (
-                  <div className="flex items-center gap-2">
-                    <ProjectLogo logoUrl={worstPerformer.project.logo_url} logoEmoji={worstPerformer.project.logo_emoji} name={worstPerformer.project.name} size="sm" />
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-foreground truncate">{worstPerformer.project.token}</p>
+                </div>
+              ) : <p className="text-sm text-muted-foreground">—</p>}
+            </motion.div>
+
+            {/* Worst 24h */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.14 }}
+              className="group relative rounded-xl border border-border bg-card p-4 overflow-hidden transition-all hover:border-primary/30 hover:shadow-[0_0_20px_-6px_hsl(var(--primary)/0.15)]"
+            >
+              <div className="absolute top-0 right-0 w-16 h-16 rounded-bl-[40px] bg-red-500/5 transition-all group-hover:bg-red-500/10" />
+              <div className="flex items-center gap-1.5 mb-3">
+                <div className="flex h-5 w-5 items-center justify-center rounded-md bg-red-500/10">
+                  <TrendingDown className="h-3 w-3 text-red-500" />
+                </div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Worst 24h</p>
+              </div>
+              {worstPerformer?.project ? (
+                <div className="flex items-center gap-2.5">
+                  <ProjectLogo logoUrl={worstPerformer.project.logo_url} logoEmoji={worstPerformer.project.logo_emoji} name={worstPerformer.project.name} size="sm" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-foreground truncate">{worstPerformer.project.name}</p>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <span className="text-[11px] text-muted-foreground">{worstPerformer.project.token}</span>
                       <ChangeIndicator change={worstPerformer.market?.price_change_24h ?? null} />
                     </div>
                   </div>
-                ) : null,
-              },
-              {
-                label: "Top Holding",
-                content: topHolding?.project ? (
-                  <div className="flex items-center gap-2">
-                    <ProjectLogo logoUrl={topHolding.project.logo_url} logoEmoji={topHolding.project.logo_emoji} name={topHolding.project.name} size="sm" />
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-foreground truncate">{topHolding.project.token}</p>
-                      <p className="text-xs text-muted-foreground">{hideBalances ? "••••" : formatCompact(topHolding.value)}</p>
+                </div>
+              ) : <p className="text-sm text-muted-foreground">—</p>}
+            </motion.div>
+
+            {/* Top Holding */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.18 }}
+              className="group relative rounded-xl border border-border bg-card p-4 overflow-hidden transition-all hover:border-primary/30 hover:shadow-[0_0_20px_-6px_hsl(var(--primary)/0.15)]"
+            >
+              <div className="absolute top-0 right-0 w-16 h-16 rounded-bl-[40px] bg-primary/5 transition-all group-hover:bg-primary/10" />
+              <div className="flex items-center gap-1.5 mb-3">
+                <div className="flex h-5 w-5 items-center justify-center rounded-md bg-primary/10">
+                  <Briefcase className="h-3 w-3 text-primary" />
+                </div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Top Holding</p>
+              </div>
+              {topHolding?.project ? (
+                <div className="flex items-center gap-2.5">
+                  <ProjectLogo logoUrl={topHolding.project.logo_url} logoEmoji={topHolding.project.logo_emoji} name={topHolding.project.name} size="sm" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-foreground truncate">{topHolding.project.name}</p>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <span className="text-[11px] text-muted-foreground">{topHolding.project.token}</span>
+                      <span className="text-xs font-semibold text-foreground tabular-nums">{hideBalances ? "••••" : formatCompact(topHolding.value)}</span>
                     </div>
                   </div>
-                ) : null,
-              },
-              {
-                label: "Top Dominance",
-                content: topDominance ? (
-                  <div>
-                    <p className="text-2xl font-bold text-foreground tabular-nums">{topDominance.percent}%</p>
-                    <p className="text-xs text-muted-foreground">{topDominance.name}</p>
+                </div>
+              ) : <p className="text-sm text-muted-foreground">—</p>}
+            </motion.div>
+
+            {/* Top Dominance */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.22 }}
+              className="group relative rounded-xl border border-border bg-card p-4 overflow-hidden transition-all hover:border-primary/30 hover:shadow-[0_0_20px_-6px_hsl(var(--primary)/0.15)]"
+            >
+              <div className="absolute top-0 right-0 w-16 h-16 rounded-bl-[40px] bg-accent/5 transition-all group-hover:bg-accent/10" />
+              <div className="flex items-center gap-1.5 mb-3">
+                <div className="flex h-5 w-5 items-center justify-center rounded-md bg-accent/10">
+                  <BarChart3 className="h-3 w-3 text-accent" />
+                </div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Top Dominance</p>
+              </div>
+              {topDominance ? (
+                <div className="flex items-center justify-between">
+                  <div className="min-w-0">
+                    <p className="text-2xl font-bold text-foreground tabular-nums leading-tight">{topDominance.percent}%</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">{topDominance.fullName}</p>
                   </div>
-                ) : null,
-              },
-            ].map((card, i) => (
-              <motion.div
-                key={card.label}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 + i * 0.04 }}
-                className="rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/20"
-              >
-                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-2">{card.label}</p>
-                {card.content || <p className="text-sm text-muted-foreground">—</p>}
-              </motion.div>
-            ))}
-          </motion.div>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/10 text-xs font-bold text-accent">
+                    {topDominance.name}
+                  </div>
+                </div>
+              ) : <p className="text-sm text-muted-foreground">—</p>}
+            </motion.div>
+          </div>
 
           {/* ── Charts Section ── */}
           <motion.div
