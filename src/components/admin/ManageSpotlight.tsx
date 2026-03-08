@@ -56,6 +56,8 @@ const ManageSpotlight = () => {
     fetchData();
   }, []);
 
+  const MAX_SPOTLIGHT = 6;
+  const atLimit = spotlight.length >= MAX_SPOTLIGHT;
   const spotlightProjectIds = new Set(spotlight.map((s) => s.project_id));
   const availableProjects = allProjects.filter((p) => !spotlightProjectIds.has(p.id));
 
