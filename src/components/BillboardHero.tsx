@@ -19,10 +19,18 @@ import type { Project } from "@/hooks/useProjects";
 import type { TokenMarketData } from "@/hooks/useTokenMarketData";
 import { useEffect, useState } from "react";
 
+interface TopForecast {
+  id: string;
+  title: string;
+  total_votes_yes: number;
+  total_votes_no: number;
+  status: string;
+}
+
 interface BillboardHeroProps {
   projects: Project[];
   marketData: Record<string, TokenMarketData>;
-  topSentiments: any[];
+  topForecasts: TopForecast[];
   trendingProjects: any[];
   totalCategories: number;
   totalBlockchains: number;
