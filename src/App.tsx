@@ -45,6 +45,7 @@ const App = () => (
             <Route path="/compare" element={<CompareProjects />} />
             <Route path="/forecasts" element={<Forecasts />} />
             <Route path="/forecasts/:id" element={<ForecastDetail />} />
+            <Route path="/notifications" element={<Notifications />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
