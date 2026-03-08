@@ -390,12 +390,12 @@ const BillboardHero = ({
                         to={`/forecasts/${f.id}`}
                         className="group flex items-center gap-3 rounded-lg px-2 py-1 transition-colors hover:bg-secondary/50"
                       >
-                        <div className="flex items-center gap-1 shrink-0">
-                          <ProjectLogo logoUrl={f.project_a_logo_url || null} logoEmoji={f.project_a_logo_emoji || "⬡"} name={f.project_a_name || "Project"} size="sm" />
+                        <div className="flex items-center gap-0.5 shrink-0">
+                          <ProjectLogo logoUrl={f.project_a_logo_url || null} logoEmoji={f.project_a_logo_emoji || "⬡"} name={f.project_a_name || "Project"} size="xs" />
                           {f.project_b_name && (
                             <>
-                              <span className="text-[8px] font-bold text-muted-foreground uppercase">vs</span>
-                              <ProjectLogo logoUrl={f.project_b_logo_url || null} logoEmoji={f.project_b_logo_emoji || "⬡"} name={f.project_b_name} size="sm" />
+                              <span className="text-[7px] font-bold text-muted-foreground uppercase mx-0.5">vs</span>
+                              <ProjectLogo logoUrl={f.project_b_logo_url || null} logoEmoji={f.project_b_logo_emoji || "⬡"} name={f.project_b_name} size="xs" />
                             </>
                           )}
                         </div>
