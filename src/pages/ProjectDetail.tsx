@@ -97,13 +97,13 @@ const ProjectDetail = () => {
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-3">
                   <h1 className="text-3xl font-bold text-foreground">{project.name}</h1>
-                  {overallRating && overallRating > 0 && (
-                    <span className="flex items-center gap-1 rounded-lg border border-primary/30 bg-primary/10 px-2 py-1 text-sm font-semibold text-primary">
-                      <Star className="h-3.5 w-3.5 fill-primary" />
-                      {overallRating.toFixed(1)}
-                      <span className="text-xs font-normal text-muted-foreground">({ratingsData?.averages?.count})</span>
-                    </span>
-                  )}
+                   {ratingsData?.averages?.count > 0 && overallRating && (
+                     <span className="flex items-center gap-1 rounded-lg border border-primary/30 bg-primary/10 px-2 py-1 text-sm font-semibold text-primary">
+                       <Star className="h-3.5 w-3.5 fill-primary" />
+                       {overallRating.toFixed(1)}
+                       <span className="text-xs font-normal text-muted-foreground">({ratingsData?.averages?.count})</span>
+                     </span>
+                   )}
                   <div className="ml-auto flex items-center gap-2">
                     <CompareWithButton currentProjectId={project.id} currentProjectName={project.name} currentCategory={project.category} />
                     {user && (
