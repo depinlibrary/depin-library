@@ -26,6 +26,7 @@ interface BillboardHeroProps {
   trendingProjects: any[];
   totalCategories: number;
   totalBlockchains: number;
+  isRefetching?: boolean;
 }
 
 const AnimatedNumber = ({ target, suffix = "" }: { target: number; suffix?: string }) => {
