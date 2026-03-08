@@ -218,19 +218,49 @@ const BillboardHero = ({
                 <h1 className="text-2xl sm:text-3xl font-bold text-foreground font-['Space_Grotesk'] tracking-tight">
                   DePIN Ecosystem <span className="text-primary">Billboard</span>
                 </h1>
+                <p className="mt-1 text-xs text-muted-foreground max-w-md">
+                  Track, compare & forecast the top DePIN projects — all in one place.
+                </p>
               </div>
 
-              {/* Search bar */}
-              <form onSubmit={handleSearch} className="relative w-full sm:w-[280px]">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search projects..."
-                  className="w-full h-9 rounded-lg border border-border bg-card/60 backdrop-blur-sm pl-9 pr-3 text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary/40 transition-all"
-                />
-              </form>
+              <div className="flex items-center gap-2">
+                {/* Search bar */}
+                <form onSubmit={handleSearch} className="relative w-full sm:w-[220px]">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search projects..."
+                    className="w-full h-9 rounded-lg border border-border bg-card/60 backdrop-blur-sm pl-9 pr-3 text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary/40 transition-all"
+                  />
+                </form>
+
+                {/* CTA Button */}
+                <motion.div
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.97 }}
+                >
+                  <Link
+                    to="/explore"
+                    className="relative inline-flex items-center gap-1.5 h-9 rounded-lg px-4 text-xs font-semibold text-primary-foreground overflow-hidden transition-shadow hover:shadow-lg hover:shadow-primary/30"
+                    style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))" }}
+                  >
+                    {/* Animated shine */}
+                    <motion.span
+                      className="absolute inset-0 pointer-events-none"
+                      style={{
+                        background: "linear-gradient(105deg, transparent 40%, hsl(0 0% 100% / 0.2) 50%, transparent 60%)",
+                        backgroundSize: "200% 100%",
+                      }}
+                      animate={{ backgroundPosition: ["200% 0%", "-200% 0%"] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", repeatDelay: 2 }}
+                    />
+                    <span className="relative">Explore Projects</span>
+                    <ArrowRight className="relative h-3.5 w-3.5" />
+                  </Link>
+                </motion.div>
+              </div>
             </div>
           </motion.div>
 
