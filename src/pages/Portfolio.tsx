@@ -1,6 +1,6 @@
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Trash2, Briefcase, TrendingUp, TrendingDown, Minus, Pencil, Check, X, Wallet, BarChart3, ArrowUpRight, ChevronDown, ChevronUp, Eye, EyeOff, Download, Activity, History, Bell } from "lucide-react";
+import { Plus, Trash2, Briefcase, TrendingUp, TrendingDown, Minus, Pencil, Check, X, BarChart3, ChevronDown, ChevronUp, Eye, EyeOff, Download, Activity, Bell, Wallet } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, AreaChart, Area, XAxis, YAxis } from "recharts";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -319,82 +319,6 @@ const Portfolio = () => {
     return withValue.reduce((top: any, h: any) => h.value > top.value ? h : top, withValue[0]);
   }, [portfolioData]);
 
-  // ── Snapshot recording: upsert today's portfolio value ──
-  const snapshotRecorded = useMemo(() => ({ done: false }), []);
-  useEffect(() => {
-    if (!user || totalNetWorth === 0 || snapshotRecorded.done) return;
-    snapshotRecorded.done = true;
-    const today = new Date().toISOString().slice(0, 10);
-    const prevDay = portfolioSparkline?.points;
-    const yesterdayValue = prevDay && prevDay.length >= 2 ? prevDay[prevDay.length - 2] : null;
-    const pnl = yesterdayValue && yesterdayValue > 0 ? totalNetWorth - yesterdayValue : totalPnl24h;
-    const pnlPct = yesterdayValue && yesterdayValue > 0 ? ((totalNetWorth - yesterdayValue) / yesterdayValue) * 100 : pnlPercent;
-
-    supabase
-      .from("portfolio_snapshots")
-      .upsert(
-        {
-          user_id: user.id,
-          snapshot_date: today,
-          total_value: totalNetWorth,
-          total_pnl: pnl ?? 0,
-          pnl_percent: pnlPct ?? 0,
-        },
-        { onConflict: "user_id,snapshot_date" }
-      )
-      .then(({ error }) => {
-        if (error) console.error("Snapshot upsert error:", error);
-      });
-  }, [user, totalNetWorth, totalPnl24h, pnlPercent, portfolioSparkline]);
-
-  // ── Fetch historical snapshots ──
-  const { data: snapshots = [] } = useQuery({
-    queryKey: ["portfolio_snapshots", user?.id],
-    queryFn: async () => {
-      if (!user) return [];
-      const { data, error } = await supabase
-        .from("portfolio_snapshots")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("snapshot_date", { ascending: true })
-        .limit(365);
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user,
-  });
-
-  const [pnlRange, setPnlRange] = useState<"7D" | "30D" | "90D" | "ALL">("30D");
-
-  const filteredSnapshots = useMemo(() => {
-    if (snapshots.length === 0) return [];
-    const now = new Date();
-    const daysMap: Record<string, number> = { "7D": 7, "30D": 30, "90D": 90, "ALL": 9999 };
-    const days = daysMap[pnlRange] || 30;
-    const cutoff = new Date(now.getTime() - days * 86400000).toISOString().slice(0, 10);
-    return snapshots.filter((s: any) => s.snapshot_date >= cutoff);
-  }, [snapshots, pnlRange]);
-
-  const snapshotChartData = useMemo(() => {
-    return filteredSnapshots.map((s: any) => ({
-      date: s.snapshot_date,
-      value: Number(s.total_value),
-      pnl: Number(s.total_pnl || 0),
-      pnlPercent: Number(s.pnl_percent || 0),
-      label: new Date(s.snapshot_date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-    }));
-  }, [filteredSnapshots]);
-
-  const cumulativePnl = useMemo(() => {
-    if (snapshotChartData.length < 2) return null;
-    const first = snapshotChartData[0].value;
-    const last = snapshotChartData[snapshotChartData.length - 1].value;
-    const diff = last - first;
-    const pct = first > 0 ? (diff / first) * 100 : 0;
-    return { diff, pct, isPositive: diff >= 0 };
-  }, [snapshotChartData]);
-
-
   if (!user) return <Navigate to="/auth?redirect=/portfolio" replace />;
 
   const SortIcon = ({ column }: { column: "value" | "change" | "name" }) => {
@@ -421,26 +345,19 @@ const Portfolio = () => {
               <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-primary/5 blur-[80px] pointer-events-none" />
               <div className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full bg-accent/5 blur-[60px] pointer-events-none" />
 
-              <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+              <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 border border-primary/20">
-                      <Wallet className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">Portfolio Value</p>
-                      <div className="flex items-center gap-2">
-                        <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight tabular-nums">
-                          {hideBalances ? "••••••" : formatValue(totalNetWorth)}
-                        </h1>
-                        <button
-                          onClick={() => setHideBalances(!hideBalances)}
-                          className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
-                        >
-                          {hideBalances ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </button>
-                      </div>
-                    </div>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground mb-1">Portfolio Value</p>
+                  <div className="flex items-center gap-2 mb-3">
+                    <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight tabular-nums">
+                      {hideBalances ? "••••••" : formatValue(totalNetWorth)}
+                    </h1>
+                    <button
+                      onClick={() => setHideBalances(!hideBalances)}
+                      className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
+                    >
+                      {hideBalances ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
                   </div>
 
                   <div className="flex flex-wrap items-center gap-4 text-sm">
@@ -465,22 +382,6 @@ const Portfolio = () => {
                     </div>
                   </div>
                 </div>
-
-                {portfolioSparkline && (
-                  <div className="w-full lg:w-64 h-16">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={portfolioSparkline.points.map((val, i) => ({ i, v: val }))}>
-                        <defs>
-                          <linearGradient id="heroGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor={portfolioSparkline.isPositive ? "rgb(34,197,94)" : "rgb(239,68,68)"} stopOpacity={0.2} />
-                            <stop offset="100%" stopColor={portfolioSparkline.isPositive ? "rgb(34,197,94)" : "rgb(239,68,68)"} stopOpacity={0} />
-                          </linearGradient>
-                        </defs>
-                        <Area type="monotone" dataKey="v" stroke={portfolioSparkline.isPositive ? "rgb(34,197,94)" : "rgb(239,68,68)"} strokeWidth={1.5} fill="url(#heroGrad)" dot={false} />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
-                )}
               </div>
             </div>
           </motion.div>
@@ -674,131 +575,6 @@ const Portfolio = () => {
                 </div>
               )}
             </div>
-          </motion.div>
-
-          {/* ── P&L History Tracker ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.18 }}
-            className="mb-6 rounded-xl border border-border bg-card p-5"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
-                  <History className="h-4 w-4 text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-foreground">P&L History</p>
-                  {cumulativePnl && (
-                    <div className={`flex items-center gap-1 text-xs font-semibold ${cumulativePnl.isPositive ? "text-green-500" : "text-red-500"}`}>
-                      {cumulativePnl.isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                      {cumulativePnl.isPositive ? "+" : ""}{hideBalances ? "••••" : formatValue(Math.abs(cumulativePnl.diff))}
-                      <span className={`inline-flex items-center rounded px-1 py-0.5 text-[10px] font-semibold ${cumulativePnl.isPositive ? "bg-green-500/10" : "bg-red-500/10"}`}>
-                        {cumulativePnl.isPositive ? "+" : ""}{cumulativePnl.pct.toFixed(2)}%
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className="flex items-center gap-0.5 rounded-lg bg-secondary/50 p-0.5">
-                {(["7D", "30D", "90D", "ALL"] as const).map((range) => (
-                  <button
-                    key={range}
-                    onClick={() => setPnlRange(range)}
-                    className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
-                      pnlRange === range
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {range}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {snapshotChartData.length >= 2 ? (
-              <div className="h-[200px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={snapshotChartData}>
-                    <defs>
-                      <linearGradient id="pnlHistGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={cumulativePnl?.isPositive ? "rgb(34,197,94)" : "rgb(239,68,68)"} stopOpacity={0.15} />
-                        <stop offset="100%" stopColor={cumulativePnl?.isPositive ? "rgb(34,197,94)" : "rgb(239,68,68)"} stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <XAxis
-                      dataKey="label"
-                      tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-                      tickLine={false}
-                      axisLine={false}
-                      interval="preserveStartEnd"
-                    />
-                    <YAxis
-                      hide
-                      domain={["auto", "auto"]}
-                    />
-                    <Tooltip
-                      formatter={(value: number, name: string) => {
-                        if (name === "value") return [hideBalances ? "••••" : formatValue(value), "Value"];
-                        return [hideBalances ? "••••" : `${value >= 0 ? "+" : ""}${formatValue(Math.abs(value))}`, "Daily P&L"];
-                      }}
-                      contentStyle={{
-                        backgroundColor: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "10px",
-                        color: "hsl(var(--foreground))",
-                        fontSize: "12px",
-                      }}
-                      labelFormatter={(label) => label}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="value"
-                      stroke={cumulativePnl?.isPositive ? "rgb(34,197,94)" : "rgb(239,68,68)"}
-                      strokeWidth={2}
-                      fill="url(#pnlHistGrad)"
-                      dot={false}
-                      name="value"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            ) : (
-              <div className="flex h-[200px] flex-col items-center justify-center text-center">
-                <History className="h-7 w-7 text-muted-foreground/30 mb-2" />
-                <p className="text-sm font-medium text-foreground">Building your P&L history</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {snapshotChartData.length === 1
-                    ? "First snapshot recorded today. Come back tomorrow to see your trend."
-                    : "Portfolio snapshots are recorded daily when you visit this page."}
-                </p>
-              </div>
-            )}
-
-            {/* Daily P&L table for recent entries */}
-            {snapshotChartData.length >= 2 && (
-              <div className="mt-4 border-t border-border pt-3">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-2">Recent Snapshots</p>
-                <div className="space-y-1.5 max-h-[140px] overflow-y-auto">
-                  {[...snapshotChartData].reverse().slice(0, 10).map((s, i) => (
-                    <div key={i} className="flex items-center justify-between text-xs py-1">
-                      <span className="text-muted-foreground">{s.label}</span>
-                      <div className="flex items-center gap-3">
-                        <span className="text-foreground font-medium tabular-nums">{hideBalances ? "••••" : formatValue(s.value)}</span>
-                        <span className={`font-semibold tabular-nums w-20 text-right ${s.pnl >= 0 ? "text-green-500" : "text-red-500"}`}>
-                          {hideBalances ? "••••" : `${s.pnl >= 0 ? "+" : ""}${formatValue(Math.abs(s.pnl))}`}
-                        </span>
-                        <span className={`text-[10px] font-semibold w-14 text-right tabular-nums ${s.pnlPercent >= 0 ? "text-green-500" : "text-red-500"}`}>
-                          {s.pnlPercent >= 0 ? "+" : ""}{s.pnlPercent.toFixed(2)}%
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </motion.div>
 
 
