@@ -152,46 +152,17 @@ const BillboardHero = ({
 
   return (
     <section className="relative overflow-hidden pt-20 pb-0 sm:pt-24">
-      {/* BG effects */}
-      <motion.div
-        className="absolute top-0 left-1/4 w-[500px] h-[500px] rounded-full bg-primary/5 blur-[120px] pointer-events-none"
-        animate={{ x: [0, 40, -20, 0], y: [0, -30, 20, 0], scale: [1, 1.1, 0.95, 1] }}
-        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="absolute bottom-0 right-1/4 w-[350px] h-[350px] rounded-full bg-accent/5 blur-[100px] pointer-events-none"
-        animate={{ x: [0, -30, 25, 0], y: [0, 20, -25, 0], scale: [1, 0.95, 1.1, 1] }}
-        transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <motion.div
-        className="absolute top-1/3 right-[10%] w-[250px] h-[250px] rounded-full blur-[100px] pointer-events-none"
-        style={{ background: "hsl(var(--neon-green) / 0.04)" }}
-        animate={{ x: [0, 20, -15, 0], y: [0, -20, 15, 0], opacity: [0.4, 0.7, 0.4] }}
-        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-      />
+      {/* BG effects — CSS-only animations for performance (GPU-composited, no JS repaints) */}
+      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] rounded-full bg-primary/5 blur-[120px] pointer-events-none will-change-transform animate-[drift-slow_20s_ease-in-out_infinite]" />
+      <div className="absolute bottom-0 right-1/4 w-[350px] h-[350px] rounded-full bg-accent/5 blur-[100px] pointer-events-none will-change-transform animate-[drift-slow_25s_ease-in-out_infinite_reverse]" />
+      <div className="absolute top-1/3 right-[10%] w-[250px] h-[250px] rounded-full pointer-events-none will-change-transform animate-[drift-slow_22s_ease-in-out_infinite_2s]" style={{ background: "hsl(var(--neon-green) / 0.04)" }} />
       <div className="absolute inset-0 bg-grid opacity-15" />
       <div className="gradient-radial-top absolute inset-0" />
 
-      {/* Floating particles */}
-      {[...Array(6)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute rounded-full pointer-events-none"
-          style={{
-            width: 2 + (i % 3),
-            height: 2 + (i % 3),
-            background: i % 2 === 0 ? "hsl(var(--primary) / 0.4)" : "hsl(var(--accent) / 0.3)",
-            left: `${15 + i * 14}%`,
-            top: `${20 + (i * 17) % 60}%`,
-          }}
-          animate={{
-            y: [0, -20 - i * 5, 0],
-            x: [0, (i % 2 === 0 ? 10 : -10), 0],
-            opacity: [0.3, 0.7, 0.3],
-          }}
-          transition={{ duration: 4 + i * 1.2, repeat: Infinity, ease: "easeInOut", delay: i * 0.8 }}
-        />
-      ))}
+      {/* Floating particles — CSS only, 3 instead of 6 */}
+      <div className="absolute rounded-full pointer-events-none w-[3px] h-[3px] will-change-transform animate-[float-particle_6s_ease-in-out_infinite] left-[20%] top-[30%]" style={{ background: "hsl(var(--primary) / 0.4)" }} />
+      <div className="absolute rounded-full pointer-events-none w-[2px] h-[2px] will-change-transform animate-[float-particle_8s_ease-in-out_infinite_1s] left-[55%] top-[25%]" style={{ background: "hsl(var(--accent) / 0.3)" }} />
+      <div className="absolute rounded-full pointer-events-none w-[3px] h-[3px] will-change-transform animate-[float-particle_7s_ease-in-out_infinite_2.5s] left-[78%] top-[50%]" style={{ background: "hsl(var(--primary) / 0.35)" }} />
 
       <div className="container relative mx-auto px-4 pb-6">
         <motion.div initial="hidden" animate="visible" variants={stagger}>
