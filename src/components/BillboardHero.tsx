@@ -151,15 +151,15 @@ const BillboardHero = ({
   const avgChange = changes.length > 0 ? changes.reduce((s, d) => s + (d.price_change_24h || 0), 0) / changes.length : 0;
 
   return (
-    <section className="relative overflow-hidden pt-20 pb-0 sm:pt-24">
+    <section className="relative overflow-hidden pt-16 pb-0 sm:pt-24">
       <div className="absolute inset-0 bg-grid opacity-15 pointer-events-none" />
       <div className="gradient-radial-top absolute inset-0 pointer-events-none" />
 
-      <div className="container relative mx-auto px-4 pb-6">
+      <div className="container relative mx-auto px-3 sm:px-4 pb-4 sm:pb-6">
         <motion.div initial="hidden" animate="visible" variants={stagger}>
-          {/* Title row + Search */}
-          <motion.div variants={fadeUp} className="mb-5">
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          {/* Title row + Search + CTA */}
+          <motion.div variants={fadeUp} className="mb-4 sm:mb-5">
+            <div className="flex flex-col gap-3 sm:gap-4">
               <div>
                 <div className="mb-1.5 inline-flex items-center gap-2 rounded-full border border-border/60 bg-card/50 backdrop-blur-sm px-3 py-0.5">
                   <span className="relative flex h-1.5 w-1.5">
@@ -177,17 +177,17 @@ const BillboardHero = ({
                     </motion.div>
                   )}
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-foreground font-['Space_Grotesk'] tracking-tight">
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground font-['Space_Grotesk'] tracking-tight">
                   DePIN Ecosystem <span className="text-primary">Billboard</span>
                 </h1>
-                <p className="mt-1 text-xs text-muted-foreground max-w-md">
+                <p className="mt-1 text-[11px] sm:text-xs text-muted-foreground max-w-md">
                   Track, compare & forecast the top DePIN projects — all in one place.
                 </p>
               </div>
 
-              <div className="flex items-center gap-2">
-                {/* Search bar */}
-                <form onSubmit={handleSearch} className="relative w-full sm:w-[220px]">
+              {/* Search + CTA row — stacks on mobile */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                <form onSubmit={handleSearch} className="relative flex-1 sm:max-w-[220px]">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                   <input
                     type="text"
@@ -198,17 +198,12 @@ const BillboardHero = ({
                   />
                 </form>
 
-                {/* CTA Button */}
-                <motion.div
-                  whileHover={{ scale: 1.04 }}
-                  whileTap={{ scale: 0.97 }}
-                >
+                <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
                   <Link
                     to="/explore"
-                    className="relative inline-flex items-center gap-1.5 h-9 rounded-lg px-4 text-xs font-semibold text-primary-foreground overflow-hidden transition-shadow hover:shadow-lg hover:shadow-primary/30"
+                    className="relative inline-flex items-center justify-center gap-1.5 h-9 w-full sm:w-auto rounded-lg px-4 text-xs font-semibold text-primary-foreground overflow-hidden transition-shadow hover:shadow-lg hover:shadow-primary/30"
                     style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))" }}
                   >
-                    {/* Animated shine */}
                     <motion.span
                       className="absolute inset-0 pointer-events-none"
                       style={{
@@ -228,7 +223,7 @@ const BillboardHero = ({
 
           {/* Compact Stats Row with animated glow */}
           <motion.div variants={fadeUp} className="mb-4">
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               <Link to="/explore" className="group relative flex items-center gap-2.5 rounded-lg border border-border bg-card/40 backdrop-blur-md px-3 py-2.5 transition-all hover:bg-card/60 hover:shadow-lg hover:shadow-primary/20">
                 {/* Animated glow background */}
                 <motion.div
@@ -346,7 +341,7 @@ const BillboardHero = ({
                       <div className="min-w-0 flex-1">
                         <p className="text-[11px] font-semibold text-foreground truncate">{p.name}</p>
                       </div>
-                      <MiniSparkline data={m?.sparkline_7d || null} positive={(m?.price_change_24h || 0) >= 0} />
+                      <span className="hidden sm:block"><MiniSparkline data={m?.sparkline_7d || null} positive={(m?.price_change_24h || 0) >= 0} /></span>
                       <div className="text-right shrink-0">
                         <p className="text-[10px] font-medium text-muted-foreground tabular-nums">{formatCompact(m?.market_cap_usd || 0)}</p>
                         <p className={`text-[9px] font-bold tabular-nums ${(m?.price_change_24h || 0) >= 0 ? "text-neon-green" : "text-destructive"}`}>
