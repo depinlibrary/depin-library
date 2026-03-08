@@ -467,7 +467,7 @@ const BillboardHero = ({
                         <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="xs" />
                         <div className="min-w-0 flex-1">
                           <p className="text-xs font-semibold text-foreground truncate">{p.name}</p>
-                          <p className="text-[9px] font-bold text-destructive tabular-nums">
+                          <p className="text-[10px] font-bold text-destructive tabular-nums">
                             {(m?.price_change_24h || 0).toFixed(1)}%
                           </p>
                         </div>
