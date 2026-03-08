@@ -98,7 +98,7 @@ const Overview = () => {
         projects={projects}
         isRefetching={isRefetching}
         marketData={marketData}
-        topSentiments={topSentiments}
+        topForecasts={topForecasts}
         trendingProjects={trendingProjects}
         totalCategories={totalCategories}
         totalBlockchains={totalBlockchains}
