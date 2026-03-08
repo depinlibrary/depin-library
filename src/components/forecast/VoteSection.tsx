@@ -80,6 +80,12 @@ export default function VoteSection({ forecast, yesPct, noPct, totalVotes, isEnd
             <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Yes</span>
           </div>
           <span className="text-xl font-bold text-foreground font-['Space_Grotesk']">{forecast.total_votes_yes}</span>
+          {forecast.avg_confidence_yes != null && (
+            <div className="flex items-center justify-center gap-1 mt-1">
+              <Gauge className="h-3 w-3 text-primary/60" />
+              <span className="text-[10px] text-primary/70 font-medium">{forecast.avg_confidence_yes.toFixed(1)}/5</span>
+            </div>
+          )}
         </div>
         <div className="px-4 py-4 text-center">
           <div className="flex items-center justify-center gap-1.5 mb-1">
@@ -94,6 +100,12 @@ export default function VoteSection({ forecast, yesPct, noPct, totalVotes, isEnd
             <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">No</span>
           </div>
           <span className="text-xl font-bold text-foreground font-['Space_Grotesk']">{forecast.total_votes_no}</span>
+          {forecast.avg_confidence_no != null && (
+            <div className="flex items-center justify-center gap-1 mt-1">
+              <Gauge className="h-3 w-3 text-destructive/60" />
+              <span className="text-[10px] text-destructive/70 font-medium">{forecast.avg_confidence_no.toFixed(1)}/5</span>
+            </div>
+          )}
         </div>
       </div>
 
