@@ -177,6 +177,15 @@ const BillboardHero = ({
 
           {/* Bento Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 auto-rows-min">
+            {/* Animated shimmer overlay during refresh */}
+            {isRefetching && (
+              <motion.div
+                className="absolute inset-0 pointer-events-none rounded-xl bg-gradient-to-r from-transparent via-white/5 to-transparent"
+                animate={{ x: ["-100%", "100%"] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+                style={{ zIndex: 10 }}
+              />
+            )}
             {/* ── Stat: Total Projects ── */}
             <motion.div variants={fadeUp}>
               <Link to="/explore" className="block rounded-xl border border-border bg-card/80 backdrop-blur-sm p-4 flex flex-col justify-between h-full transition-colors hover:border-primary/40 hover:bg-card">
