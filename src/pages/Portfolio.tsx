@@ -832,6 +832,9 @@ const Portfolio = () => {
               </div>
             )}
           </motion.div>
+
+          {/* My Forecasts Section */}
+          <MyForecasts />
         </div>
       </div>
       <Footer />
