@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Link, Navigate } from "react-router-dom";
 import MyForecasts from "@/components/MyForecasts";
+import PriceAlertsManager from "@/components/PriceAlertsManager";
 
 function formatPrice(price: number | null): string {
   if (price === null || price === undefined) return "—";
