@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
-import { Pencil, Trash2, Clock, AlertTriangle, CheckCircle, XCircle, BarChart3, Users, Trophy } from "lucide-react";
+import { Pencil, Trash2, Clock, AlertTriangle, CheckCircle, XCircle, BarChart3, Users, Trophy, Activity } from "lucide-react";
 
 type UserForecast = {
   id: string;
@@ -127,236 +127,254 @@ export default function MyForecasts() {
   if (!user) return null;
 
   return (
-    <div>
-      <div className="mb-4 flex items-center gap-2">
-        <BarChart3 className="h-5 w-5 text-primary" />
-        <h2 className="text-lg font-semibold text-foreground">My Forecasts</h2>
-        <span className="ml-auto text-xs text-muted-foreground">{forecasts.length} forecast{forecasts.length !== 1 ? "s" : ""}</span>
+    <div className="group relative rounded-xl border border-border bg-card overflow-hidden">
+      {/* Decorative corner accent */}
+      <div className="absolute top-0 right-0 w-24 h-24 rounded-bl-[60px] bg-primary/3 pointer-events-none" />
+
+      {/* Header */}
+      <div className="relative flex items-center justify-between p-4 md:p-5">
+        <div className="flex items-center gap-2">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10">
+            <Activity className="h-3.5 w-3.5 text-primary" />
+          </div>
+          <div>
+            <h2 className="text-sm font-semibold text-foreground">My Forecasts</h2>
+            <p className="text-[10px] text-muted-foreground">
+              {forecasts.length} forecast{forecasts.length !== 1 ? "s" : ""}
+            </p>
+          </div>
+        </div>
+        <Link to="/forecasts?create=true">
+          <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs">
+            <BarChart3 className="h-3.5 w-3.5" />
+            New Forecast
+          </Button>
+        </Link>
       </div>
 
+      {/* Content */}
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
         </div>
       ) : forecasts.length === 0 ? (
-        <div className="rounded-xl border border-border bg-card py-12 text-center">
-          <div className="mx-auto h-14 w-14 rounded-2xl bg-secondary/50 flex items-center justify-center mb-3">
-            <BarChart3 className="h-7 w-7 text-muted-foreground/40" />
+        <div className="p-8 md:p-12 text-center">
+          <div className="mx-auto h-10 w-10 rounded-xl bg-secondary/50 flex items-center justify-center mb-3">
+            <BarChart3 className="h-5 w-5 text-muted-foreground/30" />
           </div>
           <p className="text-sm font-medium text-foreground mb-1">No forecasts yet</p>
-          <p className="text-xs text-muted-foreground mb-4">Create your first prediction</p>
+          <p className="text-xs text-muted-foreground mb-3">Create your first prediction to get started</p>
           <Link to="/forecasts?create=true">
-            <Button size="sm" className="gap-1.5 h-8 text-xs">Create Forecast</Button>
+            <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs">Create Forecast</Button>
           </Link>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <AnimatePresence>
-            {forecasts.map((f, i) => {
-              const projA = projectMap.get(f.project_a_id) as any;
-              const projB = f.project_b_id ? (projectMap.get(f.project_b_id) as any) : null;
-              const canEdit = isWithin24Hours(f.created_at);
-              const editTimeStr = timeLeftToEdit(f.created_at);
-              const deletionReq = getDeletionStatus(f.id);
-              const isEnded = new Date(f.end_date) <= new Date();
-              const totalVotes = f.total_votes_yes + f.total_votes_no;
-              const yesPct = totalVotes > 0 ? (f.total_votes_yes / totalVotes) * 100 : 50;
-              const noPct = 100 - yesPct;
-              const timeLeft = getTimeRemaining(f.end_date);
-              const finalResult = isEnded ? (yesPct >= 50 ? "yes" : "no") : null;
+        <div className="px-4 pb-4 md:px-5 md:pb-5">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <AnimatePresence>
+              {forecasts.map((f, i) => {
+                const projA = projectMap.get(f.project_a_id) as any;
+                const projB = f.project_b_id ? (projectMap.get(f.project_b_id) as any) : null;
+                const canEdit = isWithin24Hours(f.created_at);
+                const editTimeStr = timeLeftToEdit(f.created_at);
+                const deletionReq = getDeletionStatus(f.id);
+                const isEnded = new Date(f.end_date) <= new Date();
+                const totalVotes = f.total_votes_yes + f.total_votes_no;
+                const yesPct = totalVotes > 0 ? (f.total_votes_yes / totalVotes) * 100 : 50;
+                const noPct = 100 - yesPct;
+                const timeLeft = getTimeRemaining(f.end_date);
+                const finalResult = isEnded ? (yesPct >= 50 ? "yes" : "no") : null;
 
-              return (
-                <motion.div
-                  key={f.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ delay: i * 0.05, duration: 0.4 }}
-                  className="group relative rounded-xl border border-border bg-card overflow-hidden transition-all hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20 h-full flex flex-col"
-                >
-                  {/* Top accent line */}
-                  <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-
-                  <div className="p-5 flex-1 flex flex-col">
-                    {/* Header: Projects + time badge */}
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="flex items-center -space-x-1.5">
-                        {projA?.logo_url ? (
-                          <img
-                            src={projA.logo_url}
-                            alt={projA.name}
-                            className="w-7 h-7 rounded-[7px] overflow-hidden object-contain border-2 border-card bg-secondary relative z-10"
-                          />
-                        ) : (
-                          <span className="w-7 h-7 rounded-[7px] overflow-hidden flex items-center justify-center text-sm border-2 border-card bg-secondary relative z-10">
-                            {projA?.logo_emoji || "⬡"}
-                          </span>
-                        )}
-                        {projB && (
-                          projB.logo_url ? (
+                return (
+                  <motion.div
+                    key={f.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ delay: i * 0.04 }}
+                    className="rounded-lg border border-border overflow-hidden transition-colors hover:bg-secondary/20 h-full flex flex-col"
+                  >
+                    <div className="p-4 flex-1 flex flex-col">
+                      {/* Header: Projects + time badge */}
+                      <div className="flex items-center gap-2 mb-2.5">
+                        <div className="flex items-center -space-x-1.5">
+                          {projA?.logo_url ? (
                             <img
-                              src={projB.logo_url}
-                              alt={projB.name}
-                              className="w-7 h-7 rounded-[7px] overflow-hidden object-contain border-2 border-card bg-secondary relative z-0"
+                              src={projA.logo_url}
+                              alt={projA.name}
+                              className="w-6 h-6 rounded-[7px] overflow-hidden object-contain border-2 border-card bg-secondary relative z-10"
                             />
                           ) : (
-                            <span className="w-7 h-7 rounded-[7px] overflow-hidden flex items-center justify-center text-sm border-2 border-card bg-secondary relative z-0">
-                              {projB.logo_emoji || "⬡"}
+                            <span className="w-6 h-6 rounded-[7px] overflow-hidden flex items-center justify-center text-xs border-2 border-card bg-secondary relative z-10">
+                              {projA?.logo_emoji || "⬡"}
                             </span>
-                          )
-                        )}
-                      </div>
-                      <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                        {projA && (
-                          <Link
-                            to={`/project/${projA.slug}`}
-                            className="text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors truncate"
-                          >
-                            {projA.name}
-                          </Link>
-                        )}
-                        {projB && (
-                          <>
-                            <span className="text-muted-foreground/40 text-[10px]">vs</span>
+                          )}
+                          {projB && (
+                            projB.logo_url ? (
+                              <img
+                                src={projB.logo_url}
+                                alt={projB.name}
+                                className="w-6 h-6 rounded-[7px] overflow-hidden object-contain border-2 border-card bg-secondary relative z-0"
+                              />
+                            ) : (
+                              <span className="w-6 h-6 rounded-[7px] overflow-hidden flex items-center justify-center text-xs border-2 border-card bg-secondary relative z-0">
+                                {projB.logo_emoji || "⬡"}
+                              </span>
+                            )
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                          {projA && (
                             <Link
-                              to={`/project/${projB.slug}`}
+                              to={`/project/${projA.slug}`}
                               className="text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors truncate"
                             >
-                              {projB.name}
+                              {projA.name}
                             </Link>
-                          </>
-                        )}
-                      </div>
-                      <span className={`shrink-0 rounded-md px-2 py-0.5 text-[10px] font-semibold tracking-wide ${
-                        isEnded
-                          ? "bg-muted text-muted-foreground"
-                          : "bg-primary/10 text-primary"
-                      }`}>
-                        {timeLeft}
-                      </span>
-                    </div>
-
-                    {/* Title */}
-                    <Link to={`/forecasts/${f.id}`} className="block">
-                      <h3 className="text-[13px] font-semibold text-foreground leading-snug mb-2 line-clamp-2 hover:text-primary transition-colors">
-                        {f.title}
-                      </h3>
-                    </Link>
-
-                    {f.description ? (
-                      <p className="text-xs text-muted-foreground mb-3 line-clamp-2 leading-relaxed min-h-[2.5rem]">{f.description}</p>
-                    ) : (
-                      <div className="mb-3 min-h-[2.5rem]" />
-                    )}
-
-                    {/* Vote percentage display */}
-                    <div className="mb-3 mt-auto">
-                      <div className="flex items-end justify-between mb-2">
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-lg font-bold text-foreground">{yesPct.toFixed(0)}%</span>
-                          <span className="text-[10px] font-medium text-primary/70 uppercase tracking-wider">Yes</span>
+                          )}
+                          {projB && (
+                            <>
+                              <span className="text-muted-foreground/40 text-[10px]">vs</span>
+                              <Link
+                                to={`/project/${projB.slug}`}
+                                className="text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors truncate"
+                              >
+                                {projB.name}
+                              </Link>
+                            </>
+                          )}
                         </div>
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-[10px] font-medium text-destructive/70 uppercase tracking-wider">No</span>
-                          <span className="text-lg font-bold text-foreground">{noPct.toFixed(0)}%</span>
-                        </div>
-                      </div>
-                      <div className="h-2 rounded-full bg-secondary overflow-hidden flex">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: `${yesPct}%` }}
-                          transition={{ duration: 0.8, ease: "easeOut" }}
-                          className="h-full rounded-l-full"
-                          style={{ background: "hsl(var(--primary))" }}
-                        />
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: `${noPct}%` }}
-                          transition={{ duration: 0.8, ease: "easeOut" }}
-                          className="h-full rounded-r-full bg-destructive/60"
-                        />
-                      </div>
-                      <div className="flex items-center justify-center gap-1.5 mt-2">
-                        <Users className="h-3 w-3 text-muted-foreground/50" />
-                        <span className="text-[11px] text-muted-foreground">
-                          {totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}
+                        <span className={`shrink-0 rounded-md px-2 py-0.5 text-[10px] font-semibold tracking-wide ${
+                          isEnded
+                            ? "bg-muted text-muted-foreground"
+                            : "bg-primary/10 text-primary"
+                        }`}>
+                          {timeLeft}
                         </span>
                       </div>
-                    </div>
 
-                    {/* Status indicators */}
-                    {canEdit && editTimeStr && (
-                      <div className="flex items-center gap-1 text-[10px] text-amber-500 mb-1">
-                        <Clock className="h-3 w-3" />
-                        {editTimeStr}
-                      </div>
-                    )}
-                    {deletionReq && (
-                      <div className={`flex items-center gap-1 text-[10px] ${
-                        deletionReq.status === "pending" ? "text-amber-500" :
-                        deletionReq.status === "approved" ? "text-green-500" :
-                        "text-destructive"
-                      }`}>
-                        {deletionReq.status === "pending" && <><AlertTriangle className="h-3 w-3" /> Deletion pending</>}
-                        {deletionReq.status === "approved" && <><CheckCircle className="h-3 w-3" /> Deletion approved</>}
-                        {deletionReq.status === "denied" && <><XCircle className="h-3 w-3" /> Denied{deletionReq.admin_response ? `: ${deletionReq.admin_response}` : ""}</>}
-                      </div>
-                    )}
-                  </div>
+                      {/* Title */}
+                      <Link to={`/forecasts/${f.id}`} className="block">
+                        <h3 className="text-[13px] font-semibold text-foreground leading-snug mb-2 line-clamp-2 hover:text-primary transition-colors">
+                          {f.title}
+                        </h3>
+                      </Link>
 
-                  {/* Footer — matches Forecasts page pattern */}
-                  {isEnded ? (
-                    <div className={`flex items-center justify-between border-t border-border px-4 py-2.5 ${
-                      finalResult === "yes" ? "bg-primary/5" : "bg-destructive/5"
-                    }`}>
-                      <div className="flex items-center gap-2">
-                        <Trophy className={`h-3.5 w-3.5 ${finalResult === "yes" ? "text-primary" : "text-destructive"}`} />
-                        <span className={`text-[11px] font-semibold ${finalResult === "yes" ? "text-primary" : "text-destructive"}`}>
-                          Result: {finalResult === "yes" ? "Yes" : "No"} ({finalResult === "yes" ? yesPct.toFixed(0) : noPct.toFixed(0)}%)
-                        </span>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex border-t border-border">
-                      {canEdit ? (
-                        <button
-                          onClick={() => {
-                            setEditForecast(f);
-                            setEditTitle(f.title);
-                            setEditDescription(f.description);
-                          }}
-                          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-muted-foreground hover:bg-primary/5 hover:text-primary transition-all"
-                        >
-                          <Pencil className="h-3.5 w-3.5" /> Edit
-                        </button>
-                      ) : !deletionReq ? (
-                        <button
-                          onClick={() => {
-                            setDeleteRequestForecast(f);
-                            setDeleteReason("");
-                          }}
-                          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-muted-foreground hover:bg-destructive/5 hover:text-destructive transition-all"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" /> Request Deletion
-                        </button>
+                      {f.description ? (
+                        <p className="text-xs text-muted-foreground mb-3 line-clamp-2 leading-relaxed min-h-[2.5rem]">{f.description}</p>
                       ) : (
-                        <div className="flex-1 flex items-center justify-center py-2.5 text-[11px] text-muted-foreground">
-                          Pending review
+                        <div className="mb-3 min-h-[2.5rem]" />
+                      )}
+
+                      {/* Vote bar */}
+                      <div className="mb-2 mt-auto">
+                        <div className="flex items-end justify-between mb-1.5">
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-base font-bold text-foreground">{yesPct.toFixed(0)}%</span>
+                            <span className="text-[10px] font-medium text-primary/70 uppercase tracking-wider">Yes</span>
+                          </div>
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-[10px] font-medium text-destructive/70 uppercase tracking-wider">No</span>
+                            <span className="text-base font-bold text-foreground">{noPct.toFixed(0)}%</span>
+                          </div>
+                        </div>
+                        <div className="h-1.5 rounded-full bg-secondary overflow-hidden flex">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${yesPct}%` }}
+                            transition={{ duration: 0.8, ease: "easeOut" }}
+                            className="h-full rounded-l-full"
+                            style={{ background: "hsl(var(--primary))" }}
+                          />
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${noPct}%` }}
+                            transition={{ duration: 0.8, ease: "easeOut" }}
+                            className="h-full rounded-r-full bg-destructive/60"
+                          />
+                        </div>
+                        <div className="flex items-center justify-center gap-1.5 mt-1.5">
+                          <Users className="h-3 w-3 text-muted-foreground/50" />
+                          <span className="text-[10px] text-muted-foreground">
+                            {totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Status indicators */}
+                      {canEdit && editTimeStr && (
+                        <div className="flex items-center gap-1 text-[10px] text-amber-500 mt-1">
+                          <Clock className="h-3 w-3" />
+                          {editTimeStr}
                         </div>
                       )}
-                      <div className="w-px bg-border" />
-                      <Link
-                        to={`/forecasts/${f.id}`}
-                        className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-all"
-                      >
-                        View Details
-                      </Link>
+                      {deletionReq && (
+                        <div className={`flex items-center gap-1 text-[10px] mt-1 ${
+                          deletionReq.status === "pending" ? "text-amber-500" :
+                          deletionReq.status === "approved" ? "text-green-500" :
+                          "text-destructive"
+                        }`}>
+                          {deletionReq.status === "pending" && <><AlertTriangle className="h-3 w-3" /> Deletion pending</>}
+                          {deletionReq.status === "approved" && <><CheckCircle className="h-3 w-3" /> Deletion approved</>}
+                          {deletionReq.status === "denied" && <><XCircle className="h-3 w-3" /> Denied{deletionReq.admin_response ? `: ${deletionReq.admin_response}` : ""}</>}
+                        </div>
+                      )}
                     </div>
-                  )}
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
+
+                    {/* Footer */}
+                    {isEnded ? (
+                      <div className={`flex items-center justify-between border-t border-border px-3.5 py-2 ${
+                        finalResult === "yes" ? "bg-primary/5" : "bg-destructive/5"
+                      }`}>
+                        <div className="flex items-center gap-1.5">
+                          <Trophy className={`h-3 w-3 ${finalResult === "yes" ? "text-primary" : "text-destructive"}`} />
+                          <span className={`text-[11px] font-semibold ${finalResult === "yes" ? "text-primary" : "text-destructive"}`}>
+                            Result: {finalResult === "yes" ? "Yes" : "No"} ({finalResult === "yes" ? yesPct.toFixed(0) : noPct.toFixed(0)}%)
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex border-t border-border">
+                        {canEdit ? (
+                          <button
+                            onClick={() => {
+                              setEditForecast(f);
+                              setEditTitle(f.title);
+                              setEditDescription(f.description);
+                            }}
+                            className="flex-1 flex items-center justify-center gap-1.5 py-2 text-[11px] font-medium text-muted-foreground hover:bg-secondary/30 hover:text-foreground transition-all"
+                          >
+                            <Pencil className="h-3 w-3" /> Edit
+                          </button>
+                        ) : !deletionReq ? (
+                          <button
+                            onClick={() => {
+                              setDeleteRequestForecast(f);
+                              setDeleteReason("");
+                            }}
+                            className="flex-1 flex items-center justify-center gap-1.5 py-2 text-[11px] font-medium text-muted-foreground hover:bg-destructive/5 hover:text-destructive transition-all"
+                          >
+                            <Trash2 className="h-3 w-3" /> Request Deletion
+                          </button>
+                        ) : (
+                          <div className="flex-1 flex items-center justify-center py-2 text-[10px] text-muted-foreground">
+                            Pending review
+                          </div>
+                        )}
+                        <div className="w-px bg-border" />
+                        <Link
+                          to={`/forecasts/${f.id}`}
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2 text-[11px] font-medium text-muted-foreground hover:bg-secondary/30 hover:text-foreground transition-all"
+                        >
+                          View Details
+                        </Link>
+                      </div>
+                    )}
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </div>
         </div>
       )}
 
