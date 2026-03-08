@@ -193,3 +193,88 @@ export function useDeleteForecastCommentReply() {
     },
   });
 }
+
+// ── Reply Likes ──
+
+export function useForecastReplyLikes(replyIds: string[]) {
+  return useQuery({
+    queryKey: ["forecast-reply-likes", replyIds],
+    queryFn: async (): Promise<Record<string, { count: number; userLiked: boolean }>> => {
+      if (!replyIds.length) return {};
+
+      const { data: likes, error } = await supabase
+        .from("forecast_reply_likes")
+        .select("reply_id, user_id")
+        .in("reply_id", replyIds);
+
+      if (error) throw error;
+
+      const map: Record<string, { count: number; userLiked: boolean }> = {};
+      replyIds.forEach((id) => { map[id] = { count: 0, userLiked: false }; });
+
+      const { data: { user } } = await supabase.auth.getUser();
+
+      (likes || []).forEach((l: any) => {
+        if (!map[l.reply_id]) map[l.reply_id] = { count: 0, userLiked: false };
+        map[l.reply_id].count += 1;
+        if (user && l.user_id === user.id) map[l.reply_id].userLiked = true;
+      });
+
+      return map;
+    },
+    enabled: replyIds.length > 0,
+  });
+}
+
+export function useToggleForecastReplyLike() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async ({ replyId, isLiked, forecastId }: { replyId: string; isLiked: boolean; forecastId: string }) => {
+      if (!user) throw new Error("Must be logged in");
+      if (isLiked) {
+        const { error } = await supabase
+          .from("forecast_reply_likes")
+          .delete()
+          .eq("reply_id", replyId)
+          .eq("user_id", user.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("forecast_reply_likes")
+          .insert({ reply_id: replyId, user_id: user.id });
+        if (error) throw error;
+
+        // Notify reply author
+        const { data: reply } = await supabase
+          .from("forecast_comment_replies")
+          .select("user_id")
+          .eq("id", replyId)
+          .single();
+
+        if (reply && reply.user_id !== user.id) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("display_name")
+            .eq("user_id", user.id)
+            .single();
+          
+          const likerName = profile?.display_name || "Someone";
+
+          await createNotification({
+            userId: reply.user_id,
+            type: "forecast_comment_like",
+            title: "Your reply was liked",
+            message: `${likerName} liked your reply`,
+            link: `/forecasts/${forecastId}`,
+            metadata: { replyId, forecastId },
+          });
+        }
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["forecast-reply-likes"] });
+    },
+  });
+}

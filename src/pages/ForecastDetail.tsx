@@ -29,6 +29,8 @@ import {
   useForecastCommentReplies,
   useCreateForecastCommentReply,
   useDeleteForecastCommentReply,
+  useForecastReplyLikes,
+  useToggleForecastReplyLike,
 } from "@/hooks/useForecastCommentInteractions";
 import { toast } from "sonner";
 import { format, formatDistanceToNow } from "date-fns";
@@ -54,6 +56,11 @@ const CommentReplyThread = ({ commentId, forecastId }: { commentId: string; fore
   const [replyText, setReplyText] = useState("");
   const [showInput, setShowInput] = useState(false);
 
+  // Reply likes
+  const replyIds = useMemo(() => replies.map((r) => r.id), [replies]);
+  const { data: replyLikesMap = {} } = useForecastReplyLikes(replyIds);
+  const toggleReplyLike = useToggleForecastReplyLike();
+
   const handleSubmit = async () => {
     if (!replyText.trim()) return;
     if (!user) { toast.error("Sign in to reply"); return; }
@@ -67,35 +74,56 @@ const CommentReplyThread = ({ commentId, forecastId }: { commentId: string; fore
     }
   };
 
+  const handleReplyLike = (replyId: string) => {
+    if (!user) { toast.error("Sign in to like"); return; }
+    const isLiked = replyLikesMap[replyId]?.userLiked || false;
+    toggleReplyLike.mutate({ replyId, isLiked, forecastId });
+  };
+
   return (
     <div className="mt-2">
       {/* Replies list */}
       <AnimatePresence>
-        {replies.map((reply) => (
-          <motion.div
-            key={reply.id}
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="ml-6 pl-3 border-l-2 border-border py-2 group/reply"
-          >
-            <div className="flex items-center gap-2 mb-0.5">
-              <span className="text-[11px] font-medium text-foreground">{reply.display_name}</span>
-              <span className="text-[10px] text-muted-foreground">
-                {formatDistanceToNow(new Date(reply.created_at), { addSuffix: true })}
-              </span>
-              {user?.id === reply.user_id && (
+        {replies.map((reply) => {
+          const likeInfo = replyLikesMap[reply.id] || { count: 0, userLiked: false };
+          return (
+            <motion.div
+              key={reply.id}
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="ml-6 pl-3 border-l-2 border-border py-2 group/reply"
+            >
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="text-[11px] font-medium text-foreground">{reply.display_name}</span>
+                <span className="text-[10px] text-muted-foreground">
+                  {formatDistanceToNow(new Date(reply.created_at), { addSuffix: true })}
+                </span>
+                {user?.id === reply.user_id && (
+                  <button
+                    onClick={() => deleteReply.mutate({ replyId: reply.id, commentId })}
+                    className="ml-auto opacity-0 group-hover/reply:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </button>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">{reply.reply_text}</p>
+              {/* Like button for reply */}
+              <div className="flex items-center gap-3 mt-1">
                 <button
-                  onClick={() => deleteReply.mutate({ replyId: reply.id, commentId })}
-                  className="ml-auto opacity-0 group-hover/reply:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+                  onClick={() => handleReplyLike(reply.id)}
+                  className={`flex items-center gap-1 text-[11px] transition-colors ${
+                    likeInfo.userLiked ? "text-pink-500" : "text-muted-foreground hover:text-foreground"
+                  }`}
                 >
-                  <Trash2 className="h-3 w-3" />
+                  <Heart className={`h-3 w-3 ${likeInfo.userLiked ? "fill-current" : ""}`} />
+                  {likeInfo.count > 0 && <span>{likeInfo.count}</span>}
                 </button>
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">{reply.reply_text}</p>
-          </motion.div>
-        ))}
+              </div>
+            </motion.div>
+          );
+        })}
       </AnimatePresence>
 
       {/* Reply input toggle */}
