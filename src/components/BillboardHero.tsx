@@ -288,7 +288,7 @@ const BillboardHero = ({
             </motion.div>
 
             {/* ── Trending Projects ── */}
-             <motion.div variants={fadeUp} className="col-span-2 sm:col-span-2 rounded-xl border border-border bg-card/50 backdrop-blur-md p-4">
+             <motion.div variants={fadeUp} className="col-span-2 sm:col-span-2 rounded-xl border border-border bg-card/50 backdrop-blur-md p-3">
               <div className="flex items-center gap-2 mb-3">
                 <Flame className="h-3.5 w-3.5 text-primary" />
                 <span className="text-xs font-semibold text-foreground">Trending Now</span>
