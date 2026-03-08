@@ -202,7 +202,8 @@ const Forecasts = () => {
   const [sort, setSort] = useState<ForecastSortOption>("newest");
   const [page, setPage] = useState(1);
   const [projectFilter, setProjectFilter] = useState<string>("");
-  const { data, isLoading } = useForecasts(sort, page, PAGE_SIZE, projectFilter || undefined);
+  const [search, setSearch] = useState<string>("");
+  const { data, isLoading } = useForecasts(sort, page, PAGE_SIZE, projectFilter || undefined, search || undefined);
   const createForecast = useCreateForecast();
   const voteForecast = useVoteForecast();
   const [showCreate, setShowCreate] = useState(false);
