@@ -88,6 +88,7 @@ const Overview = () => {
       {/* Billboard Hero */}
       <BillboardHero
         projects={projects}
+        isRefetching={isRefetching}
         marketData={marketData}
         topSentiments={topSentiments}
         trendingProjects={trendingProjects}
