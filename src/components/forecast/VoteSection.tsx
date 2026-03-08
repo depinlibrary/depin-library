@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import confetti from "canvas-confetti";
 
 interface VoteSectionProps {
   forecast: any;
@@ -27,8 +28,38 @@ export default function VoteSection({ forecast, yesPct, noPct, totalVotes, isEnd
   const { user } = useAuth();
   const [confidence, setConfidence] = useState(3);
 
+  const hadVoteBefore = !!forecast.user_vote;
+
+  const fireConfetti = () => {
+    const duration = 1500;
+    const end = Date.now() + duration;
+    const colors = ["hsl(175, 80%, 50%)", "hsl(265, 70%, 60%)", "#FFD700", "#FF6B6B"];
+
+    (function frame() {
+      confetti({
+        particleCount: 3,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0, y: 0.7 },
+        colors,
+      });
+      confetti({
+        particleCount: 3,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1, y: 0.7 },
+        colors,
+      });
+      if (Date.now() < end) requestAnimationFrame(frame);
+    })();
+  };
+
   const handleVote = (vote: "yes" | "no") => {
     if (!user) { toast.error("Sign in to vote"); return; }
+    if (!hadVoteBefore) {
+      fireConfetti();
+      toast.success("🎉 Vote cast! Nice prediction.");
+    }
     onVote(vote, confidence);
   };
 
