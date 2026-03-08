@@ -1,11 +1,12 @@
 import { useState, useRef } from "react";
-import { Navigate, Link } from "react-router-dom";
+import { Navigate, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAvatar } from "@/hooks/useAvatar";
 import { useUserForecastStats } from "@/hooks/useUserForecastStats";
 import { useBookmarks } from "@/hooks/useBookmarks";
 import { useNotificationPreferences, useUpdateNotificationPreferences } from "@/hooks/useNotificationPreferences";
+import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import UserAvatar from "@/components/UserAvatar";
@@ -17,15 +18,20 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import {
   Camera, Check, X, TrendingUp, Target, Clock, BookmarkIcon,
-  Bell, Mail, Shield, Award, BarChart3, CheckCircle2, XCircle, HelpCircle
+  Bell, Mail, Shield, Award, BarChart3, CheckCircle2, XCircle, HelpCircle, Trash2
 } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 
 const Profile = () => {
-  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+  const { user, loading: authLoading, signOut } = useAuth();
   const { avatarUrl, displayName, uploading, uploadAvatar, updateDisplayName } = useAvatar();
   const { data: forecastStats, isLoading: statsLoading } = useUserForecastStats(user?.id);
   const { data: bookmarks } = useBookmarks();
@@ -34,6 +40,8 @@ const Profile = () => {
 
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [confirmText, setConfirmText] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (authLoading) {
@@ -72,6 +80,26 @@ const Profile = () => {
       onSuccess: () => toast.success("Preference updated"),
       onError: () => toast.error("Failed to update preference"),
     });
+  };
+
+  const handleDeleteAccount = async () => {
+    if (confirmText !== "DELETE") return;
+    setDeleting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await supabase.functions.invoke("delete-account", {
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (res.error) throw res.error;
+      await signOut();
+      navigate("/");
+      toast.success("Your account has been deleted");
+    } catch (err) {
+      console.error("Delete account error:", err);
+      toast.error("Failed to delete account. Please try again.");
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const notifOptions = [
@@ -310,6 +338,54 @@ const Profile = () => {
                     <Label className="text-xs text-muted-foreground">User ID</Label>
                     <p className="text-xs text-muted-foreground font-mono">{user.id.slice(0, 8)}…</p>
                   </div>
+                </div>
+
+                {/* Danger Zone */}
+                <div className="mt-6 pt-4 border-t border-destructive/20">
+                  <h4 className="text-sm font-semibold text-destructive mb-2 flex items-center gap-2">
+                    <Trash2 className="h-4 w-4" />
+                    Danger Zone
+                  </h4>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Permanently delete your account and all associated data. This action cannot be undone.
+                  </p>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" size="sm" className="gap-2">
+                        <Trash2 className="h-3.5 w-3.5" />
+                        Delete Account
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription className="space-y-3">
+                          <span className="block">
+                            This will permanently delete your account including all your reviews, forecasts, votes, bookmarks, and portfolio data. This action cannot be undone.
+                          </span>
+                          <span className="block text-sm font-medium text-foreground">
+                            Type <span className="font-mono text-destructive">DELETE</span> to confirm:
+                          </span>
+                          <Input
+                            value={confirmText}
+                            onChange={(e) => setConfirmText(e.target.value)}
+                            placeholder="Type DELETE"
+                            className="font-mono"
+                          />
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel onClick={() => setConfirmText("")}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={handleDeleteAccount}
+                          disabled={confirmText !== "DELETE" || deleting}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          {deleting ? "Deleting…" : "Delete My Account"}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </CardContent>
             </Card>
