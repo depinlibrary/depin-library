@@ -388,19 +388,19 @@ const BillboardHero = ({
                       <Link
                         key={f.id}
                         to={`/forecasts/${f.id}`}
-                        className="group flex items-center gap-3 rounded-lg px-2 py-1 transition-colors hover:bg-secondary/50"
+                        className="group grid grid-cols-[auto_1fr_auto_auto] items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-secondary/50"
                       >
-                        <div className="flex items-center gap-0.5 shrink-0">
+                        <div className="flex items-center gap-0.5 shrink-0 w-[60px] justify-center">
                           <ProjectLogo logoUrl={f.project_a_logo_url || null} logoEmoji={f.project_a_logo_emoji || "⬡"} name={f.project_a_name || "Project"} size="xs" />
                           {f.project_b_name && (
                             <>
-                              <span className="text-[7px] font-bold text-muted-foreground uppercase mx-0.5">vs</span>
+                              <span className="text-[7px] font-bold text-muted-foreground uppercase">vs</span>
                               <ProjectLogo logoUrl={f.project_b_logo_url || null} logoEmoji={f.project_b_logo_emoji || "⬡"} name={f.project_b_name} size="xs" />
                             </>
                           )}
                         </div>
-                        <span className="text-xs font-semibold text-foreground flex-1 truncate" title={f.title}>{f.title}</span>
-                        <div className="relative w-24 shrink-0 group/bar">
+                        <span className="text-xs font-semibold text-foreground truncate" title={f.title}>{f.title}</span>
+                        <div className="relative w-20 shrink-0 group/bar">
                           <div className="h-2 rounded-full bg-secondary overflow-hidden flex">
                             <motion.div
                               className="h-full bg-neon-green rounded-l-full"
@@ -420,7 +420,7 @@ const BillboardHero = ({
                             <span className="text-[8px] font-bold text-destructive">{(100 - yesPercent).toFixed(0)}% No</span>
                           </div>
                         </div>
-                        <span className="text-[10px] font-bold tabular-nums text-muted-foreground w-10 text-right">
+                        <span className="text-[10px] font-bold tabular-nums text-muted-foreground w-8 text-right">
                           {totalVotes}
                         </span>
                       </Link>

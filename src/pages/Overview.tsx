@@ -141,34 +141,6 @@ const Overview = () => {
         </motion.div>
       </section>
 
-      <section className="container mx-auto px-4 pb-16">
-        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-50px" }} variants={stagger}>
-          <motion.div variants={fadeUp} className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-foreground font-['Space_Grotesk']">Top Categories</h2>
-            <Link to="/explore" className="text-xs font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
-              View all <ArrowRight className="h-3 w-3" />
-            </Link>
-          </motion.div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-            {topCategories.map((cat, i) => (
-              <motion.div key={cat.name} variants={fadeUp}>
-                <Link
-                  to={`/explore?category=${cat.name}`}
-                  className="group flex flex-col items-center gap-2.5 rounded-xl border border-border bg-card p-5 text-center transition-all hover:shadow-md hover:bg-card/80"
-                >
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary transition-all group-hover:bg-primary/15 group-hover:scale-110">
-                    <cat.Icon className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <span className="text-sm font-semibold text-foreground">{cat.name}</span>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">{cat.count} projects</p>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-      </section>
 
       {/* Recently Added */}
       <section className="container mx-auto px-4 pb-20">
