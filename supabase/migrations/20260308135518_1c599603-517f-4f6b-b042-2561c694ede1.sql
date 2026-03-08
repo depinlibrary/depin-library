@@ -1,0 +1,1 @@
+ALTER TABLE public.notification_preferences ADD COLUMN price_alert boolean NOT NULL DEFAULT true;

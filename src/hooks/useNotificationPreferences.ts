@@ -11,6 +11,7 @@ export type NotificationPreferences = {
   review_like: boolean;
   forecast_vote: boolean;
   forecast_result: boolean;
+  price_alert: boolean;
   created_at: string;
   updated_at: string;
 };
@@ -22,6 +23,7 @@ const DEFAULT_PREFS = {
   review_like: true,
   forecast_vote: true,
   forecast_result: true,
+  price_alert: true,
 };
 
 export function useNotificationPreferences() {
@@ -63,7 +65,7 @@ export function useUpdateNotificationPreferences() {
 
   return useMutation({
     mutationFn: async (updates: Partial<Pick<NotificationPreferences,
-      "forecast_comment_reply" | "forecast_comment_like" | "forecast_new_comment" | "review_like"
+      "forecast_comment_reply" | "forecast_comment_like" | "forecast_new_comment" | "review_like" | "price_alert"
     >>) => {
       if (!user) throw new Error("Not authenticated");
       const { error } = await supabase
