@@ -466,7 +466,7 @@ const BillboardHero = ({
                       <Link key={p.id} to={`/project/${p.slug}`} className="group flex items-center gap-1.5 hover:opacity-80 transition-opacity">
                         <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="xs" />
                         <div className="min-w-0 flex-1">
-                          <p className="text-[10px] font-semibold text-foreground truncate">{p.name}</p>
+                          <p className="text-xs font-semibold text-foreground truncate">{p.name}</p>
                           <p className="text-[9px] font-bold text-destructive tabular-nums">
                             {(m?.price_change_24h || 0).toFixed(1)}%
                           </p>
