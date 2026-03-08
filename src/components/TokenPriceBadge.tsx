@@ -62,9 +62,6 @@ export default function TokenPriceBadge({ data, compact = false }: TokenPriceBad
       {data.market_cap_usd !== null && (
         <p className="mt-1 text-xs text-muted-foreground">Market Cap: {formatMarketCap(data.market_cap_usd)}</p>
       )}
-      <p className="mt-1 text-[10px] text-muted-foreground/60">
-        Updated {new Date(data.last_updated).toLocaleTimeString()}
-      </p>
     </div>
   );
 }
