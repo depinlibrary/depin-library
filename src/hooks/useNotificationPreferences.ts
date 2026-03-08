@@ -11,6 +11,7 @@ export type NotificationPreferences = {
   review_like: boolean;
   forecast_vote: boolean;
   forecast_result: boolean;
+  price_alert: boolean;
   created_at: string;
   updated_at: string;
 };
