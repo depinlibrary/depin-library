@@ -64,7 +64,6 @@ const Navbar = () => {
     { to: "/", label: "Overview" },
     { to: "/explore", label: "Explore" },
     { to: "/compare", label: "Compare" },
-    { to: "/portfolio", label: "Portfolio" },
   ];
 
   const mobileNavLinks = [
