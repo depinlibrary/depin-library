@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Star, X, GripVertical, Plus } from "lucide-react";
+import { X, Plus, AlertTriangle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import ProjectLogo from "@/components/ProjectLogo";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -56,6 +57,8 @@ const ManageSpotlight = () => {
     fetchData();
   }, []);
 
+  const MAX_SPOTLIGHT = 6;
+  const atLimit = spotlight.length >= MAX_SPOTLIGHT;
   const spotlightProjectIds = new Set(spotlight.map((s) => s.project_id));
   const availableProjects = allProjects.filter((p) => !spotlightProjectIds.has(p.id));
 
@@ -94,11 +97,20 @@ const ManageSpotlight = () => {
 
   return (
     <div className="space-y-4">
+      {atLimit && (
+        <Alert variant="destructive" className="border-yellow-500/50 bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 [&>svg]:text-yellow-500">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            Maximum of {MAX_SPOTLIGHT} spotlight projects reached. Remove a project before adding another.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Add project */}
       <div className="flex items-center gap-2">
-        <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
+        <Select value={selectedProjectId} onValueChange={setSelectedProjectId} disabled={atLimit}>
           <SelectTrigger className="flex-1">
-            <SelectValue placeholder="Select a project to spotlight..." />
+            <SelectValue placeholder={atLimit ? "Limit reached (6/6)" : "Select a project to spotlight..."} />
           </SelectTrigger>
           <SelectContent>
             {availableProjects.map((p) => (
@@ -112,7 +124,7 @@ const ManageSpotlight = () => {
             ))}
           </SelectContent>
         </Select>
-        <Button onClick={handleAdd} disabled={!selectedProjectId} size="sm" className="shrink-0">
+        <Button onClick={handleAdd} disabled={!selectedProjectId || atLimit} size="sm" className="shrink-0">
           <Plus className="h-4 w-4 mr-1" /> Add
         </Button>
       </div>
@@ -158,7 +170,7 @@ const ManageSpotlight = () => {
       )}
 
       <p className="text-[10px] text-muted-foreground">
-        Spotlighted projects appear in a dedicated section on the homepage. Max recommended: 6 projects.
+        Spotlighted projects appear in a dedicated section on the homepage. {spotlight.length}/{MAX_SPOTLIGHT} slots used.
       </p>
     </div>
   );
