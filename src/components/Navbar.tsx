@@ -152,7 +152,8 @@ const Navbar = () => {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 8, scale: 0.96 }}
                   transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                  className="absolute left-1/2 -translate-x-1/2 top-full mt-3 w-[340px] rounded-xl border border-border bg-card shadow-xl shadow-background/30 overflow-hidden"
+                  style={{ left: '50%', transform: marketDropdownOpen ? 'translateX(-50%) translateY(0) scale(1)' : 'translateX(-50%) translateY(8px) scale(0.96)' }}
+                  className="absolute top-full mt-3 w-[340px] rounded-xl border border-border bg-card shadow-xl shadow-background/30 overflow-hidden"
                 >
                   {/* Header */}
                   <div className="px-4 pt-3 pb-2">
