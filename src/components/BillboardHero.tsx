@@ -387,6 +387,7 @@ const BillboardHero = ({
                         to={`/forecasts/${f.id}`}
                         className="group flex items-center gap-3 rounded-lg px-2 py-1 transition-colors hover:bg-secondary/50"
                       >
+                        <ProjectLogo logoUrl={f.project_a_logo_url || null} logoEmoji={f.project_a_logo_emoji || "⬡"} name={f.project_a_name || "Project"} size="sm" />
                         <span className="text-xs font-semibold text-foreground flex-1 truncate">{f.title}</span>
                         <div className="w-24 h-2 rounded-full bg-secondary overflow-hidden flex shrink-0">
                           <motion.div
