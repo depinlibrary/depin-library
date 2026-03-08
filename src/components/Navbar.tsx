@@ -77,6 +77,8 @@ const Navbar = () => {
 
   const [marketDropdownOpen, setMarketDropdownOpen] = useState(false);
   const marketDropdownRef = useRef<HTMLDivElement>(null);
+  const [exploreDropdownOpen, setExploreDropdownOpen] = useState(false);
+  const exploreDropdownRef = useRef<HTMLDivElement>(null);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const profileDropdownRef = useRef<HTMLDivElement>(null);
 
