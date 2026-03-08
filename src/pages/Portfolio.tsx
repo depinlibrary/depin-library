@@ -345,26 +345,19 @@ const Portfolio = () => {
               <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-primary/5 blur-[80px] pointer-events-none" />
               <div className="absolute -bottom-16 -left-16 w-48 h-48 rounded-full bg-accent/5 blur-[60px] pointer-events-none" />
 
-              <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+              <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 border border-primary/20">
-                      <Wallet className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">Portfolio Value</p>
-                      <div className="flex items-center gap-2">
-                        <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight tabular-nums">
-                          {hideBalances ? "••••••" : formatValue(totalNetWorth)}
-                        </h1>
-                        <button
-                          onClick={() => setHideBalances(!hideBalances)}
-                          className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
-                        >
-                          {hideBalances ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </button>
-                      </div>
-                    </div>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground mb-1">Portfolio Value</p>
+                  <div className="flex items-center gap-2 mb-3">
+                    <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight tabular-nums">
+                      {hideBalances ? "••••••" : formatValue(totalNetWorth)}
+                    </h1>
+                    <button
+                      onClick={() => setHideBalances(!hideBalances)}
+                      className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
+                    >
+                      {hideBalances ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
                   </div>
 
                   <div className="flex flex-wrap items-center gap-4 text-sm">
@@ -389,22 +382,6 @@ const Portfolio = () => {
                     </div>
                   </div>
                 </div>
-
-                {portfolioSparkline && (
-                  <div className="w-full lg:w-64 h-16">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={portfolioSparkline.points.map((val, i) => ({ i, v: val }))}>
-                        <defs>
-                          <linearGradient id="heroGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor={portfolioSparkline.isPositive ? "rgb(34,197,94)" : "rgb(239,68,68)"} stopOpacity={0.2} />
-                            <stop offset="100%" stopColor={portfolioSparkline.isPositive ? "rgb(34,197,94)" : "rgb(239,68,68)"} stopOpacity={0} />
-                          </linearGradient>
-                        </defs>
-                        <Area type="monotone" dataKey="v" stroke={portfolioSparkline.isPositive ? "rgb(34,197,94)" : "rgb(239,68,68)"} strokeWidth={1.5} fill="url(#heroGrad)" dot={false} />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
-                )}
               </div>
             </div>
           </motion.div>
