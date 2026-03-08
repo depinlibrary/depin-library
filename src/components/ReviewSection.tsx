@@ -50,7 +50,7 @@ const StarRating = ({ rating, onRate, interactive = false }: { rating: number; o
 };
 
 /* ── Reply list for a single review ── */
-const ReplyThread = ({ reviewId }: { reviewId: string }) => {
+const ReplyThread = ({ reviewId, showInput = false }: { reviewId: string; showInput?: boolean }) => {
   const { user } = useAuth();
   const { data: replies = [], isLoading } = useReviewReplies(reviewId);
   const createReply = useCreateReviewReply();
