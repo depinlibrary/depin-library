@@ -59,8 +59,8 @@ const Explore = () => {
     if (categoryParam && dbCategories.includes(categoryParam)) {
       setSelectedCategory(categoryParam);
     }
-    if (sortParam === "newest") {
-      setSortBy("newest");
+    if (sortParam === "newest" || sortParam === "rating") {
+      setSortBy(sortParam as SortOption);
     }
   }, [categoryParam, sortParam, dbCategories]);
 
