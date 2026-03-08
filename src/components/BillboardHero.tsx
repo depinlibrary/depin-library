@@ -449,7 +449,7 @@ const BillboardHero = ({
                       </Link>
                     );
                   })}
-                  {topGainers.length === 0 && <p className="text-[9px] text-muted-foreground">No data yet</p>}
+                  {topGainers.length === 0 && <p className="text-[10px] text-muted-foreground">No data yet</p>}
                 </div>
               </div>
 
