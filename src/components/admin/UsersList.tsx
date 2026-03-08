@@ -6,11 +6,13 @@ import { Users, ShieldCheck, ShieldOff } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import UserAvatar from "@/components/UserAvatar";
 
 type UserProfile = {
   id: string;
   user_id: string;
   display_name: string | null;
+  avatar_url?: string | null;
   created_at: string;
   role?: string;
   roleId?: string;
