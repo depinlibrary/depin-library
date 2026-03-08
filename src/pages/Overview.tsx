@@ -9,7 +9,6 @@ import {
   TrendingUp,
   Clock,
   Users,
-  Star,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
