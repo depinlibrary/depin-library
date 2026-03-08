@@ -204,7 +204,7 @@ export default function MyForecasts() {
         <div className="px-4 pb-4 md:px-5 md:pb-5">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <AnimatePresence>
-              {forecasts.map((f, i) => {
+              {filteredForecasts.map((f, i) => {
                 const projA = projectMap.get(f.project_a_id) as any;
                 const projB = f.project_b_id ? (projectMap.get(f.project_b_id) as any) : null;
                 const canEdit = isWithin24Hours(f.created_at);
