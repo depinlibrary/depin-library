@@ -46,24 +46,35 @@ const Notifications = () => {
     return <Navigate to="/auth" replace />;
   }
 
-  const filteredNotifications = notifications.filter((n) => {
-    if (filter === "unread" && n.is_read) return false;
-    if (typeFilter !== "all" && n.type !== typeFilter) return false;
-    return true;
-  });
+  // Memoize expensive operations
+  const { filteredNotifications, unreadCount, notificationTypes, groupedNotifications, sortedDateKeys } = useMemo(() => {
+    const filtered = notifications.filter((n) => {
+      if (filter === "unread" && n.is_read) return false;
+      if (typeFilter !== "all" && n.type !== typeFilter) return false;
+      return true;
+    });
 
-  const unreadCount = notifications.filter((n) => !n.is_read).length;
-  const notificationTypes = [...new Set(notifications.map((n) => n.type))];
+    const unread = notifications.filter((n) => !n.is_read).length;
+    const types = [...new Set(notifications.map((n) => n.type))];
 
-  // Group notifications by date
-  const groupedNotifications: Record<string, Notification[]> = {};
-  filteredNotifications.forEach((n) => {
-    const dateKey = format(new Date(n.created_at), "yyyy-MM-dd");
-    if (!groupedNotifications[dateKey]) groupedNotifications[dateKey] = [];
-    groupedNotifications[dateKey].push(n);
-  });
+    // Group notifications by date
+    const grouped: Record<string, Notification[]> = {};
+    filtered.forEach((n) => {
+      const dateKey = format(new Date(n.created_at), "yyyy-MM-dd");
+      if (!grouped[dateKey]) grouped[dateKey] = [];
+      grouped[dateKey].push(n);
+    });
 
-  const sortedDateKeys = Object.keys(groupedNotifications).sort((a, b) => b.localeCompare(a));
+    const sortedKeys = Object.keys(grouped).sort((a, b) => b.localeCompare(a));
+
+    return {
+      filteredNotifications: filtered,
+      unreadCount: unread,
+      notificationTypes: types,
+      groupedNotifications: grouped,
+      sortedDateKeys: sortedKeys,
+    };
+  }, [notifications, filter, typeFilter]);
 
   const getDateLabel = (dateKey: string) => {
     const date = new Date(dateKey);
