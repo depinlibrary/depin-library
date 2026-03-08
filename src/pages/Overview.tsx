@@ -106,92 +106,15 @@ const Overview = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      {/* Hero */}
-      <section className="relative overflow-hidden pt-28 pb-24 sm:pt-36 sm:pb-28">
-        {/* Ambient glow blobs */}
-        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full bg-primary/5 blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] rounded-full bg-accent/5 blur-[100px] pointer-events-none" />
-        <div className="absolute inset-0 bg-grid opacity-30" />
-        <div className="gradient-radial-top absolute inset-0" />
-
-        <div className="container relative mx-auto px-4 text-center">
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={stagger}
-          >
-            <motion.div variants={fadeUp} className="mb-5 inline-flex items-center gap-2 rounded-full border border-border/60 bg-card/50 backdrop-blur-sm px-4 py-1.5">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
-              </span>
-              <span className="text-xs font-medium text-muted-foreground tracking-wide">DePIN Intelligence Hub</span>
-            </motion.div>
-
-            <motion.h1 variants={fadeUp} className="mx-auto max-w-3xl text-4xl font-bold leading-[1.1] tracking-tight text-foreground sm:text-5xl md:text-6xl font-['Space_Grotesk']">
-              The{" "}
-              <span className="relative">
-                <span className="text-primary">DePIN</span>
-                <svg className="absolute -bottom-1 left-0 w-full" viewBox="0 0 120 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <motion.path
-                    d="M2 6C30 2 90 2 118 6"
-                    stroke="hsl(var(--primary))"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    initial={{ pathLength: 0, opacity: 0 }}
-                    animate={{ pathLength: 1, opacity: 0.5 }}
-                    transition={{ delay: 0.8, duration: 0.8, ease: "easeOut" }}
-                  />
-                </svg>
-              </span>{" "}
-              Ecosystem<br className="hidden sm:block" /> at a Glance
-            </motion.h1>
-
-            <motion.p variants={fadeUp} className="mx-auto mt-5 max-w-lg text-base text-muted-foreground sm:text-lg leading-relaxed">
-              Explore, compare, and understand Decentralized Physical Infrastructure Networks — all in one place.
-            </motion.p>
-
-            {/* Hero stats */}
-            <motion.div variants={fadeUp} className="mx-auto mt-10 flex flex-wrap items-center justify-center gap-8 sm:gap-12">
-              {[
-                { value: projects.length, label: "Projects", icon: Layers },
-                { value: totalCategories, label: "Categories", icon: Activity },
-                { value: totalBlockchains, label: "Blockchains", icon: Zap },
-              ].map((stat) => (
-                <div key={stat.label} className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 border border-primary/10">
-                    <stat.icon className="h-4.5 w-4.5 text-primary" />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-2xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums">
-                      <AnimatedCounter target={stat.value} />
-                    </p>
-                    <p className="text-[11px] text-muted-foreground font-medium">{stat.label}</p>
-                  </div>
-                </div>
-              ))}
-            </motion.div>
-
-            {/* CTA buttons */}
-            <motion.div variants={fadeUp} className="mt-10 flex flex-wrap items-center justify-center gap-3">
-              <Link
-                to="/explore"
-                className="group inline-flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30"
-              >
-                Explore Projects
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-              </Link>
-              <Link
-                to="/market"
-                className="inline-flex items-center gap-2 rounded-full border border-border bg-card/60 backdrop-blur-sm px-6 py-2.5 text-sm font-medium text-foreground transition-all hover:bg-card hover:border-border"
-              >
-                <BarChart3 className="h-4 w-4 text-muted-foreground" />
-                View Market
-              </Link>
-            </motion.div>
-          </motion.div>
-        </div>
-      </section>
+      {/* Billboard Hero */}
+      <BillboardHero
+        projects={projects}
+        marketData={marketData}
+        topSentiments={topSentiments}
+        trendingProjects={trendingProjects}
+        totalCategories={totalCategories}
+        totalBlockchains={totalBlockchains}
+      />
 
       {/* Quick Links */}
       <section className="container mx-auto px-4 pb-16">
