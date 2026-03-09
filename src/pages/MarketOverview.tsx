@@ -334,7 +334,10 @@ const MarketOverview = () => {
     if (category) r = r.filter(p => p.category === category);
     if (chain) r = r.filter(p => p.blockchain === chain);
 
-    const mapped = r.map(p => ({ project: p, market: marketDataMap[p.id] }));
+    const mapped = r.map(p => ({ project: p, market: marketDataMap[p.id] }))
+      // Only show projects that have both price and market cap data
+      .filter(x => x.market?.price_usd != null && x.market?.market_cap_usd != null);
+    
     mapped.sort((a, b) => {
       switch (sortBy) {
         case "price": return (sortAsc ? 1 : -1) * ((a.market?.price_usd ?? -1) - (b.market?.price_usd ?? -1));
