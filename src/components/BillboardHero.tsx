@@ -393,38 +393,38 @@ const BillboardHero = ({
                </div>
              </motion.div>
 
-            {/* ── Trending Projects ── */}
-            <motion.div variants={fadeUp} className="col-span-2 rounded-lg border border-border bg-card/40 backdrop-blur-md p-3">
-              <div className="flex items-center gap-2 mb-2">
-                <Flame className="h-3 w-3 text-primary" />
-                <span className="text-xs font-semibold text-foreground">Trending Now</span>
-                <Link to="/explore" className="ml-auto text-[10px] text-muted-foreground hover:text-primary transition-colors">
-                  View all →
-                </Link>
-              </div>
-              <div className="space-y-1">
-                {trendingProjects.slice(0, 5).map((p: any, i: number) => {
-                  const m = marketData[p.id];
-                  return (
-                    <Link
-                      key={p.id}
-                      to={`/project/${p.slug}`}
-                      className="group flex items-center gap-2 rounded-md px-1.5 py-1 transition-colors hover:bg-secondary/50"
-                    >
-                      <span className="text-[10px] font-bold text-muted-foreground w-3 text-center">{i + 1}</span>
-                      <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="xs" />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs font-semibold text-foreground truncate">{p.name}</p>
-                        <p className="text-[10px] text-muted-foreground truncate">{p.category}</p>
-                      </div>
-                      {m?.price_usd && (
-                        <span className="text-xs font-medium text-muted-foreground tabular-nums">{formatPrice(m.price_usd)}</span>
-                      )}
-                    </Link>
-                  );
-                })}
-              </div>
-            </motion.div>
+             {/* ── Trending Projects ── */}
+             <motion.div variants={fadeUp} className="col-span-2 rounded-lg border border-border bg-card/40 backdrop-blur-md p-4">
+               <div className="flex items-center gap-2 mb-3">
+                 <Flame className="h-4 w-4 text-primary" />
+                 <span className="text-sm font-semibold text-foreground">Trending Now</span>
+                 <Link to="/explore" className="ml-auto text-xs text-muted-foreground hover:text-primary transition-colors">
+                   View all →
+                 </Link>
+               </div>
+               <div className="space-y-2">
+                 {trendingProjects.slice(0, 5).map((p: any, i: number) => {
+                   const m = marketData[p.id];
+                   return (
+                     <Link
+                       key={p.id}
+                       to={`/project/${p.slug}`}
+                       className="group flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-secondary/50"
+                     >
+                       <span className="text-xs font-bold text-muted-foreground w-4 text-center">{i + 1}</span>
+                       <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="sm" />
+                       <div className="min-w-0 flex-1">
+                         <p className="text-sm font-semibold text-foreground truncate">{p.name}</p>
+                         <p className="text-xs text-muted-foreground truncate">{p.category}</p>
+                       </div>
+                       {m?.price_usd && (
+                         <span className="text-sm font-medium text-muted-foreground tabular-nums">{formatPrice(m.price_usd)}</span>
+                       )}
+                     </Link>
+                   );
+                 })}
+               </div>
+             </motion.div>
 
             {/* ── Gainers + Losers combined (spans 2 cols) ── */}
             <motion.div variants={fadeUp} className="col-span-2 grid grid-cols-2 gap-2">
