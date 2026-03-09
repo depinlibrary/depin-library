@@ -106,14 +106,14 @@ const ProjectDetail = () => {
                    )}
                 </div>
                 <p className="mt-1 text-sm sm:text-base text-muted-foreground">{project.tagline}</p>
-                <div className="flex items-center gap-2 md:justify-between mt-2">
-                   <div className="md:order-2">
+                <div className="flex items-center gap-2 lg:justify-between mt-2">
+                   <div className="lg:order-2 lg:ml-auto">
                      <CompareWithButton currentProjectId={project.id} currentProjectName={project.name} currentCategory={project.category} />
                    </div>
                    {user && (
                      <button
                        onClick={() => toggleBookmark.mutate({ projectId: project.id, isBookmarked })}
-                       className="rounded-lg border border-border bg-card p-2 transition-colors hover:bg-secondary md:order-1"
+                       className="rounded-lg border border-border bg-card p-2 transition-colors hover:bg-secondary lg:order-1"
                      >
                        <Bookmark className={`h-4 w-4 ${isBookmarked ? "fill-primary text-primary" : "text-muted-foreground"}`} />
                      </button>
