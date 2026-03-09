@@ -502,21 +502,28 @@ const BillboardHero = ({
                          to={`/forecasts/${f.id}`}
                          className="group relative flex flex-col gap-3 rounded-lg border border-border/50 bg-secondary/20 px-4 py-4 transition-all hover:bg-secondary/40 hover:border-primary/20 hover:shadow-md hover:shadow-primary/5"
                        >
-                         {/* Project logos */}
-                         <div className="flex items-center justify-between">
-                           <div className="flex items-center gap-2">
-                             <ProjectLogo logoUrl={f.project_a_logo_url || null} logoEmoji={f.project_a_logo_emoji || "⬡"} name={f.project_a_name || "Project"} size="sm" />
-                             {f.project_b_name && (
-                               <>
-                                 <span className="text-[8px] font-bold text-muted-foreground uppercase">vs</span>
-                                 <ProjectLogo logoUrl={f.project_b_logo_url || null} logoEmoji={f.project_b_logo_emoji || "⬡"} name={f.project_b_name} size="sm" />
-                               </>
-                             )}
-                           </div>
-                           <span className="text-xs font-medium text-muted-foreground tabular-nums">
-                             {totalVotes} vote{totalVotes !== 1 ? "s" : ""}
-                           </span>
-                         </div>
+                          {/* Project logos */}
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <ProjectLogo logoUrl={f.project_a_logo_url || null} logoEmoji={f.project_a_logo_emoji || "⬡"} name={f.project_a_name || "Project"} size="sm" />
+                              {f.project_b_name && (
+                                <>
+                                  <span className="text-[8px] font-bold text-muted-foreground uppercase">vs</span>
+                                  <ProjectLogo logoUrl={f.project_b_logo_url || null} logoEmoji={f.project_b_logo_emoji || "⬡"} name={f.project_b_name} size="sm" />
+                                </>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {f.status === "ended" && (
+                                <Badge variant="destructive" className="text-[9px] px-1.5 py-0">
+                                  ENDED
+                                </Badge>
+                              )}
+                              <span className="text-xs font-medium text-muted-foreground tabular-nums">
+                                {totalVotes} vote{totalVotes !== 1 ? "s" : ""}
+                              </span>
+                            </div>
+                          </div>
 
                          {/* Title */}
                          <p className="text-sm font-semibold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">{f.title}</p>
