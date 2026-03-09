@@ -357,41 +357,41 @@ const BillboardHero = ({
             animate={{ opacity: isRefetching ? [1, 0.7, 1] : 1 }}
             transition={{ duration: 0.8, repeat: isRefetching ? Infinity : 0 }}
           >
-            {/* ── Top Market Cap (spans 2 cols) ── */}
-            <motion.div variants={fadeUp} className="col-span-2 rounded-lg border border-border bg-card/40 backdrop-blur-md p-3">
-              <div className="flex items-center gap-2 mb-2">
-                <Crown className="h-3 w-3 text-primary" />
-                <span className="text-xs font-semibold text-foreground">Top Market Cap</span>
-                <Link to="/market" className="ml-auto text-[10px] text-muted-foreground hover:text-primary transition-colors">
-                  View all →
-                </Link>
-              </div>
-              <div className="space-y-1">
-                {topMarketCap.map((p, i) => {
-                  const m = marketData[p.id];
-                  return (
-                    <Link
-                      key={p.id}
-                      to={`/project/${p.slug}`}
-                      className="group flex items-center gap-2 rounded-md px-1.5 py-1 transition-colors hover:bg-secondary/50"
-                    >
-                      <span className="text-[10px] font-bold text-muted-foreground w-3 text-center">{i + 1}</span>
-                      <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="xs" />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs font-semibold text-foreground truncate">{p.name}</p>
-                      </div>
-                      <span className="hidden sm:block"><MiniSparkline data={m?.sparkline_7d || null} positive={(m?.price_change_24h || 0) >= 0} /></span>
-                      <div className="text-right shrink-0">
-                        <p className="text-xs font-medium text-muted-foreground tabular-nums">{formatCompact(m?.market_cap_usd || 0)}</p>
-                        <p className={`text-[10px] font-bold tabular-nums ${(m?.price_change_24h || 0) >= 0 ? "text-neon-green" : "text-destructive"}`}>
-                          {(m?.price_change_24h || 0) >= 0 ? "+" : ""}{(m?.price_change_24h || 0).toFixed(1)}%
-                        </p>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            </motion.div>
+             {/* ── Top Market Cap (spans 2 cols) ── */}
+             <motion.div variants={fadeUp} className="col-span-2 rounded-lg border border-border bg-card/40 backdrop-blur-md p-4">
+               <div className="flex items-center gap-2 mb-3">
+                 <Crown className="h-4 w-4 text-primary" />
+                 <span className="text-sm font-semibold text-foreground">Top Market Cap</span>
+                 <Link to="/market" className="ml-auto text-xs text-muted-foreground hover:text-primary transition-colors">
+                   View all →
+                 </Link>
+               </div>
+               <div className="space-y-2">
+                 {topMarketCap.map((p, i) => {
+                   const m = marketData[p.id];
+                   return (
+                     <Link
+                       key={p.id}
+                       to={`/project/${p.slug}`}
+                       className="group flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-secondary/50"
+                     >
+                       <span className="text-xs font-bold text-muted-foreground w-4 text-center">{i + 1}</span>
+                       <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="sm" />
+                       <div className="min-w-0 flex-1">
+                         <p className="text-sm font-semibold text-foreground truncate">{p.name}</p>
+                       </div>
+                       <span className="hidden sm:block"><MiniSparkline data={m?.sparkline_7d || null} positive={(m?.price_change_24h || 0) >= 0} /></span>
+                       <div className="text-right shrink-0">
+                         <p className="text-xs font-medium text-muted-foreground tabular-nums">{formatCompact(m?.market_cap_usd || 0)}</p>
+                         <p className={`text-xs font-bold tabular-nums ${(m?.price_change_24h || 0) >= 0 ? "text-neon-green" : "text-destructive"}`}>
+                           {(m?.price_change_24h || 0) >= 0 ? "+" : ""}{(m?.price_change_24h || 0).toFixed(1)}%
+                         </p>
+                       </div>
+                     </Link>
+                   );
+                 })}
+               </div>
+             </motion.div>
 
             {/* ── Trending Projects ── */}
             <motion.div variants={fadeUp} className="col-span-2 rounded-lg border border-border bg-card/40 backdrop-blur-md p-3">
