@@ -3,12 +3,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAvatar } from "@/hooks/useAvatar";
-import { LogOut, Plus, User, Shield, Menu, X, Sun, Moon, ChevronDown, BarChart3, TrendingUp, Compass, GitCompare, Briefcase, Home, Zap, ArrowRight, LineChart, Camera, Pencil, Check, Sparkles, Star, Clock, Bell } from "lucide-react";
+import { LogOut, Plus, User, Shield, Menu, X, Sun, Moon, ChevronDown, BarChart3, TrendingUp, Compass, GitCompare, Briefcase, Home, Zap, ArrowRight, LineChart, Camera, Pencil, Check, Sparkles, Star, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState, useRef, useCallback } from "react";
 import NotificationDropdown from "@/components/NotificationDropdown";
-import { useUnreadNotificationCount } from "@/hooks/useNotifications";
-import { Badge } from "@/components/ui/badge";
 
 const SignInButton = () => {
   const [glowing, setGlowing] = useState(true);
