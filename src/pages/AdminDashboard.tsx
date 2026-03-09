@@ -588,6 +588,13 @@ const AdminDashboard = () => {
               </div>
             )}
 
+            {tab === "forecasts" && (
+              <div className="rounded-xl border border-border bg-card p-5">
+                <h3 className="mb-4 text-lg font-semibold text-foreground">Manage Forecasts</h3>
+                <ManageForecasts />
+              </div>
+            )}
+
             {tab === "spotlight" && (
               <div className="rounded-xl border border-border bg-card p-5">
                 <h3 className="mb-4 text-lg font-semibold text-foreground">Manage Spotlight Projects</h3>
