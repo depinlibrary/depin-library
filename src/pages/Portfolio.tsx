@@ -17,6 +17,8 @@ import { toast } from "sonner";
 import { Link, Navigate } from "react-router-dom";
 import MyForecasts from "@/components/MyForecasts";
 import PriceAlertsManager from "@/components/PriceAlertsManager";
+import { useBookmarks } from "@/hooks/useBookmarks";
+import { Star } from "lucide-react";
 
 function formatPrice(price: number | null): string {
   if (price === null || price === undefined) return "—";
@@ -65,22 +67,114 @@ const ChangeIndicator = ({ change, size = "sm" }: { change: number | null; size?
 
 const MiniSparkline = ({ data, isPositive }: { data: number[]; isPositive: boolean }) => {
   if (!data || data.length < 2) return null;
-  const step = Math.max(1, Math.floor(data.length / 24));
-  const points = data.filter((_, i) => i % step === 0).map((v, i) => ({ i, v }));
-  const color = isPositive ? "rgb(34,197,94)" : "rgb(239,68,68)";
+  const width = 96;
+  const height = 32;
+  const step = Math.max(1, Math.floor(data.length / 28));
+  const points = data.filter((_, i) => i % step === 0);
+  const max = Math.max(...points);
+  const min = Math.min(...points);
+  const range = max - min || 1;
+  const xStep = width / Math.max(points.length - 1, 1);
+  const color = isPositive ? "hsl(var(--neon-green))" : "hsl(var(--destructive))";
+  const pathD = points
+    .map((v, i) => {
+      const x = i * xStep;
+      const y = height - ((v - min) / range) * (height - 4) - 2;
+      return `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`;
+    })
+    .join(" ");
+  const areaD = `${pathD} L${width},${height} L0,${height} Z`;
+  const gradId = `spark-port-${isPositive ? "g" : "r"}`;
   return (
-    <div className="h-8 w-20">
-      <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={points}>
-          <defs>
-            <linearGradient id={`mini-${isPositive ? 'g' : 'r'}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={color} stopOpacity={0.3} />
-              <stop offset="100%" stopColor={color} stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <Area type="monotone" dataKey="v" stroke={color} strokeWidth={1.5} fill={`url(#mini-${isPositive ? 'g' : 'r'})`} dot={false} />
-        </AreaChart>
-      </ResponsiveContainer>
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="shrink-0">
+      <defs>
+        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity={0.25} />
+          <stop offset="100%" stopColor={color} stopOpacity={0} />
+        </linearGradient>
+      </defs>
+      <path d={areaD} fill={`url(#${gradId})`} />
+      <path d={pathD} fill="none" stroke={color} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+};
+
+const WatchlistContent = ({ projects, marketDataMap }: { projects: any[]; marketDataMap: Record<string, any> }) => {
+  const { data: bookmarkIds = [], isLoading } = useBookmarks();
+  const watchlistProjects = useMemo(() => {
+    return bookmarkIds
+      .map((id: string) => {
+        const project = projects.find((p: any) => p.id === id);
+        if (!project) return null;
+        const market = marketDataMap[id];
+        return { project, market };
+      })
+      .filter(Boolean) as { project: any; market: any }[];
+  }, [bookmarkIds, projects, marketDataMap]);
+
+  if (isLoading) {
+    return (
+      <div className="p-12 text-center">
+        <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="h-4 w-4 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin" />
+          Loading watchlist...
+        </div>
+      </div>
+    );
+  }
+
+  if (watchlistProjects.length === 0) {
+    return (
+      <div className="p-12 md:p-16 text-center">
+        <div className="mx-auto h-14 w-14 rounded-2xl bg-secondary/50 flex items-center justify-center mb-3">
+          <Star className="h-7 w-7 text-muted-foreground/30" />
+        </div>
+        <p className="text-sm font-medium text-foreground mb-1">No bookmarked projects</p>
+        <p className="text-xs text-muted-foreground mb-4">Star projects on the Market page to add them here</p>
+        <Link to="/market">
+          <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs">
+            Browse Market
+          </Button>
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="divide-y divide-border/30">
+      {watchlistProjects.map(({ project, market }) => {
+        const change = market?.price_change_24h ?? null;
+        const sparkline = market?.sparkline_7d;
+        const sparkArr = Array.isArray(sparkline) ? sparkline : null;
+        return (
+          <Link
+            key={project.id}
+            to={`/project/${project.slug}`}
+            className="flex items-center gap-3 px-4 md:px-5 py-3 transition-colors hover:bg-secondary/10"
+          >
+            <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="sm" />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-foreground truncate">{project.name}</p>
+              <p className="text-[11px] text-muted-foreground">{project.token} · {project.category}</p>
+            </div>
+            {sparkArr && (
+              <div className="hidden sm:block">
+                <MiniSparkline data={sparkArr as number[]} isPositive={(change ?? 0) >= 0} />
+              </div>
+            )}
+            <div className="text-right shrink-0">
+              <p className="text-sm font-medium text-foreground tabular-nums">
+                {market?.price_usd ? formatPrice(market.price_usd) : "—"}
+              </p>
+              {change !== null && (
+                <p className={`text-[11px] font-semibold tabular-nums ${change >= 0 ? "text-green-500" : "text-red-500"}`}>
+                  {change >= 0 ? "+" : ""}{change.toFixed(2)}%
+                </p>
+              )}
+            </div>
+          </Link>
+        );
+      })}
     </div>
   );
 };
@@ -100,7 +194,7 @@ const Portfolio = () => {
   const [sortBy, setSortBy] = useState<"value" | "change" | "name">("value");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [perfRange, setPerfRange] = useState<"1D" | "7D" | "30D" | "90D">("7D");
-  const [activeTab, setActiveTab] = useState<"holdings" | "forecasts" | "alerts">("holdings");
+  const [activeTab, setActiveTab] = useState<"holdings" | "forecasts" | "alerts" | "watchlist">("holdings");
 
   const { data: holdings = [], isLoading } = useQuery({
     queryKey: ["portfolio_holdings", user?.id],
@@ -655,7 +749,6 @@ const Portfolio = () => {
             </motion.div>
           </div>
 
-
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -667,6 +760,7 @@ const Portfolio = () => {
                 { key: "holdings" as const, label: "Holdings", icon: Wallet },
                 { key: "alerts" as const, label: "Alerts", icon: Bell },
                 { key: "forecasts" as const, label: "Forecasts", icon: Activity },
+                { key: "watchlist" as const, label: "Watchlist", icon: Star },
               ]).map((tab) => (
                 <button
                   key={tab.key}
@@ -825,7 +919,7 @@ const Portfolio = () => {
 
                     {/* Desktop table */}
                     <div className="hidden md:block">
-                      <div className="grid grid-cols-[2.5rem_1fr_5.5rem_5rem_5rem_5.5rem_6rem_5.5rem_3.5rem] gap-0 px-5 py-2.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground border-t border-border">
+                      <div className="grid grid-cols-[2.5rem_1fr_5.5rem_5.5rem_6_6rem_5.5rem_6rem_5.5rem_3.5rem] gap-0 px-5 py-2.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground border-t border-border">
                         <span>#</span>
                         <span>Asset</span>
                         <span className="text-right">Price</span>
@@ -847,7 +941,7 @@ const Portfolio = () => {
                               initial={{ opacity: 0 }}
                               animate={{ opacity: 1 }}
                               transition={{ delay: idx * 0.03 }}
-                              className="grid grid-cols-[2.5rem_1fr_5.5rem_5rem_5rem_5.5rem_6rem_5.5rem_3.5rem] gap-0 items-center px-5 py-3 transition-colors hover:bg-secondary/10 group"
+                              className="grid grid-cols-[2.5rem_1fr_5.5rem.5rem_6_5rem_5.5rem_6rem_5.5rem_3.5rem] gap-0 items-center px-5 py-3 transition-colors hover:bg-secondary/10 group"
                             >
                               <span className="text-xs text-muted-foreground tabular-nums">{idx + 1}</span>
                               <div>
@@ -1040,6 +1134,29 @@ const Portfolio = () => {
                 transition={{ duration: 0.2 }}
               >
                 <MyForecasts />
+              </motion.div>
+            )}
+
+            {/* ── Watchlist Tab ── */}
+            {activeTab === "watchlist" && (
+              <motion.div
+                key="watchlist"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="rounded-xl border border-border bg-card overflow-hidden"
+              >
+                <div className="p-4 md:p-5 border-b border-border flex items-center gap-2">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10">
+                    <Star className="h-3.5 w-3.5 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-semibold text-foreground">Watchlist</h2>
+                    <p className="text-[10px] text-muted-foreground">Projects you've bookmarked from the Market page</p>
+                  </div>
+                </div>
+                <WatchlistContent projects={projects} marketDataMap={marketDataMap} />
               </motion.div>
             )}
           </AnimatePresence>

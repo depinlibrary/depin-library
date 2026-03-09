@@ -289,10 +289,14 @@ const Overview = () => {
                       <div className="flex flex-col gap-2 mt-3">
                         {/* Vote bar + stats */}
                         <div className="flex items-center gap-3">
-                          <div className="relative flex-1 h-2 rounded-full bg-secondary overflow-hidden">
+                          <div className="relative flex-1 h-2 rounded-full overflow-hidden flex">
                             <div
-                              className="absolute inset-y-0 left-0 rounded-full bg-primary transition-all"
+                              className="h-full rounded-l-full bg-primary transition-all"
                               style={{ width: `${yesPct}%` }}
+                            />
+                            <div
+                              className="h-full rounded-r-full bg-destructive transition-all"
+                              style={{ width: `${100 - yesPct}%` }}
                             />
                           </div>
                           <div className="flex items-center gap-1 shrink-0">
