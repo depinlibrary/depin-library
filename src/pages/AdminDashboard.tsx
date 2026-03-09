@@ -17,6 +17,7 @@ import { ManageCategories, ManageBlockchains } from "@/components/admin/ManageCa
 import UsersList from "@/components/admin/UsersList";
 import DeletionRequests from "@/components/admin/DeletionRequests";
 import ManageSpotlight from "@/components/admin/ManageSpotlight";
+import ManageForecasts from "@/components/admin/ManageForecasts";
 
 import { useDynamicOptions } from "@/hooks/useDynamicOptions";
 
