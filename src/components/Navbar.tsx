@@ -107,15 +107,12 @@ const Navbar = () => {
     { to: "/", label: "Overview" },
     { to: "/compare", label: "Compare" },
   ];
-  
-  const unreadCount = useUnreadNotificationCount();
 
   const mobileNavLinks = [
     { to: "/", label: "Overview", icon: Home },
     { to: "/explore", label: "Explore", icon: Compass },
     { to: "/market", label: "Market", icon: BarChart3 },
     { to: "/compare", label: "Compare", icon: GitCompare },
-    ...(user ? [{ to: "/notifications", label: "Notifications", icon: Bell }] : []),
   ];
 
   return (
