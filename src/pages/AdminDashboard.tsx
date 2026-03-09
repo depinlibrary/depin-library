@@ -63,7 +63,7 @@ const AdminDashboard = () => {
   const { categories: CATEGORIES, blockchains: BLOCKCHAINS } = useDynamicOptions();
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<"projects" | "submissions" | "categories" | "users" | "deletion-requests" | "spotlight">("projects");
+  const [tab, setTab] = useState<"projects" | "submissions" | "categories" | "users" | "deletion-requests" | "spotlight" | "forecasts">("projects");
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [filter, setFilter] = useState<"pending" | "approved" | "rejected">("pending");
   const [projects, setProjects] = useState<Project[]>([]);
