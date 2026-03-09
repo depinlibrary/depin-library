@@ -213,16 +213,47 @@ const ProjectDetail = () => {
                       </span>
                     )}
                   </div>
-                  <div className="h-24">
-                    <Sparkline
-                      data={(sparkline as number[]).map(v => ({ count: v }))}
-                      width={240}
-                      height={80}
-                    />
-                  </div>
-                  <div className="mt-3 flex items-center justify-between text-[10px] text-text-dim">
-                    <span>7d ago</span>
-                    <span>Now</span>
+                  <div className="h-32">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={(sparkline as number[]).map((v, i) => ({ idx: i, price: v }))} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                        <defs>
+                          <linearGradient id="priceGrad7d" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor={(marketData?.price_change_24h ?? 0) >= 0 ? "hsl(var(--neon-green))" : "hsl(var(--destructive))"} stopOpacity={0.25} />
+                            <stop offset="95%" stopColor={(marketData?.price_change_24h ?? 0) >= 0 ? "hsl(var(--neon-green))" : "hsl(var(--destructive))"} stopOpacity={0.02} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                        <XAxis dataKey="idx" hide />
+                        <YAxis
+                          domain={["dataMin", "dataMax"]}
+                          tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
+                          tickLine={false}
+                          axisLine={false}
+                          tickFormatter={(v: number) => v < 1 ? v.toFixed(4) : v.toFixed(2)}
+                          width={45}
+                        />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: "hsl(var(--card))",
+                            border: "1px solid hsl(var(--border))",
+                            borderRadius: "8px",
+                            fontSize: "11px",
+                            padding: "6px 10px",
+                          }}
+                          labelFormatter={() => ""}
+                          formatter={(value: number) => [`$${value < 1 ? value.toFixed(6) : value.toFixed(2)}`, "Price"]}
+                        />
+                        <Area
+                          type="monotone"
+                          dataKey="price"
+                          stroke={(marketData?.price_change_24h ?? 0) >= 0 ? "hsl(var(--neon-green))" : "hsl(var(--destructive))"}
+                          strokeWidth={2}
+                          fill="url(#priceGrad7d)"
+                          dot={false}
+                          activeDot={{ r: 3, strokeWidth: 2, stroke: "hsl(var(--card))" }}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
                   </div>
                   {(() => {
                     const arr = sparkline as number[];

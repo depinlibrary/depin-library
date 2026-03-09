@@ -669,6 +669,7 @@ const Portfolio = () => {
                 { key: "holdings" as const, label: "Holdings", icon: Wallet },
                 { key: "alerts" as const, label: "Alerts", icon: Bell },
                 { key: "forecasts" as const, label: "Forecasts", icon: Activity },
+                { key: "watchlist" as const, label: "Watchlist", icon: Star },
               ]).map((tab) => (
                 <button
                   key={tab.key}

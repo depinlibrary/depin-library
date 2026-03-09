@@ -528,16 +528,24 @@ const BillboardHero = ({
                          {/* Title */}
                          <p className="text-sm font-semibold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">{f.title}</p>
 
-                         {/* Vote bar with labels */}
+                           {/* Vote bar with labels */}
                          <div className="mt-auto space-y-2">
-                           <div className="relative h-2.5 rounded-full bg-secondary overflow-hidden">
+                           <div className="relative h-2.5 rounded-full overflow-hidden flex">
                              <motion.div
-                               className="absolute inset-y-0 left-0 rounded-l-full"
-                               style={{ width: `${yesPercent}%`, background: "hsl(var(--neon-green))" }}
+                               className="h-full rounded-l-full"
+                               style={{ background: "hsl(var(--neon-green))" }}
                                initial={{ width: 0 }}
                                whileInView={{ width: `${yesPercent}%` }}
                                viewport={{ once: true }}
                                transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+                             />
+                             <motion.div
+                               className="h-full rounded-r-full"
+                               style={{ background: "hsl(var(--destructive))" }}
+                               initial={{ width: 0 }}
+                               whileInView={{ width: `${100 - yesPercent}%` }}
+                               viewport={{ once: true }}
+                               transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
                              />
                            </div>
                            <div className="flex items-center justify-between text-sm">
