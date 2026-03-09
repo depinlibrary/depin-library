@@ -212,7 +212,7 @@ const BillboardHero = ({
 
               {/* Search + CTA — row on desktop, stacked on mobile */}
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:shrink-0">
-                <div ref={searchRef} className="relative flex-1 sm:flex-initial sm:w-[220px]">
+                <div ref={searchRef} className="relative flex-1 sm:flex-initial sm:w-[280px]">
                   <form onSubmit={handleSearch}>
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground z-10" />
                     <input
@@ -221,7 +221,7 @@ const BillboardHero = ({
                       onChange={(e) => setSearchQuery(e.target.value)}
                       onFocus={() => setSearchFocused(true)}
                       placeholder="Search projects..."
-                      className="w-full h-9 rounded-lg border border-border bg-card/60 backdrop-blur-sm pl-9 pr-3 text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-border focus:border-border transition-all"
+                      className="w-full h-11 rounded-lg border border-border bg-card/60 backdrop-blur-sm pl-9 pr-3 text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-border focus:border-border transition-all"
                     />
                   </form>
 
