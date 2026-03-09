@@ -298,58 +298,58 @@ const BillboardHero = ({
             </div>
           </motion.div>
 
-          {/* Compact Stats Row with animated glow */}
-          <motion.div variants={fadeUp} className="mb-4">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              <div className="flex items-center gap-2.5 rounded-lg border border-border bg-card/40 backdrop-blur-md px-3 py-2.5">
-                <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 shrink-0">
-                  <Layers className="h-3.5 w-3.5 text-primary" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums leading-tight">
-                    <AnimatedNumber target={projects.length} />
-                  </p>
-                  <p className="text-[10px] text-muted-foreground font-medium">Projects</p>
-                </div>
-              </div>
+           {/* Compact Stats Row with animated glow */}
+           <motion.div variants={fadeUp} className="mb-4">
+             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+               <div className="flex items-center gap-2.5 rounded-lg border border-border bg-card/40 backdrop-blur-md px-3 py-3">
+                 <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 shrink-0">
+                   <Layers className="h-4 w-4 text-primary" />
+                 </div>
+                 <div className="min-w-0">
+                   <p className="text-xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums leading-tight">
+                     <AnimatedNumber target={projects.length} />
+                   </p>
+                   <p className="text-xs text-muted-foreground font-medium">Projects</p>
+                 </div>
+               </div>
 
-              <div className="flex items-center gap-2.5 rounded-lg border border-border bg-card/40 backdrop-blur-md px-3 py-2.5">
-                <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 shrink-0">
-                  <BarChart3 className="h-3.5 w-3.5 text-primary" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums leading-tight">
-                    {formatCompact(totalMarketCap)}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground font-medium">Market Cap</p>
-                </div>
-              </div>
+               <div className="flex items-center gap-2.5 rounded-lg border border-border bg-card/40 backdrop-blur-md px-3 py-3">
+                 <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 shrink-0">
+                   <BarChart3 className="h-4 w-4 text-primary" />
+                 </div>
+                 <div className="min-w-0">
+                   <p className="text-xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums leading-tight">
+                     {formatCompact(totalMarketCap)}
+                   </p>
+                   <p className="text-xs text-muted-foreground font-medium">Market Cap</p>
+                 </div>
+               </div>
 
-              <div className="flex items-center gap-2.5 rounded-lg border border-border bg-card/40 backdrop-blur-md px-3 py-2.5">
-                <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 shrink-0">
-                  <TrendingUp className="h-3.5 w-3.5 text-primary" />
-                </div>
-                <div className="min-w-0">
-                  <p className={`text-lg font-bold font-['Space_Grotesk'] tabular-nums leading-tight ${avgChange >= 0 ? "text-neon-green" : "text-destructive"}`}>
-                    {avgChange >= 0 ? "+" : ""}{avgChange.toFixed(1)}%
-                  </p>
-                  <p className="text-[10px] text-muted-foreground font-medium">Avg 24h</p>
-                </div>
-              </div>
+               <div className="flex items-center gap-2.5 rounded-lg border border-border bg-card/40 backdrop-blur-md px-3 py-3">
+                 <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 shrink-0">
+                   <TrendingUp className="h-4 w-4 text-primary" />
+                 </div>
+                 <div className="min-w-0">
+                   <p className={`text-xl font-bold font-['Space_Grotesk'] tabular-nums leading-tight ${avgChange >= 0 ? "text-neon-green" : "text-destructive"}`}>
+                     {avgChange >= 0 ? "+" : ""}{avgChange.toFixed(1)}%
+                   </p>
+                   <p className="text-xs text-muted-foreground font-medium">Avg 24h</p>
+                 </div>
+               </div>
 
-              <div className="flex items-center gap-2.5 rounded-lg border border-border bg-card/40 backdrop-blur-md px-3 py-2.5">
-                <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 shrink-0">
-                  <LinkIcon className="h-3.5 w-3.5 text-primary" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums leading-tight">
-                    <AnimatedNumber target={totalBlockchains} />
-                  </p>
-                  <p className="text-[10px] text-muted-foreground font-medium">Chains</p>
-                </div>
-              </div>
-            </div>
-          </motion.div>
+               <div className="flex items-center gap-2.5 rounded-lg border border-border bg-card/40 backdrop-blur-md px-3 py-3">
+                 <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 shrink-0">
+                   <LinkIcon className="h-4 w-4 text-primary" />
+                 </div>
+                 <div className="min-w-0">
+                   <p className="text-xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums leading-tight">
+                     <AnimatedNumber target={totalBlockchains} />
+                   </p>
+                   <p className="text-xs text-muted-foreground font-medium">Chains</p>
+                 </div>
+               </div>
+             </div>
+           </motion.div>
 
           {/* Bento Grid - denser */}
           <motion.div 
@@ -357,192 +357,192 @@ const BillboardHero = ({
             animate={{ opacity: isRefetching ? [1, 0.7, 1] : 1 }}
             transition={{ duration: 0.8, repeat: isRefetching ? Infinity : 0 }}
           >
-            {/* ── Top Market Cap (spans 2 cols) ── */}
-            <motion.div variants={fadeUp} className="col-span-2 rounded-lg border border-border bg-card/40 backdrop-blur-md p-3">
-              <div className="flex items-center gap-2 mb-2">
-                <Crown className="h-3 w-3 text-primary" />
-                <span className="text-xs font-semibold text-foreground">Top Market Cap</span>
-                <Link to="/market" className="ml-auto text-[10px] text-muted-foreground hover:text-primary transition-colors">
-                  View all →
-                </Link>
-              </div>
-              <div className="space-y-1">
-                {topMarketCap.map((p, i) => {
-                  const m = marketData[p.id];
-                  return (
-                    <Link
-                      key={p.id}
-                      to={`/project/${p.slug}`}
-                      className="group flex items-center gap-2 rounded-md px-1.5 py-1 transition-colors hover:bg-secondary/50"
-                    >
-                      <span className="text-[10px] font-bold text-muted-foreground w-3 text-center">{i + 1}</span>
-                      <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="xs" />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs font-semibold text-foreground truncate">{p.name}</p>
-                      </div>
-                      <span className="hidden sm:block"><MiniSparkline data={m?.sparkline_7d || null} positive={(m?.price_change_24h || 0) >= 0} /></span>
-                      <div className="text-right shrink-0">
-                        <p className="text-xs font-medium text-muted-foreground tabular-nums">{formatCompact(m?.market_cap_usd || 0)}</p>
-                        <p className={`text-[10px] font-bold tabular-nums ${(m?.price_change_24h || 0) >= 0 ? "text-neon-green" : "text-destructive"}`}>
-                          {(m?.price_change_24h || 0) >= 0 ? "+" : ""}{(m?.price_change_24h || 0).toFixed(1)}%
-                        </p>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            </motion.div>
+             {/* ── Top Market Cap (spans 2 cols) ── */}
+             <motion.div variants={fadeUp} className="col-span-2 rounded-lg border border-border bg-card/40 backdrop-blur-md p-4">
+               <div className="flex items-center gap-2 mb-3">
+                 <Crown className="h-4 w-4 text-primary" />
+                 <span className="text-sm font-semibold text-foreground">Top Market Cap</span>
+                 <Link to="/market" className="ml-auto text-xs text-muted-foreground hover:text-primary transition-colors">
+                   View all →
+                 </Link>
+               </div>
+               <div className="space-y-2">
+                 {topMarketCap.map((p, i) => {
+                   const m = marketData[p.id];
+                   return (
+                     <Link
+                       key={p.id}
+                       to={`/project/${p.slug}`}
+                       className="group flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-secondary/50"
+                     >
+                       <span className="text-xs font-bold text-muted-foreground w-4 text-center">{i + 1}</span>
+                       <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="sm" />
+                       <div className="min-w-0 flex-1">
+                         <p className="text-sm font-semibold text-foreground truncate">{p.name}</p>
+                       </div>
+                       <span className="hidden sm:block"><MiniSparkline data={m?.sparkline_7d || null} positive={(m?.price_change_24h || 0) >= 0} /></span>
+                       <div className="text-right shrink-0">
+                         <p className="text-xs font-medium text-muted-foreground tabular-nums">{formatCompact(m?.market_cap_usd || 0)}</p>
+                         <p className={`text-xs font-bold tabular-nums ${(m?.price_change_24h || 0) >= 0 ? "text-neon-green" : "text-destructive"}`}>
+                           {(m?.price_change_24h || 0) >= 0 ? "+" : ""}{(m?.price_change_24h || 0).toFixed(1)}%
+                         </p>
+                       </div>
+                     </Link>
+                   );
+                 })}
+               </div>
+             </motion.div>
 
-            {/* ── Trending Projects ── */}
-            <motion.div variants={fadeUp} className="col-span-2 rounded-lg border border-border bg-card/40 backdrop-blur-md p-3">
-              <div className="flex items-center gap-2 mb-2">
-                <Flame className="h-3 w-3 text-primary" />
-                <span className="text-xs font-semibold text-foreground">Trending Now</span>
-                <Link to="/explore" className="ml-auto text-[10px] text-muted-foreground hover:text-primary transition-colors">
-                  View all →
-                </Link>
-              </div>
-              <div className="space-y-1">
-                {trendingProjects.slice(0, 5).map((p: any, i: number) => {
-                  const m = marketData[p.id];
-                  return (
-                    <Link
-                      key={p.id}
-                      to={`/project/${p.slug}`}
-                      className="group flex items-center gap-2 rounded-md px-1.5 py-1 transition-colors hover:bg-secondary/50"
-                    >
-                      <span className="text-[10px] font-bold text-muted-foreground w-3 text-center">{i + 1}</span>
-                      <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="xs" />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs font-semibold text-foreground truncate">{p.name}</p>
-                        <p className="text-[10px] text-muted-foreground truncate">{p.category}</p>
-                      </div>
-                      {m?.price_usd && (
-                        <span className="text-xs font-medium text-muted-foreground tabular-nums">{formatPrice(m.price_usd)}</span>
-                      )}
-                    </Link>
-                  );
-                })}
-              </div>
-            </motion.div>
+             {/* ── Trending Projects ── */}
+             <motion.div variants={fadeUp} className="col-span-2 rounded-lg border border-border bg-card/40 backdrop-blur-md p-4">
+               <div className="flex items-center gap-2 mb-3">
+                 <Flame className="h-4 w-4 text-primary" />
+                 <span className="text-sm font-semibold text-foreground">Trending Now</span>
+                 <Link to="/explore" className="ml-auto text-xs text-muted-foreground hover:text-primary transition-colors">
+                   View all →
+                 </Link>
+               </div>
+               <div className="space-y-2">
+                 {trendingProjects.slice(0, 5).map((p: any, i: number) => {
+                   const m = marketData[p.id];
+                   return (
+                     <Link
+                       key={p.id}
+                       to={`/project/${p.slug}`}
+                       className="group flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-secondary/50"
+                     >
+                       <span className="text-xs font-bold text-muted-foreground w-4 text-center">{i + 1}</span>
+                       <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="sm" />
+                       <div className="min-w-0 flex-1">
+                         <p className="text-sm font-semibold text-foreground truncate">{p.name}</p>
+                         <p className="text-xs text-muted-foreground truncate">{p.category}</p>
+                       </div>
+                       {m?.price_usd && (
+                         <span className="text-sm font-medium text-muted-foreground tabular-nums">{formatPrice(m.price_usd)}</span>
+                       )}
+                     </Link>
+                   );
+                 })}
+               </div>
+             </motion.div>
 
-            {/* ── Gainers + Losers combined (spans 2 cols) ── */}
-            <motion.div variants={fadeUp} className="col-span-2 grid grid-cols-2 gap-2">
-              {/* Top Gainers */}
-              <div className="rounded-lg border border-border bg-card/40 backdrop-blur-md p-3">
-                <div className="flex items-center gap-1 mb-2">
-                  <ArrowUpRight className="h-3 w-3 text-neon-green" />
-                  <span className="text-xs font-semibold text-foreground">Gainers</span>
-                </div>
-                <div className="space-y-2">
-                  {topGainers.map((p) => {
-                    const m = marketData[p.id];
-                    return (
-                      <Link key={p.id} to={`/project/${p.slug}`} className="group flex items-center gap-1.5 hover:opacity-80 transition-opacity">
-                        <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="xs" />
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs font-semibold text-foreground truncate">{p.name}</p>
-                          <p className="text-[10px] font-bold text-neon-green tabular-nums">
-                            +{(m?.price_change_24h || 0).toFixed(1)}%
-                          </p>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                  {topGainers.length === 0 && <p className="text-[10px] text-muted-foreground">No data yet</p>}
-                </div>
-              </div>
+             {/* ── Gainers + Losers combined (spans 2 cols) ── */}
+             <motion.div variants={fadeUp} className="col-span-2 grid grid-cols-2 gap-2">
+               {/* Top Gainers */}
+               <div className="rounded-lg border border-border bg-card/40 backdrop-blur-md p-4">
+                 <div className="flex items-center gap-1.5 mb-3">
+                   <ArrowUpRight className="h-4 w-4 text-neon-green" />
+                   <span className="text-sm font-semibold text-foreground">Gainers</span>
+                 </div>
+                 <div className="space-y-2.5">
+                   {topGainers.map((p) => {
+                     const m = marketData[p.id];
+                     return (
+                       <Link key={p.id} to={`/project/${p.slug}`} className="group flex items-center gap-2 hover:opacity-80 transition-opacity">
+                         <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="sm" />
+                         <div className="min-w-0 flex-1">
+                           <p className="text-sm font-semibold text-foreground truncate">{p.name}</p>
+                           <p className="text-xs font-bold text-neon-green tabular-nums">
+                             +{(m?.price_change_24h || 0).toFixed(1)}%
+                           </p>
+                         </div>
+                       </Link>
+                     );
+                   })}
+                   {topGainers.length === 0 && <p className="text-xs text-muted-foreground">No data yet</p>}
+                 </div>
+               </div>
 
-              {/* Top Losers */}
-              <div className="rounded-lg border border-border bg-card/40 backdrop-blur-md p-3">
-                <div className="flex items-center gap-1 mb-2">
-                  <ArrowDownRight className="h-3 w-3 text-destructive" />
-                  <span className="text-xs font-semibold text-foreground">Losers</span>
-                </div>
-                <div className="space-y-2">
-                  {topLosers.map((p) => {
-                    const m = marketData[p.id];
-                    return (
-                      <Link key={p.id} to={`/project/${p.slug}`} className="group flex items-center gap-1.5 hover:opacity-80 transition-opacity">
-                        <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="xs" />
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs font-semibold text-foreground truncate">{p.name}</p>
-                          <p className="text-[10px] font-bold text-destructive tabular-nums">
-                            {(m?.price_change_24h || 0).toFixed(1)}%
-                          </p>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                  {topLosers.length === 0 && <p className="text-[10px] text-muted-foreground">No data yet</p>}
-                </div>
-              </div>
-            </motion.div>
+               {/* Top Losers */}
+               <div className="rounded-lg border border-border bg-card/40 backdrop-blur-md p-4">
+                 <div className="flex items-center gap-1.5 mb-3">
+                   <ArrowDownRight className="h-4 w-4 text-destructive" />
+                   <span className="text-sm font-semibold text-foreground">Losers</span>
+                 </div>
+                 <div className="space-y-2.5">
+                   {topLosers.map((p) => {
+                     const m = marketData[p.id];
+                     return (
+                       <Link key={p.id} to={`/project/${p.slug}`} className="group flex items-center gap-2 hover:opacity-80 transition-opacity">
+                         <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="sm" />
+                         <div className="min-w-0 flex-1">
+                           <p className="text-sm font-semibold text-foreground truncate">{p.name}</p>
+                           <p className="text-xs font-bold text-destructive tabular-nums">
+                             {(m?.price_change_24h || 0).toFixed(1)}%
+                           </p>
+                         </div>
+                       </Link>
+                     );
+                   })}
+                   {topLosers.length === 0 && <p className="text-xs text-muted-foreground">No data yet</p>}
+                 </div>
+               </div>
+             </motion.div>
 
-            {/* ── Top Forecasts — Enhanced (spans full width) ── */}
-            {topForecasts.length > 0 && (
-              <motion.div variants={fadeUp} className="col-span-2 sm:col-span-4 lg:col-span-6 rounded-lg border border-border bg-card/40 backdrop-blur-md p-3 sm:p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/10">
-                    <BarChart3 className="h-3.5 w-3.5 text-primary" />
-                  </div>
-                  <span className="text-xs font-semibold text-foreground">Top Forecasts</span>
-                  <Link to="/forecasts" className="ml-auto text-[10px] font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
-                    View all <ArrowRight className="h-3 w-3" />
-                  </Link>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
-                  {topForecasts.slice(0, 4).map((f) => {
-                    const totalVotes = f.total_votes_yes + f.total_votes_no;
-                    const yesPercent = totalVotes > 0 ? (f.total_votes_yes / totalVotes) * 100 : 50;
-                    return (
-                      <Link
-                        key={f.id}
-                        to={`/forecasts/${f.id}`}
-                        className="group relative flex flex-col gap-2.5 rounded-lg border border-border/50 bg-secondary/20 px-3 py-3 transition-all hover:bg-secondary/40 hover:border-primary/20 hover:shadow-md hover:shadow-primary/5"
-                      >
-                        {/* Project logos */}
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1.5">
-                            <ProjectLogo logoUrl={f.project_a_logo_url || null} logoEmoji={f.project_a_logo_emoji || "⬡"} name={f.project_a_name || "Project"} size="xs" />
-                            {f.project_b_name && (
-                              <>
-                                <span className="text-[7px] font-bold text-muted-foreground uppercase">vs</span>
-                                <ProjectLogo logoUrl={f.project_b_logo_url || null} logoEmoji={f.project_b_logo_emoji || "⬡"} name={f.project_b_name} size="xs" />
-                              </>
-                            )}
-                          </div>
-                          <span className="text-[10px] font-medium text-muted-foreground tabular-nums">
-                            {totalVotes} vote{totalVotes !== 1 ? "s" : ""}
-                          </span>
-                        </div>
+             {/* ── Top Forecasts — Enhanced (spans full width) ── */}
+             {topForecasts.length > 0 && (
+               <motion.div variants={fadeUp} className="col-span-2 sm:col-span-4 lg:col-span-6 rounded-lg border border-border bg-card/40 backdrop-blur-md p-4 sm:p-5">
+                 <div className="flex items-center gap-2 mb-4">
+                   <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10">
+                     <BarChart3 className="h-4 w-4 text-primary" />
+                   </div>
+                   <span className="text-sm font-semibold text-foreground">Top Forecasts</span>
+                   <Link to="/forecasts" className="ml-auto text-xs font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
+                     View all <ArrowRight className="h-3.5 w-3.5" />
+                   </Link>
+                 </div>
+                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                   {topForecasts.slice(0, 4).map((f) => {
+                     const totalVotes = f.total_votes_yes + f.total_votes_no;
+                     const yesPercent = totalVotes > 0 ? (f.total_votes_yes / totalVotes) * 100 : 50;
+                     return (
+                       <Link
+                         key={f.id}
+                         to={`/forecasts/${f.id}`}
+                         className="group relative flex flex-col gap-3 rounded-lg border border-border/50 bg-secondary/20 px-4 py-4 transition-all hover:bg-secondary/40 hover:border-primary/20 hover:shadow-md hover:shadow-primary/5"
+                       >
+                         {/* Project logos */}
+                         <div className="flex items-center justify-between">
+                           <div className="flex items-center gap-2">
+                             <ProjectLogo logoUrl={f.project_a_logo_url || null} logoEmoji={f.project_a_logo_emoji || "⬡"} name={f.project_a_name || "Project"} size="sm" />
+                             {f.project_b_name && (
+                               <>
+                                 <span className="text-[8px] font-bold text-muted-foreground uppercase">vs</span>
+                                 <ProjectLogo logoUrl={f.project_b_logo_url || null} logoEmoji={f.project_b_logo_emoji || "⬡"} name={f.project_b_name} size="sm" />
+                               </>
+                             )}
+                           </div>
+                           <span className="text-xs font-medium text-muted-foreground tabular-nums">
+                             {totalVotes} vote{totalVotes !== 1 ? "s" : ""}
+                           </span>
+                         </div>
 
-                        {/* Title */}
-                        <p className="text-xs font-semibold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">{f.title}</p>
+                         {/* Title */}
+                         <p className="text-sm font-semibold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">{f.title}</p>
 
-                        {/* Vote bar with labels */}
-                        <div className="mt-auto space-y-1.5">
-                          <div className="relative h-2 rounded-full bg-secondary overflow-hidden">
-                            <motion.div
-                              className="absolute inset-y-0 left-0 rounded-l-full"
-                              style={{ width: `${yesPercent}%`, background: "hsl(var(--neon-green))" }}
-                              initial={{ width: 0 }}
-                              whileInView={{ width: `${yesPercent}%` }}
-                              viewport={{ once: true }}
-                              transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
-                            />
-                          </div>
-                          <div className="flex items-center justify-between text-xs">
-                            <span className="font-bold text-neon-green">Yes {yesPercent.toFixed(0)}%</span>
-                            <span className="font-bold text-muted-foreground">No {(100 - yesPercent).toFixed(0)}%</span>
-                          </div>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </motion.div>
-            )}
+                         {/* Vote bar with labels */}
+                         <div className="mt-auto space-y-2">
+                           <div className="relative h-2.5 rounded-full bg-secondary overflow-hidden">
+                             <motion.div
+                               className="absolute inset-y-0 left-0 rounded-l-full"
+                               style={{ width: `${yesPercent}%`, background: "hsl(var(--neon-green))" }}
+                               initial={{ width: 0 }}
+                               whileInView={{ width: `${yesPercent}%` }}
+                               viewport={{ once: true }}
+                               transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+                             />
+                           </div>
+                           <div className="flex items-center justify-between text-sm">
+                             <span className="font-bold text-neon-green">Yes {yesPercent.toFixed(0)}%</span>
+                             <span className="font-bold text-muted-foreground">No {(100 - yesPercent).toFixed(0)}%</span>
+                           </div>
+                         </div>
+                       </Link>
+                     );
+                   })}
+                 </div>
+               </motion.div>
+             )}
           </motion.div>
         </motion.div>
       </div>
