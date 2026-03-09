@@ -15,6 +15,7 @@ import {
   Link as LinkIcon,
 } from "lucide-react";
 import ProjectLogo from "@/components/ProjectLogo";
+import { Badge } from "@/components/ui/badge";
 import type { Project } from "@/hooks/useProjects";
 import type { TokenMarketData } from "@/hooks/useTokenMarketData";
 import { useEffect, useState, useRef } from "react";
