@@ -632,7 +632,6 @@ const Navbar = () => {
               {/* Navigation links */}
                {mobileNavLinks.map((link) => {
                 const active = isActive(link.to);
-                const showBadge = link.to === "/notifications" && unreadCount > 0;
                 return (
                   <Link
                     key={link.to}
@@ -647,11 +646,6 @@ const Navbar = () => {
                     <link.icon className={`h-4 w-4 ${active ? "text-primary" : ""}`} />
                     {link.label}
                     <div className="ml-auto flex items-center gap-2">
-                      {showBadge && (
-                        <Badge variant="destructive" className="h-4 min-w-4 px-1 text-[10px] font-bold">
-                          {unreadCount > 99 ? '99+' : unreadCount}
-                        </Badge>
-                      )}
                       {active && <div className="h-1.5 w-1.5 rounded-full bg-primary" />}
                     </div>
                   </Link>
