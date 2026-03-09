@@ -67,23 +67,35 @@ const ChangeIndicator = ({ change, size = "sm" }: { change: number | null; size?
 
 const MiniSparkline = ({ data, isPositive }: { data: number[]; isPositive: boolean }) => {
   if (!data || data.length < 2) return null;
-  const step = Math.max(1, Math.floor(data.length / 24));
-  const points = data.filter((_, i) => i % step === 0).map((v, i) => ({ i, v }));
-  const color = isPositive ? "rgb(34,197,94)" : "rgb(239,68,68)";
+  const width = 96;
+  const height = 32;
+  const step = Math.max(1, Math.floor(data.length / 28));
+  const points = data.filter((_, i) => i % step === 0);
+  const max = Math.max(...points);
+  const min = Math.min(...points);
+  const range = max - min || 1;
+  const xStep = width / Math.max(points.length - 1, 1);
+  const color = isPositive ? "hsl(var(--neon-green))" : "hsl(var(--destructive))";
+  const pathD = points
+    .map((v, i) => {
+      const x = i * xStep;
+      const y = height - ((v - min) / range) * (height - 4) - 2;
+      return `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`;
+    })
+    .join(" ");
+  const areaD = `${pathD} L${width},${height} L0,${height} Z`;
+  const gradId = `spark-port-${isPositive ? "g" : "r"}`;
   return (
-    <div className="h-8 w-20">
-      <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={points}>
-          <defs>
-            <linearGradient id={`mini-${isPositive ? 'g' : 'r'}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={color} stopOpacity={0.3} />
-              <stop offset="100%" stopColor={color} stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <Area type="monotone" dataKey="v" stroke={color} strokeWidth={1.5} fill={`url(#mini-${isPositive ? 'g' : 'r'})`} dot={false} />
-        </AreaChart>
-      </ResponsiveContainer>
-    </div>
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="shrink-0">
+      <defs>
+        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity={0.25} />
+          <stop offset="100%" stopColor={color} stopOpacity={0} />
+        </linearGradient>
+      </defs>
+      <path d={areaD} fill={`url(#${gradId})`} />
+      <path d={pathD} fill="none" stroke={color} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 };
 
