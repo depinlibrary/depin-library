@@ -24,12 +24,12 @@ const SignInButton = () => {
     >
       <Link
         to="/auth"
-        className="group relative flex items-center gap-2 overflow-hidden rounded-lg bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:shadow-md hover:shadow-primary/30"
+        className="group relative flex items-center gap-2 overflow-hidden rounded-lg bg-primary px-6 py-2 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:shadow-md hover:shadow-primary/30"
       >
         <span className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-foreground/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700" />
-        <User className="h-3.5 w-3.5" />
+        <User className="h-4 w-4" />
         Sign In
-        <ArrowRight className="h-3 w-3 opacity-0 -ml-1 group-hover:opacity-100 group-hover:ml-0 transition-all duration-200" />
+        <ArrowRight className="h-3.5 w-3.5 opacity-0 -ml-1 group-hover:opacity-100 group-hover:ml-0 transition-all duration-200" />
       </Link>
     </motion.div>
   );
