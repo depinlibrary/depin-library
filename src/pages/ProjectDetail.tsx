@@ -13,7 +13,7 @@ import TokenPriceBadge from "@/components/TokenPriceBadge";
 import ShareButtons from "@/components/ShareButtons";
 import RelatedProjects from "@/components/RelatedProjects";
 import ProjectDetailSkeleton from "@/components/ProjectDetailSkeleton";
-import Sparkline from "@/components/Sparkline";
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { useTokenMarketData } from "@/hooks/useTokenMarketData";
 import { useProjectRatings } from "@/hooks/useProjectRatings";
 import Navbar from "@/components/Navbar";
