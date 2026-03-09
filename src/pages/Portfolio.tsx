@@ -1045,6 +1045,29 @@ const Portfolio = () => {
                 <MyForecasts />
               </motion.div>
             )}
+
+            {/* ── Watchlist Tab ── */}
+            {activeTab === "watchlist" && (
+              <motion.div
+                key="watchlist"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="rounded-xl border border-border bg-card overflow-hidden"
+              >
+                <div className="p-4 md:p-5 border-b border-border flex items-center gap-2">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10">
+                    <Star className="h-3.5 w-3.5 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-semibold text-foreground">Watchlist</h2>
+                    <p className="text-[10px] text-muted-foreground">Projects you've bookmarked from the Market page</p>
+                  </div>
+                </div>
+                <WatchlistContent projects={projects} marketDataMap={marketDataMap} />
+              </motion.div>
+            )}
           </AnimatePresence>
         </div>
       </div>
