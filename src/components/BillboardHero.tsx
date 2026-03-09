@@ -426,58 +426,58 @@ const BillboardHero = ({
                </div>
              </motion.div>
 
-            {/* ── Gainers + Losers combined (spans 2 cols) ── */}
-            <motion.div variants={fadeUp} className="col-span-2 grid grid-cols-2 gap-2">
-              {/* Top Gainers */}
-              <div className="rounded-lg border border-border bg-card/40 backdrop-blur-md p-3">
-                <div className="flex items-center gap-1 mb-2">
-                  <ArrowUpRight className="h-3 w-3 text-neon-green" />
-                  <span className="text-xs font-semibold text-foreground">Gainers</span>
-                </div>
-                <div className="space-y-2">
-                  {topGainers.map((p) => {
-                    const m = marketData[p.id];
-                    return (
-                      <Link key={p.id} to={`/project/${p.slug}`} className="group flex items-center gap-1.5 hover:opacity-80 transition-opacity">
-                        <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="xs" />
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs font-semibold text-foreground truncate">{p.name}</p>
-                          <p className="text-[10px] font-bold text-neon-green tabular-nums">
-                            +{(m?.price_change_24h || 0).toFixed(1)}%
-                          </p>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                  {topGainers.length === 0 && <p className="text-[10px] text-muted-foreground">No data yet</p>}
-                </div>
-              </div>
+             {/* ── Gainers + Losers combined (spans 2 cols) ── */}
+             <motion.div variants={fadeUp} className="col-span-2 grid grid-cols-2 gap-2">
+               {/* Top Gainers */}
+               <div className="rounded-lg border border-border bg-card/40 backdrop-blur-md p-4">
+                 <div className="flex items-center gap-1.5 mb-3">
+                   <ArrowUpRight className="h-4 w-4 text-neon-green" />
+                   <span className="text-sm font-semibold text-foreground">Gainers</span>
+                 </div>
+                 <div className="space-y-2.5">
+                   {topGainers.map((p) => {
+                     const m = marketData[p.id];
+                     return (
+                       <Link key={p.id} to={`/project/${p.slug}`} className="group flex items-center gap-2 hover:opacity-80 transition-opacity">
+                         <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="sm" />
+                         <div className="min-w-0 flex-1">
+                           <p className="text-sm font-semibold text-foreground truncate">{p.name}</p>
+                           <p className="text-xs font-bold text-neon-green tabular-nums">
+                             +{(m?.price_change_24h || 0).toFixed(1)}%
+                           </p>
+                         </div>
+                       </Link>
+                     );
+                   })}
+                   {topGainers.length === 0 && <p className="text-xs text-muted-foreground">No data yet</p>}
+                 </div>
+               </div>
 
-              {/* Top Losers */}
-              <div className="rounded-lg border border-border bg-card/40 backdrop-blur-md p-3">
-                <div className="flex items-center gap-1 mb-2">
-                  <ArrowDownRight className="h-3 w-3 text-destructive" />
-                  <span className="text-xs font-semibold text-foreground">Losers</span>
-                </div>
-                <div className="space-y-2">
-                  {topLosers.map((p) => {
-                    const m = marketData[p.id];
-                    return (
-                      <Link key={p.id} to={`/project/${p.slug}`} className="group flex items-center gap-1.5 hover:opacity-80 transition-opacity">
-                        <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="xs" />
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs font-semibold text-foreground truncate">{p.name}</p>
-                          <p className="text-[10px] font-bold text-destructive tabular-nums">
-                            {(m?.price_change_24h || 0).toFixed(1)}%
-                          </p>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                  {topLosers.length === 0 && <p className="text-[10px] text-muted-foreground">No data yet</p>}
-                </div>
-              </div>
-            </motion.div>
+               {/* Top Losers */}
+               <div className="rounded-lg border border-border bg-card/40 backdrop-blur-md p-4">
+                 <div className="flex items-center gap-1.5 mb-3">
+                   <ArrowDownRight className="h-4 w-4 text-destructive" />
+                   <span className="text-sm font-semibold text-foreground">Losers</span>
+                 </div>
+                 <div className="space-y-2.5">
+                   {topLosers.map((p) => {
+                     const m = marketData[p.id];
+                     return (
+                       <Link key={p.id} to={`/project/${p.slug}`} className="group flex items-center gap-2 hover:opacity-80 transition-opacity">
+                         <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="sm" />
+                         <div className="min-w-0 flex-1">
+                           <p className="text-sm font-semibold text-foreground truncate">{p.name}</p>
+                           <p className="text-xs font-bold text-destructive tabular-nums">
+                             {(m?.price_change_24h || 0).toFixed(1)}%
+                           </p>
+                         </div>
+                       </Link>
+                     );
+                   })}
+                   {topLosers.length === 0 && <p className="text-xs text-muted-foreground">No data yet</p>}
+                 </div>
+               </div>
+             </motion.div>
 
             {/* ── Top Forecasts — Enhanced (spans full width) ── */}
             {topForecasts.length > 0 && (
