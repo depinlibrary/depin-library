@@ -208,13 +208,13 @@ const ProjectDetail = () => {
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
                         <XAxis dataKey="idx" hide />
-                        <YAxis
+                         <YAxis
                           domain={["dataMin", "dataMax"]}
                           tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
                           tickLine={false}
                           axisLine={false}
-                          tickFormatter={(v: number) => v < 1 ? v.toFixed(4) : v.toFixed(2)}
-                          width={45}
+                          tickFormatter={(v: number) => v < 0.01 ? v.toFixed(6) : v < 1 ? v.toFixed(4) : v.toFixed(2)}
+                          width={60}
                         />
                         <Tooltip
                           contentStyle={{

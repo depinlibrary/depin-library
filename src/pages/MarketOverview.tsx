@@ -205,9 +205,9 @@ const ProjectRow = ({ project, market, rank, isBookmarked, onBookmark, showBookm
           {showBookmark && (
             <button
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); onBookmark(); }}
-              className="opacity-0 group-hover:opacity-100 transition-opacity -ml-1"
+              className={`transition-opacity -ml-1 ${isBookmarked ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
             >
-              <Star className={`h-3.5 w-3.5 transition-colors ${isBookmarked ? "fill-yellow-400 text-yellow-400 opacity-100" : "text-muted-foreground hover:text-yellow-400"}`} />
+              <Star className={`h-3.5 w-3.5 transition-colors ${isBookmarked ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground hover:text-yellow-400"}`} />
             </button>
           )}
           <span className="text-xs text-muted-foreground font-mono w-6 text-center">{rank}</span>
