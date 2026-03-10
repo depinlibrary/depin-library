@@ -871,7 +871,7 @@ const Portfolio = () => {
                       </defs>
                       <XAxis dataKey="index" hide />
                       <YAxis hide domain={["auto", "auto"]} />
-                      <Tooltip
+                      <RechartsTooltip
                         formatter={(value: number) => [hideBalances ? "••••" : formatValue(value), "Portfolio"]}
                         contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "10px", color: "hsl(var(--foreground))", fontSize: "12px" }}
                         labelFormatter={() => ""}
