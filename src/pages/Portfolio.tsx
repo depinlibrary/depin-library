@@ -921,12 +921,12 @@ const Portfolio = () => {
                 { key: "holdings" as const, label: "Holdings", icon: Wallet },
                 { key: "alerts" as const, label: "Alerts", icon: Bell },
                 { key: "forecasts" as const, label: "Forecasts", icon: Activity },
-                { key: "watchlist" as const, label: "Watchlist", icon: Star },
+                { key: "watchlist" as const, label: "Watchlist", icon: Star, badge: watchlistAlertCount },
               ]).map((tab) => (
                 <button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key)}
-                  className={`flex items-center gap-1.5 rounded-md px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium transition-all whitespace-nowrap shrink-0 ${
+                  className={`relative flex items-center gap-1.5 rounded-md px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium transition-all whitespace-nowrap shrink-0 ${
                     activeTab === tab.key
                       ? "bg-card text-foreground shadow-sm border border-border"
                       : "text-muted-foreground hover:text-foreground"
@@ -934,6 +934,11 @@ const Portfolio = () => {
                 >
                   <tab.icon className="h-3.5 w-3.5" />
                   {tab.label}
+                  {tab.badge && tab.badge > 0 && (
+                    <span className="ml-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
+                      {tab.badge}
+                    </span>
+                  )}
                 </button>
               ))}
             </div>
