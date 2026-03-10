@@ -1071,7 +1071,7 @@ const Portfolio = () => {
 
                     {/* Desktop table */}
                     <div className="hidden md:block">
-                      <div className="grid grid-cols-[2.5rem_1fr_5.5rem_5.5rem_6_6rem_5.5rem_6rem_5.5rem_3.5rem] gap-0 px-5 py-2.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground border-t border-border">
+                      <div className="grid grid-cols-[2.5rem_1fr_5.5rem_5.5rem_6rem_5.5rem_6rem_5.5rem_3.5rem] gap-0 px-5 py-2.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground border-t border-border">
                         <span>#</span>
                         <span>Asset</span>
                         <span className="text-right">Price</span>
