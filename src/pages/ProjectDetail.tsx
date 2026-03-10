@@ -57,7 +57,6 @@ const ProjectDetail = () => {
     );
   }
 
-  const isBookmarked = bookmarks.includes(project.id);
   const overallRating = ratingsData?.averages?.overall;
   const sparkline = marketData?.sparkline_7d;
 
