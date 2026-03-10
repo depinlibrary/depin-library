@@ -86,9 +86,11 @@ const ProjectDetail = () => {
 
           {/* Hero */}
           <motion.div {...fadeUp} transition={{ delay: 0.05 }} className="mb-8">
-            <div className="mb-4 flex flex-col sm:flex-row sm:items-center gap-4">
-              <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="lg" />
-              <div className="min-w-0 flex-1 flex flex-col justify-center">
+            <div className="mb-4 flex items-start gap-4">
+              <div className="shrink-0 mt-0.5">
+                <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="lg" />
+              </div>
+              <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                   <h1 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight">{project.name}</h1>
                    {ratingsData?.averages?.count > 0 && overallRating && (
