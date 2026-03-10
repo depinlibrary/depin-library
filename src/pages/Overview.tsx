@@ -307,7 +307,7 @@ const Overview = () => {
 
                         {/* Yes/No labels */}
                         <div className="flex items-center justify-between text-[10px]">
-                          <span className="font-semibold text-primary">Yes {yesPct.toFixed(0)}%</span>
+                          <span className="font-semibold text-[#2bee9d]">Yes {yesPct.toFixed(0)}%</span>
                           <span className="font-semibold text-destructive">No {(100 - yesPct).toFixed(0)}%</span>
                         </div>
                       </div>
