@@ -788,7 +788,7 @@ const Portfolio = () => {
                             <Cell key={index} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                           ))}
                         </Pie>
-                        <Tooltip
+                        <RechartsTooltip
                           formatter={(value: number) => [formatValue(value), ""]}
                           contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "10px", color: "hsl(var(--foreground))", fontSize: "12px" }}
                           itemStyle={{ color: "hsl(var(--foreground))" }}
