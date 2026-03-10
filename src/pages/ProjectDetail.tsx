@@ -1,10 +1,8 @@
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, ExternalLink, Globe, Layers, Coins, Calendar, Activity, Star, Bookmark, Twitter } from "lucide-react";
+import { ArrowLeft, ExternalLink, Globe, Layers, Coins, Calendar, Activity, Star, Twitter } from "lucide-react";
 import CompareWithButton from "@/components/CompareWithButton";
 import { useProject } from "@/hooks/useProjects";
-import { useAuth } from "@/contexts/AuthContext";
-import { useBookmarks, useToggleBookmark } from "@/hooks/useBookmarks";
 import ProjectRatings from "@/components/ProjectRatings";
 import ReviewSection from "@/components/ReviewSection";
 import SentimentBadge from "@/components/SentimentBadge";
