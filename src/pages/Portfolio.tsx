@@ -1135,14 +1135,33 @@ const Portfolio = () => {
                                     className="h-7 w-24 ml-auto text-right text-xs"
                                   />
                                 ) : (
-                                  <span className="text-sm text-foreground tabular-nums">
-                                    {hideBalances ? "••••" : Number(h.token_amount).toLocaleString(undefined, { maximumFractionDigits: 4 })}
-                                  </span>
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <span className="text-sm text-foreground tabular-nums cursor-default">
+                                          {hideBalances ? "••••" : Number(h.token_amount).toLocaleString(undefined, { maximumFractionDigits: 4 })}
+                                        </span>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p className="text-xs tabular-nums">{Number(h.token_amount).toLocaleString(undefined, { maximumFractionDigits: 18 })} tokens</p>
+                                        <p className="text-xs text-muted-foreground tabular-nums">${(h.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
                                 )}
                               </div>
-                              <span className="text-right text-sm font-bold text-foreground tabular-nums">
-                                {hideBalances ? "••••" : formatValue(h.value)}
-                              </span>
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span className="text-right text-sm font-bold text-foreground tabular-nums cursor-default block">
+                                      {hideBalances ? "••••" : formatValue(h.value)}
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p className="text-xs tabular-nums">${h.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
                               <div className="text-right">
                                 {h.pnl24h !== null ? (
                                   <span className={`text-sm font-semibold tabular-nums ${h.pnl24h >= 0 ? "text-green-500" : "text-red-500"}`}>
