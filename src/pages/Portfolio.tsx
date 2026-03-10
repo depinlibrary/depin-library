@@ -349,6 +349,14 @@ const Portfolio = () => {
   const [perfRange, setPerfRange] = useState<"1D" | "7D" | "30D" | "90D">("7D");
   const [activeTab, setActiveTab] = useState<"holdings" | "forecasts" | "alerts" | "watchlist">("holdings");
 
+  const { data: bookmarkIdsForBadge = [] } = useBookmarks();
+  const watchlistAlertCount = useMemo(() => {
+    return bookmarkIdsForBadge.filter((id: string) => {
+      const market = marketDataMap[id];
+      return market?.price_change_24h != null && Math.abs(market.price_change_24h) >= 5;
+    }).length;
+  }, [bookmarkIdsForBadge, marketDataMap]);
+
   const { data: holdings = [], isLoading } = useQuery({
     queryKey: ["portfolio_holdings", user?.id],
     queryFn: async () => {
