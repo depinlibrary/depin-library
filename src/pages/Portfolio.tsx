@@ -17,7 +17,8 @@ import { toast } from "sonner";
 import { Link, Navigate } from "react-router-dom";
 import MyForecasts from "@/components/MyForecasts";
 import PriceAlertsManager from "@/components/PriceAlertsManager";
-import { useBookmarks } from "@/hooks/useBookmarks";
+import { useBookmarks, useToggleBookmark } from "@/hooks/useBookmarks";
+import { useUpsertPriceAlert } from "@/hooks/usePriceAlerts";
 import { Star } from "lucide-react";
 
 function formatPrice(price: number | null): string {
