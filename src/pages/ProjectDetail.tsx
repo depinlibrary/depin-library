@@ -32,10 +32,7 @@ const fadeUp = {
 const ProjectDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const { data: project, isLoading } = useProject(slug || "");
-  const { user } = useAuth();
   const { data: marketData } = useTokenMarketData(project?.id);
-  const { data: bookmarks = [] } = useBookmarks();
-  const toggleBookmark = useToggleBookmark();
   const { data: ratingsData } = useProjectRatings(project?.id || "");
 
   if (isLoading) {
