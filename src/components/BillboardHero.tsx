@@ -12,8 +12,8 @@ import {
   Flame,
   RefreshCw,
   Search,
-  Link as LinkIcon,
-} from "lucide-react";
+  Link as LinkIcon } from
+"lucide-react";
 import ProjectLogo from "@/components/ProjectLogo";
 import { Badge } from "@/components/ui/badge";
 import type { Project } from "@/hooks/useProjects";
@@ -44,7 +44,7 @@ interface BillboardHeroProps {
   isRefetching?: boolean;
 }
 
-const AnimatedNumber = ({ target, suffix = "" }: { target: number; suffix?: string }) => {
+const AnimatedNumber = ({ target, suffix = "" }: {target: number;suffix?: string;}) => {
   const [count, setCount] = useState(0);
   useEffect(() => {
     if (target === 0) return;
@@ -82,22 +82,22 @@ function formatPrice(price: number | null): string {
 
 const stagger = {
   hidden: {},
-  visible: { transition: { staggerChildren: 0.04 } },
+  visible: { transition: { staggerChildren: 0.04 } }
 };
 
 const fadeUp = {
   hidden: { opacity: 0, y: 14 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" as const } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" as const } }
 };
 
-const MiniSparkline = ({ data, positive }: { data: number[] | null; positive: boolean }) => {
+const MiniSparkline = ({ data, positive }: {data: number[] | null;positive: boolean;}) => {
   if (!data || data.length < 2) return null;
   const min = Math.min(...data);
   const max = Math.max(...data);
   const range = max - min || 1;
   const h = 20;
   const w = 50;
-  const points = data.map((v, i) => `${(i / (data.length - 1)) * w},${h - ((v - min) / range) * h}`).join(" ");
+  const points = data.map((v, i) => `${i / (data.length - 1) * w},${h - (v - min) / range * h}`).join(" ");
   return (
     <svg width={w} height={h} className="shrink-0">
       <polyline
@@ -106,10 +106,10 @@ const MiniSparkline = ({ data, positive }: { data: number[] | null; positive: bo
         stroke={positive ? "hsl(var(--neon-green))" : "hsl(var(--destructive))"}
         strokeWidth="1.5"
         strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
+        strokeLinejoin="round" />
+      
+    </svg>);
+
 };
 
 
@@ -120,20 +120,20 @@ const BillboardHero = ({
   trendingProjects,
   totalCategories,
   totalBlockchains,
-  isRefetching = false,
+  isRefetching = false
 }: BillboardHeroProps) => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
 
-  const filteredProjects = searchQuery.trim().length >= 1
-    ? projects.filter((p) =>
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.blockchain.toLowerCase().includes(searchQuery.toLowerCase())
-      ).slice(0, 6)
-    : [];
+  const filteredProjects = searchQuery.trim().length >= 1 ?
+  projects.filter((p) =>
+  p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  p.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  p.blockchain.toLowerCase().includes(searchQuery.toLowerCase())
+  ).slice(0, 6) :
+  [];
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -156,20 +156,20 @@ const BillboardHero = ({
   }, []);
 
   // Compute top market cap projects
-  const topMarketCap = [...projects]
-    .filter((p) => marketData[p.id]?.market_cap_usd)
-    .sort((a, b) => (marketData[b.id]?.market_cap_usd || 0) - (marketData[a.id]?.market_cap_usd || 0))
-    .slice(0, 5);
+  const topMarketCap = [...projects].
+  filter((p) => marketData[p.id]?.market_cap_usd).
+  sort((a, b) => (marketData[b.id]?.market_cap_usd || 0) - (marketData[a.id]?.market_cap_usd || 0)).
+  slice(0, 5);
 
-  const topGainers = [...projects]
-    .filter((p) => marketData[p.id]?.price_change_24h && (marketData[p.id]?.price_change_24h || 0) > 0)
-    .sort((a, b) => (marketData[b.id]?.price_change_24h || 0) - (marketData[a.id]?.price_change_24h || 0))
-    .slice(0, 3);
+  const topGainers = [...projects].
+  filter((p) => marketData[p.id]?.price_change_24h && (marketData[p.id]?.price_change_24h || 0) > 0).
+  sort((a, b) => (marketData[b.id]?.price_change_24h || 0) - (marketData[a.id]?.price_change_24h || 0)).
+  slice(0, 3);
 
-  const topLosers = [...projects]
-    .filter((p) => marketData[p.id]?.price_change_24h && (marketData[p.id]?.price_change_24h || 0) < 0)
-    .sort((a, b) => (marketData[a.id]?.price_change_24h || 0) - (marketData[b.id]?.price_change_24h || 0))
-    .slice(0, 3);
+  const topLosers = [...projects].
+  filter((p) => marketData[p.id]?.price_change_24h && (marketData[p.id]?.price_change_24h || 0) < 0).
+  sort((a, b) => (marketData[a.id]?.price_change_24h || 0) - (marketData[b.id]?.price_change_24h || 0)).
+  slice(0, 3);
 
   const totalMarketCap = Object.values(marketData).reduce((sum, d) => sum + (d.market_cap_usd || 0), 0);
   const changes = Object.values(marketData).filter((d) => d.price_change_24h !== null);
@@ -192,15 +192,15 @@ const BillboardHero = ({
                     <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
                   </span>
                   <span className="text-[9px] font-medium text-muted-foreground tracking-wide uppercase">Live DePIN Intelligence</span>
-                  {isRefetching && (
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                      className="ml-1 flex items-center"
-                    >
+                  {isRefetching &&
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    className="ml-1 flex items-center">
+                    
                       <RefreshCw className="h-2.5 w-2.5 text-primary/70" />
                     </motion.div>
-                  )}
+                  }
                 </div>
                 <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground font-['Space_Grotesk'] tracking-tight">
                   DePIN Ecosystem <span className="text-primary">Billboard</span>
@@ -221,58 +221,58 @@ const BillboardHero = ({
                       onChange={(e) => setSearchQuery(e.target.value)}
                       onFocus={() => setSearchFocused(true)}
                       placeholder="Search projects..."
-                      className="w-full h-11 rounded-lg border border-border bg-card/60 backdrop-blur-sm pl-9 pr-3 text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-border focus:border-border transition-all"
-                    />
+                      className="w-full h-11 rounded-lg border border-border bg-card/60 backdrop-blur-sm pl-9 pr-3 text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-border focus:border-border transition-all" />
+                    
                   </form>
 
                   {/* Search results dropdown */}
                   <AnimatePresence>
-                    {searchFocused && searchQuery.trim().length >= 1 && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 4 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 4 }}
-                        transition={{ duration: 0.15 }}
-                        className="absolute top-full left-0 right-0 mt-1.5 z-50 rounded-lg border border-border bg-card shadow-xl shadow-background/40 overflow-hidden"
-                      >
-                        {filteredProjects.length > 0 ? (
-                          <div className="py-1 max-h-[280px] overflow-y-auto">
-                            {filteredProjects.map((p) => (
-                              <Link
-                                key={p.id}
-                                to={`/project/${p.slug}`}
-                                onClick={() => { setSearchQuery(""); setSearchFocused(false); }}
-                                className="flex items-center gap-2.5 px-3 py-2 transition-colors hover:bg-secondary/50"
-                              >
+                    {searchFocused && searchQuery.trim().length >= 1 &&
+                    <motion.div
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 4 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute top-full left-0 right-0 mt-1.5 z-50 rounded-lg border border-border bg-card shadow-xl shadow-background/40 overflow-hidden">
+                      
+                        {filteredProjects.length > 0 ?
+                      <div className="py-1 max-h-[280px] overflow-y-auto">
+                            {filteredProjects.map((p) =>
+                        <Link
+                          key={p.id}
+                          to={`/project/${p.slug}`}
+                          onClick={() => {setSearchQuery("");setSearchFocused(false);}}
+                          className="flex items-center gap-2.5 px-3 py-2 transition-colors hover:bg-secondary/50">
+                          
                                 <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="xs" />
                                 <div className="min-w-0 flex-1">
                                   <p className="text-[11px] font-semibold text-foreground truncate">{p.name}</p>
                                   <p className="text-[9px] text-muted-foreground">{p.category} · {p.blockchain}</p>
                                 </div>
-                                {marketData[p.id]?.price_usd && (
-                                  <span className="text-[10px] font-medium text-muted-foreground tabular-nums shrink-0">
+                                {marketData[p.id]?.price_usd &&
+                          <span className="text-[10px] font-medium text-muted-foreground tabular-nums shrink-0">
                                     {formatPrice(marketData[p.id].price_usd)}
                                   </span>
-                                )}
+                          }
                               </Link>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="px-3 py-4 text-center">
+                        )}
+                          </div> :
+
+                      <div className="px-3 py-4 text-center">
                             <p className="text-[11px] text-muted-foreground">No projects found for "{searchQuery}"</p>
                           </div>
-                        )}
+                      }
                         <div className="border-t border-border/50 px-3 py-2 bg-secondary/20">
                           <button
-                            type="button"
-                            onClick={() => { navigate(`/explore?search=${encodeURIComponent(searchQuery.trim())}`); setSearchQuery(""); setSearchFocused(false); }}
-                            className="text-[10px] font-medium text-muted-foreground hover:text-foreground transition-colors"
-                          >
+                          type="button"
+                          onClick={() => {navigate(`/explore?search=${encodeURIComponent(searchQuery.trim())}`);setSearchQuery("");setSearchFocused(false);}}
+                          className="text-[10px] font-medium text-muted-foreground hover:text-foreground transition-colors">
+                          
                             Search all for "{searchQuery}" →
                           </button>
                         </div>
                       </motion.div>
-                    )}
+                    }
                   </AnimatePresence>
                 </div>
 
@@ -280,17 +280,17 @@ const BillboardHero = ({
                   <Link
                     to="/explore"
                     className="relative inline-flex items-center justify-center gap-1.5 h-11 w-full sm:w-auto rounded-lg px-4 text-xs font-semibold text-primary-foreground overflow-hidden transition-shadow hover:shadow-lg hover:shadow-primary/30"
-                    style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))" }}
-                  >
+                    style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))" }}>
+                    
                     <motion.span
                       className="absolute inset-0 pointer-events-none"
                       style={{
                         background: "linear-gradient(105deg, transparent 40%, hsl(0 0% 100% / 0.2) 50%, transparent 60%)",
-                        backgroundSize: "200% 100%",
+                        backgroundSize: "200% 100%"
                       }}
                       animate={{ backgroundPosition: ["200% 0%", "-200% 0%"] }}
-                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", repeatDelay: 2 }}
-                    />
+                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", repeatDelay: 2 }} />
+                    
                     <span className="relative">Explore Projects</span>
                     <ArrowRight className="relative h-3.5 w-3.5" />
                   </Link>
@@ -353,11 +353,11 @@ const BillboardHero = ({
            </motion.div>
 
           {/* Bento Grid - denser */}
-          <motion.div 
+          <motion.div
             className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2 auto-rows-min relative"
             animate={{ opacity: isRefetching ? [1, 0.7, 1] : 1 }}
-            transition={{ duration: 0.8, repeat: isRefetching ? Infinity : 0 }}
-          >
+            transition={{ duration: 0.8, repeat: isRefetching ? Infinity : 0 }}>
+            
              {/* ── Top Market Cap (spans 2 cols) ── */}
              <motion.div variants={fadeUp} className="col-span-2 rounded-lg border border-border bg-card/40 backdrop-blur-md p-4">
                <div className="flex items-center gap-2 mb-3">
@@ -369,13 +369,13 @@ const BillboardHero = ({
                </div>
                <div className="space-y-2">
                  {topMarketCap.map((p, i) => {
-                   const m = marketData[p.id];
-                   return (
-                     <Link
-                       key={p.id}
-                       to={`/project/${p.slug}`}
-                       className="group flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-secondary/50"
-                     >
+                  const m = marketData[p.id];
+                  return (
+                    <Link
+                      key={p.id}
+                      to={`/project/${p.slug}`}
+                      className="group flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-secondary/50">
+                      
                        <span className="text-xs font-bold text-muted-foreground w-4 text-center">{i + 1}</span>
                        <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="sm" />
                        <div className="min-w-0 flex-1">
@@ -388,9 +388,9 @@ const BillboardHero = ({
                            {(m?.price_change_24h || 0) >= 0 ? "+" : ""}{(m?.price_change_24h || 0).toFixed(1)}%
                          </p>
                        </div>
-                     </Link>
-                   );
-                 })}
+                     </Link>);
+
+                })}
                </div>
              </motion.div>
 
@@ -405,25 +405,25 @@ const BillboardHero = ({
                </div>
                <div className="space-y-2">
                  {trendingProjects.slice(0, 5).map((p: any, i: number) => {
-                   const m = marketData[p.id];
-                   return (
-                     <Link
-                       key={p.id}
-                       to={`/project/${p.slug}`}
-                       className="group flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-secondary/50"
-                     >
+                  const m = marketData[p.id];
+                  return (
+                    <Link
+                      key={p.id}
+                      to={`/project/${p.slug}`}
+                      className="group flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-secondary/50">
+                      
                        <span className="text-xs font-bold text-muted-foreground w-4 text-center">{i + 1}</span>
                        <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="sm" />
                        <div className="min-w-0 flex-1">
                          <p className="text-sm font-semibold text-foreground truncate">{p.name}</p>
                          <p className="text-xs text-muted-foreground truncate">{p.category}</p>
                        </div>
-                       {m?.price_usd && (
-                         <span className="text-sm font-medium text-muted-foreground tabular-nums">{formatPrice(m.price_usd)}</span>
-                       )}
-                     </Link>
-                   );
-                 })}
+                       {m?.price_usd &&
+                      <span className="text-sm font-medium text-muted-foreground tabular-nums">{formatPrice(m.price_usd)}</span>
+                      }
+                     </Link>);
+
+                })}
                </div>
              </motion.div>
 
@@ -437,9 +437,9 @@ const BillboardHero = ({
                  </div>
                  <div className="space-y-2.5">
                    {topGainers.map((p) => {
-                     const m = marketData[p.id];
-                     return (
-                       <Link key={p.id} to={`/project/${p.slug}`} className="group flex items-center gap-2 hover:opacity-80 transition-opacity">
+                    const m = marketData[p.id];
+                    return (
+                      <Link key={p.id} to={`/project/${p.slug}`} className="group flex items-center gap-2 hover:opacity-80 transition-opacity">
                          <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="sm" />
                          <div className="min-w-0 flex-1">
                            <p className="text-sm font-semibold text-foreground truncate">{p.name}</p>
@@ -447,9 +447,9 @@ const BillboardHero = ({
                              +{(m?.price_change_24h || 0).toFixed(1)}%
                            </p>
                          </div>
-                       </Link>
-                     );
-                   })}
+                       </Link>);
+
+                  })}
                    {topGainers.length === 0 && <p className="text-xs text-muted-foreground">No data yet</p>}
                  </div>
                </div>
@@ -462,9 +462,9 @@ const BillboardHero = ({
                  </div>
                  <div className="space-y-2.5">
                    {topLosers.map((p) => {
-                     const m = marketData[p.id];
-                     return (
-                       <Link key={p.id} to={`/project/${p.slug}`} className="group flex items-center gap-2 hover:opacity-80 transition-opacity">
+                    const m = marketData[p.id];
+                    return (
+                      <Link key={p.id} to={`/project/${p.slug}`} className="group flex items-center gap-2 hover:opacity-80 transition-opacity">
                          <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="sm" />
                          <div className="min-w-0 flex-1">
                            <p className="text-sm font-semibold text-foreground truncate">{p.name}</p>
@@ -472,17 +472,17 @@ const BillboardHero = ({
                              {(m?.price_change_24h || 0).toFixed(1)}%
                            </p>
                          </div>
-                       </Link>
-                     );
-                   })}
+                       </Link>);
+
+                  })}
                    {topLosers.length === 0 && <p className="text-xs text-muted-foreground">No data yet</p>}
                  </div>
                </div>
              </motion.div>
 
              {/* ── Top Forecasts — Enhanced (spans full width) ── */}
-             {topForecasts.length > 0 && (
-               <motion.div variants={fadeUp} className="col-span-2 sm:col-span-4 lg:col-span-6 rounded-lg border border-border bg-card/40 backdrop-blur-md p-4 sm:p-5">
+             {topForecasts.length > 0 &&
+            <motion.div variants={fadeUp} className="col-span-2 sm:col-span-4 lg:col-span-6 rounded-lg border border-border bg-card/40 backdrop-blur-md p-4 sm:p-5">
                  <div className="flex items-center gap-2 mb-4">
                    <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10">
                      <BarChart3 className="h-4 w-4 text-primary" />
@@ -494,31 +494,31 @@ const BillboardHero = ({
                  </div>
                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                    {topForecasts.slice(0, 4).map((f) => {
-                     const totalVotes = f.total_votes_yes + f.total_votes_no;
-                     const yesPercent = totalVotes > 0 ? (f.total_votes_yes / totalVotes) * 100 : 50;
-                     return (
-                       <Link
-                         key={f.id}
-                         to={`/forecasts/${f.id}`}
-                         className="group relative flex flex-col gap-3 rounded-lg border border-border/50 bg-secondary/20 px-4 py-4 transition-all hover:bg-secondary/40 hover:border-primary/20 hover:shadow-md hover:shadow-primary/5"
-                       >
+                  const totalVotes = f.total_votes_yes + f.total_votes_no;
+                  const yesPercent = totalVotes > 0 ? f.total_votes_yes / totalVotes * 100 : 50;
+                  return (
+                    <Link
+                      key={f.id}
+                      to={`/forecasts/${f.id}`}
+                      className="group relative flex flex-col gap-3 rounded-lg border border-border/50 bg-secondary/20 px-4 py-4 transition-all hover:bg-secondary/40 hover:border-primary/20 hover:shadow-md hover:shadow-primary/5">
+                      
                           {/* Project logos */}
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <ProjectLogo logoUrl={f.project_a_logo_url || null} logoEmoji={f.project_a_logo_emoji || "⬡"} name={f.project_a_name || "Project"} size="sm" />
-                              {f.project_b_name && (
-                                <>
+                              {f.project_b_name &&
+                          <>
                                   <span className="text-[8px] font-bold text-muted-foreground uppercase">vs</span>
                                   <ProjectLogo logoUrl={f.project_b_logo_url || null} logoEmoji={f.project_b_logo_emoji || "⬡"} name={f.project_b_name} size="sm" />
                                 </>
-                              )}
+                          }
                             </div>
                             <div className="flex items-center gap-2">
-                              {f.status === "ended" && (
-                                <Badge variant="destructive" className="text-[9px] px-1.5 py-0">
+                              {f.status === "ended" &&
+                          <Badge variant="destructive" className="text-[9px] px-1.5 py-0">
                                   ENDED
                                 </Badge>
-                              )}
+                          }
                               <span className="text-xs font-medium text-muted-foreground tabular-nums">
                                 {totalVotes} vote{totalVotes !== 1 ? "s" : ""}
                               </span>
@@ -532,39 +532,39 @@ const BillboardHero = ({
                          <div className="mt-auto space-y-2">
                            <div className="relative h-2.5 rounded-full overflow-hidden flex">
                              <motion.div
-                               className="h-full rounded-l-full"
-                               style={{ background: "hsl(var(--neon-green))" }}
-                               initial={{ width: 0 }}
-                               whileInView={{ width: `${yesPercent}%` }}
-                               viewport={{ once: true }}
-                               transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
-                             />
+                            className="h-full rounded-l-full"
+                            style={{ background: "hsl(var(--neon-green))" }}
+                            initial={{ width: 0 }}
+                            whileInView={{ width: `${yesPercent}%` }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }} />
+                          
                              <motion.div
-                               className="h-full rounded-r-full"
-                               style={{ background: "hsl(var(--destructive))" }}
-                               initial={{ width: 0 }}
-                               whileInView={{ width: `${100 - yesPercent}%` }}
-                               viewport={{ once: true }}
-                               transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
-                             />
+                            className="h-full rounded-r-full"
+                            style={{ background: "hsl(var(--destructive))" }}
+                            initial={{ width: 0 }}
+                            whileInView={{ width: `${100 - yesPercent}%` }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }} />
+                          
                            </div>
                            <div className="flex items-center justify-between text-sm">
                              <span className="font-bold text-neon-green">Yes {yesPercent.toFixed(0)}%</span>
-                             <span className="font-bold text-muted-foreground">No {(100 - yesPercent).toFixed(0)}%</span>
+                             <span className="font-bold text-destructive">No {(100 - yesPercent).toFixed(0)}%</span>
                            </div>
                          </div>
-                       </Link>
-                     );
-                   })}
+                       </Link>);
+
+                })}
                  </div>
                </motion.div>
-             )}
+            }
           </motion.div>
         </motion.div>
       </div>
 
-    </section>
-  );
+    </section>);
+
 };
 
 export default BillboardHero;
