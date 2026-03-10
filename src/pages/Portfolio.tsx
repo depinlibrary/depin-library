@@ -20,6 +20,7 @@ import PriceAlertsManager from "@/components/PriceAlertsManager";
 import { useBookmarks, useToggleBookmark } from "@/hooks/useBookmarks";
 import { useUpsertPriceAlert } from "@/hooks/usePriceAlerts";
 import { Star } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 function formatPrice(price: number | null): string {
   if (price === null || price === undefined) return "—";
