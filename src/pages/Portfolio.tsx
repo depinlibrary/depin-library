@@ -17,7 +17,8 @@ import { toast } from "sonner";
 import { Link, Navigate } from "react-router-dom";
 import MyForecasts from "@/components/MyForecasts";
 import PriceAlertsManager from "@/components/PriceAlertsManager";
-import { useBookmarks } from "@/hooks/useBookmarks";
+import { useBookmarks, useToggleBookmark } from "@/hooks/useBookmarks";
+import { useUpsertPriceAlert } from "@/hooks/usePriceAlerts";
 import { Star } from "lucide-react";
 
 function formatPrice(price: number | null): string {
@@ -101,6 +102,13 @@ const MiniSparkline = ({ data, isPositive }: { data: number[]; isPositive: boole
 
 const WatchlistContent = ({ projects, marketDataMap }: { projects: any[]; marketDataMap: Record<string, any> }) => {
   const { data: bookmarkIds = [], isLoading } = useBookmarks();
+  const toggleBookmark = useToggleBookmark();
+  const [showAddProject, setShowAddProject] = useState(false);
+  const [alertProjectId, setAlertProjectId] = useState<string | null>(null);
+  const [alertThreshold, setAlertThreshold] = useState("5");
+  const [alertDirection, setAlertDirection] = useState<"up" | "down" | "both">("both");
+  const upsertAlert = useUpsertPriceAlert();
+
   const watchlistProjects = useMemo(() => {
     return bookmarkIds
       .map((id: string) => {
@@ -111,6 +119,47 @@ const WatchlistContent = ({ projects, marketDataMap }: { projects: any[]; market
       })
       .filter(Boolean) as { project: any; market: any }[];
   }, [bookmarkIds, projects, marketDataMap]);
+
+  const unbookmarkedProjects = useMemo(() => {
+    return projects.filter((p: any) => !bookmarkIds.includes(p.id));
+  }, [projects, bookmarkIds]);
+
+  const handleRemoveFromWatchlist = (e: React.MouseEvent, projectId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleBookmark.mutate({ projectId, isBookmarked: true });
+    toast.success("Removed from watchlist");
+  };
+
+  const handleAddToWatchlist = (projectId: string) => {
+    toggleBookmark.mutate({ projectId, isBookmarked: false });
+    toast.success("Added to watchlist");
+  };
+
+  const handleSetAlert = (e: React.MouseEvent, projectId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setAlertProjectId(alertProjectId === projectId ? null : projectId);
+  };
+
+  const handleSaveAlert = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!alertProjectId) return;
+    const threshold = parseFloat(alertThreshold);
+    if (isNaN(threshold) || threshold < 1 || threshold > 100) {
+      toast.error("Enter a threshold between 1–100%");
+      return;
+    }
+    upsertAlert.mutate({ projectId: alertProjectId, thresholdPercent: threshold, direction: alertDirection }, {
+      onSuccess: () => {
+        toast.success("Price alert created");
+        setAlertProjectId(null);
+        setAlertThreshold("5");
+        setAlertDirection("both");
+      },
+    });
+  };
 
   if (isLoading) {
     return (
@@ -123,58 +172,161 @@ const WatchlistContent = ({ projects, marketDataMap }: { projects: any[]; market
     );
   }
 
-  if (watchlistProjects.length === 0) {
+  if (watchlistProjects.length === 0 && !showAddProject) {
     return (
       <div className="p-12 md:p-16 text-center">
         <div className="mx-auto h-14 w-14 rounded-2xl bg-secondary/50 flex items-center justify-center mb-3">
           <Star className="h-7 w-7 text-muted-foreground/30" />
         </div>
         <p className="text-sm font-medium text-foreground mb-1">No bookmarked projects</p>
-        <p className="text-xs text-muted-foreground mb-4">Star projects on the Market page to add them here</p>
-        <Link to="/market">
-          <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs">
-            Browse Market
+        <p className="text-xs text-muted-foreground mb-4">Star projects on the Market page or add them here</p>
+        <div className="flex items-center justify-center gap-2">
+          <Link to="/market">
+            <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs">
+              Browse Market
+            </Button>
+          </Link>
+          <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs" onClick={() => setShowAddProject(true)}>
+            <Plus className="h-3.5 w-3.5" /> Add Project
           </Button>
-        </Link>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="divide-y divide-border/30">
-      {watchlistProjects.map(({ project, market }) => {
-        const change = market?.price_change_24h ?? null;
-        const sparkline = market?.sparkline_7d;
-        const sparkArr = Array.isArray(sparkline) ? sparkline : null;
-        return (
-          <Link
-            key={project.id}
-            to={`/project/${project.slug}`}
-            className="flex items-center gap-3 px-4 md:px-5 py-3 transition-colors hover:bg-secondary/10"
+    <div>
+      {/* Add project to watchlist */}
+      <div className="px-4 md:px-5 py-3 border-b border-border/30 flex items-center justify-end">
+        <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs" onClick={() => setShowAddProject(!showAddProject)}>
+          {showAddProject ? <X className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
+          {showAddProject ? "Cancel" : "Add Project"}
+        </Button>
+      </div>
+
+      <AnimatePresence>
+        {showAddProject && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden border-b border-border/30"
           >
-            <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="sm" />
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-foreground truncate">{project.name}</p>
-              <p className="text-[11px] text-muted-foreground">{project.token} · {project.category}</p>
+            <div className="px-4 md:px-5 py-3">
+              <Select onValueChange={(val) => handleAddToWatchlist(val)}>
+                <SelectTrigger className="h-9 text-sm">
+                  <SelectValue placeholder="Select a project to add to watchlist" />
+                </SelectTrigger>
+                <SelectContent side="bottom" avoidCollisions={false}>
+                  {unbookmarkedProjects.map((p: any) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      <span className="flex items-center gap-2">
+                        {p.logo_url && <img src={p.logo_url} alt="" className="w-4 h-4 rounded-[4px] object-contain" />}
+                        {p.name} ({p.token})
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-            {sparkArr && (
-              <div className="hidden sm:block">
-                <MiniSparkline data={sparkArr as number[]} isPositive={(change ?? 0) >= 0} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="divide-y divide-border/30">
+        {watchlistProjects.map(({ project, market }) => {
+          const change = market?.price_change_24h ?? null;
+          const sparkline = market?.sparkline_7d;
+          const sparkArr = Array.isArray(sparkline) ? sparkline : null;
+          const isAlertOpen = alertProjectId === project.id;
+          return (
+            <div key={project.id}>
+              <div className="flex items-center gap-3 px-4 md:px-5 py-3 transition-colors hover:bg-secondary/10">
+                <Link to={`/project/${project.slug}`} className="flex items-center gap-3 min-w-0 flex-1">
+                  <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="sm" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-foreground truncate">{project.name}</p>
+                    <p className="text-[11px] text-muted-foreground">{project.token} · {project.category}</p>
+                  </div>
+                </Link>
+                {sparkArr && (
+                  <div className="hidden sm:block">
+                    <MiniSparkline data={sparkArr as number[]} isPositive={(change ?? 0) >= 0} />
+                  </div>
+                )}
+                <div className="text-right shrink-0">
+                  <p className="text-sm font-medium text-foreground tabular-nums">
+                    {market?.price_usd ? formatPrice(market.price_usd) : "—"}
+                  </p>
+                  {change !== null && (
+                    <p className={`text-[11px] font-semibold tabular-nums ${change >= 0 ? "text-green-500" : "text-red-500"}`}>
+                      {change >= 0 ? "+" : ""}{change.toFixed(2)}%
+                    </p>
+                  )}
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <button
+                    onClick={(e) => handleSetAlert(e, project.id)}
+                    className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                    title="Set price alert"
+                  >
+                    <Bell className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    onClick={(e) => handleRemoveFromWatchlist(e, project.id)}
+                    className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                    title="Remove from watchlist"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               </div>
-            )}
-            <div className="text-right shrink-0">
-              <p className="text-sm font-medium text-foreground tabular-nums">
-                {market?.price_usd ? formatPrice(market.price_usd) : "—"}
-              </p>
-              {change !== null && (
-                <p className={`text-[11px] font-semibold tabular-nums ${change >= 0 ? "text-green-500" : "text-red-500"}`}>
-                  {change >= 0 ? "+" : ""}{change.toFixed(2)}%
-                </p>
-              )}
+              {/* Inline price alert form */}
+              <AnimatePresence>
+                {isAlertOpen && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-4 md:px-5 pb-3 flex flex-col sm:flex-row items-stretch sm:items-end gap-2">
+                      <div className="flex-1">
+                        <label className="text-[10px] text-muted-foreground mb-1 block">Threshold %</label>
+                        <Input
+                          type="number"
+                          min="1"
+                          max="100"
+                          value={alertThreshold}
+                          onChange={(e) => setAlertThreshold(e.target.value)}
+                          className="h-8 text-xs"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </div>
+                      <div className="w-full sm:w-28">
+                        <label className="text-[10px] text-muted-foreground mb-1 block">Direction</label>
+                        <Select value={alertDirection} onValueChange={(v: any) => setAlertDirection(v)}>
+                          <SelectTrigger className="h-8 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="both">Both</SelectItem>
+                            <SelectItem value="up">Up only</SelectItem>
+                            <SelectItem value="down">Down only</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <Button size="sm" className="h-8 text-xs gap-1" onClick={handleSaveAlert} disabled={upsertAlert.isPending}>
+                        <Bell className="h-3 w-3" /> Set Alert
+                      </Button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
-          </Link>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 };
@@ -919,7 +1071,7 @@ const Portfolio = () => {
 
                     {/* Desktop table */}
                     <div className="hidden md:block">
-                      <div className="grid grid-cols-[2.5rem_1fr_5.5rem_5.5rem_6_6rem_5.5rem_6rem_5.5rem_3.5rem] gap-0 px-5 py-2.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground border-t border-border">
+                      <div className="grid grid-cols-[2.5rem_1fr_5.5rem_5.5rem_6rem_5.5rem_6rem_5.5rem_3.5rem] gap-0 px-5 py-2.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground border-t border-border">
                         <span>#</span>
                         <span>Asset</span>
                         <span className="text-right">Price</span>
@@ -941,7 +1093,7 @@ const Portfolio = () => {
                               initial={{ opacity: 0 }}
                               animate={{ opacity: 1 }}
                               transition={{ delay: idx * 0.03 }}
-                              className="grid grid-cols-[2.5rem_1fr_5.5rem.5rem_6_5rem_5.5rem_6rem_5.5rem_3.5rem] gap-0 items-center px-5 py-3 transition-colors hover:bg-secondary/10 group"
+                              className="grid grid-cols-[2.5rem_1fr_5.5rem_5.5rem_6rem_5.5rem_6rem_5.5rem_3.5rem] gap-0 items-center px-5 py-3 transition-colors hover:bg-secondary/10 group"
                             >
                               <span className="text-xs text-muted-foreground tabular-nums">{idx + 1}</span>
                               <div>

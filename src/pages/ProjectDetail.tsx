@@ -1,10 +1,8 @@
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, ExternalLink, Globe, Layers, Coins, Calendar, Activity, Star, Bookmark, Twitter } from "lucide-react";
+import { ArrowLeft, ExternalLink, Globe, Layers, Coins, Calendar, Activity, Star, Twitter } from "lucide-react";
 import CompareWithButton from "@/components/CompareWithButton";
 import { useProject } from "@/hooks/useProjects";
-import { useAuth } from "@/contexts/AuthContext";
-import { useBookmarks, useToggleBookmark } from "@/hooks/useBookmarks";
 import ProjectRatings from "@/components/ProjectRatings";
 import ReviewSection from "@/components/ReviewSection";
 import SentimentBadge from "@/components/SentimentBadge";
@@ -34,10 +32,7 @@ const fadeUp = {
 const ProjectDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const { data: project, isLoading } = useProject(slug || "");
-  const { user } = useAuth();
   const { data: marketData } = useTokenMarketData(project?.id);
-  const { data: bookmarks = [] } = useBookmarks();
-  const toggleBookmark = useToggleBookmark();
   const { data: ratingsData } = useProjectRatings(project?.id || "");
 
   if (isLoading) {
@@ -62,7 +57,6 @@ const ProjectDetail = () => {
     );
   }
 
-  const isBookmarked = bookmarks.includes(project.id);
   const overallRating = ratingsData?.averages?.overall;
   const sparkline = marketData?.sparkline_7d;
 
@@ -94,9 +88,9 @@ const ProjectDetail = () => {
           <motion.div {...fadeUp} transition={{ delay: 0.05 }} className="mb-8">
             <div className="mb-4 flex flex-col sm:flex-row sm:items-center gap-4">
               <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="lg" />
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0 flex-1 flex flex-col justify-center">
                 <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                  <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{project.name}</h1>
+                  <h1 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight">{project.name}</h1>
                    {ratingsData?.averages?.count > 0 && overallRating && (
                      <span className="flex items-center gap-1 rounded-lg border border-primary/30 bg-primary/10 px-2 py-1 text-sm font-semibold text-primary">
                        <Star className="h-3.5 w-3.5 fill-primary" />
@@ -106,18 +100,8 @@ const ProjectDetail = () => {
                    )}
                 </div>
                 <p className="mt-1 text-sm sm:text-base text-muted-foreground">{project.tagline}</p>
-                <div className="flex items-center gap-2 lg:justify-between mt-2">
-                   <div className="lg:order-2 lg:ml-auto">
-                     <CompareWithButton currentProjectId={project.id} currentProjectName={project.name} currentCategory={project.category} />
-                   </div>
-                   {user && (
-                     <button
-                       onClick={() => toggleBookmark.mutate({ projectId: project.id, isBookmarked })}
-                       className="rounded-lg border border-border bg-card p-2 transition-colors hover:bg-secondary lg:order-1"
-                     >
-                       <Bookmark className={`h-4 w-4 ${isBookmarked ? "fill-primary text-primary" : "text-muted-foreground"}`} />
-                     </button>
-                   )}
+                <div className="flex items-center gap-2 lg:justify-end mt-2">
+                   <CompareWithButton currentProjectId={project.id} currentProjectName={project.name} currentCategory={project.category} />
                  </div>
               </div>
             </div>
@@ -224,13 +208,13 @@ const ProjectDetail = () => {
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
                         <XAxis dataKey="idx" hide />
-                        <YAxis
+                         <YAxis
                           domain={["dataMin", "dataMax"]}
                           tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
                           tickLine={false}
                           axisLine={false}
-                          tickFormatter={(v: number) => v < 1 ? v.toFixed(4) : v.toFixed(2)}
-                          width={45}
+                          tickFormatter={(v: number) => v < 0.01 ? v.toFixed(6) : v < 1 ? v.toFixed(4) : v.toFixed(2)}
+                          width={60}
                         />
                         <Tooltip
                           contentStyle={{
