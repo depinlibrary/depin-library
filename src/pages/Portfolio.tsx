@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Trash2, Briefcase, TrendingUp, TrendingDown, Minus, Pencil, Check, X, BarChart3, ChevronDown, ChevronUp, Eye, EyeOff, Download, Activity, Bell, Wallet } from "lucide-react";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, AreaChart, Area, XAxis, YAxis } from "recharts";
+import { Plus, Trash2, Briefcase, TrendingUp, TrendingDown, Minus, Pencil, Check, X, BarChart3, ChevronDown, ChevronUp, Eye, EyeOff, Download, Activity, Bell, Wallet, AlertTriangle } from "lucide-react";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, AreaChart, Area, XAxis, YAxis } from "recharts";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProjectLogo from "@/components/ProjectLogo";
@@ -20,6 +20,7 @@ import PriceAlertsManager from "@/components/PriceAlertsManager";
 import { useBookmarks, useToggleBookmark } from "@/hooks/useBookmarks";
 import { useUpsertPriceAlert } from "@/hooks/usePriceAlerts";
 import { Star } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 function formatPrice(price: number | null): string {
   if (price === null || price === undefined) return "—";
@@ -347,6 +348,14 @@ const Portfolio = () => {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [perfRange, setPerfRange] = useState<"1D" | "7D" | "30D" | "90D">("7D");
   const [activeTab, setActiveTab] = useState<"holdings" | "forecasts" | "alerts" | "watchlist">("holdings");
+
+  const { data: bookmarkIdsForBadge = [] } = useBookmarks();
+  const watchlistAlertCount = useMemo(() => {
+    return bookmarkIdsForBadge.filter((id: string) => {
+      const market = marketDataMap[id];
+      return market?.price_change_24h != null && Math.abs(market.price_change_24h) >= 5;
+    }).length;
+  }, [bookmarkIdsForBadge, marketDataMap]);
 
   const { data: holdings = [], isLoading } = useQuery({
     queryKey: ["portfolio_holdings", user?.id],
@@ -787,7 +796,7 @@ const Portfolio = () => {
                             <Cell key={index} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                           ))}
                         </Pie>
-                        <Tooltip
+                        <RechartsTooltip
                           formatter={(value: number) => [formatValue(value), ""]}
                           contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "10px", color: "hsl(var(--foreground))", fontSize: "12px" }}
                           itemStyle={{ color: "hsl(var(--foreground))" }}
@@ -870,7 +879,7 @@ const Portfolio = () => {
                       </defs>
                       <XAxis dataKey="index" hide />
                       <YAxis hide domain={["auto", "auto"]} />
-                      <Tooltip
+                      <RechartsTooltip
                         formatter={(value: number) => [hideBalances ? "••••" : formatValue(value), "Portfolio"]}
                         contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "10px", color: "hsl(var(--foreground))", fontSize: "12px" }}
                         labelFormatter={() => ""}
@@ -912,12 +921,12 @@ const Portfolio = () => {
                 { key: "holdings" as const, label: "Holdings", icon: Wallet },
                 { key: "alerts" as const, label: "Alerts", icon: Bell },
                 { key: "forecasts" as const, label: "Forecasts", icon: Activity },
-                { key: "watchlist" as const, label: "Watchlist", icon: Star },
+                { key: "watchlist" as const, label: "Watchlist", icon: Star, badge: watchlistAlertCount },
               ]).map((tab) => (
                 <button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key)}
-                  className={`flex items-center gap-1.5 rounded-md px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium transition-all whitespace-nowrap shrink-0 ${
+                  className={`relative flex items-center gap-1.5 rounded-md px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium transition-all whitespace-nowrap shrink-0 ${
                     activeTab === tab.key
                       ? "bg-card text-foreground shadow-sm border border-border"
                       : "text-muted-foreground hover:text-foreground"
@@ -925,6 +934,11 @@ const Portfolio = () => {
                 >
                   <tab.icon className="h-3.5 w-3.5" />
                   {tab.label}
+                  {tab.badge && tab.badge > 0 && (
+                    <span className="ml-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
+                      {tab.badge}
+                    </span>
+                  )}
                 </button>
               ))}
             </div>
@@ -1071,7 +1085,7 @@ const Portfolio = () => {
 
                     {/* Desktop table */}
                     <div className="hidden md:block">
-                      <div className="grid grid-cols-[2.5rem_1fr_5.5rem_5.5rem_6rem_5.5rem_6rem_5.5rem_3.5rem] gap-0 px-5 py-2.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground border-t border-border">
+                      <div className="grid grid-cols-[2.5rem_1fr_5.5rem_6rem_7rem_6rem_6.5rem_6rem_3.5rem] gap-x-2 px-5 py-2.5 text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground border-t border-border">
                         <span>#</span>
                         <span>Asset</span>
                         <span className="text-right">Price</span>
@@ -1093,7 +1107,7 @@ const Portfolio = () => {
                               initial={{ opacity: 0 }}
                               animate={{ opacity: 1 }}
                               transition={{ delay: idx * 0.03 }}
-                              className="grid grid-cols-[2.5rem_1fr_5.5rem_5.5rem_6rem_5.5rem_6rem_5.5rem_3.5rem] gap-0 items-center px-5 py-3 transition-colors hover:bg-secondary/10 group"
+                              className="grid grid-cols-[2.5rem_1fr_5.5rem_6rem_7rem_6rem_6.5rem_6rem_3.5rem] gap-x-2 items-center px-5 py-3 transition-colors hover:bg-secondary/10 group"
                             >
                               <span className="text-xs text-muted-foreground tabular-nums">{idx + 1}</span>
                               <div>
@@ -1134,14 +1148,33 @@ const Portfolio = () => {
                                     className="h-7 w-24 ml-auto text-right text-xs"
                                   />
                                 ) : (
-                                  <span className="text-sm text-foreground tabular-nums">
-                                    {hideBalances ? "••••" : Number(h.token_amount).toLocaleString(undefined, { maximumFractionDigits: 4 })}
-                                  </span>
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <span className="text-sm text-foreground tabular-nums cursor-default">
+                                          {hideBalances ? "••••" : Number(h.token_amount).toLocaleString(undefined, { maximumFractionDigits: 4 })}
+                                        </span>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p className="text-xs tabular-nums">{Number(h.token_amount).toLocaleString(undefined, { maximumFractionDigits: 18 })} tokens</p>
+                                        <p className="text-xs text-muted-foreground tabular-nums">${(h.value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
                                 )}
                               </div>
-                              <span className="text-right text-sm font-bold text-foreground tabular-nums">
-                                {hideBalances ? "••••" : formatValue(h.value)}
-                              </span>
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span className="text-right text-sm font-bold text-foreground tabular-nums cursor-default block">
+                                      {hideBalances ? "••••" : formatValue(h.value)}
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p className="text-xs tabular-nums">${h.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
                               <div className="text-right">
                                 {h.pnl24h !== null ? (
                                   <span className={`text-sm font-semibold tabular-nums ${h.pnl24h >= 0 ? "text-green-500" : "text-red-500"}`}>

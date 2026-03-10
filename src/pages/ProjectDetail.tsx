@@ -86,9 +86,11 @@ const ProjectDetail = () => {
 
           {/* Hero */}
           <motion.div {...fadeUp} transition={{ delay: 0.05 }} className="mb-8">
-            <div className="mb-4 flex flex-col sm:flex-row sm:items-center gap-4">
-              <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="lg" />
-              <div className="min-w-0 flex-1 flex flex-col justify-center">
+            <div className="mb-4 flex items-start gap-4">
+              <div className="shrink-0 mt-0.5">
+                <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="lg" />
+              </div>
+              <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                   <h1 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight">{project.name}</h1>
                    {ratingsData?.averages?.count > 0 && overallRating && (
@@ -199,7 +201,7 @@ const ProjectDetail = () => {
                   </div>
                   <div className="h-32">
                     <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={(sparkline as number[]).map((v, i) => ({ idx: i, price: v }))} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                      <AreaChart data={(sparkline as number[]).map((v, i) => ({ idx: i, price: v }))} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
                         <defs>
                           <linearGradient id="priceGrad7d" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="5%" stopColor={(marketData?.price_change_24h ?? 0) >= 0 ? "hsl(var(--neon-green))" : "hsl(var(--destructive))"} stopOpacity={0.25} />
