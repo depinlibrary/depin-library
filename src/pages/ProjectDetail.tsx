@@ -201,7 +201,7 @@ const ProjectDetail = () => {
                   </div>
                   <div className="h-32">
                     <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={(sparkline as number[]).map((v, i) => ({ idx: i, price: v }))} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                      <AreaChart data={(sparkline as number[]).map((v, i) => ({ idx: i, price: v }))} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
                         <defs>
                           <linearGradient id="priceGrad7d" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="5%" stopColor={(marketData?.price_change_24h ?? 0) >= 0 ? "hsl(var(--neon-green))" : "hsl(var(--destructive))"} stopOpacity={0.25} />

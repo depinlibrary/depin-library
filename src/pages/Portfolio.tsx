@@ -1093,7 +1093,7 @@ const Portfolio = () => {
                               initial={{ opacity: 0 }}
                               animate={{ opacity: 1 }}
                               transition={{ delay: idx * 0.03 }}
-                              className="grid grid-cols-[2.5rem_1fr_5.5rem_5.5rem_6rem_5.5rem_6rem_5.5rem_3.5rem] gap-0 items-center px-5 py-3 transition-colors hover:bg-secondary/10 group"
+                              className="grid grid-cols-[2.5rem_1fr_5.5rem_6rem_7rem_6rem_6.5rem_6rem_3.5rem] gap-x-2 items-center px-5 py-3 transition-colors hover:bg-secondary/10 group"
                             >
                               <span className="text-xs text-muted-foreground tabular-nums">{idx + 1}</span>
                               <div>
