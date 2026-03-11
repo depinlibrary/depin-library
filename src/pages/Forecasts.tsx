@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Timer, ThumbsUp, ThumbsDown, Plus, TrendingUp, Clock, Flame, ChevronLeft, ChevronRight, LogIn, Users, BarChart3, Zap, X, Filter, Trophy, CheckCircle, Circle, RotateCcw, Activity, ArrowRight } from "lucide-react";
+import { Timer, ThumbsUp, ThumbsDown, Plus, TrendingUp, Clock, Flame, ChevronLeft, ChevronRight, LogIn, Users, BarChart3, Zap, X, Filter, Trophy, CheckCircle, Circle, RotateCcw } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -31,12 +31,9 @@ function getTimeRemaining(endDate: string): string {
   if (days > 30) return `${Math.floor(days / 30)}mo left`;
   if (days > 0) return `${days}d left`;
   const hours = Math.floor(diff / (1000 * 60 * 60));
-  if (hours > 0) return `${hours}h left`;
-  const mins = Math.floor(diff / (1000 * 60));
-  return `${mins}m left`;
+  return `${hours}h left`;
 }
 
-// ── Polymarket-style Forecast Card ──
 const ForecastCard = ({ forecast, onVote, isAuthenticated, index }: {
   forecast: Forecast;
   onVote: (id: string, vote: "yes" | "no") => void;
@@ -52,249 +49,167 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index }: {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.04, duration: 0.35 }}
-      className="group relative rounded-2xl border border-border bg-card overflow-hidden hover:border-primary/25 transition-all h-full flex flex-col"
+      transition={{ delay: index * 0.05, duration: 0.4 }}
+      className="group relative rounded-xl border border-border bg-card overflow-hidden transition-all hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20 h-full flex flex-col"
     >
+      {/* Top accent line */}
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
       <div className="p-5 flex-1 flex flex-col">
-        {/* Project logos + time */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2.5">
-            <div className="flex items-center -space-x-2">
-              {forecast.project_a_logo_url ? (
-                <img src={forecast.project_a_logo_url} alt={forecast.project_a_name} className="w-8 h-8 rounded-xl object-contain border-2 border-card bg-secondary relative z-10" />
+        {/* Header: Projects + time badge */}
+        <div className="flex items-center gap-2 mb-3">
+          <div className="flex items-center -space-x-1.5">
+            {forecast.project_a_logo_url ? (
+              <img
+                src={forecast.project_a_logo_url}
+                alt={forecast.project_a_name}
+                className="w-7 h-7 rounded-[7px] overflow-hidden object-contain border-2 border-card bg-secondary relative z-10"
+              />
+            ) : (
+              <span className="w-7 h-7 rounded-[7px] overflow-hidden flex items-center justify-center text-sm border-2 border-card bg-secondary relative z-10">
+                {forecast.project_a_logo_emoji || "⬡"}
+              </span>
+            )}
+            {forecast.project_b_name && (
+              forecast.project_b_logo_url ? (
+                <img
+                  src={forecast.project_b_logo_url}
+                  alt={forecast.project_b_name}
+                  className="w-7 h-7 rounded-[7px] overflow-hidden object-contain border-2 border-card bg-secondary relative z-0"
+                />
               ) : (
-                <span className="w-8 h-8 rounded-xl flex items-center justify-center text-sm border-2 border-card bg-secondary relative z-10">{forecast.project_a_logo_emoji || "⬡"}</span>
-              )}
-              {forecast.project_b_name && (
-                forecast.project_b_logo_url ? (
-                  <img src={forecast.project_b_logo_url} alt={forecast.project_b_name} className="w-8 h-8 rounded-xl object-contain border-2 border-card bg-secondary" />
-                ) : (
-                  <span className="w-8 h-8 rounded-xl flex items-center justify-center text-sm border-2 border-card bg-secondary">{forecast.project_b_logo_emoji || "⬡"}</span>
-                )
-              )}
-            </div>
-            <div className="flex flex-col min-w-0">
-              <Link to={`/project/${forecast.project_a_slug}`} className="text-[11px] font-medium text-muted-foreground hover:text-primary transition-colors truncate">
-                {forecast.project_a_name}
-              </Link>
-              {forecast.project_b_name && (
-                <Link to={`/project/${forecast.project_b_slug}`} className="text-[10px] text-muted-foreground/60 hover:text-primary transition-colors truncate">
-                  vs {forecast.project_b_name}
-                </Link>
-              )}
-            </div>
+                <span className="w-7 h-7 rounded-[7px] overflow-hidden flex items-center justify-center text-sm border-2 border-card bg-secondary relative z-0">
+                  {forecast.project_b_logo_emoji || "⬡"}
+                </span>
+              )
+            )}
           </div>
-          <span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold tracking-wide ${
-            isEnded ? "bg-muted text-muted-foreground" : "bg-primary/10 text-primary border border-primary/20"
+          <div className="flex items-center gap-1.5 flex-1 min-w-0">
+            <Link
+              to={`/project/${forecast.project_a_slug}`}
+              className="text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors truncate"
+            >
+              {forecast.project_a_name}
+            </Link>
+            {forecast.project_b_name && (
+              <>
+                <span className="text-muted-foreground/40 text-[10px]">vs</span>
+                <Link
+                  to={`/project/${forecast.project_b_slug}`}
+                  className="text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors truncate"
+                >
+                  {forecast.project_b_name}
+                </Link>
+              </>
+            )}
+          </div>
+          <span className={`shrink-0 rounded-md px-2 py-0.5 text-[10px] font-semibold tracking-wide ${
+            isEnded
+              ? "bg-muted text-muted-foreground"
+              : "bg-primary/10 text-primary"
           }`}>
             {timeLeft}
           </span>
         </div>
 
         {/* Title */}
-        <Link to={`/forecasts/${forecast.id}`} className="block mb-3">
-          <h3 className="text-sm font-bold text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+        <Link to={`/forecasts/${forecast.id}`} className="block">
+          <h3 className="text-[13px] font-semibold text-foreground leading-snug mb-2 line-clamp-2 hover:text-primary transition-colors">
             {forecast.title}
           </h3>
         </Link>
 
         {forecast.description && (
-          <p className="text-xs text-muted-foreground/80 mb-4 line-clamp-2 leading-relaxed">{forecast.description}</p>
+          <p className="text-xs text-muted-foreground mb-3 line-clamp-2 leading-relaxed min-h-[2.5rem]">{forecast.description}</p>
         )}
-        {!forecast.description && <div className="mb-4" />}
+        {!forecast.description && <div className="mb-3 min-h-[2.5rem]" />}
 
-        {/* Large percentage — Polymarket style */}
-        <div className="mt-auto mb-4">
-          <div className="flex items-center justify-between mb-1">
-            <span className={`text-3xl font-black font-['Space_Grotesk'] tracking-tight ${yesPct >= 50 ? "text-primary" : "text-destructive"}`}>
-              {yesPct.toFixed(0)}%
-            </span>
-            <span className="text-[11px] font-medium text-muted-foreground">
+        {/* Vote percentage display */}
+        <div className="mb-4 mt-auto">
+          <div className="flex items-end justify-between mb-2">
+            <div className="flex items-baseline gap-1">
+              <span className="text-lg font-bold text-foreground">{yesPct.toFixed(0)}%</span>
+              <span className="text-[10px] font-medium text-primary/70 uppercase tracking-wider">Yes</span>
+            </div>
+            <div className="flex items-baseline gap-1">
+              <span className="text-[10px] font-medium text-destructive/70 uppercase tracking-wider">No</span>
+              <span className="text-lg font-bold text-foreground">{noPct.toFixed(0)}%</span>
+            </div>
+          </div>
+          <div className="h-2 rounded-full bg-secondary overflow-hidden flex">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${yesPct}%` }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="h-full rounded-l-full"
+              style={{ background: "hsl(var(--primary))" }}
+            />
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${noPct}%` }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="h-full rounded-r-full bg-destructive/60"
+            />
+          </div>
+          <div className="flex items-center justify-center gap-1.5 mt-2">
+            <Users className="h-3 w-3 text-muted-foreground/50" />
+            <span className="text-[11px] text-muted-foreground">
               {totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}
             </span>
-          </div>
-          {/* Thin progress bar */}
-          <div className="h-1.5 rounded-full bg-secondary overflow-hidden flex">
-            <div className="h-full rounded-l-full transition-all duration-700" style={{ width: `${yesPct}%`, background: "hsl(var(--primary))" }} />
-            <div className="h-full rounded-r-full bg-destructive/50 transition-all duration-700" style={{ width: `${noPct}%` }} />
           </div>
         </div>
       </div>
 
-      {/* Vote buttons — Polymarket buy/sell style */}
-      {!isEnded ? (
-        <div className="grid grid-cols-2 gap-0">
+      {/* Vote buttons — separated footer */}
+      {!isEnded && (
+        <div className="flex border-t border-border">
           <button
             onClick={() => isAuthenticated ? onVote(forecast.id, "yes") : toast.error("Sign in to vote")}
-            className={`flex items-center justify-center gap-1.5 py-3 text-xs font-bold transition-all border-t border-r border-border ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-all ${
               forecast.user_vote === "yes"
-                ? "bg-primary/15 text-primary"
-                : "text-primary/70 hover:bg-primary/5 hover:text-primary"
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:bg-primary/5 hover:text-primary"
             }`}
           >
-            <ThumbsUp className="h-3.5 w-3.5" />
-            Yes {yesPct.toFixed(0)}¢
+            <ThumbsUp className="h-3.5 w-3.5" /> Yes
           </button>
+          <div className="w-px bg-border" />
           <button
             onClick={() => isAuthenticated ? onVote(forecast.id, "no") : toast.error("Sign in to vote")}
-            className={`flex items-center justify-center gap-1.5 py-3 text-xs font-bold transition-all border-t border-border ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-all ${
               forecast.user_vote === "no"
-                ? "bg-destructive/15 text-destructive"
-                : "text-destructive/70 hover:bg-destructive/5 hover:text-destructive"
+                ? "bg-destructive/10 text-destructive"
+                : "text-muted-foreground hover:bg-destructive/5 hover:text-destructive"
             }`}
           >
-            <ThumbsDown className="h-3.5 w-3.5" />
-            No {noPct.toFixed(0)}¢
+            <ThumbsDown className="h-3.5 w-3.5" /> No
           </button>
         </div>
-      ) : (
-        <div className={`flex items-center justify-between border-t border-border px-5 py-3 ${
+      )}
+
+      {isEnded && (
+        <div className={`flex items-center justify-between border-t border-border px-4 py-2.5 ${
           finalResult === "yes" ? "bg-primary/5" : "bg-destructive/5"
         }`}>
           <div className="flex items-center gap-2">
             <Trophy className={`h-3.5 w-3.5 ${finalResult === "yes" ? "text-primary" : "text-destructive"}`} />
-            <span className={`text-xs font-bold ${finalResult === "yes" ? "text-primary" : "text-destructive"}`}>
-              Resolved: {finalResult === "yes" ? "Yes" : "No"}
+            <span className={`text-[11px] font-semibold ${finalResult === "yes" ? "text-primary" : "text-destructive"}`}>
+              Result: {finalResult === "yes" ? "Yes" : "No"} ({finalResult === "yes" ? yesPct.toFixed(0) : noPct.toFixed(0)}%)
             </span>
           </div>
           {forecast.user_vote && (
-            <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
+            <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
               forecast.user_vote === finalResult
-                ? "bg-primary/10 text-primary"
-                : "bg-destructive/10 text-destructive"
+                ? "bg-green-500/10 text-green-600 dark:text-green-400"
+                : "bg-orange-500/10 text-orange-600 dark:text-orange-400"
             }`}>
-              {forecast.user_vote === finalResult ? "✓ Correct" : "✗ Wrong"}
+              {forecast.user_vote === finalResult ? "✓ You were right!" : "✗ Minority vote"}
             </span>
           )}
         </div>
       )}
-    </motion.div>
-  );
-};
-
-// ── Featured Forecast (hero card) ──
-const FeaturedForecast = ({ forecast, onVote, isAuthenticated }: {
-  forecast: Forecast;
-  onVote: (id: string, vote: "yes" | "no") => void;
-  isAuthenticated: boolean;
-}) => {
-  const totalVotes = forecast.total_votes_yes + forecast.total_votes_no;
-  const yesPct = totalVotes > 0 ? (forecast.total_votes_yes / totalVotes) * 100 : 50;
-  const noPct = 100 - yesPct;
-  const isEnded = new Date(forecast.end_date) <= new Date();
-  const timeLeft = getTimeRemaining(forecast.end_date);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.98 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="relative rounded-2xl border border-primary/20 bg-card overflow-hidden"
-    >
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-accent to-primary" />
-      <div className="p-6 sm:p-8">
-        <div className="flex items-start justify-between gap-4 mb-5">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center -space-x-2">
-              {forecast.project_a_logo_url ? (
-                <img src={forecast.project_a_logo_url} alt={forecast.project_a_name} className="w-12 h-12 rounded-2xl object-contain border-2 border-card bg-secondary relative z-10" />
-              ) : (
-                <span className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl border-2 border-card bg-secondary relative z-10">{forecast.project_a_logo_emoji || "⬡"}</span>
-              )}
-              {forecast.project_b_name && (
-                forecast.project_b_logo_url ? (
-                  <img src={forecast.project_b_logo_url} alt={forecast.project_b_name} className="w-12 h-12 rounded-2xl object-contain border-2 border-card bg-secondary" />
-                ) : (
-                  <span className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl border-2 border-card bg-secondary">{forecast.project_b_logo_emoji || "⬡"}</span>
-                )
-              )}
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Link to={`/project/${forecast.project_a_slug}`} className="hover:text-primary transition-colors font-medium">{forecast.project_a_name}</Link>
-                {forecast.project_b_name && (
-                  <>
-                    <span className="text-muted-foreground/40">vs</span>
-                    <Link to={`/project/${forecast.project_b_slug}`} className="hover:text-primary transition-colors font-medium">{forecast.project_b_name}</Link>
-                  </>
-                )}
-              </div>
-              <span className={`inline-flex items-center gap-1 mt-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
-                isEnded ? "bg-muted text-muted-foreground" : "bg-primary/10 text-primary border border-primary/20"
-              }`}>
-                <Clock className="h-3 w-3" /> {timeLeft}
-              </span>
-            </div>
-          </div>
-          <Link to={`/forecasts/${forecast.id}`} className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-primary transition-colors shrink-0">
-            Details <ArrowRight className="h-3 w-3" />
-          </Link>
-        </div>
-
-        <Link to={`/forecasts/${forecast.id}`}>
-          <h2 className="text-lg sm:text-xl font-black text-foreground leading-tight mb-4 font-['Space_Grotesk'] hover:text-primary transition-colors">
-            {forecast.title}
-          </h2>
-        </Link>
-
-        {/* Large vote display */}
-        <div className="flex items-end justify-between mb-3">
-          <div>
-            <span className="text-4xl sm:text-5xl font-black font-['Space_Grotesk'] text-primary tracking-tighter">{yesPct.toFixed(0)}%</span>
-            <span className="ml-2 text-sm font-semibold text-primary/60 uppercase tracking-wide">Yes</span>
-          </div>
-          <div className="text-right">
-            <span className="text-sm font-semibold text-destructive/60 uppercase tracking-wide">No</span>
-            <span className="ml-2 text-4xl sm:text-5xl font-black font-['Space_Grotesk'] text-destructive/80 tracking-tighter">{noPct.toFixed(0)}%</span>
-          </div>
-        </div>
-
-        {/* Vote bar */}
-        <div className="h-3 rounded-full bg-secondary overflow-hidden flex mb-4">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${yesPct}%` }}
-            transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-            className="h-full rounded-l-full"
-            style={{ background: "linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary) / 0.7))" }}
-          />
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${noPct}%` }}
-            transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-            className="h-full rounded-r-full bg-destructive/50"
-          />
-        </div>
-
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">{totalVotes.toLocaleString()} votes</span>
-          {!isEnded && (
-            <div className="flex gap-2">
-              <button
-                onClick={() => isAuthenticated ? onVote(forecast.id, "yes") : toast.error("Sign in to vote")}
-                className={`rounded-lg px-4 py-2 text-xs font-bold transition-all ${
-                  forecast.user_vote === "yes"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20"
-                }`}
-              >
-                Buy Yes
-              </button>
-              <button
-                onClick={() => isAuthenticated ? onVote(forecast.id, "no") : toast.error("Sign in to vote")}
-                className={`rounded-lg px-4 py-2 text-xs font-bold transition-all ${
-                  forecast.user_vote === "no"
-                    ? "bg-destructive text-destructive-foreground"
-                    : "bg-destructive/10 text-destructive hover:bg-destructive/20 border border-destructive/20"
-                }`}
-              >
-                Buy No
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
     </motion.div>
   );
 };
@@ -314,12 +229,14 @@ const Forecasts = () => {
   const voteForecast = useVoteForecast();
   const [showCreate, setShowCreate] = useState(false);
 
+  // Create form state
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [projectAId, setProjectAId] = useState("");
   const [projectBId, setProjectBId] = useState("");
   const [endDate, setEndDate] = useState("");
 
+  // Auto-open create dialog from compare page
   useEffect(() => {
     if (searchParams.get("create") === "true" && user) {
       setShowCreate(true);
@@ -327,6 +244,8 @@ const Forecasts = () => {
       const b = searchParams.get("b");
       if (a) setProjectAId(a);
       if (b) setProjectBId(b);
+
+      // Pre-fill from comparison results
       const prefill = sessionStorage.getItem('forecast_prefill');
       if (prefill) {
         try {
@@ -336,6 +255,7 @@ const Forecasts = () => {
         } catch {}
         sessionStorage.removeItem('forecast_prefill');
       }
+
       setSearchParams({}, { replace: true });
     }
   }, [searchParams, user]);
@@ -344,18 +264,12 @@ const Forecasts = () => {
   const total = data?.total || 0;
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
+  // Stats
   const stats = useMemo(() => {
     const totalVotes = forecasts.reduce((sum, f) => sum + f.total_votes_yes + f.total_votes_no, 0);
     const activeCount = forecasts.filter(f => new Date(f.end_date) > new Date()).length;
     return { total, totalVotes, activeCount };
   }, [forecasts, total]);
-
-  // Featured forecast = most voted active forecast
-  const featuredForecast = useMemo(() => {
-    const active = forecasts.filter(f => new Date(f.end_date) > new Date());
-    if (active.length === 0) return null;
-    return active.reduce((best, f) => (f.total_votes_yes + f.total_votes_no) > (best.total_votes_yes + best.total_votes_no) ? f : best, active[0]);
-  }, [forecasts]);
 
   const handleVote = (forecastId: string, vote: "yes" | "no") => {
     voteForecast.mutate({ forecastId, vote });
@@ -366,6 +280,7 @@ const Forecasts = () => {
     if (!projectAId) { toast.error("Select a project"); return; }
     if (!endDate) { toast.error("End date required"); return; }
     if (new Date(endDate) <= new Date()) { toast.error("End date must be in the future"); return; }
+
     try {
       await createForecast.mutateAsync({
         title: title.trim(),
@@ -376,7 +291,11 @@ const Forecasts = () => {
       });
       toast.success("Forecast created!");
       setShowCreate(false);
-      setTitle(""); setDescription(""); setProjectAId(""); setProjectBId(""); setEndDate("");
+      setTitle("");
+      setDescription("");
+      setProjectAId("");
+      setProjectBId("");
+      setEndDate("");
     } catch (err: any) {
       toast.error(err.message || "Failed to create forecast");
     }
@@ -386,120 +305,99 @@ const Forecasts = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
 
-      {/* ── Polymarket-style Hero ── */}
-      <section className="relative overflow-hidden pt-24 pb-8">
-        <div className="absolute inset-0 bg-grid opacity-10" />
+      {/* Hero */}
+      <section className="relative overflow-hidden pt-28 pb-12">
+        <div className="absolute inset-0 bg-grid opacity-20" />
         <div className="gradient-radial-top absolute inset-0" />
         <div className="container relative mx-auto px-4">
-          {/* Top bar: Title + New Question CTA */}
-          <div className="flex items-center justify-between mb-8">
-            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground font-['Space_Grotesk']">
-                Prediction <span className="text-glow text-primary">Markets</span>
-              </h1>
-              <p className="text-xs text-muted-foreground mt-1">Trade on DePIN outcomes</p>
-            </motion.div>
-            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-3">
-              {/* Stats pills */}
-              <div className="hidden sm:flex items-center gap-1">
-                <span className="rounded-full bg-secondary px-3 py-1.5 text-[11px] font-bold text-foreground">
-                  {stats.total} <span className="text-muted-foreground font-medium">markets</span>
-                </span>
-                <span className="rounded-full bg-primary/10 border border-primary/20 px-3 py-1.5 text-[11px] font-bold text-primary">
-                  {stats.totalVotes.toLocaleString()} <span className="font-medium opacity-70">votes</span>
-                </span>
-              </div>
-              {user ? (
-                <Button onClick={() => setShowCreate(true)} className="gap-1.5 rounded-xl font-bold">
-                  <Plus className="h-4 w-4" /> New Question
-                </Button>
-              ) : (
-                <Link to="/auth" className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-primary-foreground">
-                  <LogIn className="h-3.5 w-3.5" /> Sign in
-                </Link>
-              )}
-            </motion.div>
-          </div>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border bg-secondary/50 mb-4">
+              <Zap className="w-3 h-3 text-primary" />
+              <span className="text-[11px] font-medium text-muted-foreground">Prediction Market</span>
+            </div>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl font-['Space_Grotesk']">
+              DePIN <span className="text-glow text-primary">Forecasts</span>
+            </h1>
+            <p className="mx-auto mt-3 max-w-lg text-sm text-muted-foreground leading-relaxed">
+              Community predictions about the future of DePIN. Vote on outcomes, shape sentiment, and track what the community believes.
+            </p>
+          </motion.div>
 
-          {/* Featured forecast */}
-          {featuredForecast && !isLoading && (
-            <FeaturedForecast
-              forecast={featuredForecast}
-              onVote={handleVote}
-              isAuthenticated={!!user}
-            />
-          )}
+          {/* Hero Stats */}
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="flex items-center justify-center gap-6 sm:gap-10"
+          >
+            <div className="text-center">
+              <p className="text-xl sm:text-2xl font-bold text-foreground font-['Space_Grotesk']">{stats.total}</p>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mt-0.5">Forecasts</p>
+            </div>
+            <div className="w-px h-8 bg-border" />
+            <div className="text-center">
+              <p className="text-xl sm:text-2xl font-bold text-foreground font-['Space_Grotesk']">{stats.activeCount}</p>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mt-0.5">Active</p>
+            </div>
+            <div className="w-px h-8 bg-border" />
+            <div className="text-center">
+              <p className="text-xl sm:text-2xl font-bold text-primary font-['Space_Grotesk']">{stats.totalVotes.toLocaleString()}</p>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mt-0.5">Votes Cast</p>
+            </div>
+          </motion.div>
         </div>
       </section>
 
-      {/* ── Controls ── */}
-      <section className="sticky top-16 z-30 border-y border-border bg-background/90 backdrop-blur-xl">
-        <div className="container mx-auto px-4 py-2.5">
-          <div className="flex items-center gap-2">
-            <Input
-              placeholder="Search markets..."
-              value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              className="h-9 flex-1 max-w-xs text-xs bg-secondary/50 border-border rounded-xl"
-            />
-
-            {/* Sort pills */}
-            <div className="hidden sm:flex items-center gap-1">
-              {sortOptions.map(({ value, label, icon: Icon }) => (
-                <button
-                  key={value}
-                  onClick={() => { setSort(value); setPage(1); }}
-                  className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-[11px] font-bold transition-all whitespace-nowrap ${
-                    sort === value
-                      ? "bg-primary/10 text-primary border border-primary/20"
-                      : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-                  }`}
-                >
-                  <Icon className="h-3 w-3" /> {label}
-                </button>
-              ))}
+      {/* Controls */}
+      <section className="sticky top-16 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
+        <div className="container mx-auto px-4 py-3 space-y-3">
+          {/* Top row: Search + Create button */}
+          <div className="flex items-center gap-3">
+            <div className="flex-1 min-w-0">
+              <Input
+                placeholder="Search by title..."
+                value={search}
+                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                className="h-8 sm:h-10 w-full text-xs placeholder:text-muted-foreground/60 bg-secondary/50 border-border"
+              />
             </div>
+            {user ? (
+              <Button size="sm" onClick={() => setShowCreate(true)} className="gap-1.5 rounded-lg shrink-0">
+                <Plus className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Create Forecast</span><span className="sm:hidden">Create</span>
+              </Button>
+            ) : (
+              <Link to="/auth" className="flex items-center gap-1.5 rounded-lg bg-primary px-3 sm:px-4 py-1.5 text-xs font-semibold text-primary-foreground shrink-0">
+                <LogIn className="h-3 w-3" /> <span className="hidden sm:inline">Sign in to create</span><span className="sm:hidden">Sign in</span>
+              </Link>
+            )}
+          </div>
 
-            <div className="hidden sm:block w-px h-5 bg-border" />
-
-            {/* Status pills */}
-            <div className="hidden sm:flex items-center gap-1">
-              {(["all", "active", "ended"] as ForecastStatusFilter[]).map((status) => (
-                <button
-                  key={status}
-                  onClick={() => { setStatusFilter(status); setPage(1); }}
-                  className={`rounded-xl px-3 py-1.5 text-[11px] font-bold capitalize transition-all ${
-                    statusFilter === status
-                      ? "bg-primary/10 text-primary border border-primary/20"
-                      : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-                  }`}
-                >
-                  {status}
-                </button>
-              ))}
-            </div>
-
-            {/* Mobile dropdowns */}
-            <div className="flex sm:hidden items-center gap-1.5">
-              <Select value={sort} onValueChange={(v) => { setSort(v as ForecastSortOption); setPage(1); }}>
-                <SelectTrigger className="h-8 w-auto text-[11px] bg-secondary/50 border-border rounded-xl"><SelectValue /></SelectTrigger>
-                <SelectContent>{sortOptions.map(({ value, label }) => (<SelectItem key={value} value={value}>{label}</SelectItem>))}</SelectContent>
-              </Select>
-              <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v as ForecastStatusFilter); setPage(1); }}>
-                <SelectTrigger className="h-8 w-auto text-[11px] bg-secondary/50 border-border rounded-xl"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="ended">Ended</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Project filter */}
+          {/* Mobile: Dropdown filters */}
+          <div className="flex items-center gap-2 sm:hidden">
+            <Select value={sort} onValueChange={(v) => { setSort(v as ForecastSortOption); setPage(1); }}>
+              <SelectTrigger className="h-8 flex-1 text-[11px] bg-secondary/50 border-border">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                {sortOptions.map(({ value, label }) => (
+                  <SelectItem key={value} value={value}>{label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v as ForecastStatusFilter); setPage(1); }}>
+              <SelectTrigger className="h-8 flex-1 text-[11px] bg-secondary/50 border-border">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="ended">Ended</SelectItem>
+              </SelectContent>
+            </Select>
             <Select value={projectFilter || "all"} onValueChange={(v) => { setProjectFilter(v === "all" ? "" : v); setPage(1); }}>
-              <SelectTrigger className="h-9 w-[140px] sm:w-[180px] text-[11px] bg-secondary/50 border-border rounded-xl shrink-0">
-                <Filter className="h-3 w-3 mr-1 text-muted-foreground" />
-                <SelectValue placeholder="All Projects" />
+              <SelectTrigger className="h-8 flex-1 text-[11px] bg-secondary/50 border-border">
+                <Filter className="h-3 w-3 mr-1 text-muted-foreground shrink-0" />
+                <SelectValue placeholder="Project" />
               </SelectTrigger>
               <SelectContent position="popper" side="bottom" sideOffset={4}>
                 <SelectItem value="all">All Projects</SelectItem>
@@ -507,7 +405,7 @@ const Forecasts = () => {
                   <SelectItem key={p.id} value={p.id}>
                     <span className="flex items-center gap-2">
                       {p.logo_url ? (
-                        <img src={p.logo_url} alt={p.name} className="w-4 h-4 rounded object-contain" />
+                        <img src={p.logo_url} alt={p.name} className="w-4 h-4 rounded-[7px] overflow-hidden object-contain" />
                       ) : (
                         <span className="w-4 h-4 flex items-center justify-center text-xs">{p.logo_emoji}</span>
                       )}
@@ -517,42 +415,135 @@ const Forecasts = () => {
                 ))}
               </SelectContent>
             </Select>
-            {projectFilter && (
-              <button onClick={() => { setProjectFilter(""); setPage(1); }} className="flex items-center gap-1 rounded-xl bg-primary/10 px-2.5 py-1 text-[11px] font-bold text-primary hover:bg-primary/15 transition-colors whitespace-nowrap shrink-0">
-                {projects.find(p => p.id === projectFilter)?.name} <X className="h-3 w-3" />
+          </div>
+
+          {/* Desktop: Button filters (hidden on mobile) */}
+          <div className="hidden sm:flex items-center gap-2 overflow-x-auto scrollbar-none pb-0.5">
+            <div className="flex items-center gap-1.5 shrink-0">
+              {sortOptions.map(({ value, label, icon: Icon }) => (
+                <button
+                  key={value}
+                  onClick={() => { setSort(value); setPage(1); }}
+                  className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all whitespace-nowrap ${
+                    sort === value
+                      ? "border border-primary/30 bg-primary/10 text-primary"
+                      : "border border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary"
+                  }`}
+                >
+                  <Icon className="h-3 w-3" /> {label}
+                </button>
+              ))}
+            </div>
+            <div className="w-px h-5 bg-border shrink-0" />
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                onClick={() => { setStatusFilter("all"); setPage(1); }}
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all whitespace-nowrap ${
+                  statusFilter === "all"
+                    ? "border border-primary/30 bg-primary/10 text-primary"
+                    : "border border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary"
+                }`}
+              >
+                All
               </button>
-            )}
+              <button
+                onClick={() => { setStatusFilter("active"); setPage(1); }}
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all whitespace-nowrap ${
+                  statusFilter === "active"
+                    ? "border border-primary/30 bg-primary/10 text-primary"
+                    : "border border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary"
+                }`}
+              >
+                <Circle className="h-3 w-3" /> Active
+              </button>
+              <button
+                onClick={() => { setStatusFilter("ended"); setPage(1); }}
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all whitespace-nowrap ${
+                  statusFilter === "ended"
+                    ? "border border-primary/30 bg-primary/10 text-primary"
+                    : "border border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary"
+                }`}
+              >
+                <CheckCircle className="h-3 w-3" /> Ended
+              </button>
+            </div>
+            <div className="w-px h-5 bg-border shrink-0" />
+            <div className="flex items-center gap-1.5 shrink-0">
+              <Select value={projectFilter || "all"} onValueChange={(v) => { setProjectFilter(v === "all" ? "" : v); setPage(1); }}>
+                <SelectTrigger className="h-8 w-[180px] text-[11px] bg-secondary/50 border-border">
+                  <Filter className="h-3 w-3 mr-1.5 text-muted-foreground shrink-0" />
+                  <SelectValue placeholder="All Projects" />
+                </SelectTrigger>
+                <SelectContent position="popper" side="bottom" sideOffset={4}>
+                  <SelectItem value="all">All Projects</SelectItem>
+                  {projects.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      <span className="flex items-center gap-2">
+                        {p.logo_url ? (
+                          <img src={p.logo_url} alt={p.name} className="w-4 h-4 rounded-[7px] overflow-hidden object-contain" />
+                        ) : (
+                          <span className="w-4 h-4 flex items-center justify-center text-xs">{p.logo_emoji}</span>
+                        )}
+                        {p.name}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {projectFilter && (
+                <button
+                  onClick={() => { setProjectFilter(""); setPage(1); }}
+                  className="flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 text-[11px] font-medium text-primary hover:bg-primary/15 transition-colors whitespace-nowrap"
+                >
+                  {projects.find(p => p.id === projectFilter)?.name}
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ── Grid ── */}
+      {/* Forecast Grid */}
       <section className="container mx-auto px-4 py-8 flex-1">
         {isLoading ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="animate-pulse rounded-2xl border border-border bg-card overflow-hidden">
+              <div key={i} className="animate-pulse rounded-xl border border-border bg-card overflow-hidden">
                 <div className="p-5 space-y-3">
-                  <div className="flex items-center gap-2"><div className="w-8 h-8 rounded-xl bg-secondary" /><div className="h-3 w-24 bg-secondary rounded" /></div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-[7px] bg-secondary" />
+                    <div className="h-3 w-24 bg-secondary rounded" />
+                  </div>
                   <div className="h-4 w-3/4 bg-secondary rounded" />
-                  <div className="h-8 w-20 bg-secondary rounded mt-4" />
-                  <div className="h-1.5 w-full bg-secondary rounded-full" />
+                  <div className="h-3 w-full bg-secondary rounded" />
+                  <div className="h-2 w-full bg-secondary rounded-full mt-4" />
                 </div>
-                <div className="h-12 border-t border-border bg-secondary/20" />
+                <div className="h-10 border-t border-border bg-secondary/30" />
               </div>
             ))}
           </div>
         ) : forecasts.length === 0 ? (
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-20">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center py-20"
+          >
             <div className="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center mx-auto mb-4">
               <BarChart3 className="h-7 w-7 text-muted-foreground/40" />
             </div>
-            <h3 className="text-base font-bold text-foreground mb-1">No markets yet</h3>
-            <p className="text-sm text-muted-foreground mb-5 max-w-xs mx-auto">Create the first prediction market for DePIN projects.</p>
+            <h3 className="text-base font-semibold text-foreground mb-1">No forecasts yet</h3>
+            <p className="text-sm text-muted-foreground mb-5 max-w-xs mx-auto">
+              Be the first to create a prediction and let the community vote on it.
+            </p>
             {user ? (
-              <Button onClick={() => setShowCreate(true)} className="gap-1.5 rounded-xl font-bold"><Plus className="h-3.5 w-3.5" /> New Question</Button>
+              <Button onClick={() => setShowCreate(true)} className="gap-1.5">
+                <Plus className="h-3.5 w-3.5" /> Create First Forecast
+              </Button>
             ) : (
-              <Link to="/auth" className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-5 py-2 text-sm font-bold text-primary-foreground"><LogIn className="h-3.5 w-3.5" /> Sign in</Link>
+              <Link to="/auth" className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground">
+                <LogIn className="h-3.5 w-3.5" /> Sign in to create
+              </Link>
             )}
           </motion.div>
         ) : (
@@ -560,17 +551,24 @@ const Forecasts = () => {
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <AnimatePresence mode="popLayout">
                 {forecasts.map((forecast, i) => (
-                  <ForecastCard key={forecast.id} forecast={forecast} onVote={handleVote} isAuthenticated={!!user} index={i} />
+                  <ForecastCard
+                    key={forecast.id}
+                    forecast={forecast}
+                    onVote={handleVote}
+                    isAuthenticated={!!user}
+                    index={i}
+                  />
                 ))}
               </AnimatePresence>
             </div>
 
+            {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex items-center justify-center gap-3 mt-10">
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="flex items-center gap-1.5 rounded-xl border border-border bg-card px-3.5 py-2 text-xs font-bold text-muted-foreground transition-colors hover:text-foreground hover:bg-secondary disabled:opacity-40 disabled:pointer-events-none"
+                  className="flex items-center gap-1.5 rounded-lg border border-border bg-card px-3.5 py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-secondary disabled:opacity-40 disabled:pointer-events-none"
                 >
                   <ChevronLeft className="h-3.5 w-3.5" /> Previous
                 </button>
@@ -578,18 +576,24 @@ const Forecasts = () => {
                   {Array.from({ length: Math.min(totalPages, 5) }).map((_, i) => {
                     const pageNum = i + 1;
                     return (
-                      <button key={pageNum} onClick={() => setPage(pageNum)}
-                        className={`w-8 h-8 rounded-xl text-xs font-bold transition-all ${
-                          page === pageNum ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                      <button
+                        key={pageNum}
+                        onClick={() => setPage(pageNum)}
+                        className={`w-8 h-8 rounded-lg text-xs font-medium transition-all ${
+                          page === pageNum
+                            ? "bg-primary text-primary-foreground"
+                            : "text-muted-foreground hover:bg-secondary hover:text-foreground"
                         }`}
-                      >{pageNum}</button>
+                      >
+                        {pageNum}
+                      </button>
                     );
                   })}
                 </div>
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
-                  className="flex items-center gap-1.5 rounded-xl border border-border bg-card px-3.5 py-2 text-xs font-bold text-muted-foreground transition-colors hover:text-foreground hover:bg-secondary disabled:opacity-40 disabled:pointer-events-none"
+                  className="flex items-center gap-1.5 rounded-lg border border-border bg-card px-3.5 py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-secondary disabled:opacity-40 disabled:pointer-events-none"
                 >
                   Next <ChevronRight className="h-3.5 w-3.5" />
                 </button>
@@ -599,36 +603,57 @@ const Forecasts = () => {
         )}
       </section>
 
-      {/* Create Dialog */}
+      {/* Create Forecast Dialog */}
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader className="flex flex-row items-center justify-between">
-            <DialogTitle className="font-['Space_Grotesk'] font-black">New Question</DialogTitle>
+            <DialogTitle className="font-['Space_Grotesk']">Create Forecast</DialogTitle>
             {(title || description) && (
-              <Button variant="ghost" size="sm" onClick={() => { setTitle(""); setDescription(""); }} className="h-7 gap-1.5 text-xs text-muted-foreground hover:text-foreground -mt-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => { setTitle(""); setDescription(""); }}
+                className="h-7 gap-1.5 text-xs text-muted-foreground hover:text-foreground -mt-1"
+              >
                 <RotateCcw className="h-3 w-3" /> Reset
               </Button>
             )}
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Question *</label>
-              <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Will Hivemapper surpass Helium nodes by 2026?" className="mt-1.5 rounded-xl" />
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Title *</label>
+              <Input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Will Hivemapper surpass Helium nodes by 2026?"
+                className="mt-1.5"
+              />
             </div>
             <div>
-              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Context</label>
-              <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Additional context about this prediction..." className="mt-1.5 min-h-[80px] resize-none rounded-xl" />
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Description</label>
+              <Textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Additional context about this prediction..."
+                className="mt-1.5 min-h-[80px] resize-none"
+              />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Project A *</label>
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Project A *</label>
                 <Select value={projectAId} onValueChange={setProjectAId}>
-                  <SelectTrigger className="mt-1.5 h-9 rounded-xl"><SelectValue placeholder="Select project" /></SelectTrigger>
+                  <SelectTrigger className="mt-1.5 h-9">
+                    <SelectValue placeholder="Select project" />
+                  </SelectTrigger>
                   <SelectContent position="popper" side="bottom" sideOffset={4} avoidCollisions={false} className="max-h-60">
                     {projects.map((p) => (
                       <SelectItem key={p.id} value={p.id}>
                         <span className="flex items-center gap-2">
-                          {p.logo_url ? <img src={p.logo_url} alt={p.name} className="w-5 h-5 rounded object-contain" /> : <span className="w-5 h-5 flex items-center justify-center text-sm">{p.logo_emoji}</span>}
+                          {p.logo_url ? (
+                            <img src={p.logo_url} alt={p.name} className="w-5 h-5 rounded-[7px] overflow-hidden object-contain" />
+                          ) : (
+                            <span className="w-5 h-5 flex items-center justify-center text-sm">{p.logo_emoji}</span>
+                          )}
                           {p.name}
                         </span>
                       </SelectItem>
@@ -637,15 +662,21 @@ const Forecasts = () => {
                 </Select>
               </div>
               <div>
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Project B <span className="normal-case text-muted-foreground/60">(optional)</span></label>
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Project B <span className="normal-case text-muted-foreground/60">(optional)</span></label>
                 <Select value={projectBId} onValueChange={setProjectBId}>
-                  <SelectTrigger className="mt-1.5 h-9 rounded-xl"><SelectValue placeholder="Select project" /></SelectTrigger>
+                  <SelectTrigger className="mt-1.5 h-9">
+                    <SelectValue placeholder="Select project" />
+                  </SelectTrigger>
                   <SelectContent position="popper" side="bottom" sideOffset={4} avoidCollisions={false} className="max-h-60">
                     <SelectItem value="none">None</SelectItem>
                     {projects.filter((p) => p.id !== projectAId).map((p) => (
                       <SelectItem key={p.id} value={p.id}>
                         <span className="flex items-center gap-2">
-                          {p.logo_url ? <img src={p.logo_url} alt={p.name} className="w-5 h-5 rounded object-contain" /> : <span className="w-5 h-5 flex items-center justify-center text-sm">{p.logo_emoji}</span>}
+                          {p.logo_url ? (
+                            <img src={p.logo_url} alt={p.name} className="w-5 h-5 rounded-[7px] overflow-hidden object-contain" />
+                          ) : (
+                            <span className="w-5 h-5 flex items-center justify-center text-sm">{p.logo_emoji}</span>
+                          )}
                           {p.name}
                         </span>
                       </SelectItem>
@@ -655,14 +686,20 @@ const Forecasts = () => {
               </div>
             </div>
             <div>
-              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Resolution Date *</label>
-              <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} min={new Date().toISOString().split("T")[0]} className="mt-1.5 rounded-xl" />
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">End Date *</label>
+              <Input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                min={new Date().toISOString().split("T")[0]}
+                className="mt-1.5"
+              />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setShowCreate(false)} className="rounded-xl">Cancel</Button>
-            <Button onClick={handleCreate} disabled={createForecast.isPending} className="rounded-xl font-bold">
-              {createForecast.isPending ? "Creating..." : "Create Market"}
+            <Button variant="ghost" onClick={() => setShowCreate(false)}>Cancel</Button>
+            <Button onClick={handleCreate} disabled={createForecast.isPending}>
+              {createForecast.isPending ? "Creating..." : "Create Forecast"}
             </Button>
           </DialogFooter>
         </DialogContent>
