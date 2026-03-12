@@ -266,14 +266,16 @@ const HeroSection = ({ forecasts, trendingTopics, user, setShowCreate }: {
     return sorted.slice(0, 5);
   }, [forecasts]);
 
-  // Auto-slide every 10 seconds
+  const [isPaused, setIsPaused] = useState(false);
+
+  // Auto-slide every 10 seconds, pause on hover
   useEffect(() => {
-    if (heroForecasts.length <= 1) return;
+    if (heroForecasts.length <= 1 || isPaused) return;
     intervalRef.current = setInterval(() => {
       setActiveSlide(prev => (prev + 1) % heroForecasts.length);
     }, 10000);
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [heroForecasts.length]);
+  }, [heroForecasts.length, isPaused]);
 
   const goToSlide = useCallback((index: number) => {
     setActiveSlide(index);
@@ -343,9 +345,11 @@ const HeroSection = ({ forecasts, trendingTopics, user, setShowCreate }: {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="lg:col-span-2 rounded-2xl border border-border bg-card overflow-hidden"
+            className="lg:col-span-2"
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
           >
-            <div className="p-6 sm:p-8">
+            <div className="rounded-2xl border border-border bg-card overflow-hidden h-[520px] p-6 sm:p-8">
               {/* Slide content */}
               <AnimatePresence mode="wait">
                 <motion.div
@@ -484,34 +488,27 @@ const HeroSection = ({ forecasts, trendingTopics, user, setShowCreate }: {
                 </motion.div>
               </AnimatePresence>
 
-              {/* Slide dots / navigation */}
-              {heroForecasts.length > 1 && (
-                <div className="flex items-center justify-center gap-2 mt-4">
-                  {heroForecasts.map((f, i) => {
-                    const fEnded = new Date(f.end_date) <= new Date();
-                    return (
-                      <button
-                        key={f.id}
-                        onClick={() => goToSlide(i)}
-                        className={`relative flex items-center justify-center w-6 h-6 rounded-full transition-all ${i === activeSlide ? 'scale-110' : 'opacity-60 hover:opacity-100'}`}
-                        aria-label={`Go to slide ${i + 1}`}
-                      >
-                        <span className={`relative flex h-2.5 w-2.5`}>
-                          {!fEnded && i === activeSlide && (
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-green-500" />
-                          )}
-                          <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${
-                            i === activeSlide
-                              ? (fEnded ? 'bg-destructive' : 'bg-green-500')
-                              : 'bg-muted-foreground/30'
-                          } ${fEnded && i !== activeSlide ? 'bg-destructive/30' : ''} ${!fEnded && i !== activeSlide ? 'bg-green-500/30' : ''}`} />
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
             </div>
+
+            {/* Slide dots - outside the card, centered */}
+            {heroForecasts.length > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-3">
+                {heroForecasts.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => goToSlide(i)}
+                    className="p-1"
+                    aria-label={`Go to slide ${i + 1}`}
+                  >
+                    <span className={`block rounded-full transition-all duration-300 ${
+                      i === activeSlide
+                        ? 'w-6 h-2 bg-primary'
+                        : 'w-2 h-2 bg-muted-foreground/30 hover:bg-muted-foreground/50'
+                    }`} />
+                  </button>
+                ))}
+              </div>
+            )}
           </motion.div>
 
           {/* Right sidebar */}
