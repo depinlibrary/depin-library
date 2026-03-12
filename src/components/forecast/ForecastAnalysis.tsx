@@ -71,6 +71,11 @@ export default function ForecastAnalysis({ forecastId, isEnded }: Props) {
     return s?.value ?? null;
   };
 
+  const getSource = (dim: string) => {
+    const s = snapshots.find((s: any) => s.dimension === dim && s.snapshot_type === "start");
+    return s?.source ?? "pending";
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
