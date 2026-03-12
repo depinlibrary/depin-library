@@ -820,32 +820,19 @@ const Forecasts = () => {
 
       {/* Controls */}
       <section className="sticky top-16 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
-        <div className="container mx-auto px-4 py-3 space-y-3">
-          {/* Top row: Search + Create button */}
-          <div className="flex items-center gap-3">
+        <div className="container mx-auto px-4 py-3">
+          {/* Single row: Search + dropdown filters */}
+          <div className="flex items-center gap-2">
             <div className="flex-1 min-w-0">
               <Input
                 placeholder="Search by title..."
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                className="h-8 sm:h-10 w-full text-xs placeholder:text-muted-foreground/60 bg-secondary/50 border-border"
+                className="h-9 w-full text-xs placeholder:text-muted-foreground/60 bg-secondary/50 border-border"
               />
             </div>
-            {user ? (
-              <Button size="sm" onClick={() => setShowCreate(true)} className="gap-1.5 rounded-lg shrink-0">
-                <Plus className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Create Forecast</span><span className="sm:hidden">Create</span>
-              </Button>
-            ) : (
-              <Link to="/auth" className="flex items-center gap-1.5 rounded-lg bg-primary px-3 sm:px-4 py-1.5 text-xs font-semibold text-primary-foreground shrink-0">
-                <LogIn className="h-3 w-3" /> <span className="hidden sm:inline">Sign in to create</span><span className="sm:hidden">Sign in</span>
-              </Link>
-            )}
-          </div>
-
-          {/* Mobile: Dropdown filters */}
-          <div className="flex items-center gap-2 sm:hidden">
             <Select value={sort} onValueChange={(v) => { setSort(v as ForecastSortOption); setPage(1); }}>
-              <SelectTrigger className="h-8 flex-1 text-[11px] bg-secondary/50 border-border">
+              <SelectTrigger className="h-9 w-[130px] text-[11px] bg-secondary/50 border-border shrink-0">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent>
@@ -855,7 +842,7 @@ const Forecasts = () => {
               </SelectContent>
             </Select>
             <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v as ForecastStatusFilter); setPage(1); }}>
-              <SelectTrigger className="h-8 flex-1 text-[11px] bg-secondary/50 border-border">
+              <SelectTrigger className="h-9 w-[120px] text-[11px] bg-secondary/50 border-border shrink-0">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
@@ -865,9 +852,9 @@ const Forecasts = () => {
               </SelectContent>
             </Select>
             <Select value={projectFilter || "all"} onValueChange={(v) => { setProjectFilter(v === "all" ? "" : v); setPage(1); }}>
-              <SelectTrigger className="h-8 flex-1 text-[11px] bg-secondary/50 border-border">
+              <SelectTrigger className="h-9 w-[160px] text-[11px] bg-secondary/50 border-border shrink-0">
                 <Filter className="h-3 w-3 mr-1 text-muted-foreground shrink-0" />
-                <SelectValue placeholder="Project" />
+                <SelectValue placeholder="All Projects" />
               </SelectTrigger>
               <SelectContent position="popper" side="bottom" sideOffset={4}>
                 <SelectItem value="all">All Projects</SelectItem>
@@ -885,91 +872,15 @@ const Forecasts = () => {
                 ))}
               </SelectContent>
             </Select>
-          </div>
-
-          {/* Desktop: Button filters (hidden on mobile) */}
-          <div className="hidden sm:flex items-center gap-2 overflow-x-auto scrollbar-none pb-0.5">
-            <div className="flex items-center gap-1.5 shrink-0">
-              {sortOptions.map(({ value, label, icon: Icon }) => (
-                <button
-                  key={value}
-                  onClick={() => { setSort(value); setPage(1); }}
-                  className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all whitespace-nowrap ${
-                    sort === value
-                      ? "border border-primary/30 bg-primary/10 text-primary"
-                      : "border border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary"
-                  }`}
-                >
-                  <Icon className="h-3 w-3" /> {label}
-                </button>
-              ))}
-            </div>
-            <div className="w-px h-5 bg-border shrink-0" />
-            <div className="flex items-center gap-1.5 shrink-0">
+            {projectFilter && (
               <button
-                onClick={() => { setStatusFilter("all"); setPage(1); }}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all whitespace-nowrap ${
-                  statusFilter === "all"
-                    ? "border border-primary/30 bg-primary/10 text-primary"
-                    : "border border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary"
-                }`}
+                onClick={() => { setProjectFilter(""); setPage(1); }}
+                className="flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1.5 text-[11px] font-medium text-primary hover:bg-primary/15 transition-colors whitespace-nowrap shrink-0"
               >
-                All
+                {projects.find(p => p.id === projectFilter)?.name}
+                <X className="h-3 w-3" />
               </button>
-              <button
-                onClick={() => { setStatusFilter("active"); setPage(1); }}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all whitespace-nowrap ${
-                  statusFilter === "active"
-                    ? "border border-primary/30 bg-primary/10 text-primary"
-                    : "border border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary"
-                }`}
-              >
-                <Circle className="h-3 w-3" /> Active
-              </button>
-              <button
-                onClick={() => { setStatusFilter("ended"); setPage(1); }}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all whitespace-nowrap ${
-                  statusFilter === "ended"
-                    ? "border border-primary/30 bg-primary/10 text-primary"
-                    : "border border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary"
-                }`}
-              >
-                <CheckCircle className="h-3 w-3" /> Ended
-              </button>
-            </div>
-            <div className="w-px h-5 bg-border shrink-0" />
-            <div className="flex items-center gap-1.5 shrink-0">
-              <Select value={projectFilter || "all"} onValueChange={(v) => { setProjectFilter(v === "all" ? "" : v); setPage(1); }}>
-                <SelectTrigger className="h-8 w-[180px] text-[11px] bg-secondary/50 border-border">
-                  <Filter className="h-3 w-3 mr-1.5 text-muted-foreground shrink-0" />
-                  <SelectValue placeholder="All Projects" />
-                </SelectTrigger>
-                <SelectContent position="popper" side="bottom" sideOffset={4}>
-                  <SelectItem value="all">All Projects</SelectItem>
-                  {projects.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      <span className="flex items-center gap-2">
-                        {p.logo_url ? (
-                          <img src={p.logo_url} alt={p.name} className="w-4 h-4 rounded-[7px] overflow-hidden object-contain" />
-                        ) : (
-                          <span className="w-4 h-4 flex items-center justify-center text-xs">{p.logo_emoji}</span>
-                        )}
-                        {p.name}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {projectFilter && (
-                <button
-                  onClick={() => { setProjectFilter(""); setPage(1); }}
-                  className="flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 text-[11px] font-medium text-primary hover:bg-primary/15 transition-colors whitespace-nowrap"
-                >
-                  {projects.find(p => p.id === projectFilter)?.name}
-                  <X className="h-3 w-3" />
-                </button>
-              )}
-            </div>
+            )}
           </div>
         </div>
       </section>
