@@ -9,6 +9,7 @@ import VoteSection from "@/components/forecast/VoteSection";
 import VoteHistoryChart from "@/components/forecast/VoteHistoryChart";
 import DiscussionSection from "@/components/forecast/DiscussionSection";
 import RelatedForecastsList from "@/components/forecast/RelatedForecasts";
+import ForecastAnalysis from "@/components/forecast/ForecastAnalysis";
 import { useAuth } from "@/contexts/AuthContext";
 import { useVoteForecast } from "@/hooks/useForecasts";
 import {
