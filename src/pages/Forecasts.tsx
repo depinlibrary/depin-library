@@ -280,7 +280,7 @@ const HeroSection = ({ forecasts, trendingTopics, user, setShowCreate }: {
     if (intervalRef.current) clearInterval(intervalRef.current);
     intervalRef.current = setInterval(() => {
       setActiveSlide(prev => (prev + 1) % heroForecasts.length);
-    }, 5000);
+    }, 10000);
   }, [heroForecasts.length]);
 
   if (heroForecasts.length === 0) {
