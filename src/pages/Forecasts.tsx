@@ -266,12 +266,12 @@ const HeroSection = ({ forecasts, trendingTopics, user, setShowCreate }: {
     return sorted.slice(0, 5);
   }, [forecasts]);
 
-  // Auto-slide every 5 seconds
+  // Auto-slide every 10 seconds
   useEffect(() => {
     if (heroForecasts.length <= 1) return;
     intervalRef.current = setInterval(() => {
       setActiveSlide(prev => (prev + 1) % heroForecasts.length);
-    }, 5000);
+    }, 10000);
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, [heroForecasts.length]);
 
