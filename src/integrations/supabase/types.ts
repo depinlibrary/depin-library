@@ -237,6 +237,44 @@ export type Database = {
           },
         ]
       }
+      forecast_metric_snapshots: {
+        Row: {
+          captured_at: string
+          dimension: string
+          forecast_id: string
+          id: string
+          snapshot_type: string
+          source: string | null
+          value: number | null
+        }
+        Insert: {
+          captured_at?: string
+          dimension: string
+          forecast_id: string
+          id?: string
+          snapshot_type?: string
+          source?: string | null
+          value?: number | null
+        }
+        Update: {
+          captured_at?: string
+          dimension?: string
+          forecast_id?: string
+          id?: string
+          snapshot_type?: string
+          source?: string | null
+          value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forecast_metric_snapshots_forecast_id_fkey"
+            columns: ["forecast_id"]
+            isOneToOne: false
+            referencedRelation: "forecasts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       forecast_reply_likes: {
         Row: {
           created_at: string
@@ -262,6 +300,35 @@ export type Database = {
             columns: ["reply_id"]
             isOneToOne: false
             referencedRelation: "forecast_comment_replies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forecast_targets: {
+        Row: {
+          created_at: string
+          dimension: string
+          forecast_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          dimension: string
+          forecast_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          dimension?: string
+          forecast_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forecast_targets_forecast_id_fkey"
+            columns: ["forecast_id"]
+            isOneToOne: false
+            referencedRelation: "forecasts"
             referencedColumns: ["id"]
           },
         ]
