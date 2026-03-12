@@ -892,6 +892,7 @@ const Forecasts = () => {
                     onVote={handleVote}
                     isAuthenticated={!!user}
                     index={i}
+                    dimensions={forecastTargetsMap[forecast.id] || []}
                   />
                 ))}
               </AnimatePresence>
