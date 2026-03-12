@@ -604,7 +604,7 @@ const HeroSection = ({ forecasts, trendingTopics, user, setShowCreate }: {
   );
 };
 
-
+const Forecasts = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
