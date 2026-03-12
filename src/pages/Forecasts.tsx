@@ -266,12 +266,12 @@ const HeroSection = ({ forecasts, trendingTopics, user, setShowCreate }: {
     return sorted.slice(0, 5);
   }, [forecasts]);
 
-  // Auto-slide every 5 seconds
+  // Auto-slide every 10 seconds
   useEffect(() => {
     if (heroForecasts.length <= 1) return;
     intervalRef.current = setInterval(() => {
       setActiveSlide(prev => (prev + 1) % heroForecasts.length);
-    }, 5000);
+    }, 10000);
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, [heroForecasts.length]);
 
@@ -280,8 +280,23 @@ const HeroSection = ({ forecasts, trendingTopics, user, setShowCreate }: {
     if (intervalRef.current) clearInterval(intervalRef.current);
     intervalRef.current = setInterval(() => {
       setActiveSlide(prev => (prev + 1) % heroForecasts.length);
-    }, 5000);
+    }, 10000);
   }, [heroForecasts.length]);
+
+  // Build per-slide chart data showing vote breakdown for the current forecast
+  const currentChartData = useMemo(() => {
+    const f = heroForecasts[activeSlide];
+    if (!f) return [];
+    const t = f.total_votes_yes + f.total_votes_no;
+    if (t === 0) return [
+      { name: "Yes", value: 50, fill: "hsl(var(--primary))" },
+      { name: "No", value: 50, fill: "hsl(var(--destructive))" },
+    ];
+    return [
+      { name: "Yes", value: f.total_votes_yes, fill: "hsl(var(--primary))" },
+      { name: "No", value: f.total_votes_no, fill: "hsl(var(--destructive))" },
+    ];
+  }, [heroForecasts, activeSlide]);
 
   if (heroForecasts.length === 0) {
     return (
@@ -317,18 +332,6 @@ const HeroSection = ({ forecasts, trendingTopics, user, setShowCreate }: {
   const cYesPct = cTotal > 0 ? (current.total_votes_yes / cTotal) * 100 : 50;
   const cIsEnded = new Date(current.end_date) <= new Date();
   const cTimeLeft = getTimeRemaining(current.end_date);
-
-  // Build chart data from all hero forecasts
-  const chartData = heroForecasts.map((f, i) => {
-    const t = f.total_votes_yes + f.total_votes_no;
-    const yesPct = t > 0 ? Math.round((f.total_votes_yes / t) * 100) : 50;
-    return {
-      name: f.title.length > 12 ? f.title.slice(0, 12) + "…" : f.title,
-      yes: f.total_votes_yes,
-      no: f.total_votes_no,
-      sentiment: yesPct,
-    };
-  });
 
   return (
     <section className="relative overflow-hidden pt-24 pb-8">
@@ -435,43 +438,51 @@ const HeroSection = ({ forecasts, trendingTopics, user, setShowCreate }: {
                 </motion.div>
               </AnimatePresence>
 
-              {/* Sentiment Chart */}
-              <div className="mt-5 pt-5 border-t border-border">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Vote & Sentiment Overview</h3>
-                </div>
-                <div className="h-36">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                      <defs>
-                        <linearGradient id="heroYesGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                          <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.02} />
-                        </linearGradient>
-                        <linearGradient id="heroNoGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="hsl(var(--destructive))" stopOpacity={0.25} />
-                          <stop offset="95%" stopColor="hsl(var(--destructive))" stopOpacity={0.02} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.4} />
-                      <XAxis dataKey="name" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} />
-                      <YAxis tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: "hsl(var(--card))",
-                          border: "1px solid hsl(var(--border))",
-                          borderRadius: "10px",
-                          fontSize: "11px",
-                          padding: "6px 10px",
-                        }}
-                        labelStyle={{ fontWeight: 600, marginBottom: 2, color: "hsl(var(--foreground))" }}
-                      />
-                      <Area type="monotone" dataKey="yes" name="Yes votes" stroke="hsl(var(--primary))" fill="url(#heroYesGrad)" strokeWidth={2} dot={false} />
-                      <Area type="monotone" dataKey="no" name="No votes" stroke="hsl(var(--destructive))" fill="url(#heroNoGrad)" strokeWidth={2} dot={false} />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
+              {/* Per-slide Sentiment Stats */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={`chart-${current.id}`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="mt-5 pt-5 border-t border-border"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Sentiment · {current.project_a_name}</h3>
+                  </div>
+                  <div className="h-36">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={currentChartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                        <defs>
+                          <linearGradient id="heroYesGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                            <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.02} />
+                          </linearGradient>
+                          <linearGradient id="heroNoGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="hsl(var(--destructive))" stopOpacity={0.25} />
+                            <stop offset="95%" stopColor="hsl(var(--destructive))" stopOpacity={0.02} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.4} />
+                        <XAxis dataKey="name" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} />
+                        <YAxis tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: "hsl(var(--card))",
+                            border: "1px solid hsl(var(--border))",
+                            borderRadius: "10px",
+                            fontSize: "11px",
+                            padding: "6px 10px",
+                          }}
+                          labelStyle={{ fontWeight: 600, marginBottom: 2, color: "hsl(var(--foreground))" }}
+                        />
+                        <Area type="monotone" dataKey="value" name="Votes" stroke="hsl(var(--primary))" fill="url(#heroYesGrad)" strokeWidth={2} dot={{ r: 4, fill: "hsl(var(--primary))", stroke: "hsl(var(--card))", strokeWidth: 2 }} />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
 
               {/* Slide dots / navigation */}
               {heroForecasts.length > 1 && (
@@ -588,7 +599,7 @@ const HeroSection = ({ forecasts, trendingTopics, user, setShowCreate }: {
               <div className="px-5 py-4">
                 {user ? (
                   <Button onClick={() => setShowCreate(true)} className="w-full gap-1.5 rounded-xl" size="sm">
-                    <Plus className="h-3.5 w-3.5" /> New Question
+                    <Plus className="h-3.5 w-3.5" /> Create Forecast
                   </Button>
                 ) : (
                   <Link to="/auth" className="flex items-center justify-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground w-full">
@@ -809,32 +820,19 @@ const Forecasts = () => {
 
       {/* Controls */}
       <section className="sticky top-16 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
-        <div className="container mx-auto px-4 py-3 space-y-3">
-          {/* Top row: Search + Create button */}
-          <div className="flex items-center gap-3">
+        <div className="container mx-auto px-4 py-3">
+          {/* Single row: Search + dropdown filters */}
+          <div className="flex items-center gap-2">
             <div className="flex-1 min-w-0">
               <Input
                 placeholder="Search by title..."
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                className="h-8 sm:h-10 w-full text-xs placeholder:text-muted-foreground/60 bg-secondary/50 border-border"
+                className="h-9 w-full text-xs placeholder:text-muted-foreground/60 bg-secondary/50 border-border"
               />
             </div>
-            {user ? (
-              <Button size="sm" onClick={() => setShowCreate(true)} className="gap-1.5 rounded-lg shrink-0">
-                <Plus className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Create Forecast</span><span className="sm:hidden">Create</span>
-              </Button>
-            ) : (
-              <Link to="/auth" className="flex items-center gap-1.5 rounded-lg bg-primary px-3 sm:px-4 py-1.5 text-xs font-semibold text-primary-foreground shrink-0">
-                <LogIn className="h-3 w-3" /> <span className="hidden sm:inline">Sign in to create</span><span className="sm:hidden">Sign in</span>
-              </Link>
-            )}
-          </div>
-
-          {/* Mobile: Dropdown filters */}
-          <div className="flex items-center gap-2 sm:hidden">
             <Select value={sort} onValueChange={(v) => { setSort(v as ForecastSortOption); setPage(1); }}>
-              <SelectTrigger className="h-8 flex-1 text-[11px] bg-secondary/50 border-border">
+              <SelectTrigger className="h-9 w-[130px] text-[11px] bg-secondary/50 border-border shrink-0">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent>
@@ -844,7 +842,7 @@ const Forecasts = () => {
               </SelectContent>
             </Select>
             <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v as ForecastStatusFilter); setPage(1); }}>
-              <SelectTrigger className="h-8 flex-1 text-[11px] bg-secondary/50 border-border">
+              <SelectTrigger className="h-9 w-[120px] text-[11px] bg-secondary/50 border-border shrink-0">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
@@ -854,9 +852,9 @@ const Forecasts = () => {
               </SelectContent>
             </Select>
             <Select value={projectFilter || "all"} onValueChange={(v) => { setProjectFilter(v === "all" ? "" : v); setPage(1); }}>
-              <SelectTrigger className="h-8 flex-1 text-[11px] bg-secondary/50 border-border">
+              <SelectTrigger className="h-9 w-[160px] text-[11px] bg-secondary/50 border-border shrink-0">
                 <Filter className="h-3 w-3 mr-1 text-muted-foreground shrink-0" />
-                <SelectValue placeholder="Project" />
+                <SelectValue placeholder="All Projects" />
               </SelectTrigger>
               <SelectContent position="popper" side="bottom" sideOffset={4}>
                 <SelectItem value="all">All Projects</SelectItem>
@@ -874,91 +872,15 @@ const Forecasts = () => {
                 ))}
               </SelectContent>
             </Select>
-          </div>
-
-          {/* Desktop: Button filters (hidden on mobile) */}
-          <div className="hidden sm:flex items-center gap-2 overflow-x-auto scrollbar-none pb-0.5">
-            <div className="flex items-center gap-1.5 shrink-0">
-              {sortOptions.map(({ value, label, icon: Icon }) => (
-                <button
-                  key={value}
-                  onClick={() => { setSort(value); setPage(1); }}
-                  className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all whitespace-nowrap ${
-                    sort === value
-                      ? "border border-primary/30 bg-primary/10 text-primary"
-                      : "border border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary"
-                  }`}
-                >
-                  <Icon className="h-3 w-3" /> {label}
-                </button>
-              ))}
-            </div>
-            <div className="w-px h-5 bg-border shrink-0" />
-            <div className="flex items-center gap-1.5 shrink-0">
+            {projectFilter && (
               <button
-                onClick={() => { setStatusFilter("all"); setPage(1); }}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all whitespace-nowrap ${
-                  statusFilter === "all"
-                    ? "border border-primary/30 bg-primary/10 text-primary"
-                    : "border border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary"
-                }`}
+                onClick={() => { setProjectFilter(""); setPage(1); }}
+                className="flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1.5 text-[11px] font-medium text-primary hover:bg-primary/15 transition-colors whitespace-nowrap shrink-0"
               >
-                All
+                {projects.find(p => p.id === projectFilter)?.name}
+                <X className="h-3 w-3" />
               </button>
-              <button
-                onClick={() => { setStatusFilter("active"); setPage(1); }}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all whitespace-nowrap ${
-                  statusFilter === "active"
-                    ? "border border-primary/30 bg-primary/10 text-primary"
-                    : "border border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary"
-                }`}
-              >
-                <Circle className="h-3 w-3" /> Active
-              </button>
-              <button
-                onClick={() => { setStatusFilter("ended"); setPage(1); }}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-medium transition-all whitespace-nowrap ${
-                  statusFilter === "ended"
-                    ? "border border-primary/30 bg-primary/10 text-primary"
-                    : "border border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary"
-                }`}
-              >
-                <CheckCircle className="h-3 w-3" /> Ended
-              </button>
-            </div>
-            <div className="w-px h-5 bg-border shrink-0" />
-            <div className="flex items-center gap-1.5 shrink-0">
-              <Select value={projectFilter || "all"} onValueChange={(v) => { setProjectFilter(v === "all" ? "" : v); setPage(1); }}>
-                <SelectTrigger className="h-8 w-[180px] text-[11px] bg-secondary/50 border-border">
-                  <Filter className="h-3 w-3 mr-1.5 text-muted-foreground shrink-0" />
-                  <SelectValue placeholder="All Projects" />
-                </SelectTrigger>
-                <SelectContent position="popper" side="bottom" sideOffset={4}>
-                  <SelectItem value="all">All Projects</SelectItem>
-                  {projects.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      <span className="flex items-center gap-2">
-                        {p.logo_url ? (
-                          <img src={p.logo_url} alt={p.name} className="w-4 h-4 rounded-[7px] overflow-hidden object-contain" />
-                        ) : (
-                          <span className="w-4 h-4 flex items-center justify-center text-xs">{p.logo_emoji}</span>
-                        )}
-                        {p.name}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {projectFilter && (
-                <button
-                  onClick={() => { setProjectFilter(""); setPage(1); }}
-                  className="flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 text-[11px] font-medium text-primary hover:bg-primary/15 transition-colors whitespace-nowrap"
-                >
-                  {projects.find(p => p.id === projectFilter)?.name}
-                  <X className="h-3 w-3" />
-                </button>
-              )}
-            </div>
+            )}
           </div>
         </div>
       </section>
