@@ -615,6 +615,36 @@ const Forecasts = () => {
                 </div>
               </div>
 
+              {/* Trending Topics */}
+              {trendingTopics.length > 0 && (
+                <div className="rounded-2xl border border-border bg-card overflow-hidden">
+                  <div className="px-5 py-3.5 flex items-center justify-between border-b border-border">
+                    <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Hot Topics</h3>
+                    <Flame className="h-4 w-4 text-destructive/60" />
+                  </div>
+                  <div className="divide-y divide-border">
+                    {trendingTopics.map((project: any, i: number) => (
+                      <Link key={project.id} to={`/project/${project.slug}`} className="flex items-center gap-3 px-5 py-2.5 hover:bg-secondary/30 transition-colors">
+                        <span className="text-xs font-bold text-muted-foreground/50 w-4 shrink-0">{i + 1}</span>
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          {project.logo_url ? (
+                            <img src={project.logo_url} alt={project.name} className="w-5 h-5 rounded-md object-contain bg-secondary" />
+                          ) : (
+                            <span className="w-5 h-5 rounded-md flex items-center justify-center text-xs bg-secondary">{project.logo_emoji || "⬡"}</span>
+                          )}
+                          <span className="text-xs font-semibold text-foreground truncate">{project.name}</span>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <span className="text-[10px] font-medium text-muted-foreground">{project.totalVotes} votes</span>
+                          <Flame className="h-3 w-3 text-destructive/50" />
+                          <ChevronRightIcon className="h-3 w-3 text-muted-foreground/40" />
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Stats card */}
               <div className="rounded-2xl border border-border bg-card overflow-hidden">
                 <div className="px-5 py-3.5 border-b border-border">
