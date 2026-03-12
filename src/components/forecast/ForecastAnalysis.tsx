@@ -10,7 +10,7 @@ const sourceBadges: Record<string, { label: string; color: string }> = {
   unavailable: { label: "No API Source", color: "bg-muted text-muted-foreground" },
 };
 
-
+const dimensionMeta: Record<string, { label: string; icon: typeof TrendingUp; format: (v: number | null) => string }> = {
   token_price: {
     label: "Token Price",
     icon: DollarSign,
@@ -27,9 +27,9 @@ const sourceBadges: Record<string, { label: string; color: string }> = {
     format: (v) => v == null ? "Pending" : v.toLocaleString(),
   },
   revenue: {
-    label: "Revenue",
+    label: "Revenue (30d)",
     icon: Activity,
-    format: (v) => v == null ? "Pending" : `$${v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+    format: (v) => v == null ? "Pending" : `$${v.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
   },
 };
 
@@ -134,15 +134,6 @@ export default function ForecastAnalysis({ forecastId, isEnded }: Props) {
                   </span>
                 )}
               </div>
-                {change != null && (
-                  <span className={`ml-auto flex items-center gap-1 text-xs font-bold ${
-                    change > 0 ? "text-green-500" : change < 0 ? "text-destructive" : "text-muted-foreground"
-                  }`}>
-                    {change > 0 ? <TrendingUp className="h-3 w-3" /> : change < 0 ? <TrendingDown className="h-3 w-3" /> : <Minus className="h-3 w-3" />}
-                    {change > 0 ? "+" : ""}{change.toFixed(2)}%
-                  </span>
-                )}
-              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="rounded-lg bg-secondary/50 px-3 py-2.5">
                   <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Start</p>
@@ -167,7 +158,7 @@ export default function ForecastAnalysis({ forecastId, isEnded }: Props) {
       {!isEnded && (
         <div className="px-6 py-3 border-t border-border bg-secondary/20">
           <p className="text-[10px] text-muted-foreground text-center">
-            Metrics are snapshotted at creation and will be compared when the forecast ends.
+            Metrics are snapshotted at creation and compared when the forecast ends. Data from CoinGecko &amp; DePIN Pulse.
           </p>
         </div>
       )}
