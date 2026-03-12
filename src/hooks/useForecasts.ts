@@ -151,23 +151,47 @@ export function useCreateForecast() {
       projectAId,
       projectBId,
       endDate,
+      analysisDimensions = [],
     }: {
       title: string;
       description: string;
       projectAId: string;
       projectBId?: string;
       endDate: string;
+      analysisDimensions?: string[];
     }) => {
       if (!user) throw new Error("Must be logged in");
-      const { error } = await supabase.from("forecasts").insert({
+      const { data: forecast, error } = await supabase.from("forecasts").insert({
         title,
         description,
         project_a_id: projectAId,
         project_b_id: projectBId || null,
         creator_user_id: user.id,
         end_date: endDate,
-      });
+      }).select("id").single();
       if (error) throw error;
+
+      // Insert analysis dimensions
+      if (analysisDimensions.length > 0 && forecast) {
+        const targets = analysisDimensions.map(dim => ({
+          forecast_id: forecast.id,
+          dimension: dim,
+        }));
+        await supabase.from("forecast_targets").insert(targets);
+
+        // Trigger start snapshot via edge function
+        try {
+          const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+          await fetch(
+            `https://${projectId}.supabase.co/functions/v1/snapshot-forecast-metrics`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ forecast_id: forecast.id, snapshot_type: "start" }),
+            }
+          );
+        } catch {}
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["forecasts"] });
