@@ -235,6 +235,42 @@ const Forecasts = () => {
   const [projectAId, setProjectAId] = useState("");
   const [projectBId, setProjectBId] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [timePreset, setTimePreset] = useState<string>("");
+  const [analysisDimensions, setAnalysisDimensions] = useState<string[]>([]);
+
+  const timePresets = [
+    { value: "4h", label: "4 Hours", hours: 4 },
+    { value: "24h", label: "24 Hours", hours: 24 },
+    { value: "7d", label: "7 Days", hours: 168 },
+    { value: "30d", label: "30 Days", hours: 720 },
+    { value: "custom", label: "Custom", hours: 0 },
+  ];
+
+  const dimensionOptions = [
+    { value: "token_price", label: "Token Price", icon: "💰" },
+    { value: "market_cap", label: "Market Cap", icon: "📊" },
+    { value: "active_nodes", label: "Active Nodes", icon: "🖥️" },
+    { value: "revenue", label: "Revenue", icon: "💵" },
+  ];
+
+  const handleTimePreset = (preset: string) => {
+    setTimePreset(preset);
+    if (preset !== "custom") {
+      const p = timePresets.find(t => t.value === preset);
+      if (p) {
+        const end = new Date(Date.now() + p.hours * 60 * 60 * 1000);
+        setEndDate(end.toISOString().slice(0, 16));
+      }
+    } else {
+      setEndDate("");
+    }
+  };
+
+  const toggleDimension = (dim: string) => {
+    setAnalysisDimensions(prev =>
+      prev.includes(dim) ? prev.filter(d => d !== dim) : [...prev, dim]
+    );
+  };
 
   // Auto-open create dialog from compare page
   useEffect(() => {
