@@ -50,11 +50,12 @@ function getTimeRemaining(endDate: string): string {
   return `${hours}h left`;
 }
 
-const ForecastCard = ({ forecast, onVote, isAuthenticated, index }: {
+const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [] }: {
   forecast: Forecast;
   onVote: (id: string, vote: "yes" | "no") => void;
   isAuthenticated: boolean;
   index: number;
+  dimensions?: string[];
 }) => {
   const totalVotes = forecast.total_votes_yes + forecast.total_votes_no;
   const yesPct = totalVotes > 0 ? (forecast.total_votes_yes / totalVotes) * 100 : 50;
