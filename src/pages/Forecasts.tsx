@@ -235,6 +235,42 @@ const Forecasts = () => {
   const [projectAId, setProjectAId] = useState("");
   const [projectBId, setProjectBId] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [timePreset, setTimePreset] = useState<string>("");
+  const [analysisDimensions, setAnalysisDimensions] = useState<string[]>([]);
+
+  const timePresets = [
+    { value: "4h", label: "4 Hours", hours: 4 },
+    { value: "24h", label: "24 Hours", hours: 24 },
+    { value: "7d", label: "7 Days", hours: 168 },
+    { value: "30d", label: "30 Days", hours: 720 },
+    { value: "custom", label: "Custom", hours: 0 },
+  ];
+
+  const dimensionOptions = [
+    { value: "token_price", label: "Token Price", icon: "💰" },
+    { value: "market_cap", label: "Market Cap", icon: "📊" },
+    { value: "active_nodes", label: "Active Nodes", icon: "🖥️" },
+    { value: "revenue", label: "Revenue", icon: "💵" },
+  ];
+
+  const handleTimePreset = (preset: string) => {
+    setTimePreset(preset);
+    if (preset !== "custom") {
+      const p = timePresets.find(t => t.value === preset);
+      if (p) {
+        const end = new Date(Date.now() + p.hours * 60 * 60 * 1000);
+        setEndDate(end.toISOString().slice(0, 16));
+      }
+    } else {
+      setEndDate("");
+    }
+  };
+
+  const toggleDimension = (dim: string) => {
+    setAnalysisDimensions(prev =>
+      prev.includes(dim) ? prev.filter(d => d !== dim) : [...prev, dim]
+    );
+  };
 
   // Auto-open create dialog from compare page
   useEffect(() => {
@@ -288,6 +324,7 @@ const Forecasts = () => {
         projectAId,
         projectBId: projectBId && projectBId !== "none" ? projectBId : undefined,
         endDate: new Date(endDate).toISOString(),
+        analysisDimensions,
       });
       toast.success("Forecast created!");
       setShowCreate(false);
@@ -296,6 +333,8 @@ const Forecasts = () => {
       setProjectAId("");
       setProjectBId("");
       setEndDate("");
+      setTimePreset("");
+      setAnalysisDimensions([]);
     } catch (err: any) {
       toast.error(err.message || "Failed to create forecast");
     }
@@ -685,15 +724,64 @@ const Forecasts = () => {
                 </Select>
               </div>
             </div>
+            {/* Time Window Presets */}
             <div>
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">End Date *</label>
-              <Input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                min={new Date().toISOString().split("T")[0]}
-                className="mt-1.5"
-              />
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Time Window *</label>
+              <div className="grid grid-cols-5 gap-1.5 mt-1.5">
+                {timePresets.map((preset) => (
+                  <button
+                    key={preset.value}
+                    type="button"
+                    onClick={() => handleTimePreset(preset.value)}
+                    className={`rounded-lg px-2 py-2 text-[11px] font-semibold transition-all border ${
+                      timePreset === preset.value
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border bg-secondary/50 text-muted-foreground hover:text-foreground hover:bg-secondary"
+                    }`}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+              {timePreset === "custom" && (
+                <Input
+                  type="datetime-local"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  min={new Date().toISOString().slice(0, 16)}
+                  className="mt-2"
+                />
+              )}
+              {timePreset && timePreset !== "custom" && endDate && (
+                <p className="text-[10px] text-muted-foreground mt-1.5">
+                  Ends: {new Date(endDate).toLocaleString()}
+                </p>
+              )}
+            </div>
+
+            {/* Analysis Dimensions */}
+            <div>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Forecast Analysis <span className="normal-case text-muted-foreground/60">(optional)</span>
+              </label>
+              <p className="text-[10px] text-muted-foreground mt-0.5 mb-2">Select metrics to track during the forecast period</p>
+              <div className="grid grid-cols-2 gap-2">
+                {dimensionOptions.map((dim) => (
+                  <button
+                    key={dim.value}
+                    type="button"
+                    onClick={() => toggleDimension(dim.value)}
+                    className={`flex items-center gap-2 rounded-lg px-3 py-2.5 text-xs font-medium transition-all border ${
+                      analysisDimensions.includes(dim.value)
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border bg-secondary/30 text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+                    }`}
+                  >
+                    <span className="text-sm">{dim.icon}</span>
+                    {dim.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
           <DialogFooter>

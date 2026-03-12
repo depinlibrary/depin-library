@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.compare-projects]
 verify_jwt = false
+
+[functions.snapshot-forecast-metrics]
+verify_jwt = false
