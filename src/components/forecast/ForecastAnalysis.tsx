@@ -3,6 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { TrendingUp, TrendingDown, Minus, BarChart3, Activity, DollarSign, Server } from "lucide-react";
 
+const sourceBadges: Record<string, { label: string; color: string }> = {
+  coingecko: { label: "CoinGecko", color: "bg-green-500/10 text-green-600 dark:text-green-400" },
+  depin_pulse: { label: "DePIN Pulse", color: "bg-blue-500/10 text-blue-600 dark:text-blue-400" },
+  pending: { label: "Pending", color: "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400" },
+  unavailable: { label: "No API Source", color: "bg-muted text-muted-foreground" },
+};
+
 const dimensionMeta: Record<string, { label: string; icon: typeof TrendingUp; format: (v: number | null) => string }> = {
   token_price: {
     label: "Token Price",
@@ -20,9 +27,9 @@ const dimensionMeta: Record<string, { label: string; icon: typeof TrendingUp; fo
     format: (v) => v == null ? "Pending" : v.toLocaleString(),
   },
   revenue: {
-    label: "Revenue",
+    label: "Revenue (30d)",
     icon: Activity,
-    format: (v) => v == null ? "Pending" : `$${v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+    format: (v) => v == null ? "Pending" : `$${v.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
   },
 };
 
@@ -64,6 +71,11 @@ export default function ForecastAnalysis({ forecastId, isEnded }: Props) {
     return s?.value ?? null;
   };
 
+  const getSource = (dim: string) => {
+    const s = snapshots.find((s: any) => s.dimension === dim && s.snapshot_type === "start");
+    return s?.source ?? "pending";
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -96,6 +108,8 @@ export default function ForecastAnalysis({ forecastId, isEnded }: Props) {
           const Icon = meta.icon;
           const startVal = getSnapshot(target.dimension, "start");
           const endVal = getSnapshot(target.dimension, "end");
+          const source = getSource(target.dimension);
+          const badge = sourceBadges[source] || sourceBadges.pending;
 
           const change = startVal != null && endVal != null && startVal !== 0
             ? ((endVal - startVal) / startVal) * 100
@@ -108,6 +122,9 @@ export default function ForecastAnalysis({ forecastId, isEnded }: Props) {
                   <Icon className="h-4 w-4 text-muted-foreground" />
                 </div>
                 <span className="text-xs font-semibold text-foreground">{meta.label}</span>
+                <span className={`text-[9px] font-medium px-1.5 py-0.5 rounded-full ${badge.color}`}>
+                  {badge.label}
+                </span>
                 {change != null && (
                   <span className={`ml-auto flex items-center gap-1 text-xs font-bold ${
                     change > 0 ? "text-green-500" : change < 0 ? "text-destructive" : "text-muted-foreground"
@@ -141,7 +158,7 @@ export default function ForecastAnalysis({ forecastId, isEnded }: Props) {
       {!isEnded && (
         <div className="px-6 py-3 border-t border-border bg-secondary/20">
           <p className="text-[10px] text-muted-foreground text-center">
-            Metrics are snapshotted at creation and will be compared when the forecast ends.
+            Metrics are snapshotted at creation and compared when the forecast ends. Data from CoinGecko &amp; DePIN Pulse.
           </p>
         </div>
       )}
