@@ -266,14 +266,16 @@ const HeroSection = ({ forecasts, trendingTopics, user, setShowCreate }: {
     return sorted.slice(0, 5);
   }, [forecasts]);
 
-  // Auto-slide every 10 seconds
+  const [isPaused, setIsPaused] = useState(false);
+
+  // Auto-slide every 10 seconds, pause on hover
   useEffect(() => {
-    if (heroForecasts.length <= 1) return;
+    if (heroForecasts.length <= 1 || isPaused) return;
     intervalRef.current = setInterval(() => {
       setActiveSlide(prev => (prev + 1) % heroForecasts.length);
     }, 10000);
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [heroForecasts.length]);
+  }, [heroForecasts.length, isPaused]);
 
   const goToSlide = useCallback((index: number) => {
     setActiveSlide(index);
