@@ -142,6 +142,7 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
               {isEnded ? 'Ended' : 'Live'}
             </span>
           </span>
+        </div>
 
         {/* Title */}
         <Link to={`/forecasts/${forecast.id}`} className="block mb-2">
