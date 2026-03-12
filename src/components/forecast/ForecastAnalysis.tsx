@@ -3,7 +3,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { TrendingUp, TrendingDown, Minus, BarChart3, Activity, DollarSign, Server } from "lucide-react";
 
-const dimensionMeta: Record<string, { label: string; icon: typeof TrendingUp; format: (v: number | null) => string }> = {
+const sourceBadges: Record<string, { label: string; color: string }> = {
+  coingecko: { label: "CoinGecko", color: "bg-green-500/10 text-green-600 dark:text-green-400" },
+  depin_pulse: { label: "DePIN Pulse", color: "bg-blue-500/10 text-blue-600 dark:text-blue-400" },
+  pending: { label: "Pending", color: "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400" },
+  unavailable: { label: "No API Source", color: "bg-muted text-muted-foreground" },
+};
+
+
   token_price: {
     label: "Token Price",
     icon: DollarSign,
