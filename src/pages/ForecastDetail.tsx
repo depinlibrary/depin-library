@@ -1,15 +1,19 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Clock, CalendarDays, Timer, Users, ExternalLink, Copy, Share2, Bookmark, ArrowUpRight, ArrowDownRight, ThumbsUp, ThumbsDown, Gauge } from "lucide-react";
+import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Skeleton } from "@/components/ui/skeleton";
-import ForecastHeader from "@/components/forecast/ForecastHeader";
-import VoteSection from "@/components/forecast/VoteSection";
+import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
+import { Badge } from "@/components/ui/badge";
 import VoteHistoryChart from "@/components/forecast/VoteHistoryChart";
 import DiscussionSection from "@/components/forecast/DiscussionSection";
 import RelatedForecastsList from "@/components/forecast/RelatedForecasts";
 import ForecastAnalysis from "@/components/forecast/ForecastAnalysis";
+import UserAvatar from "@/components/UserAvatar";
+import UserStatsHoverCard from "@/components/UserStatsHoverCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useVoteForecast } from "@/hooks/useForecasts";
 import {
@@ -23,6 +27,7 @@ import {
 } from "@/hooks/useForecastDetail";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import confetti from "canvas-confetti";
 
 function getTimeRemaining(endDate: string): string {
   const now = new Date();
@@ -33,8 +38,18 @@ function getTimeRemaining(endDate: string): string {
   if (days > 30) return `${Math.floor(days / 30)}mo left`;
   if (days > 0) return `${days}d left`;
   const hours = Math.floor(diff / (1000 * 60 * 60));
-  return `${hours}h left`;
+  if (hours > 0) return `${hours}h left`;
+  const mins = Math.floor(diff / (1000 * 60));
+  return `${mins}m left`;
 }
+
+const confidenceLabels: Record<number, { label: string; color: string }> = {
+  1: { label: "Low", color: "text-muted-foreground" },
+  2: { label: "Moderate", color: "text-yellow-500" },
+  3: { label: "High", color: "text-primary" },
+  4: { label: "Very High", color: "text-primary" },
+  5: { label: "Maximum", color: "text-accent" },
+};
 
 const ForecastDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -50,41 +65,27 @@ const ForecastDetail = () => {
   const [commentText, setCommentText] = useState("");
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState("");
+  const [confidence, setConfidence] = useState(3);
 
   // Dynamic OG meta tags
   useEffect(() => {
     if (!forecast) return;
-
     const totalVotes = forecast.total_votes_yes + forecast.total_votes_no;
     const yesPct = totalVotes > 0 ? ((forecast.total_votes_yes / totalVotes) * 100).toFixed(0) : "50";
     const projectNames = [forecast.project_a?.name, forecast.project_b?.name].filter(Boolean).join(" vs ");
-
     const title = `${forecast.title} — DePIN Forecast`;
     const description = `${yesPct}% Yes · ${totalVotes} votes · ${projectNames} — ${forecast.description?.slice(0, 120) || "Community prediction on DePIN projects"}`;
-    const url = window.location.href;
-
     document.title = title;
-
     const setMeta = (property: string, content: string, isName = false) => {
       const attr = isName ? "name" : "property";
       let el = document.querySelector(`meta[${attr}="${property}"]`);
-      if (!el) {
-        el = document.createElement("meta");
-        el.setAttribute(attr, property);
-        document.head.appendChild(el);
-      }
+      if (!el) { el = document.createElement("meta"); el.setAttribute(attr, property); document.head.appendChild(el); }
       el.setAttribute("content", content);
     };
-
-    setMeta("og:title", title);
-    setMeta("og:description", description);
-    setMeta("og:type", "article");
-    setMeta("og:url", url);
-    setMeta("twitter:card", "summary", true);
-    setMeta("twitter:title", title, true);
-    setMeta("twitter:description", description, true);
+    setMeta("og:title", title); setMeta("og:description", description); setMeta("og:type", "article");
+    setMeta("og:url", window.location.href); setMeta("twitter:card", "summary", true);
+    setMeta("twitter:title", title, true); setMeta("twitter:description", description, true);
     setMeta("description", description, true);
-
     return () => {
       document.title = "DePIN Library — Discover Decentralized Infrastructure";
       setMeta("og:title", "DePIN Library — Discover the DePIN Ecosystem");
@@ -94,10 +95,21 @@ const ForecastDetail = () => {
     };
   }, [forecast]);
 
-  const handleVote = (vote: "yes" | "no", confidenceLevel: number) => {
+  const fireConfetti = () => {
+    const end = Date.now() + 1500;
+    const colors = ["hsl(175, 80%, 50%)", "hsl(265, 70%, 60%)", "#FFD700", "#FF6B6B"];
+    (function frame() {
+      confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0, y: 0.7 }, colors });
+      confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1, y: 0.7 }, colors });
+      if (Date.now() < end) requestAnimationFrame(frame);
+    })();
+  };
+
+  const handleVote = (vote: "yes" | "no") => {
     if (!user) { toast.error("Sign in to vote"); return; }
     if (!id) return;
-    voteForecast.mutate({ forecastId: id, vote, confidenceLevel });
+    if (!forecast?.user_vote) { fireConfetti(); toast.success("🎉 Vote cast! Nice prediction."); }
+    voteForecast.mutate({ forecastId: id, vote, confidenceLevel: confidence });
   };
 
   const handleAddComment = async () => {
@@ -107,20 +119,41 @@ const ForecastDetail = () => {
     try {
       await addComment.mutateAsync({ forecastId: id, commentText: commentText.trim() });
       setCommentText("");
-    } catch {
-      toast.error("Failed to post comment");
-    }
+    } catch { toast.error("Failed to post comment"); }
+  };
+
+  const handleShareX = () => {
+    if (!forecast) return;
+    const totalVotes = forecast.total_votes_yes + forecast.total_votes_no;
+    const yesPct = totalVotes > 0 ? ((forecast.total_votes_yes / totalVotes) * 100).toFixed(0) : "50";
+    const ogUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/og-forecast?id=${forecast.id}&site=${encodeURIComponent(window.location.origin)}`;
+    const text = `${forecast.title} — ${yesPct}% Yes | ${totalVotes} votes`;
+    window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(ogUrl)}`, "_blank", "noopener,noreferrer,width=550,height=420");
+  };
+
+  const handleCopyLink = () => {
+    if (!forecast) return;
+    const ogUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/og-forecast?id=${forecast.id}&site=${encodeURIComponent(window.location.origin)}`;
+    navigator.clipboard.writeText(ogUrl);
+    toast.success("Link copied!");
   };
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Navbar />
-        <div className="container mx-auto px-4 pt-28 pb-16 max-w-3xl">
+        <div className="container mx-auto px-4 pt-24 pb-16 max-w-6xl">
           <Skeleton className="h-5 w-32 mb-6" />
-          <Skeleton className="h-[280px] w-full rounded-xl mb-4" />
-          <Skeleton className="h-[200px] w-full rounded-xl mb-4" />
-          <Skeleton className="h-[240px] w-full rounded-xl" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-4">
+              <Skeleton className="h-[320px] w-full rounded-2xl" />
+              <Skeleton className="h-[250px] w-full rounded-2xl" />
+            </div>
+            <div className="space-y-4">
+              <Skeleton className="h-[200px] w-full rounded-2xl" />
+              <Skeleton className="h-[180px] w-full rounded-2xl" />
+            </div>
+          </div>
         </div>
         <Footer />
       </div>
@@ -145,58 +178,292 @@ const ForecastDetail = () => {
   const noPct = 100 - yesPct;
   const isEnded = new Date(forecast.end_date) <= new Date();
   const timeLeft = getTimeRemaining(forecast.end_date);
+  const confInfo = confidenceLabels[confidence] || confidenceLabels[3];
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
 
-      <main className="container mx-auto px-4 pt-28 pb-16 max-w-3xl">
-        {/* Back link */}
-        <Link to="/forecasts" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-6">
+      <main className="container mx-auto px-4 pt-24 pb-16 max-w-6xl">
+        {/* Breadcrumb */}
+        <Link to="/forecasts" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-5">
           <ArrowLeft className="h-3.5 w-3.5" /> Back to Forecasts
         </Link>
 
-        {/* Stacked sections with consistent spacing */}
-        <div className="space-y-4">
-          <ForecastHeader
-            forecast={forecast}
-            yesPct={yesPct}
-            totalVotes={totalVotes}
-            isEnded={isEnded}
-            timeLeft={timeLeft}
-          />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* ═══════ LEFT COLUMN: Main Content ═══════ */}
+          <div className="lg:col-span-2 space-y-4">
+            {/* Hero Card — Header + Vote integrated */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-2xl border border-border bg-card overflow-hidden"
+            >
+              {/* Status strip */}
+              <div className={`h-1 w-full ${isEnded ? "bg-muted-foreground/30" : "bg-gradient-to-r from-primary via-primary/80 to-accent"}`} />
 
-          <VoteSection
-            forecast={forecast}
-            yesPct={yesPct}
-            noPct={noPct}
-            totalVotes={totalVotes}
-            isEnded={isEnded}
-            onVote={handleVote}
-          />
+              <div className="p-6 sm:p-8">
+                {/* Project badges + status + actions */}
+                <div className="flex items-center justify-between mb-5">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center -space-x-2">
+                      {forecast.project_a?.logo_url ? (
+                        <img src={forecast.project_a.logo_url} alt={forecast.project_a.name} className="w-11 h-11 rounded-xl object-contain border-2 border-card bg-secondary relative z-10" />
+                      ) : (
+                        <span className="w-11 h-11 rounded-xl flex items-center justify-center text-lg border-2 border-card bg-secondary relative z-10">{forecast.project_a?.logo_emoji || "⬡"}</span>
+                      )}
+                      {forecast.project_b && (
+                        forecast.project_b.logo_url ? (
+                          <img src={forecast.project_b.logo_url} alt={forecast.project_b.name} className="w-11 h-11 rounded-xl object-contain border-2 border-card bg-secondary" />
+                        ) : (
+                          <span className="w-11 h-11 rounded-xl flex items-center justify-center text-lg border-2 border-card bg-secondary">{forecast.project_b?.logo_emoji || "⬡"}</span>
+                        )
+                      )}
+                    </div>
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <Link to={`/project/${forecast.project_a?.slug}`} className="text-xs font-semibold text-foreground/80 hover:text-primary transition-colors">
+                          {forecast.project_a?.name}
+                        </Link>
+                        {forecast.project_b && (
+                          <>
+                            <span className="text-muted-foreground/40 text-[10px] font-medium uppercase tracking-widest">vs</span>
+                            <Link to={`/project/${forecast.project_b?.slug}`} className="text-xs font-semibold text-foreground/80 hover:text-primary transition-colors">
+                              {forecast.project_b?.name}
+                            </Link>
+                          </>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                          <CalendarDays className="h-3 w-3" /> {format(new Date(forecast.created_at), "MMM d, yyyy")}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge
+                      variant={isEnded ? "secondary" : "default"}
+                      className={`text-[11px] font-semibold gap-1 ${
+                        isEnded ? "" : "bg-primary/10 text-primary border-primary/20 hover:bg-primary/10"
+                      }`}
+                    >
+                      <Clock className="h-3 w-3" />
+                      {timeLeft}
+                    </Badge>
+                    <button onClick={handleShareX} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" title="Share on X">
+                      <ExternalLink className="h-4 w-4" />
+                    </button>
+                    <button onClick={handleCopyLink} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" title="Copy link">
+                      <Copy className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
 
-          <VoteHistoryChart voteHistory={voteHistory} />
+                {/* Title */}
+                <h1 className="text-xl sm:text-2xl font-bold text-foreground leading-tight mb-3 font-['Space_Grotesk'] tracking-tight">
+                  {forecast.title}
+                </h1>
+                {forecast.description && (
+                  <p className="text-sm text-muted-foreground leading-relaxed mb-6 whitespace-pre-wrap max-w-prose">
+                    {forecast.description}
+                  </p>
+                )}
 
-          <ForecastAnalysis forecastId={forecast.id} isEnded={isEnded} />
+                {/* Polymarket-style vote outcome rows */}
+                <div className="space-y-2 mb-5">
+                  <div className="flex items-center justify-between rounded-xl bg-primary/5 border border-primary/10 px-5 py-3.5">
+                    <div className="flex items-center gap-2.5">
+                      <ArrowUpRight className="h-4 w-4 text-primary" />
+                      <span className="text-sm font-semibold text-foreground">Yes</span>
+                      <span className="text-[10px] text-muted-foreground">{forecast.total_votes_yes} votes</span>
+                      {forecast.avg_confidence_yes != null && (
+                        <span className="text-[10px] text-primary/60 flex items-center gap-0.5">
+                          <Gauge className="h-3 w-3" /> {forecast.avg_confidence_yes.toFixed(1)}/5
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-2xl font-bold text-foreground font-['Space_Grotesk']">{yesPct.toFixed(0)}%</span>
+                  </div>
+                  <div className="flex items-center justify-between rounded-xl bg-destructive/5 border border-destructive/10 px-5 py-3.5">
+                    <div className="flex items-center gap-2.5">
+                      <ArrowDownRight className="h-4 w-4 text-destructive" />
+                      <span className="text-sm font-semibold text-foreground">No</span>
+                      <span className="text-[10px] text-muted-foreground">{forecast.total_votes_no} votes</span>
+                      {forecast.avg_confidence_no != null && (
+                        <span className="text-[10px] text-destructive/60 flex items-center gap-0.5">
+                          <Gauge className="h-3 w-3" /> {forecast.avg_confidence_no.toFixed(1)}/5
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-2xl font-bold text-foreground font-['Space_Grotesk']">{noPct.toFixed(0)}%</span>
+                  </div>
+                </div>
 
-          <DiscussionSection
-            forecastId={forecast.id}
-            comments={comments}
-            commentsLoading={commentsLoading}
-            onAddComment={handleAddComment}
-            commentText={commentText}
-            setCommentText={setCommentText}
-            addCommentPending={addComment.isPending}
-            editingCommentId={editingCommentId}
-            setEditingCommentId={setEditingCommentId}
-            editingText={editingText}
-            setEditingText={setEditingText}
-            onEditComment={(commentId, forecastId, text) => editComment.mutate({ commentId, forecastId, commentText: text })}
-            editCommentPending={editComment.isPending}
-            onDeleteComment={(commentId, forecastId) => deleteComment.mutate({ commentId, forecastId })}
-          />
+                {/* Vote bar */}
+                <div className="h-3 rounded-full bg-secondary overflow-hidden flex mb-4">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${yesPct}%` }}
+                    transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                    className="h-full rounded-l-full"
+                    style={{ background: "linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary) / 0.8))" }}
+                  />
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${noPct}%` }}
+                    transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                    className="h-full rounded-r-full bg-destructive/60"
+                  />
+                </div>
 
-          <RelatedForecastsList forecasts={relatedForecasts} />
+                {/* Total votes */}
+                <div className="flex items-center justify-center gap-1.5 mb-5">
+                  <Users className="h-3.5 w-3.5 text-muted-foreground/50" />
+                  <span className="text-xs text-muted-foreground">{totalVotes.toLocaleString()} total votes</span>
+                </div>
+
+                {/* Vote controls */}
+                {!isEnded ? (
+                  <>
+                    {/* Confidence slider */}
+                    <div className="mb-4 rounded-xl bg-secondary/30 border border-border/50 px-4 py-3.5">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-1.5">
+                          <Gauge className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span className="text-[11px] font-medium text-muted-foreground">Confidence Level</span>
+                        </div>
+                        <span className={`text-[11px] font-semibold ${confInfo.color}`}>
+                          {confInfo.label} ({confidence}/5)
+                        </span>
+                      </div>
+                      <Slider value={[confidence]} onValueChange={(val) => setConfidence(val[0])} min={1} max={5} step={1} className="w-full" />
+                      <div className="flex justify-between mt-1.5 px-0.5">
+                        {[1, 2, 3, 4, 5].map((n) => (
+                          <span key={n} className={`text-[9px] ${confidence === n ? "text-foreground font-semibold" : "text-muted-foreground/50"}`}>{n}</span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Vote buttons */}
+                    <div className="flex gap-3">
+                      <Button
+                        onClick={() => handleVote("yes")}
+                        variant={forecast.user_vote === "yes" ? "default" : "outline"}
+                        className={`flex-1 gap-2 h-12 text-sm font-semibold transition-all rounded-xl ${
+                          forecast.user_vote === "yes" ? "shadow-md shadow-primary/20" : ""
+                        }`}
+                      >
+                        <ThumbsUp className="h-4 w-4" />
+                        {forecast.user_vote === "yes" ? "Voted Yes ✓" : "Vote Yes"}
+                      </Button>
+                      <Button
+                        onClick={() => handleVote("no")}
+                        variant={forecast.user_vote === "no" ? "destructive" : "outline"}
+                        className={`flex-1 gap-2 h-12 text-sm font-semibold transition-all rounded-xl ${
+                          forecast.user_vote === "no" ? "shadow-md shadow-destructive/20" : ""
+                        }`}
+                      >
+                        <ThumbsDown className="h-4 w-4" />
+                        {forecast.user_vote === "no" ? "Voted No ✓" : "Vote No"}
+                      </Button>
+                    </div>
+                    {forecast.user_vote && (
+                      <motion.p initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}
+                        className="text-[11px] text-muted-foreground text-center mt-3">
+                        You voted <span className={`font-semibold ${forecast.user_vote === "yes" ? "text-primary" : "text-destructive"}`}>{forecast.user_vote === "yes" ? "Yes" : "No"}</span> · Vote again to change
+                      </motion.p>
+                    )}
+                  </>
+                ) : (
+                  <div className="rounded-xl bg-muted/50 border border-border px-4 py-3.5 text-center">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      Voting has ended · Final result: <span className="text-foreground font-semibold">{yesPct >= 50 ? "Yes" : "No"}</span> ({yesPct.toFixed(0)}%)
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Creator meta */}
+              <div className="px-6 sm:px-8 py-3.5 border-t border-border bg-secondary/10 flex items-center gap-3">
+                <UserStatsHoverCard userId={forecast.creator_user_id} displayName={forecast.creator_name} avatarUrl={forecast.creator_avatar_url}>
+                  <span className="flex items-center gap-1.5 cursor-pointer hover:text-foreground transition-colors text-[11px] text-muted-foreground">
+                    <UserAvatar avatarUrl={forecast.creator_avatar_url} displayName={forecast.creator_name} size="sm" />
+                    {forecast.creator_name}
+                  </span>
+                </UserStatsHoverCard>
+                <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                  <Timer className="h-3 w-3" /> Ends {format(new Date(forecast.end_date), "MMM d, yyyy")}
+                </span>
+              </div>
+            </motion.div>
+
+            {/* Vote History Chart */}
+            <VoteHistoryChart voteHistory={voteHistory} />
+
+            {/* Discussion */}
+            <DiscussionSection
+              forecastId={forecast.id}
+              comments={comments}
+              commentsLoading={commentsLoading}
+              onAddComment={handleAddComment}
+              commentText={commentText}
+              setCommentText={setCommentText}
+              addCommentPending={addComment.isPending}
+              editingCommentId={editingCommentId}
+              setEditingCommentId={setEditingCommentId}
+              editingText={editingText}
+              setEditingText={setEditingText}
+              onEditComment={(commentId, forecastId, text) => editComment.mutate({ commentId, forecastId, commentText: text })}
+              editCommentPending={editComment.isPending}
+              onDeleteComment={(commentId, forecastId) => deleteComment.mutate({ commentId, forecastId })}
+            />
+          </div>
+
+          {/* ═══════ RIGHT COLUMN: Sidebar ═══════ */}
+          <div className="space-y-4">
+            {/* Forecast Analysis */}
+            <ForecastAnalysis forecastId={forecast.id} isEnded={isEnded} />
+
+            {/* Quick Stats */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className="rounded-2xl border border-border bg-card overflow-hidden"
+            >
+              <div className="px-5 py-3.5 border-b border-border">
+                <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Market Stats</h3>
+              </div>
+              <div className="px-5 py-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">Total Votes</span>
+                  <span className="text-sm font-bold text-foreground font-['Space_Grotesk']">{totalVotes.toLocaleString()}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">Yes Votes</span>
+                  <span className="text-sm font-bold text-primary font-['Space_Grotesk']">{forecast.total_votes_yes}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">No Votes</span>
+                  <span className="text-sm font-bold text-destructive font-['Space_Grotesk']">{forecast.total_votes_no}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">Comments</span>
+                  <span className="text-sm font-bold text-foreground font-['Space_Grotesk']">{comments.length}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">Status</span>
+                  <Badge variant={isEnded ? "secondary" : "default"} className={`text-[10px] ${!isEnded ? "bg-primary/10 text-primary border-primary/20 hover:bg-primary/10" : ""}`}>
+                    {isEnded ? "Ended" : "Active"}
+                  </Badge>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Related Forecasts */}
+            <RelatedForecastsList forecasts={relatedForecasts} />
+          </div>
         </div>
       </main>
 
