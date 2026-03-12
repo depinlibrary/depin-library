@@ -143,6 +143,22 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
         )}
         {!forecast.description && <div className="mb-3 min-h-[2.5rem]" />}
 
+        {/* Dimension badges */}
+        {dimensions.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-3">
+            {dimensions.map((dim) => {
+              const DimIcon = dimensionIconMap[dim] || Activity;
+              const label = dimensionLabelMap[dim] || dim;
+              return (
+                <span key={dim} className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[9px] font-medium bg-secondary text-muted-foreground border border-border">
+                  <DimIcon className="h-2.5 w-2.5" />
+                  {label}
+                </span>
+              );
+            })}
+          </div>
+        )}
+
         {/* Vote percentage display */}
         <div className="mb-4 mt-auto">
           <div className="flex items-end justify-between mb-2">
