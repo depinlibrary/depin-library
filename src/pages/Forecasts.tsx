@@ -12,7 +12,23 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { useForecasts, useCreateForecast, useVoteForecast, type ForecastSortOption, type ForecastStatusFilter, type Forecast } from "@/hooks/useForecasts";
 import { useProjects } from "@/hooks/useProjects";
 import { useAuth } from "@/contexts/AuthContext";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
+const dimensionIconMap: Record<string, typeof DollarSign> = {
+  token_price: DollarSign,
+  market_cap: BarChart3,
+  active_nodes: Server,
+  revenue: Activity,
+};
+
+const dimensionLabelMap: Record<string, string> = {
+  token_price: "Price",
+  market_cap: "MCap",
+  active_nodes: "Nodes",
+  revenue: "Revenue",
+};
 
 const PAGE_SIZE = 12;
 
