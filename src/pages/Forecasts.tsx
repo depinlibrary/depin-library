@@ -724,15 +724,64 @@ const Forecasts = () => {
                 </Select>
               </div>
             </div>
+            {/* Time Window Presets */}
             <div>
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">End Date *</label>
-              <Input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                min={new Date().toISOString().split("T")[0]}
-                className="mt-1.5"
-              />
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Time Window *</label>
+              <div className="grid grid-cols-5 gap-1.5 mt-1.5">
+                {timePresets.map((preset) => (
+                  <button
+                    key={preset.value}
+                    type="button"
+                    onClick={() => handleTimePreset(preset.value)}
+                    className={`rounded-lg px-2 py-2 text-[11px] font-semibold transition-all border ${
+                      timePreset === preset.value
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border bg-secondary/50 text-muted-foreground hover:text-foreground hover:bg-secondary"
+                    }`}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+              {timePreset === "custom" && (
+                <Input
+                  type="datetime-local"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  min={new Date().toISOString().slice(0, 16)}
+                  className="mt-2"
+                />
+              )}
+              {timePreset && timePreset !== "custom" && endDate && (
+                <p className="text-[10px] text-muted-foreground mt-1.5">
+                  Ends: {new Date(endDate).toLocaleString()}
+                </p>
+              )}
+            </div>
+
+            {/* Analysis Dimensions */}
+            <div>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Forecast Analysis <span className="normal-case text-muted-foreground/60">(optional)</span>
+              </label>
+              <p className="text-[10px] text-muted-foreground mt-0.5 mb-2">Select metrics to track during the forecast period</p>
+              <div className="grid grid-cols-2 gap-2">
+                {dimensionOptions.map((dim) => (
+                  <button
+                    key={dim.value}
+                    type="button"
+                    onClick={() => toggleDimension(dim.value)}
+                    className={`flex items-center gap-2 rounded-lg px-3 py-2.5 text-xs font-medium transition-all border ${
+                      analysisDimensions.includes(dim.value)
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border bg-secondary/30 text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+                    }`}
+                  >
+                    <span className="text-sm">{dim.icon}</span>
+                    {dim.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
           <DialogFooter>
