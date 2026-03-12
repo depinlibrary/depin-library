@@ -247,10 +247,10 @@ const Forecasts = () => {
   ];
 
   const dimensionOptions = [
-    { value: "token_price", label: "Token Price", icon: "💰" },
-    { value: "market_cap", label: "Market Cap", icon: "📊" },
-    { value: "active_nodes", label: "Active Nodes", icon: "🖥️" },
-    { value: "revenue", label: "Revenue", icon: "💵" },
+    { value: "token_price", label: "Token Price", Icon: DollarSign },
+    { value: "market_cap", label: "Market Cap", Icon: BarChart3 },
+    { value: "active_nodes", label: "Active Nodes", Icon: Server },
+    { value: "revenue", label: "Revenue", Icon: Activity },
   ];
 
   const handleTimePreset = (preset: string) => {
