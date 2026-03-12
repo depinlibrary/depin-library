@@ -283,6 +283,21 @@ const HeroSection = ({ forecasts, trendingTopics, user, setShowCreate }: {
     }, 10000);
   }, [heroForecasts.length]);
 
+  // Build per-slide chart data showing vote breakdown for the current forecast
+  const currentChartData = useMemo(() => {
+    const f = heroForecasts[activeSlide];
+    if (!f) return [];
+    const t = f.total_votes_yes + f.total_votes_no;
+    if (t === 0) return [
+      { name: "Yes", value: 50, fill: "hsl(var(--primary))" },
+      { name: "No", value: 50, fill: "hsl(var(--destructive))" },
+    ];
+    return [
+      { name: "Yes", value: f.total_votes_yes, fill: "hsl(var(--primary))" },
+      { name: "No", value: f.total_votes_no, fill: "hsl(var(--destructive))" },
+    ];
+  }, [heroForecasts, activeSlide]);
+
   if (heroForecasts.length === 0) {
     return (
       <section className="relative overflow-hidden pt-24 pb-8">
@@ -317,21 +332,6 @@ const HeroSection = ({ forecasts, trendingTopics, user, setShowCreate }: {
   const cYesPct = cTotal > 0 ? (current.total_votes_yes / cTotal) * 100 : 50;
   const cIsEnded = new Date(current.end_date) <= new Date();
   const cTimeLeft = getTimeRemaining(current.end_date);
-
-  // Build per-slide chart data showing vote breakdown for the current forecast
-  const currentChartData = useMemo(() => {
-    const f = heroForecasts[activeSlide];
-    if (!f) return [];
-    const t = f.total_votes_yes + f.total_votes_no;
-    if (t === 0) return [
-      { name: "Yes", value: 50, fill: "hsl(var(--primary))" },
-      { name: "No", value: 50, fill: "hsl(var(--destructive))" },
-    ];
-    return [
-      { name: "Yes", value: f.total_votes_yes, fill: "hsl(var(--primary))" },
-      { name: "No", value: f.total_votes_no, fill: "hsl(var(--destructive))" },
-    ];
-  }, [heroForecasts, activeSlide]);
 
   return (
     <section className="relative overflow-hidden pt-24 pb-8">
