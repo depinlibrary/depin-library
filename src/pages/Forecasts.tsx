@@ -333,6 +333,71 @@ const Forecasts = () => {
   const total = data?.total || 0;
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
+  // Fetch forecast targets (dimensions) for displayed forecasts
+  const forecastIds = useMemo(() => forecasts.map(f => f.id), [forecasts]);
+  const { data: forecastTargetsMap = {} } = useQuery({
+    queryKey: ["forecast-targets-batch", forecastIds],
+    queryFn: async () => {
+      if (forecastIds.length === 0) return {};
+      const { data } = await supabase
+        .from("forecast_targets")
+        .select("forecast_id, dimension")
+        .in("forecast_id", forecastIds);
+      const map: Record<string, string[]> = {};
+      (data || []).forEach((t: any) => {
+        if (!map[t.forecast_id]) map[t.forecast_id] = [];
+        map[t.forecast_id].push(t.dimension);
+      });
+      return map;
+    },
+    enabled: forecastIds.length > 0,
+    staleTime: 60_000,
+  });
+
+  // Trending projects by forecast vote activity
+  const { data: trendingTopics = [] } = useQuery({
+    queryKey: ["trending-forecast-projects"],
+    queryFn: async () => {
+      // Get projects with most total votes across forecasts
+      const { data: topForecasts } = await supabase
+        .from("forecasts")
+        .select("project_a_id, total_votes_yes, total_votes_no")
+        .order("total_votes_yes", { ascending: false })
+        .limit(50);
+
+      if (!topForecasts || topForecasts.length === 0) return [];
+
+      // Aggregate votes per project
+      const projectVotes: Record<string, number> = {};
+      topForecasts.forEach((f: any) => {
+        const votes = (f.total_votes_yes || 0) + (f.total_votes_no || 0);
+        projectVotes[f.project_a_id] = (projectVotes[f.project_a_id] || 0) + votes;
+      });
+
+      // Sort and take top 5
+      const sorted = Object.entries(projectVotes)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
+
+      const projectIds = sorted.map(([id]) => id);
+      if (projectIds.length === 0) return [];
+
+      const { data: projectsData } = await supabase
+        .from("projects")
+        .select("id, name, slug, logo_url, logo_emoji")
+        .in("id", projectIds);
+
+      const projectMap: Record<string, any> = {};
+      (projectsData || []).forEach((p: any) => { projectMap[p.id] = p; });
+
+      return sorted.map(([id, votes]) => ({
+        ...projectMap[id],
+        totalVotes: votes,
+      })).filter(p => p.name);
+    },
+    staleTime: 5 * 60_000,
+  });
+
   // Stats
   const stats = useMemo(() => {
     const totalVotes = forecasts.reduce((sum, f) => sum + f.total_votes_yes + f.total_votes_no, 0);
