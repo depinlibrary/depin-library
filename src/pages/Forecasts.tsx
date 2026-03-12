@@ -72,8 +72,6 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
       transition={{ delay: index * 0.05, duration: 0.4 }}
       className="group relative rounded-2xl border border-border bg-card overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-primary/8 hover:border-primary/30 hover:-translate-y-1 h-full flex flex-col"
     >
-      {/* Top gradient accent */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary/60 via-accent/40 to-primary/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
       <div className="p-5 flex-1 flex flex-col">
         {/* Header: Projects + status */}
@@ -135,12 +133,14 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
               </span>
             </span>
           </div>
-          <span className={`shrink-0 rounded-lg px-2.5 py-1 text-[10px] font-bold tracking-wide ${
-            isEnded
-              ? "bg-muted text-muted-foreground"
-              : "bg-primary/10 text-primary border border-primary/20"
-          }`}>
-            {timeLeft}
+          <span className={`shrink-0 flex items-center gap-1.5`}>
+            <span className="relative flex h-1.5 w-1.5">
+              {!isEnded && <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-green-500" />}
+              <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${isEnded ? 'bg-destructive' : 'bg-green-500'}`} />
+            </span>
+            <span className={`text-[9px] font-semibold ${isEnded ? 'text-destructive/70' : 'text-green-500/70'}`}>
+              {isEnded ? 'Ended' : 'Live'}
+            </span>
           </span>
         </div>
 
@@ -821,7 +821,7 @@ const Forecasts = () => {
         <div className="container mx-auto px-4 py-3">
           {/* Single row: Search + dropdown filters */}
           <div className="flex items-center gap-2">
-            <div className="w-48 shrink-0">
+            <div className="flex-1 min-w-0">
               <Input
                 placeholder="Search by title..."
                 value={search}
