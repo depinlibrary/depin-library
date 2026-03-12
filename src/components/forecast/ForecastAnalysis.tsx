@@ -108,6 +108,8 @@ export default function ForecastAnalysis({ forecastId, isEnded }: Props) {
           const Icon = meta.icon;
           const startVal = getSnapshot(target.dimension, "start");
           const endVal = getSnapshot(target.dimension, "end");
+          const source = getSource(target.dimension);
+          const badge = sourceBadges[source] || sourceBadges.pending;
 
           const change = startVal != null && endVal != null && startVal !== 0
             ? ((endVal - startVal) / startVal) * 100
@@ -120,6 +122,18 @@ export default function ForecastAnalysis({ forecastId, isEnded }: Props) {
                   <Icon className="h-4 w-4 text-muted-foreground" />
                 </div>
                 <span className="text-xs font-semibold text-foreground">{meta.label}</span>
+                <span className={`text-[9px] font-medium px-1.5 py-0.5 rounded-full ${badge.color}`}>
+                  {badge.label}
+                </span>
+                {change != null && (
+                  <span className={`ml-auto flex items-center gap-1 text-xs font-bold ${
+                    change > 0 ? "text-green-500" : change < 0 ? "text-destructive" : "text-muted-foreground"
+                  }`}>
+                    {change > 0 ? <TrendingUp className="h-3 w-3" /> : change < 0 ? <TrendingDown className="h-3 w-3" /> : <Minus className="h-3 w-3" />}
+                    {change > 0 ? "+" : ""}{change.toFixed(2)}%
+                  </span>
+                )}
+              </div>
                 {change != null && (
                   <span className={`ml-auto flex items-center gap-1 text-xs font-bold ${
                     change > 0 ? "text-green-500" : change < 0 ? "text-destructive" : "text-muted-foreground"
