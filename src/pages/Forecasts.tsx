@@ -247,8 +247,364 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
     </motion.div>
   );
 };
+// ---- Hero Section with Auto-Sliding Carousel + Sentiment Chart ----
+const HeroSection = ({ forecasts, trendingTopics, user, setShowCreate }: {
+  forecasts: Forecast[];
+  trendingTopics: any[];
+  user: any;
+  setShowCreate: (v: boolean) => void;
+}) => {
+  const [activeSlide, setActiveSlide] = useState(0);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-const Forecasts = () => {
+  // Get top forecasts for carousel: mix of active + ended + highest voted
+  const heroForecasts = useMemo(() => {
+    if (forecasts.length === 0) return [];
+    const sorted = [...forecasts].sort((a, b) => 
+      (b.total_votes_yes + b.total_votes_no) - (a.total_votes_yes + a.total_votes_no)
+    );
+    return sorted.slice(0, 5);
+  }, [forecasts]);
+
+  // Auto-slide every 5 seconds
+  useEffect(() => {
+    if (heroForecasts.length <= 1) return;
+    intervalRef.current = setInterval(() => {
+      setActiveSlide(prev => (prev + 1) % heroForecasts.length);
+    }, 5000);
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+  }, [heroForecasts.length]);
+
+  const goToSlide = useCallback((index: number) => {
+    setActiveSlide(index);
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    intervalRef.current = setInterval(() => {
+      setActiveSlide(prev => (prev + 1) % heroForecasts.length);
+    }, 5000);
+  }, [heroForecasts.length]);
+
+  if (heroForecasts.length === 0) {
+    return (
+      <section className="relative overflow-hidden pt-24 pb-8">
+        <div className="absolute inset-0 bg-grid opacity-10" />
+        <div className="gradient-radial-top absolute inset-0" />
+        <div className="container relative mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-2xl border border-border bg-card p-8 flex flex-col items-center justify-center text-center"
+          >
+            <BarChart3 className="h-10 w-10 text-muted-foreground/30 mb-3" />
+            <h2 className="text-lg font-bold text-foreground font-['Space_Grotesk'] mb-1">No forecasts yet</h2>
+            <p className="text-sm text-muted-foreground mb-4">Create the first prediction for the community.</p>
+            {user ? (
+              <Button onClick={() => setShowCreate(true)} className="gap-1.5">
+                <Plus className="h-3.5 w-3.5" /> Create Forecast
+              </Button>
+            ) : (
+              <Link to="/auth" className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground">
+                <LogIn className="h-3.5 w-3.5" /> Sign in
+              </Link>
+            )}
+          </motion.div>
+        </div>
+      </section>
+    );
+  }
+
+  const current = heroForecasts[activeSlide];
+  const cTotal = current.total_votes_yes + current.total_votes_no;
+  const cYesPct = cTotal > 0 ? (current.total_votes_yes / cTotal) * 100 : 50;
+  const cIsEnded = new Date(current.end_date) <= new Date();
+  const cTimeLeft = getTimeRemaining(current.end_date);
+
+  // Build chart data from all hero forecasts
+  const chartData = heroForecasts.map((f, i) => {
+    const t = f.total_votes_yes + f.total_votes_no;
+    const yesPct = t > 0 ? Math.round((f.total_votes_yes / t) * 100) : 50;
+    return {
+      name: f.title.length > 12 ? f.title.slice(0, 12) + "…" : f.title,
+      yes: f.total_votes_yes,
+      no: f.total_votes_no,
+      sentiment: yesPct,
+    };
+  });
+
+  return (
+    <section className="relative overflow-hidden pt-24 pb-8">
+      <div className="absolute inset-0 bg-grid opacity-10" />
+      <div className="gradient-radial-top absolute inset-0" />
+      <div className="container relative mx-auto px-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* LEFT: Auto-sliding featured card with chart */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="lg:col-span-2 rounded-2xl border border-border bg-card overflow-hidden"
+          >
+            <div className="p-6 sm:p-8">
+              {/* Slide content */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={current.id}
+                  initial={{ opacity: 0, x: 30 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -30 }}
+                  transition={{ duration: 0.35 }}
+                >
+                  {/* Header with live/ended indicator */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center -space-x-2">
+                        {current.project_a_logo_url ? (
+                          <img src={current.project_a_logo_url} alt={current.project_a_name} className="w-10 h-10 rounded-xl object-contain border-2 border-card bg-secondary relative z-10" />
+                        ) : (
+                          <span className="w-10 h-10 rounded-xl flex items-center justify-center text-lg border-2 border-card bg-secondary relative z-10">{current.project_a_logo_emoji || "⬡"}</span>
+                        )}
+                        {current.project_b_name && (
+                          current.project_b_logo_url ? (
+                            <img src={current.project_b_logo_url} alt={current.project_b_name} className="w-10 h-10 rounded-xl object-contain border-2 border-card bg-secondary" />
+                          ) : (
+                            <span className="w-10 h-10 rounded-xl flex items-center justify-center text-lg border-2 border-card bg-secondary">{current.project_b_logo_emoji || "⬡"}</span>
+                          )
+                        )}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[11px] font-medium text-muted-foreground">
+                          {current.project_a_name}{current.project_b_name ? ` · ${current.project_b_name}` : ''}
+                        </span>
+                        {/* Blinking live/ended indicator */}
+                        <span className="flex items-center gap-1.5">
+                          <span className={`relative flex h-2 w-2`}>
+                            {!cIsEnded && (
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-green-500" />
+                            )}
+                            <span className={`relative inline-flex rounded-full h-2 w-2 ${cIsEnded ? 'bg-destructive animate-pulse' : 'bg-green-500'}`} />
+                          </span>
+                          <span className={`text-[10px] font-semibold ${cIsEnded ? 'text-destructive' : 'text-green-500'}`}>
+                            {cIsEnded ? 'Ended' : 'Live'} · {cTimeLeft}
+                          </span>
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <button className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
+                        <Eye className="h-4 w-4" />
+                      </button>
+                      <button className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
+                        <Bookmark className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Title */}
+                  <Link to={`/forecasts/${current.id}`}>
+                    <h2 className="text-xl sm:text-2xl font-bold text-foreground leading-tight mb-5 font-['Space_Grotesk'] tracking-tight hover:text-primary transition-colors">
+                      {current.title}
+                    </h2>
+                  </Link>
+
+                  {/* Vote outcomes */}
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center justify-between rounded-xl bg-primary/5 border border-primary/10 px-4 py-2.5">
+                      <div className="flex items-center gap-2">
+                        <ArrowUpRight className="h-4 w-4 text-primary" />
+                        <span className="text-sm font-semibold text-foreground">Yes</span>
+                      </div>
+                      <span className="text-xl font-bold text-foreground font-['Space_Grotesk']">{cYesPct.toFixed(0)}%</span>
+                    </div>
+                    <div className="flex items-center justify-between rounded-xl bg-destructive/5 border border-destructive/10 px-4 py-2.5">
+                      <div className="flex items-center gap-2">
+                        <ArrowDownRight className="h-4 w-4 text-destructive" />
+                        <span className="text-sm font-semibold text-foreground">No</span>
+                      </div>
+                      <span className="text-xl font-bold text-foreground font-['Space_Grotesk']">{(100 - cYesPct).toFixed(0)}%</span>
+                    </div>
+                  </div>
+
+                  {/* Footer */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <Users className="h-3.5 w-3.5" />
+                      <span>{cTotal.toLocaleString()} votes</span>
+                    </div>
+                    <Link to={`/forecasts/${current.id}`} className="text-xs font-semibold text-primary hover:underline flex items-center gap-1">
+                      View details <ChevronRightIcon className="h-3 w-3" />
+                    </Link>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Sentiment Chart */}
+              <div className="mt-5 pt-5 border-t border-border">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Vote & Sentiment Overview</h3>
+                </div>
+                <div className="h-36">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="heroYesGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.02} />
+                        </linearGradient>
+                        <linearGradient id="heroNoGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(var(--destructive))" stopOpacity={0.25} />
+                          <stop offset="95%" stopColor="hsl(var(--destructive))" stopOpacity={0.02} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.4} />
+                      <XAxis dataKey="name" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} />
+                      <YAxis tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "hsl(var(--card))",
+                          border: "1px solid hsl(var(--border))",
+                          borderRadius: "10px",
+                          fontSize: "11px",
+                          padding: "6px 10px",
+                        }}
+                        labelStyle={{ fontWeight: 600, marginBottom: 2, color: "hsl(var(--foreground))" }}
+                      />
+                      <Area type="monotone" dataKey="yes" name="Yes votes" stroke="hsl(var(--primary))" fill="url(#heroYesGrad)" strokeWidth={2} dot={false} />
+                      <Area type="monotone" dataKey="no" name="No votes" stroke="hsl(var(--destructive))" fill="url(#heroNoGrad)" strokeWidth={2} dot={false} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Slide dots / navigation */}
+              {heroForecasts.length > 1 && (
+                <div className="flex items-center justify-center gap-2 mt-4">
+                  {heroForecasts.map((f, i) => {
+                    const fEnded = new Date(f.end_date) <= new Date();
+                    return (
+                      <button
+                        key={f.id}
+                        onClick={() => goToSlide(i)}
+                        className={`relative flex items-center justify-center w-6 h-6 rounded-full transition-all ${i === activeSlide ? 'scale-110' : 'opacity-60 hover:opacity-100'}`}
+                        aria-label={`Go to slide ${i + 1}`}
+                      >
+                        <span className={`relative flex h-2.5 w-2.5`}>
+                          {!fEnded && i === activeSlide && (
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-green-500" />
+                          )}
+                          <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${
+                            i === activeSlide
+                              ? (fEnded ? 'bg-destructive' : 'bg-green-500')
+                              : 'bg-muted-foreground/30'
+                          } ${fEnded && i !== activeSlide ? 'bg-destructive/30' : ''} ${!fEnded && i !== activeSlide ? 'bg-green-500/30' : ''}`} />
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </motion.div>
+
+          {/* Right sidebar */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="space-y-4"
+          >
+            {/* Top Forecasts */}
+            <div className="rounded-2xl border border-border bg-card overflow-hidden">
+              <div className="px-5 py-3.5 flex items-center justify-between border-b border-border">
+                <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Top Forecasts</h3>
+                <ChevronRightIcon className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <div className="divide-y divide-border">
+                {forecasts.slice(1, 4).map((f, i) => {
+                  const fTotal = f.total_votes_yes + f.total_votes_no;
+                  const fYesPct = fTotal > 0 ? (f.total_votes_yes / fTotal) * 100 : 50;
+                  const fIsEnded = new Date(f.end_date) <= new Date();
+                  return (
+                    <Link key={f.id} to={`/forecasts/${f.id}`} className="flex items-start gap-3 px-5 py-3 hover:bg-secondary/30 transition-colors">
+                      <span className="text-xs font-bold text-muted-foreground/50 mt-0.5 w-4 shrink-0">{i + 1}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-foreground leading-snug line-clamp-2">{f.title}</p>
+                        {/* Blinking status */}
+                        <span className="flex items-center gap-1 mt-1">
+                          <span className="relative flex h-1.5 w-1.5">
+                            {!fIsEnded && <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-green-500" />}
+                            <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${fIsEnded ? 'bg-destructive' : 'bg-green-500'}`} />
+                          </span>
+                          <span className={`text-[9px] font-medium ${fIsEnded ? 'text-destructive/70' : 'text-green-500/70'}`}>{fIsEnded ? 'Ended' : 'Live'}</span>
+                        </span>
+                      </div>
+                      <div className="flex flex-col items-end shrink-0">
+                        <span className="text-sm font-bold text-foreground font-['Space_Grotesk']">{fYesPct.toFixed(0)}%</span>
+                        <span className={`text-[10px] font-medium flex items-center gap-0.5 ${
+                          fIsEnded ? 'text-muted-foreground' : fYesPct >= 50 ? 'text-primary' : 'text-destructive'
+                        }`}>
+                          {fIsEnded ? '' : fYesPct >= 50 ? <ArrowUpRight className="h-2.5 w-2.5" /> : <ArrowDownRight className="h-2.5 w-2.5" />}
+                          {fIsEnded ? 'Ended' : `${fTotal} votes`}
+                        </span>
+                      </div>
+                    </Link>
+                  );
+                })}
+                {forecasts.length <= 1 && (
+                  <div className="px-5 py-6 text-center text-xs text-muted-foreground">No additional forecasts</div>
+                )}
+              </div>
+            </div>
+
+            {/* Trending Topics */}
+            {trendingTopics.length > 0 && (
+              <div className="rounded-2xl border border-border bg-card overflow-hidden">
+                <div className="px-5 py-3.5 flex items-center justify-between border-b border-border">
+                  <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Hot Topics</h3>
+                  <Flame className="h-4 w-4 text-destructive/60" />
+                </div>
+                <div className="divide-y divide-border">
+                  {trendingTopics.map((project: any, i: number) => (
+                    <Link key={project.id} to={`/project/${project.slug}`} className="flex items-center gap-3 px-5 py-2.5 hover:bg-secondary/30 transition-colors">
+                      <span className="text-xs font-bold text-muted-foreground/50 w-4 shrink-0">{i + 1}</span>
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        {project.logo_url ? (
+                          <img src={project.logo_url} alt={project.name} className="w-5 h-5 rounded-md object-contain bg-secondary" />
+                        ) : (
+                          <span className="w-5 h-5 rounded-md flex items-center justify-center text-xs bg-secondary">{project.logo_emoji || "⬡"}</span>
+                        )}
+                        <span className="text-xs font-semibold text-foreground truncate">{project.name}</span>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <span className="text-[10px] font-medium text-muted-foreground">{project.totalVotes} votes</span>
+                        <Flame className="h-3 w-3 text-destructive/50" />
+                        <ChevronRightIcon className="h-3 w-3 text-muted-foreground/40" />
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Create CTA */}
+            <div className="rounded-2xl border border-border bg-card overflow-hidden">
+              <div className="px-5 py-4">
+                {user ? (
+                  <Button onClick={() => setShowCreate(true)} className="w-full gap-1.5 rounded-xl" size="sm">
+                    <Plus className="h-3.5 w-3.5" /> New Question
+                  </Button>
+                ) : (
+                  <Link to="/auth" className="flex items-center justify-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground w-full">
+                    <LogIn className="h-3.5 w-3.5" /> Sign in to create
+                  </Link>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
