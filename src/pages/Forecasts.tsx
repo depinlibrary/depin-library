@@ -72,8 +72,6 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
       transition={{ delay: index * 0.05, duration: 0.4 }}
       className="group relative rounded-2xl border border-border bg-card overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-primary/8 hover:border-primary/30 hover:-translate-y-1 h-full flex flex-col"
     >
-      {/* Top gradient accent */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary/60 via-accent/40 to-primary/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
       <div className="p-5 flex-1 flex flex-col">
         {/* Header: Projects + status */}
