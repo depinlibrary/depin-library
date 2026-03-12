@@ -934,21 +934,24 @@ const Forecasts = () => {
               </label>
               <p className="text-[10px] text-muted-foreground mt-0.5 mb-2">Select metrics to track during the forecast period</p>
               <div className="grid grid-cols-2 gap-2">
-                {dimensionOptions.map((dim) => (
-                  <button
-                    key={dim.value}
-                    type="button"
-                    onClick={() => toggleDimension(dim.value)}
-                    className={`flex items-center gap-2 rounded-lg px-3 py-2.5 text-xs font-medium transition-all border ${
-                      analysisDimensions.includes(dim.value)
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border bg-secondary/30 text-muted-foreground hover:text-foreground hover:bg-secondary/60"
-                    }`}
-                  >
-                    <span className="text-sm">{dim.icon}</span>
-                    {dim.label}
-                  </button>
-                ))}
+                {dimensionOptions.map((dim) => {
+                  const DimIcon = dim.Icon;
+                  return (
+                    <button
+                      key={dim.value}
+                      type="button"
+                      onClick={() => toggleDimension(dim.value)}
+                      className={`flex items-center gap-2 rounded-lg px-3 py-2.5 text-xs font-medium transition-all border ${
+                        analysisDimensions.includes(dim.value)
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border bg-secondary/30 text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+                      }`}
+                    >
+                      <DimIcon className="h-3.5 w-3.5" />
+                      {dim.label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
