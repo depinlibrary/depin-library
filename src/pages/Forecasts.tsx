@@ -385,7 +385,7 @@ const HeroSection = ({ forecasts, trendingTopics, user, setShowCreate }: {
                             <span className={`relative inline-flex rounded-full h-2 w-2 ${cIsEnded ? 'bg-destructive animate-pulse' : 'bg-green-500'}`} />
                           </span>
                           <span className={`text-[10px] font-semibold ${cIsEnded ? 'text-destructive' : 'text-green-500'}`}>
-                            {cIsEnded ? 'Ended' : 'Live'} · {cTimeLeft}
+                            {cIsEnded ? 'Ended' : `Live · ${cTimeLeft}`}
                           </span>
                         </span>
                       </div>
