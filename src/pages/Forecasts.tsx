@@ -488,34 +488,27 @@ const HeroSection = ({ forecasts, trendingTopics, user, setShowCreate }: {
                 </motion.div>
               </AnimatePresence>
 
-              {/* Slide dots / navigation */}
-              {heroForecasts.length > 1 && (
-                <div className="flex items-center justify-center gap-2 mt-4">
-                  {heroForecasts.map((f, i) => {
-                    const fEnded = new Date(f.end_date) <= new Date();
-                    return (
-                      <button
-                        key={f.id}
-                        onClick={() => goToSlide(i)}
-                        className={`relative flex items-center justify-center w-6 h-6 rounded-full transition-all ${i === activeSlide ? 'scale-110' : 'opacity-60 hover:opacity-100'}`}
-                        aria-label={`Go to slide ${i + 1}`}
-                      >
-                        <span className={`relative flex h-2.5 w-2.5`}>
-                          {!fEnded && i === activeSlide && (
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-green-500" />
-                          )}
-                          <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${
-                            i === activeSlide
-                              ? (fEnded ? 'bg-destructive' : 'bg-green-500')
-                              : 'bg-muted-foreground/30'
-                          } ${fEnded && i !== activeSlide ? 'bg-destructive/30' : ''} ${!fEnded && i !== activeSlide ? 'bg-green-500/30' : ''}`} />
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
             </div>
+
+            {/* Slide dots - outside the card, centered */}
+            {heroForecasts.length > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-3">
+                {heroForecasts.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => goToSlide(i)}
+                    className="p-1"
+                    aria-label={`Go to slide ${i + 1}`}
+                  >
+                    <span className={`block rounded-full transition-all duration-300 ${
+                      i === activeSlide
+                        ? 'w-6 h-2 bg-primary'
+                        : 'w-2 h-2 bg-muted-foreground/30 hover:bg-muted-foreground/50'
+                    }`} />
+                  </button>
+                ))}
+              </div>
+            )}
           </motion.div>
 
           {/* Right sidebar */}
