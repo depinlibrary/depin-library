@@ -345,9 +345,11 @@ const HeroSection = ({ forecasts, trendingTopics, user, setShowCreate }: {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="lg:col-span-2 rounded-2xl border border-border bg-card overflow-hidden"
+            className="lg:col-span-2"
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
           >
-            <div className="p-6 sm:p-8">
+            <div className="rounded-2xl border border-border bg-card overflow-hidden h-[520px] p-6 sm:p-8">
               {/* Slide content */}
               <AnimatePresence mode="wait">
                 <motion.div
