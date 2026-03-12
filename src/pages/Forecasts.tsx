@@ -318,17 +318,20 @@ const HeroSection = ({ forecasts, trendingTopics, user, setShowCreate }: {
   const cIsEnded = new Date(current.end_date) <= new Date();
   const cTimeLeft = getTimeRemaining(current.end_date);
 
-  // Build chart data from all hero forecasts
-  const chartData = heroForecasts.map((f, i) => {
+  // Build per-slide chart data showing vote breakdown for the current forecast
+  const currentChartData = useMemo(() => {
+    const f = heroForecasts[activeSlide];
+    if (!f) return [];
     const t = f.total_votes_yes + f.total_votes_no;
-    const yesPct = t > 0 ? Math.round((f.total_votes_yes / t) * 100) : 50;
-    return {
-      name: f.title.length > 12 ? f.title.slice(0, 12) + "…" : f.title,
-      yes: f.total_votes_yes,
-      no: f.total_votes_no,
-      sentiment: yesPct,
-    };
-  });
+    if (t === 0) return [
+      { name: "Yes", value: 50, fill: "hsl(var(--primary))" },
+      { name: "No", value: 50, fill: "hsl(var(--destructive))" },
+    ];
+    return [
+      { name: "Yes", value: f.total_votes_yes, fill: "hsl(var(--primary))" },
+      { name: "No", value: f.total_votes_no, fill: "hsl(var(--destructive))" },
+    ];
+  }, [heroForecasts, activeSlide]);
 
   return (
     <section className="relative overflow-hidden pt-24 pb-8">
