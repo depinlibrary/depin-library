@@ -133,15 +133,6 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
               </span>
             </span>
           </div>
-          <span className={`shrink-0 flex items-center gap-1.5`}>
-            <span className="relative flex h-1.5 w-1.5">
-              {!isEnded && <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-green-500" />}
-              <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${isEnded ? 'bg-destructive' : 'bg-green-500'}`} />
-            </span>
-            <span className={`text-[9px] font-semibold ${isEnded ? 'text-destructive/70' : 'text-green-500/70'}`}>
-              {isEnded ? 'Ended' : 'Live'}
-            </span>
-          </span>
         </div>
 
         {/* Title */}
