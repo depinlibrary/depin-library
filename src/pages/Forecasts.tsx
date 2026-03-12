@@ -806,7 +806,7 @@ const Forecasts = () => {
         <div className="container mx-auto px-4 py-3">
           {/* Single row: Search + dropdown filters */}
           <div className="flex items-center gap-2">
-            <div className="flex-1 min-w-0">
+            <div className="w-48 shrink-0">
               <Input
                 placeholder="Search by title..."
                 value={search}
@@ -818,7 +818,7 @@ const Forecasts = () => {
               <SelectTrigger className="h-9 w-[130px] text-[11px] bg-secondary/50 border-border shrink-0">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent position="popper" side="bottom" sideOffset={4}>
                 {sortOptions.map(({ value, label }) => (
                   <SelectItem key={value} value={value}>{label}</SelectItem>
                 ))}
@@ -828,7 +828,7 @@ const Forecasts = () => {
               <SelectTrigger className="h-9 w-[120px] text-[11px] bg-secondary/50 border-border shrink-0">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent position="popper" side="bottom" sideOffset={4}>
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
                 <SelectItem value="ended">Ended</SelectItem>
@@ -863,6 +863,15 @@ const Forecasts = () => {
                 {projects.find(p => p.id === projectFilter)?.name}
                 <X className="h-3 w-3" />
               </button>
+            )}
+            {user ? (
+              <Button onClick={() => setShowCreate(true)} size="sm" className="h-9 gap-1.5 shrink-0 text-xs">
+                <Plus className="h-3.5 w-3.5" /> Create Forecast
+              </Button>
+            ) : (
+              <Link to="/auth" className="inline-flex items-center gap-1.5 shrink-0 rounded-md bg-primary px-3 h-9 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors">
+                <LogIn className="h-3.5 w-3.5" /> Sign in
+              </Link>
             )}
           </div>
         </div>
