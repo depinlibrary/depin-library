@@ -324,6 +324,7 @@ const Forecasts = () => {
         projectAId,
         projectBId: projectBId && projectBId !== "none" ? projectBId : undefined,
         endDate: new Date(endDate).toISOString(),
+        analysisDimensions,
       });
       toast.success("Forecast created!");
       setShowCreate(false);
@@ -332,6 +333,8 @@ const Forecasts = () => {
       setProjectAId("");
       setProjectBId("");
       setEndDate("");
+      setTimePreset("");
+      setAnalysisDimensions([]);
     } catch (err: any) {
       toast.error(err.message || "Failed to create forecast");
     }
