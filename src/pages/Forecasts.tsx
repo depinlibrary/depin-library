@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Timer, ThumbsUp, ThumbsDown, Plus, TrendingUp, Clock, Flame, ChevronLeft, ChevronRight, LogIn, Users, BarChart3, Zap, X, Filter, Trophy, CheckCircle, Circle, RotateCcw } from "lucide-react";
+import { Timer, ThumbsUp, ThumbsDown, Plus, TrendingUp, Clock, Flame, ChevronLeft, ChevronRight, LogIn, Users, BarChart3, Zap, X, Filter, Trophy, CheckCircle, Circle, RotateCcw, DollarSign, Server, Activity, ArrowUpRight, ArrowDownRight, Bookmark, Eye, ChevronRight as ChevronRightIcon } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -247,10 +247,10 @@ const Forecasts = () => {
   ];
 
   const dimensionOptions = [
-    { value: "token_price", label: "Token Price", icon: "💰" },
-    { value: "market_cap", label: "Market Cap", icon: "📊" },
-    { value: "active_nodes", label: "Active Nodes", icon: "🖥️" },
-    { value: "revenue", label: "Revenue", icon: "💵" },
+    { value: "token_price", label: "Token Price", Icon: DollarSign },
+    { value: "market_cap", label: "Market Cap", Icon: BarChart3 },
+    { value: "active_nodes", label: "Active Nodes", Icon: Server },
+    { value: "revenue", label: "Revenue", Icon: Activity },
   ];
 
   const handleTimePreset = (preset: string) => {
@@ -344,46 +344,214 @@ const Forecasts = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
 
-      {/* Hero */}
-      <section className="relative overflow-hidden pt-28 pb-12">
-        <div className="absolute inset-0 bg-grid opacity-20" />
+      {/* Polymarket-style Hero */}
+      <section className="relative overflow-hidden pt-24 pb-8">
+        <div className="absolute inset-0 bg-grid opacity-10" />
         <div className="gradient-radial-top absolute inset-0" />
         <div className="container relative mx-auto px-4">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border bg-secondary/50 mb-4">
-              <Zap className="w-3 h-3 text-primary" />
-              <span className="text-[11px] font-medium text-muted-foreground">Prediction Market</span>
-            </div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl font-['Space_Grotesk']">
-              DePIN <span className="text-glow text-primary">Forecasts</span>
-            </h1>
-            <p className="mx-auto mt-3 max-w-lg text-sm text-muted-foreground leading-relaxed">
-              Community predictions about the future of DePIN. Vote on outcomes, shape sentiment, and track what the community believes.
-            </p>
-          </motion.div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* Featured Forecast Card (main area) */}
+            {forecasts.length > 0 ? (() => {
+              const featured = forecasts[0];
+              const fTotal = featured.total_votes_yes + featured.total_votes_no;
+              const fYesPct = fTotal > 0 ? (featured.total_votes_yes / fTotal) * 100 : 50;
+              const fIsEnded = new Date(featured.end_date) <= new Date();
+              const fTimeLeft = getTimeRemaining(featured.end_date);
 
-          {/* Hero Stats */}
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-            className="flex items-center justify-center gap-6 sm:gap-10"
-          >
-            <div className="text-center">
-              <p className="text-xl sm:text-2xl font-bold text-foreground font-['Space_Grotesk']">{stats.total}</p>
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mt-0.5">Forecasts</p>
-            </div>
-            <div className="w-px h-8 bg-border" />
-            <div className="text-center">
-              <p className="text-xl sm:text-2xl font-bold text-foreground font-['Space_Grotesk']">{stats.activeCount}</p>
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mt-0.5">Active</p>
-            </div>
-            <div className="w-px h-8 bg-border" />
-            <div className="text-center">
-              <p className="text-xl sm:text-2xl font-bold text-primary font-['Space_Grotesk']">{stats.totalVotes.toLocaleString()}</p>
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mt-0.5">Votes Cast</p>
-            </div>
-          </motion.div>
+              return (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="lg:col-span-2 rounded-2xl border border-border bg-card overflow-hidden"
+                >
+                  <div className="p-6 sm:p-8">
+                    {/* Category + actions */}
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center -space-x-2">
+                          {featured.project_a_logo_url ? (
+                            <img src={featured.project_a_logo_url} alt={featured.project_a_name} className="w-10 h-10 rounded-xl object-contain border-2 border-card bg-secondary relative z-10" />
+                          ) : (
+                            <span className="w-10 h-10 rounded-xl flex items-center justify-center text-lg border-2 border-card bg-secondary relative z-10">{featured.project_a_logo_emoji || "⬡"}</span>
+                          )}
+                          {featured.project_b_name && (
+                            featured.project_b_logo_url ? (
+                              <img src={featured.project_b_logo_url} alt={featured.project_b_name} className="w-10 h-10 rounded-xl object-contain border-2 border-card bg-secondary" />
+                            ) : (
+                              <span className="w-10 h-10 rounded-xl flex items-center justify-center text-lg border-2 border-card bg-secondary">{featured.project_b_logo_emoji || "⬡"}</span>
+                            )
+                          )}
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[11px] font-medium text-muted-foreground">
+                            {featured.project_a_name}{featured.project_b_name ? ` · ${featured.project_b_name}` : ''}
+                          </span>
+                          <span className={`text-[10px] font-semibold ${fIsEnded ? 'text-muted-foreground' : 'text-primary'}`}>{fTimeLeft}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <button className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
+                          <Eye className="h-4 w-4" />
+                        </button>
+                        <button className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
+                          <Bookmark className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Title */}
+                    <Link to={`/forecasts/${featured.id}`}>
+                      <h2 className="text-xl sm:text-2xl font-bold text-foreground leading-tight mb-6 font-['Space_Grotesk'] tracking-tight hover:text-primary transition-colors">
+                        {featured.title}
+                      </h2>
+                    </Link>
+
+                    {/* Vote outcomes - Polymarket style rows */}
+                    <div className="space-y-2 mb-6">
+                      <div className="flex items-center justify-between rounded-xl bg-primary/5 border border-primary/10 px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <ArrowUpRight className="h-4 w-4 text-primary" />
+                          <span className="text-sm font-semibold text-foreground">Yes</span>
+                        </div>
+                        <span className="text-2xl font-bold text-foreground font-['Space_Grotesk']">{fYesPct.toFixed(0)}%</span>
+                      </div>
+                      <div className="flex items-center justify-between rounded-xl bg-destructive/5 border border-destructive/10 px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <ArrowDownRight className="h-4 w-4 text-destructive" />
+                          <span className="text-sm font-semibold text-foreground">No</span>
+                        </div>
+                        <span className="text-2xl font-bold text-foreground font-['Space_Grotesk']">{(100 - fYesPct).toFixed(0)}%</span>
+                      </div>
+                    </div>
+
+                    {/* Vote bar */}
+                    <div className="h-2.5 rounded-full bg-secondary overflow-hidden flex mb-4">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${fYesPct}%` }}
+                        transition={{ duration: 1, ease: "easeOut" }}
+                        className="h-full rounded-l-full"
+                        style={{ background: "hsl(var(--primary))" }}
+                      />
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${100 - fYesPct}%` }}
+                        transition={{ duration: 1, ease: "easeOut" }}
+                        className="h-full rounded-r-full bg-destructive/60"
+                      />
+                    </div>
+
+                    {/* Footer stats */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <Users className="h-3.5 w-3.5" />
+                        <span>{fTotal.toLocaleString()} votes</span>
+                      </div>
+                      <Link to={`/forecasts/${featured.id}`} className="text-xs font-semibold text-primary hover:underline flex items-center gap-1">
+                        View details <ChevronRightIcon className="h-3 w-3" />
+                      </Link>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })() : (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="lg:col-span-2 rounded-2xl border border-border bg-card p-8 flex flex-col items-center justify-center text-center"
+              >
+                <BarChart3 className="h-10 w-10 text-muted-foreground/30 mb-3" />
+                <h2 className="text-lg font-bold text-foreground font-['Space_Grotesk'] mb-1">No forecasts yet</h2>
+                <p className="text-sm text-muted-foreground mb-4">Create the first prediction for the community.</p>
+                {user ? (
+                  <Button onClick={() => setShowCreate(true)} className="gap-1.5">
+                    <Plus className="h-3.5 w-3.5" /> Create Forecast
+                  </Button>
+                ) : (
+                  <Link to="/auth" className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground">
+                    <LogIn className="h-3.5 w-3.5" /> Sign in
+                  </Link>
+                )}
+              </motion.div>
+            )}
+
+            {/* Right sidebar */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="space-y-4"
+            >
+              {/* Top Forecasts */}
+              <div className="rounded-2xl border border-border bg-card overflow-hidden">
+                <div className="px-5 py-3.5 flex items-center justify-between border-b border-border">
+                  <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Top Forecasts</h3>
+                  <ChevronRightIcon className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <div className="divide-y divide-border">
+                  {forecasts.slice(1, 4).map((f, i) => {
+                    const fTotal = f.total_votes_yes + f.total_votes_no;
+                    const fYesPct = fTotal > 0 ? (f.total_votes_yes / fTotal) * 100 : 50;
+                    const fIsEnded = new Date(f.end_date) <= new Date();
+                    return (
+                      <Link key={f.id} to={`/forecasts/${f.id}`} className="flex items-start gap-3 px-5 py-3 hover:bg-secondary/30 transition-colors">
+                        <span className="text-xs font-bold text-muted-foreground/50 mt-0.5 w-4 shrink-0">{i + 1}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold text-foreground leading-snug line-clamp-2">{f.title}</p>
+                        </div>
+                        <div className="flex flex-col items-end shrink-0">
+                          <span className="text-sm font-bold text-foreground font-['Space_Grotesk']">{fYesPct.toFixed(0)}%</span>
+                          <span className={`text-[10px] font-medium flex items-center gap-0.5 ${
+                            fIsEnded ? 'text-muted-foreground' : fYesPct >= 50 ? 'text-primary' : 'text-destructive'
+                          }`}>
+                            {fIsEnded ? '' : fYesPct >= 50 ? <ArrowUpRight className="h-2.5 w-2.5" /> : <ArrowDownRight className="h-2.5 w-2.5" />}
+                            {fIsEnded ? 'Ended' : `${fTotal} votes`}
+                          </span>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                  {forecasts.length <= 1 && (
+                    <div className="px-5 py-6 text-center text-xs text-muted-foreground">No additional forecasts</div>
+                  )}
+                </div>
+              </div>
+
+              {/* Stats card */}
+              <div className="rounded-2xl border border-border bg-card overflow-hidden">
+                <div className="px-5 py-3.5 border-b border-border">
+                  <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Stats</h3>
+                </div>
+                <div className="px-5 py-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">Total Forecasts</span>
+                    <span className="text-sm font-bold text-foreground font-['Space_Grotesk']">{stats.total}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">Active</span>
+                    <span className="text-sm font-bold text-primary font-['Space_Grotesk']">{stats.activeCount}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">Total Votes</span>
+                    <span className="text-sm font-bold text-foreground font-['Space_Grotesk']">{stats.totalVotes.toLocaleString()}</span>
+                  </div>
+                </div>
+                {user ? (
+                  <div className="px-5 pb-4">
+                    <Button onClick={() => setShowCreate(true)} className="w-full gap-1.5 rounded-xl" size="sm">
+                      <Plus className="h-3.5 w-3.5" /> New Question
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="px-5 pb-4">
+                    <Link to="/auth" className="flex items-center justify-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground w-full">
+                      <LogIn className="h-3.5 w-3.5" /> Sign in to create
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </div>
         </div>
       </section>
 
@@ -766,21 +934,24 @@ const Forecasts = () => {
               </label>
               <p className="text-[10px] text-muted-foreground mt-0.5 mb-2">Select metrics to track during the forecast period</p>
               <div className="grid grid-cols-2 gap-2">
-                {dimensionOptions.map((dim) => (
-                  <button
-                    key={dim.value}
-                    type="button"
-                    onClick={() => toggleDimension(dim.value)}
-                    className={`flex items-center gap-2 rounded-lg px-3 py-2.5 text-xs font-medium transition-all border ${
-                      analysisDimensions.includes(dim.value)
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border bg-secondary/30 text-muted-foreground hover:text-foreground hover:bg-secondary/60"
-                    }`}
-                  >
-                    <span className="text-sm">{dim.icon}</span>
-                    {dim.label}
-                  </button>
-                ))}
+                {dimensionOptions.map((dim) => {
+                  const DimIcon = dim.Icon;
+                  return (
+                    <button
+                      key={dim.value}
+                      type="button"
+                      onClick={() => toggleDimension(dim.value)}
+                      className={`flex items-center gap-2 rounded-lg px-3 py-2.5 text-xs font-medium transition-all border ${
+                        analysisDimensions.includes(dim.value)
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border bg-secondary/30 text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+                      }`}
+                    >
+                      <DimIcon className="h-3.5 w-3.5" />
+                      {dim.label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
