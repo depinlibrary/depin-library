@@ -599,7 +599,7 @@ const HeroSection = ({ forecasts, trendingTopics, user, setShowCreate }: {
               <div className="px-5 py-4">
                 {user ? (
                   <Button onClick={() => setShowCreate(true)} className="w-full gap-1.5 rounded-xl" size="sm">
-                    <Plus className="h-3.5 w-3.5" /> New Question
+                    <Plus className="h-3.5 w-3.5" /> Create Forecast
                   </Button>
                 ) : (
                   <Link to="/auth" className="flex items-center justify-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground w-full">
