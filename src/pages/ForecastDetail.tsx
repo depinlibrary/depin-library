@@ -177,6 +177,8 @@ const ForecastDetail = () => {
 
           <VoteHistoryChart voteHistory={voteHistory} />
 
+          <ForecastAnalysis forecastId={forecast.id} isEnded={isEnded} />
+
           <DiscussionSection
             forecastId={forecast.id}
             comments={comments}
