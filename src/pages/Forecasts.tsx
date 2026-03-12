@@ -821,7 +821,7 @@ const Forecasts = () => {
         <div className="container mx-auto px-4 py-3">
           {/* Single row: Search + dropdown filters */}
           <div className="flex items-center gap-2">
-            <div className="w-48 shrink-0">
+            <div className="flex-1 min-w-0">
               <Input
                 placeholder="Search by title..."
                 value={search}
