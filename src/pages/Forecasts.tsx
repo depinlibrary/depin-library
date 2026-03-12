@@ -70,23 +70,23 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, duration: 0.4 }}
-      className="group relative rounded-xl border border-border bg-card overflow-hidden transition-all hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20 h-full flex flex-col"
+      className="group relative rounded-2xl border border-border bg-card overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-primary/8 hover:border-primary/30 hover:-translate-y-1 h-full flex flex-col"
     >
-      {/* Top accent line */}
-      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+      {/* Top gradient accent */}
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary/60 via-accent/40 to-primary/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
       <div className="p-5 flex-1 flex flex-col">
-        {/* Header: Projects + time badge */}
-        <div className="flex items-center gap-2 mb-3">
-          <div className="flex items-center -space-x-1.5">
+        {/* Header: Projects + status */}
+        <div className="flex items-center gap-2.5 mb-4">
+          <div className="flex items-center -space-x-2">
             {forecast.project_a_logo_url ? (
               <img
                 src={forecast.project_a_logo_url}
                 alt={forecast.project_a_name}
-                className="w-7 h-7 rounded-[7px] overflow-hidden object-contain border-2 border-card bg-secondary relative z-10"
+                className="w-8 h-8 rounded-xl overflow-hidden object-contain border-2 border-card bg-secondary relative z-10 ring-1 ring-border/50"
               />
             ) : (
-              <span className="w-7 h-7 rounded-[7px] overflow-hidden flex items-center justify-center text-sm border-2 border-card bg-secondary relative z-10">
+              <span className="w-8 h-8 rounded-xl overflow-hidden flex items-center justify-center text-sm border-2 border-card bg-secondary relative z-10 ring-1 ring-border/50">
                 {forecast.project_a_logo_emoji || "⬡"}
               </span>
             )}
@@ -95,63 +95,75 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
                 <img
                   src={forecast.project_b_logo_url}
                   alt={forecast.project_b_name}
-                  className="w-7 h-7 rounded-[7px] overflow-hidden object-contain border-2 border-card bg-secondary relative z-0"
+                  className="w-8 h-8 rounded-xl overflow-hidden object-contain border-2 border-card bg-secondary relative z-0 ring-1 ring-border/50"
                 />
               ) : (
-                <span className="w-7 h-7 rounded-[7px] overflow-hidden flex items-center justify-center text-sm border-2 border-card bg-secondary relative z-0">
+                <span className="w-8 h-8 rounded-xl overflow-hidden flex items-center justify-center text-sm border-2 border-card bg-secondary relative z-0 ring-1 ring-border/50">
                   {forecast.project_b_logo_emoji || "⬡"}
                 </span>
               )
             )}
           </div>
-          <div className="flex items-center gap-1.5 flex-1 min-w-0">
-            <Link
-              to={`/project/${forecast.project_a_slug}`}
-              className="text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors truncate"
-            >
-              {forecast.project_a_name}
-            </Link>
-            {forecast.project_b_name && (
-              <>
-                <span className="text-muted-foreground/40 text-[10px]">vs</span>
-                <Link
-                  to={`/project/${forecast.project_b_slug}`}
-                  className="text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors truncate"
-                >
-                  {forecast.project_b_name}
-                </Link>
-              </>
-            )}
+          <div className="flex flex-col flex-1 min-w-0">
+            <div className="flex items-center gap-1.5">
+              <Link
+                to={`/project/${forecast.project_a_slug}`}
+                className="text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors truncate"
+              >
+                {forecast.project_a_name}
+              </Link>
+              {forecast.project_b_name && (
+                <>
+                  <span className="text-muted-foreground/40 text-[10px]">vs</span>
+                  <Link
+                    to={`/project/${forecast.project_b_slug}`}
+                    className="text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors truncate"
+                  >
+                    {forecast.project_b_name}
+                  </Link>
+                </>
+              )}
+            </div>
+            {/* Live/ended status with dot */}
+            <span className="flex items-center gap-1.5 mt-0.5">
+              <span className="relative flex h-1.5 w-1.5">
+                {!isEnded && <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-green-500" />}
+                <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${isEnded ? 'bg-destructive' : 'bg-green-500'}`} />
+              </span>
+              <span className={`text-[9px] font-medium ${isEnded ? 'text-destructive/70' : 'text-green-500/70'}`}>
+                {isEnded ? 'Ended' : 'Live'}
+              </span>
+            </span>
           </div>
-          <span className={`shrink-0 rounded-md px-2 py-0.5 text-[10px] font-semibold tracking-wide ${
+          <span className={`shrink-0 rounded-lg px-2.5 py-1 text-[10px] font-bold tracking-wide ${
             isEnded
               ? "bg-muted text-muted-foreground"
-              : "bg-primary/10 text-primary"
+              : "bg-primary/10 text-primary border border-primary/20"
           }`}>
             {timeLeft}
           </span>
         </div>
 
         {/* Title */}
-        <Link to={`/forecasts/${forecast.id}`} className="block">
-          <h3 className="text-[13px] font-semibold text-foreground leading-snug mb-2 line-clamp-2 hover:text-primary transition-colors">
+        <Link to={`/forecasts/${forecast.id}`} className="block mb-2">
+          <h3 className="text-sm font-bold text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors duration-200">
             {forecast.title}
           </h3>
         </Link>
 
         {forecast.description && (
-          <p className="text-xs text-muted-foreground mb-3 line-clamp-2 leading-relaxed min-h-[2.5rem]">{forecast.description}</p>
+          <p className="text-xs text-muted-foreground/80 mb-4 line-clamp-2 leading-relaxed">{forecast.description}</p>
         )}
-        {!forecast.description && <div className="mb-3 min-h-[2.5rem]" />}
+        {!forecast.description && <div className="mb-4" />}
 
         {/* Dimension badges */}
         {dimensions.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-3">
+          <div className="flex flex-wrap gap-1.5 mb-4">
             {dimensions.map((dim) => {
               const DimIcon = dimensionIconMap[dim] || Activity;
               const label = dimensionLabelMap[dim] || dim;
               return (
-                <span key={dim} className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[9px] font-medium bg-secondary text-muted-foreground border border-border">
+                <span key={dim} className="inline-flex items-center gap-1 rounded-lg px-2 py-0.5 text-[9px] font-semibold bg-secondary/80 text-muted-foreground border border-border/60">
                   <DimIcon className="h-2.5 w-2.5" />
                   {label}
                 </span>
@@ -161,85 +173,88 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
         )}
 
         {/* Vote percentage display */}
-        <div className="mb-4 mt-auto">
+        <div className="mt-auto">
           <div className="flex items-end justify-between mb-2">
-            <div className="flex items-baseline gap-1">
-              <span className="text-lg font-bold text-foreground">{yesPct.toFixed(0)}%</span>
-              <span className="text-[10px] font-medium text-primary/70 uppercase tracking-wider">Yes</span>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-xl font-extrabold text-foreground font-['Space_Grotesk']">{yesPct.toFixed(0)}%</span>
+              <span className="text-[10px] font-bold text-primary/80 uppercase tracking-wider">Yes</span>
             </div>
-            <div className="flex items-baseline gap-1">
-              <span className="text-[10px] font-medium text-destructive/70 uppercase tracking-wider">No</span>
-              <span className="text-lg font-bold text-foreground">{noPct.toFixed(0)}%</span>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-[10px] font-bold text-destructive/80 uppercase tracking-wider">No</span>
+              <span className="text-xl font-extrabold text-foreground font-['Space_Grotesk']">{noPct.toFixed(0)}%</span>
             </div>
           </div>
-          <div className="h-2 rounded-full bg-secondary overflow-hidden flex">
+          <div className="h-2.5 rounded-full bg-secondary/80 overflow-hidden flex shadow-inner">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${yesPct}%` }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
-              className="h-full rounded-l-full"
-              style={{ background: "hsl(var(--primary))" }}
+              transition={{ duration: 1, ease: "easeOut" }}
+              className="h-full rounded-l-full bg-gradient-to-r from-primary to-primary/80"
             />
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${noPct}%` }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
-              className="h-full rounded-r-full bg-destructive/60"
+              transition={{ duration: 1, ease: "easeOut" }}
+              className="h-full rounded-r-full bg-gradient-to-r from-destructive/60 to-destructive/80"
             />
           </div>
-          <div className="flex items-center justify-center gap-1.5 mt-2">
-            <Users className="h-3 w-3 text-muted-foreground/50" />
-            <span className="text-[11px] text-muted-foreground">
+          <div className="flex items-center justify-center gap-1.5 mt-2.5">
+            <Users className="h-3 w-3 text-muted-foreground/40" />
+            <span className="text-[11px] text-muted-foreground/70 font-medium">
               {totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Vote buttons — separated footer */}
+      {/* Vote buttons — enhanced footer */}
       {!isEnded && (
-        <div className="flex border-t border-border">
+        <div className="flex border-t border-border bg-secondary/20">
           <button
             onClick={() => isAuthenticated ? onVote(forecast.id, "yes") : toast.error("Sign in to vote")}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-all ${
+            className={`flex-1 flex items-center justify-center gap-2 py-3 text-xs font-semibold transition-all duration-200 ${
               forecast.user_vote === "yes"
-                ? "bg-primary/10 text-primary"
-                : "text-muted-foreground hover:bg-primary/5 hover:text-primary"
+                ? "bg-primary/15 text-primary shadow-inner"
+                : "text-muted-foreground hover:bg-primary/8 hover:text-primary"
             }`}
           >
-            <ThumbsUp className="h-3.5 w-3.5" /> Yes
+            <ThumbsUp className={`h-3.5 w-3.5 transition-transform ${forecast.user_vote === "yes" ? "scale-110" : "group-hover:scale-105"}`} />
+            <span>Yes</span>
+            {forecast.user_vote === "yes" && <CheckCircle className="h-3 w-3 ml-0.5" />}
           </button>
           <div className="w-px bg-border" />
           <button
             onClick={() => isAuthenticated ? onVote(forecast.id, "no") : toast.error("Sign in to vote")}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-all ${
+            className={`flex-1 flex items-center justify-center gap-2 py-3 text-xs font-semibold transition-all duration-200 ${
               forecast.user_vote === "no"
-                ? "bg-destructive/10 text-destructive"
-                : "text-muted-foreground hover:bg-destructive/5 hover:text-destructive"
+                ? "bg-destructive/15 text-destructive shadow-inner"
+                : "text-muted-foreground hover:bg-destructive/8 hover:text-destructive"
             }`}
           >
-            <ThumbsDown className="h-3.5 w-3.5" /> No
+            <ThumbsDown className={`h-3.5 w-3.5 transition-transform ${forecast.user_vote === "no" ? "scale-110" : "group-hover:scale-105"}`} />
+            <span>No</span>
+            {forecast.user_vote === "no" && <CheckCircle className="h-3 w-3 ml-0.5" />}
           </button>
         </div>
       )}
 
       {isEnded && (
-        <div className={`flex items-center justify-between border-t border-border px-4 py-2.5 ${
+        <div className={`flex items-center justify-between border-t border-border px-5 py-3 ${
           finalResult === "yes" ? "bg-primary/5" : "bg-destructive/5"
         }`}>
           <div className="flex items-center gap-2">
-            <Trophy className={`h-3.5 w-3.5 ${finalResult === "yes" ? "text-primary" : "text-destructive"}`} />
-            <span className={`text-[11px] font-semibold ${finalResult === "yes" ? "text-primary" : "text-destructive"}`}>
+            <Trophy className={`h-4 w-4 ${finalResult === "yes" ? "text-primary" : "text-destructive"}`} />
+            <span className={`text-xs font-bold ${finalResult === "yes" ? "text-primary" : "text-destructive"}`}>
               Result: {finalResult === "yes" ? "Yes" : "No"} ({finalResult === "yes" ? yesPct.toFixed(0) : noPct.toFixed(0)}%)
             </span>
           </div>
           {forecast.user_vote && (
-            <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
+            <span className={`text-[10px] font-semibold px-2.5 py-1 rounded-full ${
               forecast.user_vote === finalResult
                 ? "bg-green-500/10 text-green-600 dark:text-green-400"
                 : "bg-orange-500/10 text-orange-600 dark:text-orange-400"
             }`}>
-              {forecast.user_vote === finalResult ? "✓ You were right!" : "✗ Minority vote"}
+              {forecast.user_vote === finalResult ? "✓ Correct!" : "✗ Minority"}
             </span>
           )}
         </div>
