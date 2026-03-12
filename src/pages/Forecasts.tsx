@@ -12,7 +12,23 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { useForecasts, useCreateForecast, useVoteForecast, type ForecastSortOption, type ForecastStatusFilter, type Forecast } from "@/hooks/useForecasts";
 import { useProjects } from "@/hooks/useProjects";
 import { useAuth } from "@/contexts/AuthContext";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
+const dimensionIconMap: Record<string, typeof DollarSign> = {
+  token_price: DollarSign,
+  market_cap: BarChart3,
+  active_nodes: Server,
+  revenue: Activity,
+};
+
+const dimensionLabelMap: Record<string, string> = {
+  token_price: "Price",
+  market_cap: "MCap",
+  active_nodes: "Nodes",
+  revenue: "Revenue",
+};
 
 const PAGE_SIZE = 12;
 
@@ -34,11 +50,12 @@ function getTimeRemaining(endDate: string): string {
   return `${hours}h left`;
 }
 
-const ForecastCard = ({ forecast, onVote, isAuthenticated, index }: {
+const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [] }: {
   forecast: Forecast;
   onVote: (id: string, vote: "yes" | "no") => void;
   isAuthenticated: boolean;
   index: number;
+  dimensions?: string[];
 }) => {
   const totalVotes = forecast.total_votes_yes + forecast.total_votes_no;
   const yesPct = totalVotes > 0 ? (forecast.total_votes_yes / totalVotes) * 100 : 50;
@@ -125,6 +142,22 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index }: {
           <p className="text-xs text-muted-foreground mb-3 line-clamp-2 leading-relaxed min-h-[2.5rem]">{forecast.description}</p>
         )}
         {!forecast.description && <div className="mb-3 min-h-[2.5rem]" />}
+
+        {/* Dimension badges */}
+        {dimensions.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-3">
+            {dimensions.map((dim) => {
+              const DimIcon = dimensionIconMap[dim] || Activity;
+              const label = dimensionLabelMap[dim] || dim;
+              return (
+                <span key={dim} className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[9px] font-medium bg-secondary text-muted-foreground border border-border">
+                  <DimIcon className="h-2.5 w-2.5" />
+                  {label}
+                </span>
+              );
+            })}
+          </div>
+        )}
 
         {/* Vote percentage display */}
         <div className="mb-4 mt-auto">
@@ -299,6 +332,71 @@ const Forecasts = () => {
   const forecasts = data?.forecasts || [];
   const total = data?.total || 0;
   const totalPages = Math.ceil(total / PAGE_SIZE);
+
+  // Fetch forecast targets (dimensions) for displayed forecasts
+  const forecastIds = useMemo(() => forecasts.map(f => f.id), [forecasts]);
+  const { data: forecastTargetsMap = {} } = useQuery({
+    queryKey: ["forecast-targets-batch", forecastIds],
+    queryFn: async () => {
+      if (forecastIds.length === 0) return {};
+      const { data } = await supabase
+        .from("forecast_targets")
+        .select("forecast_id, dimension")
+        .in("forecast_id", forecastIds);
+      const map: Record<string, string[]> = {};
+      (data || []).forEach((t: any) => {
+        if (!map[t.forecast_id]) map[t.forecast_id] = [];
+        map[t.forecast_id].push(t.dimension);
+      });
+      return map;
+    },
+    enabled: forecastIds.length > 0,
+    staleTime: 60_000,
+  });
+
+  // Trending projects by forecast vote activity
+  const { data: trendingTopics = [] } = useQuery({
+    queryKey: ["trending-forecast-projects"],
+    queryFn: async () => {
+      // Get projects with most total votes across forecasts
+      const { data: topForecasts } = await supabase
+        .from("forecasts")
+        .select("project_a_id, total_votes_yes, total_votes_no")
+        .order("total_votes_yes", { ascending: false })
+        .limit(50);
+
+      if (!topForecasts || topForecasts.length === 0) return [];
+
+      // Aggregate votes per project
+      const projectVotes: Record<string, number> = {};
+      topForecasts.forEach((f: any) => {
+        const votes = (f.total_votes_yes || 0) + (f.total_votes_no || 0);
+        projectVotes[f.project_a_id] = (projectVotes[f.project_a_id] || 0) + votes;
+      });
+
+      // Sort and take top 5
+      const sorted = Object.entries(projectVotes)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
+
+      const projectIds = sorted.map(([id]) => id);
+      if (projectIds.length === 0) return [];
+
+      const { data: projectsData } = await supabase
+        .from("projects")
+        .select("id, name, slug, logo_url, logo_emoji")
+        .in("id", projectIds);
+
+      const projectMap: Record<string, any> = {};
+      (projectsData || []).forEach((p: any) => { projectMap[p.id] = p; });
+
+      return sorted.map(([id, votes]) => ({
+        ...projectMap[id],
+        totalVotes: votes,
+      })).filter(p => p.name);
+    },
+    staleTime: 5 * 60_000,
+  });
 
   // Stats
   const stats = useMemo(() => {
@@ -516,6 +614,36 @@ const Forecasts = () => {
                   )}
                 </div>
               </div>
+
+              {/* Trending Topics */}
+              {trendingTopics.length > 0 && (
+                <div className="rounded-2xl border border-border bg-card overflow-hidden">
+                  <div className="px-5 py-3.5 flex items-center justify-between border-b border-border">
+                    <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Hot Topics</h3>
+                    <Flame className="h-4 w-4 text-destructive/60" />
+                  </div>
+                  <div className="divide-y divide-border">
+                    {trendingTopics.map((project: any, i: number) => (
+                      <Link key={project.id} to={`/project/${project.slug}`} className="flex items-center gap-3 px-5 py-2.5 hover:bg-secondary/30 transition-colors">
+                        <span className="text-xs font-bold text-muted-foreground/50 w-4 shrink-0">{i + 1}</span>
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          {project.logo_url ? (
+                            <img src={project.logo_url} alt={project.name} className="w-5 h-5 rounded-md object-contain bg-secondary" />
+                          ) : (
+                            <span className="w-5 h-5 rounded-md flex items-center justify-center text-xs bg-secondary">{project.logo_emoji || "⬡"}</span>
+                          )}
+                          <span className="text-xs font-semibold text-foreground truncate">{project.name}</span>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <span className="text-[10px] font-medium text-muted-foreground">{project.totalVotes} votes</span>
+                          <Flame className="h-3 w-3 text-destructive/50" />
+                          <ChevronRightIcon className="h-3 w-3 text-muted-foreground/40" />
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Stats card */}
               <div className="rounded-2xl border border-border bg-card overflow-hidden">
@@ -764,6 +892,7 @@ const Forecasts = () => {
                     onVote={handleVote}
                     isAuthenticated={!!user}
                     index={i}
+                    dimensions={forecastTargetsMap[forecast.id] || []}
                   />
                 ))}
               </AnimatePresence>
