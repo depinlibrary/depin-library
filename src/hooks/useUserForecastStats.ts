@@ -23,6 +23,7 @@ export type UserForecastStats = {
   incorrectVotes: number;
   pendingVotes: number;
   accuracy: number;
+  forecastsCreated: number;
   history: VoteHistoryItem[];
 };
 
