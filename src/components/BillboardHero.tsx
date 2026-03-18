@@ -495,7 +495,7 @@ const BillboardHero = ({
 
              {/* ── Top Forecasts — Enhanced (spans full width) ── */}
              {topForecasts.length > 0 &&
-            <motion.div variants={fadeUp} className="col-span-2 sm:col-span-4 lg:col-span-6 rounded-lg border border-border bg-card/40 backdrop-blur-md p-4 sm:p-5">
+            <motion.div variants={fadeUp} className="col-span-1 sm:col-span-2 lg:col-span-4 rounded-lg border border-border bg-card/40 backdrop-blur-md p-4 sm:p-5">
                  <div className="flex items-center gap-2 mb-4">
                    <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10">
                      <BarChart3 className="h-4 w-4 text-primary" />
