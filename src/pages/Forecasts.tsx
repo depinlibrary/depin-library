@@ -820,8 +820,9 @@ const Forecasts = () => {
               </Link>
             )}
           </div>
-          {/* Row 2: Topic sub-filters */}
+          {/* Row 2: All Markets sub-filters */}
           <div className="flex items-center gap-2 overflow-x-auto pb-0.5">
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0 mr-1">All Markets</span>
             {[
               { value: "", label: "All" },
               { value: "token_price", label: "Token Price" },
