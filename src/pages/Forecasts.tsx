@@ -70,182 +70,100 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, duration: 0.4 }}
-      className="group relative rounded-2xl border border-border bg-card overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-primary/8 hover:border-primary/30 hover:-translate-y-1 h-full flex flex-col"
+      className="group relative rounded-xl border border-border bg-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20 h-full flex flex-col"
     >
-
-      <div className="p-5 flex-1 flex flex-col">
-        {/* Header: Projects + status */}
-        <div className="flex items-center gap-2.5 mb-4">
-          <div className="flex items-center -space-x-2">
-            {forecast.project_a_logo_url ? (
-              <img
-                src={forecast.project_a_logo_url}
-                alt={forecast.project_a_name}
-                className="w-8 h-8 rounded-xl overflow-hidden object-contain border-2 border-card bg-secondary relative z-10 ring-1 ring-border/50"
-              />
-            ) : (
-              <span className="w-8 h-8 rounded-xl overflow-hidden flex items-center justify-center text-sm border-2 border-card bg-secondary relative z-10 ring-1 ring-border/50">
-                {forecast.project_a_logo_emoji || "⬡"}
-              </span>
-            )}
-            {forecast.project_b_name && (
-              forecast.project_b_logo_url ? (
-                <img
-                  src={forecast.project_b_logo_url}
-                  alt={forecast.project_b_name}
-                  className="w-8 h-8 rounded-xl overflow-hidden object-contain border-2 border-card bg-secondary relative z-0 ring-1 ring-border/50"
-                />
+      <div className="p-4 flex-1 flex flex-col">
+        {/* Header row: logos + time */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center -space-x-1.5">
+              {forecast.project_a_logo_url ? (
+                <img src={forecast.project_a_logo_url} alt={forecast.project_a_name} className="w-6 h-6 rounded-lg object-contain border border-card bg-secondary relative z-10" />
               ) : (
-                <span className="w-8 h-8 rounded-xl overflow-hidden flex items-center justify-center text-sm border-2 border-card bg-secondary relative z-0 ring-1 ring-border/50">
-                  {forecast.project_b_logo_emoji || "⬡"}
-                </span>
-              )
-            )}
-          </div>
-          <div className="flex flex-col flex-1 min-w-0">
-            <div className="flex items-center gap-1.5">
-              <Link
-                to={`/project/${forecast.project_a_slug}`}
-                className="text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors truncate"
-              >
-                {forecast.project_a_name}
-              </Link>
+                <span className="w-6 h-6 rounded-lg flex items-center justify-center text-[10px] border border-card bg-secondary relative z-10">{forecast.project_a_logo_emoji || "⬡"}</span>
+              )}
+              {forecast.project_b_name && (
+                forecast.project_b_logo_url ? (
+                  <img src={forecast.project_b_logo_url} alt={forecast.project_b_name} className="w-6 h-6 rounded-lg object-contain border border-card bg-secondary relative z-0" />
+                ) : (
+                  <span className="w-6 h-6 rounded-lg flex items-center justify-center text-[10px] border border-card bg-secondary relative z-0">{forecast.project_b_logo_emoji || "⬡"}</span>
+                )
+              )}
+            </div>
+            <div className="flex items-center gap-1">
+              <Link to={`/project/${forecast.project_a_slug}`} className="text-[10px] font-medium text-muted-foreground hover:text-foreground transition-colors">{forecast.project_a_name}</Link>
               {forecast.project_b_name && (
                 <>
-                  <span className="text-muted-foreground/40 text-[10px]">vs</span>
-                  <Link
-                    to={`/project/${forecast.project_b_slug}`}
-                    className="text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors truncate"
-                  >
-                    {forecast.project_b_name}
-                  </Link>
+                  <span className="text-muted-foreground/30 text-[9px]">vs</span>
+                  <Link to={`/project/${forecast.project_b_slug}`} className="text-[10px] font-medium text-muted-foreground hover:text-foreground transition-colors">{forecast.project_b_name}</Link>
                 </>
               )}
             </div>
-            {/* Live/ended status with dot */}
-            <span className="flex items-center gap-1.5 mt-0.5">
-              <span className="relative flex h-1.5 w-1.5">
-                {!isEnded && <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-green-500" />}
-                <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${isEnded ? 'bg-destructive' : 'bg-green-500'}`} />
-              </span>
-              <span className={`text-[9px] font-medium ${isEnded ? 'text-destructive/70' : 'text-green-500/70'}`}>
-                {isEnded ? 'Ended' : 'Live'}
-              </span>
-            </span>
           </div>
+          <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded ${isEnded ? 'bg-destructive/10 text-destructive' : 'bg-green-500/10 text-green-600 dark:text-green-400'}`}>
+            {timeLeft}
+          </span>
         </div>
 
-        {/* Title */}
-        <Link to={`/forecasts/${forecast.id}`} className="block mb-2">
-          <h3 className="text-sm font-bold text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors duration-200">
+        {/* Title only — no description */}
+        <Link to={`/forecasts/${forecast.id}`} className="block mb-auto">
+          <h3 className="text-[13px] font-semibold text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors duration-200">
             {forecast.title}
           </h3>
         </Link>
 
-        {forecast.description && (
-          <p className="text-xs text-muted-foreground/80 mb-4 line-clamp-2 leading-relaxed">{forecast.description}</p>
-        )}
-        {!forecast.description && <div className="mb-4" />}
-
-        {/* Dimension badges */}
-        {dimensions.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mb-4">
-            {dimensions.map((dim) => {
-              const DimIcon = dimensionIconMap[dim] || Activity;
-              const label = dimensionLabelMap[dim] || dim;
-              return (
-                <span key={dim} className="inline-flex items-center gap-1 rounded-lg px-2 py-0.5 text-[9px] font-semibold bg-secondary/80 text-muted-foreground border border-border/60">
-                  <DimIcon className="h-2.5 w-2.5" />
-                  {label}
-                </span>
-              );
-            })}
+        {/* Polymarket-style percentage + bar */}
+        <div className="mt-4 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-lg font-bold text-foreground">{yesPct.toFixed(0)}% chance</span>
+            <span className="text-[10px] text-muted-foreground">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</span>
           </div>
-        )}
-
-        {/* Vote percentage display */}
-        <div className="mt-auto">
-          <div className="flex items-end justify-between mb-2">
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-xl font-extrabold text-foreground font-['Space_Grotesk']">{yesPct.toFixed(0)}%</span>
-              <span className="text-[10px] font-bold text-primary/80 uppercase tracking-wider">Yes</span>
-            </div>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-[10px] font-bold text-destructive/80 uppercase tracking-wider">No</span>
-              <span className="text-xl font-extrabold text-foreground font-['Space_Grotesk']">{noPct.toFixed(0)}%</span>
-            </div>
-          </div>
-          <div className="h-2.5 rounded-full bg-secondary/80 overflow-hidden flex shadow-inner">
+          {/* Thin percentage bar */}
+          <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${yesPct}%` }}
-              transition={{ duration: 1, ease: "easeOut" }}
-              className="h-full rounded-l-full bg-gradient-to-r from-primary to-primary/80"
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="h-full rounded-full bg-primary"
             />
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${noPct}%` }}
-              transition={{ duration: 1, ease: "easeOut" }}
-              className="h-full rounded-r-full bg-gradient-to-r from-destructive/60 to-destructive/80"
-            />
-          </div>
-          <div className="flex items-center justify-center gap-1.5 mt-2.5">
-            <Users className="h-3 w-3 text-muted-foreground/40" />
-            <span className="text-[11px] text-muted-foreground/70 font-medium">
-              {totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}
-            </span>
           </div>
         </div>
       </div>
 
-      {/* Vote buttons — enhanced footer */}
-      {!isEnded && (
-        <div className="flex border-t border-border bg-secondary/20">
+      {/* Polymarket-style standalone buttons */}
+      {!isEnded ? (
+        <div className="px-4 pb-4 pt-1 flex gap-2">
           <button
             onClick={() => isAuthenticated ? onVote(forecast.id, "yes") : toast.error("Sign in to vote")}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 text-xs font-semibold transition-all duration-200 ${
+            className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all duration-200 ${
               forecast.user_vote === "yes"
-                ? "bg-primary/15 text-primary shadow-inner"
-                : "text-muted-foreground hover:bg-primary/8 hover:text-primary"
+                ? "bg-primary text-primary-foreground"
+                : "bg-primary/10 text-primary hover:bg-primary/20"
             }`}
           >
-            <ThumbsUp className={`h-3.5 w-3.5 transition-transform ${forecast.user_vote === "yes" ? "scale-110" : "group-hover:scale-105"}`} />
-            <span>Yes</span>
-            {forecast.user_vote === "yes" && <CheckCircle className="h-3 w-3 ml-0.5" />}
+            Yes {yesPct.toFixed(0)}¢
           </button>
-          <div className="w-px bg-border" />
           <button
             onClick={() => isAuthenticated ? onVote(forecast.id, "no") : toast.error("Sign in to vote")}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 text-xs font-semibold transition-all duration-200 ${
+            className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all duration-200 ${
               forecast.user_vote === "no"
-                ? "bg-destructive/15 text-destructive shadow-inner"
-                : "text-muted-foreground hover:bg-destructive/8 hover:text-destructive"
+                ? "bg-destructive text-destructive-foreground"
+                : "bg-destructive/10 text-destructive hover:bg-destructive/20"
             }`}
           >
-            <ThumbsDown className={`h-3.5 w-3.5 transition-transform ${forecast.user_vote === "no" ? "scale-110" : "group-hover:scale-105"}`} />
-            <span>No</span>
-            {forecast.user_vote === "no" && <CheckCircle className="h-3 w-3 ml-0.5" />}
+            No {noPct.toFixed(0)}¢
           </button>
         </div>
-      )}
-
-      {isEnded && (
-        <div className={`flex items-center justify-between border-t border-border px-5 py-3 ${
-          finalResult === "yes" ? "bg-primary/5" : "bg-destructive/5"
-        }`}>
-          <div className="flex items-center gap-2">
-            <Trophy className={`h-4 w-4 ${finalResult === "yes" ? "text-primary" : "text-destructive"}`} />
-            <span className={`text-xs font-bold ${finalResult === "yes" ? "text-primary" : "text-destructive"}`}>
-              Result: {finalResult === "yes" ? "Yes" : "No"} ({finalResult === "yes" ? yesPct.toFixed(0) : noPct.toFixed(0)}%)
-            </span>
-          </div>
+      ) : (
+        <div className={`flex items-center justify-between px-4 py-3 border-t border-border ${finalResult === "yes" ? "bg-primary/5" : "bg-destructive/5"}`}>
+          <span className={`text-xs font-bold ${finalResult === "yes" ? "text-primary" : "text-destructive"}`}>
+            Resolved: {finalResult === "yes" ? "Yes" : "No"}
+          </span>
           {forecast.user_vote && (
-            <span className={`text-[10px] font-semibold px-2.5 py-1 rounded-full ${
-              forecast.user_vote === finalResult
-                ? "bg-green-500/10 text-green-600 dark:text-green-400"
-                : "bg-orange-500/10 text-orange-600 dark:text-orange-400"
+            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+              forecast.user_vote === finalResult ? "bg-green-500/10 text-green-600 dark:text-green-400" : "bg-orange-500/10 text-orange-600 dark:text-orange-400"
             }`}>
-              {forecast.user_vote === finalResult ? "✓ Correct!" : "✗ Minority"}
+              {forecast.user_vote === finalResult ? "✓ Correct" : "✗ Wrong"}
             </span>
           )}
         </div>
