@@ -552,7 +552,8 @@ const Forecasts = () => {
   const createForecast = useCreateForecast();
   const voteForecast = useVoteForecast();
   const [showCreate, setShowCreate] = useState(false);
-  const [topicFilter, setTopicFilter] = useState<string>("");
+   const [topicFilter, setTopicFilter] = useState<string>("");
+  const [showFilters, setShowFilters] = useState(false);
 
   // Create form state
   const [title, setTitle] = useState("");
