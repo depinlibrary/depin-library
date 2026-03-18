@@ -428,7 +428,7 @@ const BillboardHero = ({
              </motion.div>
 
              {/* ── Top Gainers (spans 1 col on 6-grid) ── */}
-             <motion.div variants={fadeUp} className="col-span-2 sm:col-span-2 lg:col-span-3 rounded-lg border border-border bg-card/40 backdrop-blur-md p-4">
+             <motion.div variants={fadeUp} className="col-span-1 rounded-lg border border-border bg-card/40 backdrop-blur-md p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <ArrowUpRight className="h-4 w-4 text-neon-green" />
                   <span className="text-sm font-semibold text-foreground">Top Gainers</span>
