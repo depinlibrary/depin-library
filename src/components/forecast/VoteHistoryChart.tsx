@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-
+import { BarChart3 } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import type { VoteHistoryEntry } from "@/hooks/useForecastDetail";
 
@@ -13,18 +13,18 @@ export default function VoteHistoryChart({ voteHistory }: VoteHistoryChartProps)
   // Calculate trend
   const latest = voteHistory[voteHistory.length - 1];
   const latestTotal = latest.yes_count + latest.no_count;
-  const latestYesPct = latestTotal > 0 ? (latest.yes_count / latestTotal * 100).toFixed(0) : "50";
+  const latestYesPct = latestTotal > 0 ? ((latest.yes_count / latestTotal) * 100).toFixed(0) : "50";
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.1 }}
-      className="rounded-xl border border-border bg-card overflow-hidden">
-      
+      className="rounded-xl border border-border bg-card overflow-hidden"
+    >
       <div className="px-6 py-4 border-b border-border flex items-center justify-between">
         <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-           Vote Trend
+          <BarChart3 className="h-4 w-4 text-primary" /> Vote Trend
         </h2>
         <span className="text-[11px] text-muted-foreground">
           Current: <span className="font-semibold text-foreground">{latestYesPct}% Yes</span>
@@ -49,13 +49,13 @@ export default function VoteHistoryChart({ voteHistory }: VoteHistoryChartProps)
                 dataKey="date"
                 tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
                 tickLine={false}
-                axisLine={false} />
-              
+                axisLine={false}
+              />
               <YAxis
                 tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
                 tickLine={false}
-                axisLine={false} />
-              
+                axisLine={false}
+              />
               <Tooltip
                 contentStyle={{
                   backgroundColor: "hsl(var(--card))",
@@ -63,10 +63,10 @@ export default function VoteHistoryChart({ voteHistory }: VoteHistoryChartProps)
                   borderRadius: "10px",
                   fontSize: "12px",
                   padding: "8px 12px",
-                  boxShadow: "0 8px 30px -10px rgba(0,0,0,0.3)"
+                  boxShadow: "0 8px 30px -10px rgba(0,0,0,0.3)",
                 }}
-                labelStyle={{ fontWeight: 600, marginBottom: 4, color: "hsl(var(--foreground))" }} />
-              
+                labelStyle={{ fontWeight: 600, marginBottom: 4, color: "hsl(var(--foreground))" }}
+              />
               <Area
                 type="monotone"
                 dataKey="yes_count"
@@ -75,8 +75,8 @@ export default function VoteHistoryChart({ voteHistory }: VoteHistoryChartProps)
                 fill="url(#yesGradDetail)"
                 strokeWidth={2.5}
                 dot={false}
-                activeDot={{ r: 4, strokeWidth: 2, stroke: "hsl(var(--card))" }} />
-              
+                activeDot={{ r: 4, strokeWidth: 2, stroke: "hsl(var(--card))" }}
+              />
               <Area
                 type="monotone"
                 dataKey="no_count"
@@ -85,12 +85,12 @@ export default function VoteHistoryChart({ voteHistory }: VoteHistoryChartProps)
                 fill="url(#noGradDetail)"
                 strokeWidth={2.5}
                 dot={false}
-                activeDot={{ r: 4, strokeWidth: 2, stroke: "hsl(var(--card))" }} />
-              
+                activeDot={{ r: 4, strokeWidth: 2, stroke: "hsl(var(--card))" }}
+              />
             </AreaChart>
           </ResponsiveContainer>
         </div>
       </div>
-    </motion.div>);
-
+    </motion.div>
+  );
 }
