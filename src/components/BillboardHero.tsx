@@ -164,12 +164,12 @@ const BillboardHero = ({
   const topGainers = [...projects].
   filter((p) => marketData[p.id]?.price_change_24h && (marketData[p.id]?.price_change_24h || 0) > 0).
   sort((a, b) => (marketData[b.id]?.price_change_24h || 0) - (marketData[a.id]?.price_change_24h || 0)).
-  slice(0, 3);
+  slice(0, 5);
 
   const topLosers = [...projects].
   filter((p) => marketData[p.id]?.price_change_24h && (marketData[p.id]?.price_change_24h || 0) < 0).
   sort((a, b) => (marketData[a.id]?.price_change_24h || 0) - (marketData[b.id]?.price_change_24h || 0)).
-  slice(0, 3);
+  slice(0, 5);
 
   const totalMarketCap = Object.values(marketData).reduce((sum, d) => sum + (d.market_cap_usd || 0), 0);
   const changes = Object.values(marketData).filter((d) => d.price_change_24h !== null);
@@ -212,7 +212,7 @@ const BillboardHero = ({
 
               {/* Search + CTA — row on desktop, stacked on mobile */}
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:shrink-0">
-                <div ref={searchRef} className="relative flex-1 sm:flex-initial sm:w-[280px]">
+                <div ref={searchRef} className="relative flex-1 sm:flex-initial sm:w-[380px]">
                   <form onSubmit={handleSearch}>
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground z-10" />
                     <input
@@ -427,58 +427,77 @@ const BillboardHero = ({
                </div>
              </motion.div>
 
-             {/* ── Gainers + Losers combined (spans 2 cols) ── */}
-             <motion.div variants={fadeUp} className="col-span-2 grid grid-cols-2 gap-2">
-               {/* Top Gainers */}
-               <div className="rounded-lg border border-border bg-card/40 backdrop-blur-md p-4">
-                 <div className="flex items-center gap-1.5 mb-3">
-                   <ArrowUpRight className="h-4 w-4 text-neon-green" />
-                   <span className="text-sm font-semibold text-foreground">Gainers</span>
-                 </div>
-                 <div className="space-y-2.5">
-                   {topGainers.map((p) => {
-                    const m = marketData[p.id];
-                    return (
-                      <Link key={p.id} to={`/project/${p.slug}`} className="group flex items-center gap-2 hover:opacity-80 transition-opacity">
-                         <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="sm" />
-                         <div className="min-w-0 flex-1">
-                           <p className="text-sm font-semibold text-foreground truncate">{p.name}</p>
-                           <p className="text-xs font-bold text-neon-green tabular-nums">
-                             +{(m?.price_change_24h || 0).toFixed(1)}%
-                           </p>
-                         </div>
-                       </Link>);
+             {/* ── Top Gainers (spans 2 cols) ── */}
+             <motion.div variants={fadeUp} className="col-span-2 rounded-lg border border-border bg-card/40 backdrop-blur-md p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <ArrowUpRight className="h-4 w-4 text-neon-green" />
+                  <span className="text-sm font-semibold text-foreground">Top Gainers</span>
+                  <Link to="/market" className="ml-auto text-xs text-muted-foreground hover:text-primary transition-colors">
+                    View all →
+                  </Link>
+                </div>
+                <div className="space-y-2">
+                  {topGainers.map((p, i) => {
+                   const m = marketData[p.id];
+                   return (
+                     <Link
+                       key={p.id}
+                       to={`/project/${p.slug}`}
+                       className="group flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-secondary/50">
+                       
+                       <span className="text-xs font-bold text-muted-foreground w-4 text-center">{i + 1}</span>
+                       <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="sm" />
+                       <div className="min-w-0 flex-1">
+                         <p className="text-sm font-semibold text-foreground truncate">{p.name}</p>
+                       </div>
+                       <span className="hidden sm:block"><MiniSparkline data={m?.sparkline_7d || null} positive={true} /></span>
+                       <div className="text-right shrink-0">
+                         <p className="text-xs font-medium text-muted-foreground tabular-nums">{formatPrice(m?.price_usd || null)}</p>
+                         <p className="text-xs font-bold text-neon-green tabular-nums">
+                           +{(m?.price_change_24h || 0).toFixed(1)}%
+                         </p>
+                       </div>
+                     </Link>);
+                 })}
+                  {topGainers.length === 0 && <p className="text-xs text-muted-foreground">No data yet</p>}
+                </div>
+              </motion.div>
 
-                  })}
-                   {topGainers.length === 0 && <p className="text-xs text-muted-foreground">No data yet</p>}
-                 </div>
-               </div>
-
-               {/* Top Losers */}
-               <div className="rounded-lg border border-border bg-card/40 backdrop-blur-md p-4">
-                 <div className="flex items-center gap-1.5 mb-3">
-                   <ArrowDownRight className="h-4 w-4 text-destructive" />
-                   <span className="text-sm font-semibold text-foreground">Losers</span>
-                 </div>
-                 <div className="space-y-2.5">
-                   {topLosers.map((p) => {
-                    const m = marketData[p.id];
-                    return (
-                      <Link key={p.id} to={`/project/${p.slug}`} className="group flex items-center gap-2 hover:opacity-80 transition-opacity">
-                         <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="sm" />
-                         <div className="min-w-0 flex-1">
-                           <p className="text-sm font-semibold text-foreground truncate">{p.name}</p>
-                           <p className="text-xs font-bold text-destructive tabular-nums">
-                             {(m?.price_change_24h || 0).toFixed(1)}%
-                           </p>
-                         </div>
-                       </Link>);
-
-                  })}
-                   {topLosers.length === 0 && <p className="text-xs text-muted-foreground">No data yet</p>}
-                 </div>
-               </div>
-             </motion.div>
+             {/* ── Top Losers (spans 2 cols) ── */}
+             <motion.div variants={fadeUp} className="col-span-2 rounded-lg border border-border bg-card/40 backdrop-blur-md p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <ArrowDownRight className="h-4 w-4 text-destructive" />
+                  <span className="text-sm font-semibold text-foreground">Top Losers</span>
+                  <Link to="/market" className="ml-auto text-xs text-muted-foreground hover:text-primary transition-colors">
+                    View all →
+                  </Link>
+                </div>
+                <div className="space-y-2">
+                  {topLosers.map((p, i) => {
+                   const m = marketData[p.id];
+                   return (
+                     <Link
+                       key={p.id}
+                       to={`/project/${p.slug}`}
+                       className="group flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-secondary/50">
+                       
+                       <span className="text-xs font-bold text-muted-foreground w-4 text-center">{i + 1}</span>
+                       <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="sm" />
+                       <div className="min-w-0 flex-1">
+                         <p className="text-sm font-semibold text-foreground truncate">{p.name}</p>
+                       </div>
+                       <span className="hidden sm:block"><MiniSparkline data={m?.sparkline_7d || null} positive={false} /></span>
+                       <div className="text-right shrink-0">
+                         <p className="text-xs font-medium text-muted-foreground tabular-nums">{formatPrice(m?.price_usd || null)}</p>
+                         <p className="text-xs font-bold text-destructive tabular-nums">
+                           {(m?.price_change_24h || 0).toFixed(1)}%
+                         </p>
+                       </div>
+                     </Link>);
+                 })}
+                  {topLosers.length === 0 && <p className="text-xs text-muted-foreground">No data yet</p>}
+                </div>
+              </motion.div>
 
              {/* ── Top Forecasts — Enhanced (spans full width) ── */}
              {topForecasts.length > 0 &&

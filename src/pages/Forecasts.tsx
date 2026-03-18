@@ -516,9 +516,9 @@ const HeroSection = ({ forecasts, trendingTopics, user, setShowCreate }: {
 
             </div>
 
-            {/* Slide dots - outside the card, centered */}
+            {/* Slide dots - left aligned */}
             {heroForecasts.length > 1 && (
-              <div className="flex items-center justify-center gap-2 mt-3">
+              <div className="flex items-center justify-start gap-2 mt-3">
                 {heroForecasts.map((_, i) => (
                   <button
                     key={i}
@@ -537,21 +537,21 @@ const HeroSection = ({ forecasts, trendingTopics, user, setShowCreate }: {
             )}
           </motion.div>
 
-          {/* Right sidebar */}
+          {/* Right sidebar — matches left column height */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="space-y-4"
+            className="flex flex-col gap-4 h-[520px]"
           >
             {/* Top Forecasts */}
-            <div className="rounded-2xl border border-border bg-card overflow-hidden">
-              <div className="px-5 py-3.5 flex items-center justify-between border-b border-border">
+            <div className="rounded-2xl border border-border bg-card overflow-hidden flex-1 flex flex-col min-h-0">
+              <div className="px-5 py-3.5 flex items-center justify-between border-b border-border shrink-0">
                 <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Top Forecasts</h3>
-                <ChevronRightIcon className="h-4 w-4 text-muted-foreground" />
+                <Link to="/forecasts" className="text-xs text-muted-foreground hover:text-primary transition-colors">View all →</Link>
               </div>
-              <div className="divide-y divide-border">
-                {forecasts.slice(1, 4).map((f, i) => {
+              <div className="divide-y divide-border flex-1 overflow-y-auto">
+                {forecasts.slice(0, 5).map((f, i) => {
                   const fTotal = f.total_votes_yes + f.total_votes_no;
                   const fYesPct = fTotal > 0 ? (f.total_votes_yes / fTotal) * 100 : 50;
                   const fIsEnded = new Date(f.end_date) <= new Date();
@@ -560,7 +560,6 @@ const HeroSection = ({ forecasts, trendingTopics, user, setShowCreate }: {
                       <span className="text-xs font-bold text-muted-foreground/50 mt-0.5 w-4 shrink-0">{i + 1}</span>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-semibold text-foreground leading-snug line-clamp-2">{f.title}</p>
-                        {/* Blinking status */}
                         <span className="flex items-center gap-1 mt-1">
                           <span className="relative flex h-1.5 w-1.5">
                             {!fIsEnded && <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-green-500" />}
@@ -581,15 +580,15 @@ const HeroSection = ({ forecasts, trendingTopics, user, setShowCreate }: {
                     </Link>
                   );
                 })}
-                {forecasts.length <= 1 && (
-                  <div className="px-5 py-6 text-center text-xs text-muted-foreground">No additional forecasts</div>
+                {forecasts.length === 0 && (
+                  <div className="px-5 py-6 text-center text-xs text-muted-foreground">No forecasts yet</div>
                 )}
               </div>
             </div>
 
             {/* Trending Topics */}
             {trendingTopics.length > 0 && (
-              <div className="rounded-2xl border border-border bg-card overflow-hidden">
+              <div className="rounded-2xl border border-border bg-card overflow-hidden shrink-0">
                 <div className="px-5 py-3.5 flex items-center justify-between border-b border-border">
                   <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Hot Topics</h3>
                   <Flame className="h-4 w-4 text-destructive/60" />
@@ -609,14 +608,12 @@ const HeroSection = ({ forecasts, trendingTopics, user, setShowCreate }: {
                       <div className="flex items-center gap-1 shrink-0">
                         <span className="text-[10px] font-medium text-muted-foreground">{project.totalVotes} votes</span>
                         <Flame className="h-3 w-3 text-destructive/50" />
-                        <ChevronRightIcon className="h-3 w-3 text-muted-foreground/40" />
                       </div>
                     </Link>
                   ))}
                 </div>
               </div>
             )}
-
           </motion.div>
         </div>
       </div>
