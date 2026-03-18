@@ -485,11 +485,15 @@ const ForecastDetail = () => {
                         {allVoters.map((voter: any, i: number) => (
                           <div key={i} className="flex items-center justify-between py-2.5 px-3 rounded-xl hover:bg-secondary/30 transition-colors">
                             <div className="flex items-center gap-2.5">
-                              <UserAvatar avatarUrl={voter.avatar_url} displayName={voter.display_name} size="sm" />
-                              <div>
-                                <p className="text-xs font-semibold text-foreground">{voter.display_name}</p>
-                                <p className="text-[10px] text-muted-foreground">{format(new Date(voter.created_at), "MMM d, yyyy")}</p>
-                              </div>
+                              <UserStatsHoverCard userId={voter.user_id} displayName={voter.display_name} avatarUrl={voter.avatar_url}>
+                                <div className="flex items-center gap-2.5 cursor-pointer">
+                                  <UserAvatar avatarUrl={voter.avatar_url} displayName={voter.display_name} size="sm" />
+                                  <div>
+                                    <p className="text-xs font-semibold text-foreground hover:text-primary transition-colors">{voter.display_name}</p>
+                                    <p className="text-[10px] text-muted-foreground">{format(new Date(voter.created_at), "MMM d, yyyy")}</p>
+                                  </div>
+                                </div>
+                              </UserStatsHoverCard>
                             </div>
                             <div className="flex items-center gap-2">
                               {voter.confidence_level && (
@@ -512,6 +516,121 @@ const ForecastDetail = () => {
                 </TabsContent>
               </Tabs>
             </motion.div>
+          </div>
+
+          {/* ═══════ RIGHT COLUMN (1/3): Creator + Vote + Analysis + Related ═══════ */}
+          <div className="space-y-4">
+            {/* Creator Card — compact */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-2xl border border-border bg-card overflow-hidden"
+            >
+              <div className="p-5">
+                <UserStatsHoverCard userId={forecast.creator_user_id} displayName={forecast.creator_name} avatarUrl={forecast.creator_avatar_url}>
+                  <div className="flex items-center gap-3 cursor-pointer group">
+                    <UserAvatar avatarUrl={forecast.creator_avatar_url} displayName={forecast.creator_name} size="md" />
+                    <div className="flex flex-col">
+                      <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{forecast.creator_name}</span>
+                      <span className="text-[10px] text-muted-foreground">Forecast Creator</span>
+                    </div>
+                  </div>
+                </UserStatsHoverCard>
+                <div className="mt-3 pt-3 border-t border-border grid grid-cols-3 gap-2 text-center">
+                  <div>
+                    <p className="text-[10px] text-muted-foreground mb-0.5">Created</p>
+                    <p className="text-[11px] font-medium text-foreground">{format(new Date(forecast.created_at), "MMM d")}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground mb-0.5">Ends</p>
+                    <p className="text-[11px] font-medium text-foreground">{format(new Date(forecast.end_date), "MMM d")}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground mb-0.5">Status</p>
+                    <Badge variant={isEnded ? "secondary" : "default"} className={`text-[9px] ${!isEnded ? "bg-primary/10 text-primary border-primary/20 hover:bg-primary/10" : ""}`}>
+                      {isEnded ? "Ended" : timeLeft}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Cast Your Vote */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 }}
+              className="rounded-2xl border border-border bg-card overflow-hidden"
+            >
+              <div className="px-5 py-3.5 border-b border-border">
+                <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Cast Your Vote</h3>
+              </div>
+              <div className="p-5">
+                {!isEnded ? (
+                  <>
+                    <div className="mb-4 rounded-xl bg-secondary/30 border border-border/50 px-4 py-3.5">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-1.5">
+                          <Gauge className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span className="text-[11px] font-medium text-muted-foreground">Confidence</span>
+                        </div>
+                        <span className={`text-[11px] font-semibold ${confInfo.color}`}>
+                          {confInfo.label} ({confidence}/5)
+                        </span>
+                      </div>
+                      <Slider value={[confidence]} onValueChange={(val) => setConfidence(val[0])} min={1} max={5} step={1} className="w-full" />
+                      <div className="flex justify-between mt-1.5 px-0.5">
+                        {[1, 2, 3, 4, 5].map((n) => (
+                          <span key={n} className={`text-[9px] ${confidence === n ? "text-foreground font-semibold" : "text-muted-foreground/50"}`}>{n}</span>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex gap-2.5">
+                      <Button
+                        onClick={() => handleVote("yes")}
+                        variant={forecast.user_vote === "yes" ? "default" : "outline"}
+                        className={`flex-1 gap-2 h-11 text-sm font-semibold transition-all rounded-xl ${
+                          forecast.user_vote === "yes" ? "shadow-md shadow-primary/20" : ""
+                        }`}
+                      >
+                        <ThumbsUp className="h-4 w-4" />
+                        {forecast.user_vote === "yes" ? "Voted Yes ✓" : "Yes"}
+                      </Button>
+                      <Button
+                        onClick={() => handleVote("no")}
+                        variant={forecast.user_vote === "no" ? "destructive" : "outline"}
+                        className={`flex-1 gap-2 h-11 text-sm font-semibold transition-all rounded-xl ${
+                          forecast.user_vote === "no" ? "shadow-md shadow-destructive/20" : ""
+                        }`}
+                      >
+                        <ThumbsDown className="h-4 w-4" />
+                        {forecast.user_vote === "no" ? "Voted No ✓" : "No"}
+                      </Button>
+                    </div>
+                    {forecast.user_vote && (
+                      <motion.p initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}
+                        className="text-[10px] text-muted-foreground text-center mt-3">
+                        You voted <span className={`font-semibold ${forecast.user_vote === "yes" ? "text-primary" : "text-destructive"}`}>{forecast.user_vote === "yes" ? "Yes" : "No"}</span> · Vote again to change
+                      </motion.p>
+                    )}
+                  </>
+                ) : (
+                  <div className="rounded-xl bg-muted/50 border border-border px-4 py-3.5 text-center">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      Voting has ended · Final: <span className="text-foreground font-semibold">{yesPct >= 50 ? "Yes" : "No"}</span> ({yesPct.toFixed(0)}%)
+                    </span>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+
+            {/* Forecast Analysis */}
+            <ForecastAnalysis forecastId={forecast.id} isEnded={isEnded} />
+
+            {/* Related Forecasts — column layout */}
+            {relatedForecasts.length > 0 && (
+              <RelatedForecastsList forecasts={relatedForecasts} />
+            )}
           </div>
         </div>
       </main>
