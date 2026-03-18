@@ -352,14 +352,14 @@ const BillboardHero = ({
              </div>
            </motion.div>
 
-          {/* Bento Grid - denser */}
+           {/* Bento Grid - all 4 sections in one row */}
           <motion.div
-            className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2 auto-rows-min relative"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 auto-rows-min relative"
             animate={{ opacity: isRefetching ? [1, 0.7, 1] : 1 }}
             transition={{ duration: 0.8, repeat: isRefetching ? Infinity : 0 }}>
             
-             {/* ── Top Market Cap (spans 2 cols) ── */}
-             <motion.div variants={fadeUp} className="col-span-2 rounded-lg border border-border bg-card/40 backdrop-blur-md p-4">
+             {/* ── Top Market Cap ── */}
+             <motion.div variants={fadeUp} className="col-span-1 rounded-lg border border-border bg-card/40 backdrop-blur-md p-4">
                <div className="flex items-center gap-2 mb-3">
                  <Crown className="h-4 w-4 text-primary" />
                  <span className="text-sm font-semibold text-foreground">Top Market Cap</span>
@@ -395,7 +395,7 @@ const BillboardHero = ({
              </motion.div>
 
              {/* ── Trending Projects ── */}
-             <motion.div variants={fadeUp} className="col-span-2 rounded-lg border border-border bg-card/40 backdrop-blur-md p-4">
+             <motion.div variants={fadeUp} className="col-span-1 rounded-lg border border-border bg-card/40 backdrop-blur-md p-4">
                <div className="flex items-center gap-2 mb-3">
                  <Flame className="h-4 w-4 text-primary" />
                  <span className="text-sm font-semibold text-foreground">Trending Now</span>
@@ -428,7 +428,7 @@ const BillboardHero = ({
              </motion.div>
 
              {/* ── Top Gainers (spans 1 col on 6-grid) ── */}
-             <motion.div variants={fadeUp} className="col-span-2 sm:col-span-2 lg:col-span-3 rounded-lg border border-border bg-card/40 backdrop-blur-md p-4">
+             <motion.div variants={fadeUp} className="col-span-1 rounded-lg border border-border bg-card/40 backdrop-blur-md p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <ArrowUpRight className="h-4 w-4 text-neon-green" />
                   <span className="text-sm font-semibold text-foreground">Top Gainers</span>
@@ -461,7 +461,7 @@ const BillboardHero = ({
               </motion.div>
 
              {/* ── Top Losers ── */}
-             <motion.div variants={fadeUp} className="col-span-2 sm:col-span-2 lg:col-span-3 rounded-lg border border-border bg-card/40 backdrop-blur-md p-4">
+             <motion.div variants={fadeUp} className="col-span-1 rounded-lg border border-border bg-card/40 backdrop-blur-md p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <ArrowDownRight className="h-4 w-4 text-destructive" />
                   <span className="text-sm font-semibold text-foreground">Top Losers</span>
@@ -495,7 +495,7 @@ const BillboardHero = ({
 
              {/* ── Top Forecasts — Enhanced (spans full width) ── */}
              {topForecasts.length > 0 &&
-            <motion.div variants={fadeUp} className="col-span-2 sm:col-span-4 lg:col-span-6 rounded-lg border border-border bg-card/40 backdrop-blur-md p-4 sm:p-5">
+            <motion.div variants={fadeUp} className="col-span-1 sm:col-span-2 lg:col-span-4 rounded-lg border border-border bg-card/40 backdrop-blur-md p-4 sm:p-5">
                  <div className="flex items-center gap-2 mb-4">
                    <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10">
                      <BarChart3 className="h-4 w-4 text-primary" />

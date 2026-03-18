@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Timer, ThumbsUp, ThumbsDown, Plus, TrendingUp, Clock, Flame, ChevronLeft, ChevronRight, LogIn, Users, BarChart3, Zap, X, Filter, Trophy, CheckCircle, Circle, RotateCcw, DollarSign, Server, Activity, ArrowUpRight, ArrowDownRight, Bookmark, Copy, ChevronRight as ChevronRightIcon, Radio } from "lucide-react";
+import { Timer, ThumbsUp, ThumbsDown, Plus, TrendingUp, Clock, Flame, ChevronLeft, ChevronRight, LogIn, Users, BarChart3, Zap, X, Filter, Trophy, CheckCircle, Circle, RotateCcw, DollarSign, Server, Activity, ArrowUpRight, ArrowDownRight, Bookmark, Copy, ChevronRight as ChevronRightIcon, Radio, Search } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -552,7 +552,8 @@ const Forecasts = () => {
   const createForecast = useCreateForecast();
   const voteForecast = useVoteForecast();
   const [showCreate, setShowCreate] = useState(false);
-  const [topicFilter, setTopicFilter] = useState<string>("");
+   const [topicFilter, setTopicFilter] = useState<string>("");
+  const [showFilters, setShowFilters] = useState(false);
 
   // Create form state
   const [title, setTitle] = useState("");
@@ -758,83 +759,20 @@ const Forecasts = () => {
         setShowCreate={setShowCreate}
       />
 
-      {/* Controls */}
+      {/* Controls — Polymarket-style single row */}
       <section className="sticky top-16 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
-        <div className="container mx-auto px-4 py-3 space-y-3">
-          {/* Row 1: Search + actions */}
-          <div className="flex items-center gap-3">
-            <div className="flex-1 min-w-0">
-              <Input
-                placeholder="Search forecasts..."
-                value={search}
-                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                className="h-10 w-full text-sm placeholder:text-muted-foreground/60 bg-secondary/50 border-border"
-              />
+        <div className="container mx-auto px-4 py-2.5">
+          <div className="flex items-center gap-2 overflow-x-auto">
+            {/* All Markets badge */}
+            <div className="flex items-center gap-1.5 shrink-0 rounded-full bg-primary/10 px-3 py-1.5 border border-primary/20">
+              <Radio className="h-3.5 w-3.5 text-primary" />
+              <span className="text-xs font-bold text-primary uppercase tracking-wide">All Markets</span>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <Select value={sort} onValueChange={(v) => { setSort(v as ForecastSortOption); setPage(1); }}>
-                <SelectTrigger className="h-10 w-[140px] text-xs bg-secondary/50 border-border">
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent position="popper" side="bottom" sideOffset={4}>
-                  {sortOptions.map(({ value, label }) => (
-                    <SelectItem key={value} value={value}>{label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v as ForecastStatusFilter); setPage(1); }}>
-                <SelectTrigger className="h-10 w-[120px] text-xs bg-secondary/50 border-border">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent position="popper" side="bottom" sideOffset={4}>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="ended">Ended</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={projectFilter || "all"} onValueChange={(v) => { setProjectFilter(v === "all" ? "" : v); setPage(1); }}>
-                <SelectTrigger className="h-10 w-[150px] text-xs bg-secondary/50 border-border">
-                  <SelectValue placeholder="All Projects" />
-                </SelectTrigger>
-                <SelectContent position="popper" side="bottom" sideOffset={4}>
-                  <SelectItem value="all">All Projects</SelectItem>
-                  {projects.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      <span className="flex items-center gap-2">
-                        {p.logo_url ? (
-                          <img src={p.logo_url} alt={p.name} className="w-4 h-4 rounded-[7px] overflow-hidden object-contain" />
-                        ) : (
-                          <span className="w-4 h-4 flex items-center justify-center text-xs">{p.logo_emoji}</span>
-                        )}
-                        {p.name}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {projectFilter && (
-                <button
-                  onClick={() => { setProjectFilter(""); setPage(1); }}
-                  className="flex items-center gap-1 rounded-md bg-primary/10 px-2.5 py-2 text-xs font-medium text-primary hover:bg-primary/15 transition-colors whitespace-nowrap"
-                >
-                  {projects.find(p => p.id === projectFilter)?.name}
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              )}
-            </div>
-            {user ? (
-              <Button onClick={() => setShowCreate(true)} size="sm" className="h-10 gap-1.5 shrink-0 text-sm px-4">
-                <Plus className="h-4 w-4" /> Create
-              </Button>
-            ) : (
-              <Link to="/auth" className="inline-flex items-center shrink-0 rounded-md bg-primary px-5 h-10 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors">
-                Sign in
-              </Link>
-            )}
-          </div>
-          {/* Row 2: All Markets sub-filters */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-0.5">
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0 mr-1">All Markets</span>
+
+            {/* Divider */}
+            <div className="h-5 w-px bg-border shrink-0" />
+
+            {/* Topic chips */}
             {[
               { value: "", label: "All" },
               { value: "token_price", label: "Token Price" },
@@ -847,16 +785,132 @@ const Forecasts = () => {
               <button
                 key={topic.value}
                 onClick={() => { setTopicFilter(topic.value); setPage(1); }}
-                className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-medium transition-all ${
+                className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-all whitespace-nowrap ${
                   topicFilter === topic.value
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-secondary/60 text-muted-foreground hover:bg-secondary hover:text-foreground"
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
                 }`}
               >
                 {topic.label}
               </button>
             ))}
+
+            {/* Spacer pushes right side */}
+            <div className="flex-1 min-w-0" />
+
+            {/* Search input — compact */}
+            <div className="relative shrink-0 w-[180px]">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60" />
+              <Input
+                placeholder="Search..."
+                value={search}
+                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                className="h-8 w-full text-xs placeholder:text-muted-foreground/50 bg-secondary/40 border-border pl-8 pr-3"
+              />
+            </div>
+
+            {/* Filter toggle button */}
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
+                showFilters || statusFilter !== "all" || sort !== "votes" || projectFilter
+                  ? "bg-primary/10 text-primary border border-primary/20"
+                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+              }`}
+            >
+              <Filter className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Filters</span>
+              {(statusFilter !== "all" || sort !== "votes" || projectFilter) && (
+                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">
+                  {[statusFilter !== "all", sort !== "votes", !!projectFilter].filter(Boolean).length}
+                </span>
+              )}
+            </button>
+
+            {/* Sign in / Create */}
+            {user ? (
+              <Button onClick={() => setShowCreate(true)} size="sm" className="h-8 gap-1 shrink-0 text-xs px-3 rounded-full">
+                <Plus className="h-3.5 w-3.5" /> Create
+              </Button>
+            ) : (
+              <Link to="/auth" className="inline-flex items-center shrink-0 rounded-full bg-primary px-4 h-8 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors">
+                Sign in
+              </Link>
+            )}
           </div>
+
+          {/* Expandable filter panel */}
+          <AnimatePresence>
+            {showFilters && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden"
+              >
+                <div className="flex items-center gap-2 pt-2.5 pb-1 flex-wrap">
+                  <Select value={sort} onValueChange={(v) => { setSort(v as ForecastSortOption); setPage(1); }}>
+                    <SelectTrigger className="h-8 w-[130px] text-xs bg-secondary/50 border-border rounded-full">
+                      <SelectValue placeholder="Sort by" />
+                    </SelectTrigger>
+                    <SelectContent position="popper" side="bottom" sideOffset={4}>
+                      {sortOptions.map(({ value, label }) => (
+                        <SelectItem key={value} value={value}>{label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v as ForecastStatusFilter); setPage(1); }}>
+                    <SelectTrigger className="h-8 w-[110px] text-xs bg-secondary/50 border-border rounded-full">
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent position="popper" side="bottom" sideOffset={4}>
+                      <SelectItem value="all">All Status</SelectItem>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="ended">Ended</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={projectFilter || "all"} onValueChange={(v) => { setProjectFilter(v === "all" ? "" : v); setPage(1); }}>
+                    <SelectTrigger className="h-8 w-[140px] text-xs bg-secondary/50 border-border rounded-full">
+                      <SelectValue placeholder="All Projects" />
+                    </SelectTrigger>
+                    <SelectContent position="popper" side="bottom" sideOffset={4}>
+                      <SelectItem value="all">All Projects</SelectItem>
+                      {projects.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>
+                          <span className="flex items-center gap-2">
+                            {p.logo_url ? (
+                              <img src={p.logo_url} alt={p.name} className="w-4 h-4 rounded-[7px] overflow-hidden object-contain" />
+                            ) : (
+                              <span className="w-4 h-4 flex items-center justify-center text-xs">{p.logo_emoji}</span>
+                            )}
+                            {p.name}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {projectFilter && (
+                    <button
+                      onClick={() => { setProjectFilter(""); setPage(1); }}
+                      className="flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1.5 text-xs font-medium text-primary hover:bg-primary/15 transition-colors whitespace-nowrap"
+                    >
+                      {projects.find(p => p.id === projectFilter)?.name}
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+                  {(statusFilter !== "all" || sort !== "votes" || projectFilter) && (
+                    <button
+                      onClick={() => { setStatusFilter("all"); setSort("votes"); setProjectFilter(""); setPage(1); }}
+                      className="text-xs text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
+                    >
+                      Clear all
+                    </button>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </section>
 
