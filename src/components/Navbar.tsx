@@ -462,8 +462,13 @@ const Navbar = () => {
           {user ? (
             <>
               <NotificationDropdown />
-              {/* Profile avatar dropdown */}
-              <div className="relative" ref={profileDropdownRef}>
+              {/* Profile avatar dropdown — hover */}
+              <div
+                className="relative"
+                ref={profileDropdownRef}
+                onMouseEnter={() => setProfileDropdownOpen(true)}
+                onMouseLeave={() => setProfileDropdownOpen(false)}
+              >
                 <button
                   onClick={() => setProfileDropdownOpen((v) => !v)}
                   className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/15 border border-primary/30 transition-all hover:bg-primary/25 hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 overflow-hidden"
