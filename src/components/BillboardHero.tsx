@@ -352,14 +352,14 @@ const BillboardHero = ({
              </div>
            </motion.div>
 
-          {/* Bento Grid - denser */}
+           {/* Bento Grid - all 4 sections in one row */}
           <motion.div
-            className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2 auto-rows-min relative"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 auto-rows-min relative"
             animate={{ opacity: isRefetching ? [1, 0.7, 1] : 1 }}
             transition={{ duration: 0.8, repeat: isRefetching ? Infinity : 0 }}>
             
-             {/* ── Top Market Cap (spans 2 cols) ── */}
-             <motion.div variants={fadeUp} className="col-span-2 rounded-lg border border-border bg-card/40 backdrop-blur-md p-4">
+             {/* ── Top Market Cap ── */}
+             <motion.div variants={fadeUp} className="col-span-1 rounded-lg border border-border bg-card/40 backdrop-blur-md p-4">
                <div className="flex items-center gap-2 mb-3">
                  <Crown className="h-4 w-4 text-primary" />
                  <span className="text-sm font-semibold text-foreground">Top Market Cap</span>
