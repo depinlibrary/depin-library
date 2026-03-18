@@ -401,8 +401,17 @@ const HeroSection = ({ forecasts, trendingTopics, user, setShowCreate }: {
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <button className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
-                        <Eye className="h-4 w-4" />
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          const url = `${window.location.origin}/forecasts/${current.id}`;
+                          navigator.clipboard.writeText(url);
+                          toast.success("Link copied!");
+                        }}
+                        className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                        title="Copy link"
+                      >
+                        <Copy className="h-4 w-4" />
                       </button>
                       <button className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
                         <Bookmark className="h-4 w-4" />
