@@ -748,8 +748,8 @@ const Forecasts = () => {
 
       {/* Controls */}
       <section className="sticky top-16 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
-        <div className="container mx-auto px-4 py-3">
-          {/* Single row: Search + dropdown filters */}
+        <div className="container mx-auto px-4 py-3 space-y-2.5">
+          {/* Row 1: Search + dropdown filters */}
           <div className="flex items-center gap-2">
             <div className="flex-1 min-w-0">
               <Input
@@ -818,6 +818,30 @@ const Forecasts = () => {
                 <LogIn className="h-3.5 w-3.5" /> Sign in
               </Link>
             )}
+          </div>
+          {/* Row 2: Topic sub-filters */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5">
+            {[
+              { value: "", label: "All" },
+              { value: "token_price", label: "Token Price" },
+              { value: "market_cap", label: "Market Cap" },
+              { value: "revenue", label: "Revenue" },
+              { value: "active_nodes", label: "Nodes" },
+              { value: "infrastructure", label: "Infrastructure" },
+              { value: "community", label: "Community Voice" },
+            ].map((topic) => (
+              <button
+                key={topic.value}
+                onClick={() => { setTopicFilter(topic.value); setPage(1); }}
+                className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-medium transition-all ${
+                  topicFilter === topic.value
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary/60 text-muted-foreground hover:bg-secondary hover:text-foreground"
+                }`}
+              >
+                {topic.label}
+              </button>
+            ))}
           </div>
         </div>
       </section>

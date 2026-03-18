@@ -39,7 +39,12 @@ const NotificationDropdown = () => {
   };
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div
+      className="relative"
+      ref={dropdownRef}
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
       <button
         onClick={() => setOpen(!open)}
         className="relative flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-card transition-all hover:bg-secondary"
