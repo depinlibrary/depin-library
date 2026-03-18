@@ -1,14 +1,14 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Clock, CalendarDays, Timer, Users, ExternalLink, Copy, ArrowUpRight, ArrowDownRight, ThumbsUp, ThumbsDown, Gauge, BarChart3, Flame, Eye, ChevronRight as ChevronRightIcon } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import { ArrowLeft, Clock, CalendarDays, Timer, Users, ExternalLink, Copy, ArrowUpRight, ArrowDownRight, ThumbsUp, ThumbsDown, Gauge, BarChart3, MessageSquare, Vote } from "lucide-react";
+import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import VoteHistoryChart from "@/components/forecast/VoteHistoryChart";
 import DiscussionSection from "@/components/forecast/DiscussionSection";
 import RelatedForecastsList from "@/components/forecast/RelatedForecasts";
@@ -26,6 +26,8 @@ import {
   useForecastVoteHistory,
   useRelatedForecasts,
 } from "@/hooks/useForecastDetail";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import confetti from "canvas-confetti";
@@ -67,6 +69,36 @@ const ForecastDetail = () => {
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState("");
   const [confidence, setConfidence] = useState(3);
+
+  // Fetch all voters for the Votes tab
+  const { data: allVoters = [] } = useQuery({
+    queryKey: ["forecast-voters", id],
+    enabled: !!id,
+    queryFn: async () => {
+      const { data: votes, error } = await supabase
+        .from("forecast_votes")
+        .select("user_id, vote, confidence_level, created_at")
+        .eq("forecast_id", id!)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      if (!votes?.length) return [];
+
+      const userIds = [...new Set(votes.map(v => v.user_id))];
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, display_name, avatar_url")
+        .in("user_id", userIds);
+
+      const profileMap: Record<string, any> = {};
+      (profiles || []).forEach((p: any) => { profileMap[p.user_id] = p; });
+
+      return votes.map((v: any) => ({
+        ...v,
+        display_name: profileMap[v.user_id]?.display_name || "Anonymous",
+        avatar_url: profileMap[v.user_id]?.avatar_url || null,
+      }));
+    },
+  });
 
   // Dynamic OG meta tags
   useEffect(() => {
@@ -139,35 +171,21 @@ const ForecastDetail = () => {
     toast.success("Link copied!");
   };
 
-  // Chart data for vote sentiment
-  const chartData = useMemo(() => {
-    if (!forecast) return [];
-    const t = forecast.total_votes_yes + forecast.total_votes_no;
-    if (t === 0) return [
-      { name: "Yes", value: 50, fill: "hsl(var(--primary))" },
-      { name: "No", value: 50, fill: "hsl(var(--destructive))" },
-    ];
-    return [
-      { name: "Yes", value: forecast.total_votes_yes, fill: "hsl(var(--primary))" },
-      { name: "No", value: forecast.total_votes_no, fill: "hsl(var(--destructive))" },
-    ];
-  }, [forecast]);
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Navbar />
-        <div className="container mx-auto px-4 pt-24 pb-16 max-w-6xl">
+        <div className="container mx-auto px-4 pt-24 pb-16 max-w-7xl">
           <Skeleton className="h-5 w-32 mb-6" />
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 space-y-4">
-              <Skeleton className="h-[520px] w-full rounded-2xl" />
+            <div className="space-y-4">
+              <Skeleton className="h-[140px] w-full rounded-2xl" />
+              <Skeleton className="h-[200px] w-full rounded-2xl" />
               <Skeleton className="h-[250px] w-full rounded-2xl" />
             </div>
-            <div className="space-y-4">
-              <Skeleton className="h-[200px] w-full rounded-2xl" />
-              <Skeleton className="h-[180px] w-full rounded-2xl" />
-              <Skeleton className="h-[200px] w-full rounded-2xl" />
+            <div className="lg:col-span-2 space-y-4">
+              <Skeleton className="h-[400px] w-full rounded-2xl" />
+              <Skeleton className="h-[300px] w-full rounded-2xl" />
             </div>
           </div>
         </div>
@@ -200,16 +218,131 @@ const ForecastDetail = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
 
-      <main className="container mx-auto px-4 pt-24 pb-16 max-w-6xl">
+      <main className="container mx-auto px-4 pt-24 pb-16 max-w-7xl">
         {/* Breadcrumb */}
         <Link to="/forecasts" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-5">
           <ArrowLeft className="h-3.5 w-3.5" /> Back to Forecasts
         </Link>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* ═══════ LEFT COLUMN: Hero-style card + Chart + Comments ═══════ */}
+          {/* ═══════ LEFT COLUMN: Creator + Vote + Analysis + Related ═══════ */}
+          <div className="space-y-4">
+            {/* Creator Card — compact */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-2xl border border-border bg-card overflow-hidden"
+            >
+              <div className="p-5">
+                <UserStatsHoverCard userId={forecast.creator_user_id} displayName={forecast.creator_name} avatarUrl={forecast.creator_avatar_url}>
+                  <div className="flex items-center gap-3 cursor-pointer group">
+                    <UserAvatar avatarUrl={forecast.creator_avatar_url} displayName={forecast.creator_name} size="md" />
+                    <div className="flex flex-col">
+                      <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{forecast.creator_name}</span>
+                      <span className="text-[10px] text-muted-foreground">Forecast Creator</span>
+                    </div>
+                  </div>
+                </UserStatsHoverCard>
+                <div className="mt-3 pt-3 border-t border-border grid grid-cols-3 gap-2 text-center">
+                  <div>
+                    <p className="text-[10px] text-muted-foreground mb-0.5">Created</p>
+                    <p className="text-[11px] font-medium text-foreground">{format(new Date(forecast.created_at), "MMM d")}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground mb-0.5">Ends</p>
+                    <p className="text-[11px] font-medium text-foreground">{format(new Date(forecast.end_date), "MMM d")}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground mb-0.5">Status</p>
+                    <Badge variant={isEnded ? "secondary" : "default"} className={`text-[9px] ${!isEnded ? "bg-primary/10 text-primary border-primary/20 hover:bg-primary/10" : ""}`}>
+                      {isEnded ? "Ended" : timeLeft}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Cast Your Vote */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 }}
+              className="rounded-2xl border border-border bg-card overflow-hidden"
+            >
+              <div className="px-5 py-3.5 border-b border-border">
+                <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Cast Your Vote</h3>
+              </div>
+              <div className="p-5">
+                {!isEnded ? (
+                  <>
+                    <div className="mb-4 rounded-xl bg-secondary/30 border border-border/50 px-4 py-3.5">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-1.5">
+                          <Gauge className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span className="text-[11px] font-medium text-muted-foreground">Confidence</span>
+                        </div>
+                        <span className={`text-[11px] font-semibold ${confInfo.color}`}>
+                          {confInfo.label} ({confidence}/5)
+                        </span>
+                      </div>
+                      <Slider value={[confidence]} onValueChange={(val) => setConfidence(val[0])} min={1} max={5} step={1} className="w-full" />
+                      <div className="flex justify-between mt-1.5 px-0.5">
+                        {[1, 2, 3, 4, 5].map((n) => (
+                          <span key={n} className={`text-[9px] ${confidence === n ? "text-foreground font-semibold" : "text-muted-foreground/50"}`}>{n}</span>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex gap-2.5">
+                      <Button
+                        onClick={() => handleVote("yes")}
+                        variant={forecast.user_vote === "yes" ? "default" : "outline"}
+                        className={`flex-1 gap-2 h-11 text-sm font-semibold transition-all rounded-xl ${
+                          forecast.user_vote === "yes" ? "shadow-md shadow-primary/20" : ""
+                        }`}
+                      >
+                        <ThumbsUp className="h-4 w-4" />
+                        {forecast.user_vote === "yes" ? "Voted Yes ✓" : "Yes"}
+                      </Button>
+                      <Button
+                        onClick={() => handleVote("no")}
+                        variant={forecast.user_vote === "no" ? "destructive" : "outline"}
+                        className={`flex-1 gap-2 h-11 text-sm font-semibold transition-all rounded-xl ${
+                          forecast.user_vote === "no" ? "shadow-md shadow-destructive/20" : ""
+                        }`}
+                      >
+                        <ThumbsDown className="h-4 w-4" />
+                        {forecast.user_vote === "no" ? "Voted No ✓" : "No"}
+                      </Button>
+                    </div>
+                    {forecast.user_vote && (
+                      <motion.p initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}
+                        className="text-[10px] text-muted-foreground text-center mt-3">
+                        You voted <span className={`font-semibold ${forecast.user_vote === "yes" ? "text-primary" : "text-destructive"}`}>{forecast.user_vote === "yes" ? "Yes" : "No"}</span> · Vote again to change
+                      </motion.p>
+                    )}
+                  </>
+                ) : (
+                  <div className="rounded-xl bg-muted/50 border border-border px-4 py-3.5 text-center">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      Voting has ended · Final: <span className="text-foreground font-semibold">{yesPct >= 50 ? "Yes" : "No"}</span> ({yesPct.toFixed(0)}%)
+                    </span>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+
+            {/* Forecast Analysis */}
+            <ForecastAnalysis forecastId={forecast.id} isEnded={isEnded} />
+
+            {/* Related Forecasts — column layout */}
+            {relatedForecasts.length > 0 && (
+              <RelatedForecastsList forecasts={relatedForecasts} />
+            )}
+          </div>
+
+          {/* ═══════ RIGHT COLUMN: Hero Card + Tabs (Overview/Comments/Votes) ═══════ */}
           <div className="lg:col-span-2 space-y-4">
-            {/* Hero Card — mirrors Forecasts page hero style */}
+            {/* Hero Card — matches Forecasts page hero style */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -247,7 +380,6 @@ const ForecastDetail = () => {
                           </>
                         )}
                       </span>
-                      {/* Blinking live/ended indicator */}
                       <span className="flex items-center gap-1.5">
                         <span className="relative flex h-2 w-2">
                           {!isEnded && (
@@ -322,7 +454,7 @@ const ForecastDetail = () => {
                   />
                 </div>
 
-                {/* Total votes */}
+                {/* Total votes + Final result */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <Users className="h-3.5 w-3.5" />
@@ -335,40 +467,23 @@ const ForecastDetail = () => {
                   )}
                 </div>
 
-                {/* Sentiment chart — matches Forecasts hero style */}
-                <div className="mt-5 pt-5 border-t border-border">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Sentiment · {forecast.project_a?.name}</h3>
+                {/* Market Stats row */}
+                <div className="mt-4 pt-4 border-t border-border grid grid-cols-4 gap-3">
+                  <div className="text-center">
+                    <p className="text-[10px] text-muted-foreground mb-0.5">Total Votes</p>
+                    <p className="text-sm font-bold text-foreground font-['Space_Grotesk']">{totalVotes.toLocaleString()}</p>
                   </div>
-                  <div className="h-36">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                        <defs>
-                          <linearGradient id="detailYesGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                            <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.02} />
-                          </linearGradient>
-                          <linearGradient id="detailNoGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="hsl(var(--destructive))" stopOpacity={0.25} />
-                            <stop offset="95%" stopColor="hsl(var(--destructive))" stopOpacity={0.02} />
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.4} />
-                        <XAxis dataKey="name" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} />
-                        <YAxis tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} />
-                        <Tooltip
-                          contentStyle={{
-                            backgroundColor: "hsl(var(--card))",
-                            border: "1px solid hsl(var(--border))",
-                            borderRadius: "10px",
-                            fontSize: "11px",
-                            padding: "6px 10px",
-                          }}
-                          labelStyle={{ fontWeight: 600, marginBottom: 2, color: "hsl(var(--foreground))" }}
-                        />
-                        <Area type="monotone" dataKey="value" name="Votes" stroke="hsl(var(--primary))" fill="url(#detailYesGrad)" strokeWidth={2} dot={{ r: 4, fill: "hsl(var(--primary))", stroke: "hsl(var(--card))", strokeWidth: 2 }} />
-                      </AreaChart>
-                    </ResponsiveContainer>
+                  <div className="text-center">
+                    <p className="text-[10px] text-muted-foreground mb-0.5">Yes Votes</p>
+                    <p className="text-sm font-bold text-primary font-['Space_Grotesk']">{forecast.total_votes_yes}</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-[10px] text-muted-foreground mb-0.5">No Votes</p>
+                    <p className="text-sm font-bold text-destructive font-['Space_Grotesk']">{forecast.total_votes_no}</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-[10px] text-muted-foreground mb-0.5">Comments</p>
+                    <p className="text-sm font-bold text-foreground font-['Space_Grotesk']">{comments.length}</p>
                   </div>
                 </div>
               </div>
@@ -377,184 +492,141 @@ const ForecastDetail = () => {
             {/* Vote History Chart */}
             <VoteHistoryChart voteHistory={voteHistory} />
 
-            {/* Discussion */}
-            <DiscussionSection
-              forecastId={forecast.id}
-              comments={comments}
-              commentsLoading={commentsLoading}
-              onAddComment={handleAddComment}
-              commentText={commentText}
-              setCommentText={setCommentText}
-              addCommentPending={addComment.isPending}
-              editingCommentId={editingCommentId}
-              setEditingCommentId={setEditingCommentId}
-              editingText={editingText}
-              setEditingText={setEditingText}
-              onEditComment={(commentId, forecastId, text) => editComment.mutate({ commentId, forecastId, commentText: text })}
-              editCommentPending={editComment.isPending}
-              onDeleteComment={(commentId, forecastId) => deleteComment.mutate({ commentId, forecastId })}
-            />
-          </div>
-
-          {/* ═══════ RIGHT COLUMN: Creator + Voting + Analysis ═══════ */}
-          <div className="space-y-4">
-            {/* Creator Card */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.05 }}
-              className="rounded-2xl border border-border bg-card overflow-hidden"
-            >
-              <div className="px-5 py-3.5 border-b border-border">
-                <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Creator</h3>
-              </div>
-              <div className="p-5">
-                <UserStatsHoverCard userId={forecast.creator_user_id} displayName={forecast.creator_name} avatarUrl={forecast.creator_avatar_url}>
-                  <div className="flex items-center gap-3 cursor-pointer group">
-                    <UserAvatar avatarUrl={forecast.creator_avatar_url} displayName={forecast.creator_name} size="md" />
-                    <div className="flex flex-col">
-                      <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{forecast.creator_name}</span>
-                      <span className="text-[10px] text-muted-foreground">Forecast Creator</span>
-                    </div>
-                  </div>
-                </UserStatsHoverCard>
-                <div className="mt-4 pt-4 border-t border-border space-y-2.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-muted-foreground flex items-center gap-1.5">
-                      <CalendarDays className="h-3 w-3" /> Created
-                    </span>
-                    <span className="text-[11px] font-medium text-foreground">{format(new Date(forecast.created_at), "MMM d, yyyy")}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-muted-foreground flex items-center gap-1.5">
-                      <Timer className="h-3 w-3" /> Ends
-                    </span>
-                    <span className="text-[11px] font-medium text-foreground">{format(new Date(forecast.end_date), "MMM d, yyyy")}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-muted-foreground flex items-center gap-1.5">
-                      <Clock className="h-3 w-3" /> Status
-                    </span>
-                    <Badge variant={isEnded ? "secondary" : "default"} className={`text-[10px] ${!isEnded ? "bg-primary/10 text-primary border-primary/20 hover:bg-primary/10" : ""}`}>
-                      {isEnded ? "Ended" : timeLeft}
-                    </Badge>
-                  </div>
-                </div>
-                {forecast.description && (
-                  <div className="mt-4 pt-4 border-t border-border">
-                    <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-wrap">{forecast.description}</p>
-                  </div>
-                )}
-              </div>
-            </motion.div>
-
-            {/* Vote Controls */}
+            {/* Tabs: Overview, Comments, Votes */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
               className="rounded-2xl border border-border bg-card overflow-hidden"
             >
-              <div className="px-5 py-3.5 border-b border-border">
-                <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Cast Your Vote</h3>
-              </div>
-              <div className="p-5">
-                {!isEnded ? (
-                  <>
-                    {/* Confidence slider */}
-                    <div className="mb-4 rounded-xl bg-secondary/30 border border-border/50 px-4 py-3.5">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-1.5">
-                          <Gauge className="h-3.5 w-3.5 text-muted-foreground" />
-                          <span className="text-[11px] font-medium text-muted-foreground">Confidence</span>
+              <Tabs defaultValue="overview" className="w-full">
+                <TabsList className="w-full rounded-none border-b border-border bg-transparent h-auto p-0">
+                  <TabsTrigger value="overview" className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-3 text-xs font-semibold gap-1.5">
+                    <BarChart3 className="h-3.5 w-3.5" /> Overview
+                  </TabsTrigger>
+                  <TabsTrigger value="comments" className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-3 text-xs font-semibold gap-1.5">
+                    <MessageSquare className="h-3.5 w-3.5" /> Comments ({comments.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="votes" className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-3 text-xs font-semibold gap-1.5">
+                    <Vote className="h-3.5 w-3.5" /> Votes ({totalVotes})
+                  </TabsTrigger>
+                </TabsList>
+
+                {/* Overview Tab */}
+                <TabsContent value="overview" className="mt-0 p-6">
+                  <h3 className="text-sm font-bold text-foreground mb-3 font-['Space_Grotesk']">About This Forecast</h3>
+                  {forecast.description ? (
+                    <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{forecast.description}</p>
+                  ) : (
+                    <p className="text-sm text-muted-foreground/60 italic">No description provided.</p>
+                  )}
+
+                  {/* Project info */}
+                  <div className="mt-6 pt-4 border-t border-border">
+                    <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Projects</h4>
+                    <div className="space-y-2">
+                      <Link to={`/project/${forecast.project_a?.slug}`} className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-secondary/50 transition-colors">
+                        {forecast.project_a?.logo_url ? (
+                          <img src={forecast.project_a.logo_url} alt={forecast.project_a.name} className="w-8 h-8 rounded-lg object-contain bg-secondary" />
+                        ) : (
+                          <span className="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-secondary">{forecast.project_a?.logo_emoji || "⬡"}</span>
+                        )}
+                        <div>
+                          <p className="text-xs font-semibold text-foreground">{forecast.project_a?.name}</p>
+                          {forecast.project_a?.tagline && <p className="text-[10px] text-muted-foreground line-clamp-1">{forecast.project_a.tagline}</p>}
                         </div>
-                        <span className={`text-[11px] font-semibold ${confInfo.color}`}>
-                          {confInfo.label} ({confidence}/5)
-                        </span>
+                      </Link>
+                      {forecast.project_b && (
+                        <Link to={`/project/${forecast.project_b?.slug}`} className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-secondary/50 transition-colors">
+                          {forecast.project_b?.logo_url ? (
+                            <img src={forecast.project_b.logo_url} alt={forecast.project_b.name} className="w-8 h-8 rounded-lg object-contain bg-secondary" />
+                          ) : (
+                            <span className="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-secondary">{forecast.project_b?.logo_emoji || "⬡"}</span>
+                          )}
+                          <div>
+                            <p className="text-xs font-semibold text-foreground">{forecast.project_b?.name}</p>
+                            {forecast.project_b?.tagline && <p className="text-[10px] text-muted-foreground line-clamp-1">{forecast.project_b.tagline}</p>}
+                          </div>
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Key dates */}
+                  <div className="mt-4 pt-4 border-t border-border">
+                    <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Timeline</h4>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground flex items-center gap-1.5"><CalendarDays className="h-3 w-3" /> Created</span>
+                        <span className="font-medium text-foreground">{format(new Date(forecast.created_at), "MMM d, yyyy 'at' h:mm a")}</span>
                       </div>
-                      <Slider value={[confidence]} onValueChange={(val) => setConfidence(val[0])} min={1} max={5} step={1} className="w-full" />
-                      <div className="flex justify-between mt-1.5 px-0.5">
-                        {[1, 2, 3, 4, 5].map((n) => (
-                          <span key={n} className={`text-[9px] ${confidence === n ? "text-foreground font-semibold" : "text-muted-foreground/50"}`}>{n}</span>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground flex items-center gap-1.5"><Timer className="h-3 w-3" /> {isEnded ? "Ended" : "Ends"}</span>
+                        <span className="font-medium text-foreground">{format(new Date(forecast.end_date), "MMM d, yyyy 'at' h:mm a")}</span>
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+
+                {/* Comments Tab */}
+                <TabsContent value="comments" className="mt-0">
+                  <div className="p-6">
+                    <DiscussionSection
+                      forecastId={forecast.id}
+                      comments={comments}
+                      commentsLoading={commentsLoading}
+                      onAddComment={handleAddComment}
+                      commentText={commentText}
+                      setCommentText={setCommentText}
+                      addCommentPending={addComment.isPending}
+                      editingCommentId={editingCommentId}
+                      setEditingCommentId={setEditingCommentId}
+                      editingText={editingText}
+                      setEditingText={setEditingText}
+                      onEditComment={(commentId, forecastId, text) => editComment.mutate({ commentId, forecastId, commentText: text })}
+                      editCommentPending={editComment.isPending}
+                      onDeleteComment={(commentId, forecastId) => deleteComment.mutate({ commentId, forecastId })}
+                    />
+                  </div>
+                </TabsContent>
+
+                {/* Votes Tab */}
+                <TabsContent value="votes" className="mt-0">
+                  <div className="p-6">
+                    {allVoters.length === 0 ? (
+                      <p className="text-sm text-muted-foreground text-center py-6">No votes yet. Be the first to vote!</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {allVoters.map((voter: any, i: number) => (
+                          <div key={i} className="flex items-center justify-between py-2.5 px-3 rounded-xl hover:bg-secondary/30 transition-colors">
+                            <div className="flex items-center gap-2.5">
+                              <UserAvatar avatarUrl={voter.avatar_url} displayName={voter.display_name} size="sm" />
+                              <div>
+                                <p className="text-xs font-semibold text-foreground">{voter.display_name}</p>
+                                <p className="text-[10px] text-muted-foreground">{format(new Date(voter.created_at), "MMM d, yyyy")}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {voter.confidence_level && (
+                                <span className="text-[9px] text-muted-foreground flex items-center gap-0.5">
+                                  <Gauge className="h-2.5 w-2.5" /> {voter.confidence_level}/5
+                                </span>
+                              )}
+                              <Badge
+                                variant={voter.vote === "yes" ? "default" : "destructive"}
+                                className={`text-[10px] ${voter.vote === "yes" ? "bg-primary/10 text-primary border-primary/20 hover:bg-primary/10" : "bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive/10"}`}
+                              >
+                                {voter.vote === "yes" ? "Yes" : "No"}
+                              </Badge>
+                            </div>
+                          </div>
                         ))}
                       </div>
-                    </div>
-
-                    {/* Vote buttons */}
-                    <div className="flex gap-2.5">
-                      <Button
-                        onClick={() => handleVote("yes")}
-                        variant={forecast.user_vote === "yes" ? "default" : "outline"}
-                        className={`flex-1 gap-2 h-11 text-sm font-semibold transition-all rounded-xl ${
-                          forecast.user_vote === "yes" ? "shadow-md shadow-primary/20" : ""
-                        }`}
-                      >
-                        <ThumbsUp className="h-4 w-4" />
-                        {forecast.user_vote === "yes" ? "Voted Yes ✓" : "Yes"}
-                      </Button>
-                      <Button
-                        onClick={() => handleVote("no")}
-                        variant={forecast.user_vote === "no" ? "destructive" : "outline"}
-                        className={`flex-1 gap-2 h-11 text-sm font-semibold transition-all rounded-xl ${
-                          forecast.user_vote === "no" ? "shadow-md shadow-destructive/20" : ""
-                        }`}
-                      >
-                        <ThumbsDown className="h-4 w-4" />
-                        {forecast.user_vote === "no" ? "Voted No ✓" : "No"}
-                      </Button>
-                    </div>
-                    {forecast.user_vote && (
-                      <motion.p initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}
-                        className="text-[10px] text-muted-foreground text-center mt-3">
-                        You voted <span className={`font-semibold ${forecast.user_vote === "yes" ? "text-primary" : "text-destructive"}`}>{forecast.user_vote === "yes" ? "Yes" : "No"}</span> · Vote again to change
-                      </motion.p>
                     )}
-                  </>
-                ) : (
-                  <div className="rounded-xl bg-muted/50 border border-border px-4 py-3.5 text-center">
-                    <span className="text-xs font-medium text-muted-foreground">
-                      Voting has ended · Final: <span className="text-foreground font-semibold">{yesPct >= 50 ? "Yes" : "No"}</span> ({yesPct.toFixed(0)}%)
-                    </span>
                   </div>
-                )}
-              </div>
+                </TabsContent>
+              </Tabs>
             </motion.div>
-
-            {/* Market Stats */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
-              className="rounded-2xl border border-border bg-card overflow-hidden"
-            >
-              <div className="px-5 py-3.5 border-b border-border">
-                <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Market Stats</h3>
-              </div>
-              <div className="px-5 py-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">Total Votes</span>
-                  <span className="text-sm font-bold text-foreground font-['Space_Grotesk']">{totalVotes.toLocaleString()}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">Yes Votes</span>
-                  <span className="text-sm font-bold text-primary font-['Space_Grotesk']">{forecast.total_votes_yes}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">No Votes</span>
-                  <span className="text-sm font-bold text-destructive font-['Space_Grotesk']">{forecast.total_votes_no}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">Comments</span>
-                  <span className="text-sm font-bold text-foreground font-['Space_Grotesk']">{comments.length}</span>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Forecast Analysis */}
-            <ForecastAnalysis forecastId={forecast.id} isEnded={isEnded} />
-
-            {/* Related Forecasts */}
-            <RelatedForecastsList forecasts={relatedForecasts} />
           </div>
         </div>
       </main>

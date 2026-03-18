@@ -1,5 +1,5 @@
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
-import { Target, CheckCircle, XCircle, Clock, BarChart3 } from "lucide-react";
+import { CheckCircle, XCircle, Clock, FileText } from "lucide-react";
 import { useUserForecastStats } from "@/hooks/useUserForecastStats";
 import { Skeleton } from "@/components/ui/skeleton";
 import UserAvatar from "@/components/UserAvatar";
@@ -41,21 +41,23 @@ const UserStatsHoverCard = ({ userId, displayName, avatarUrl, children }: UserSt
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-3/4" />
             </div>
-          ) : stats?.totalVotes === 0 ? (
-            <p className="text-xs text-muted-foreground text-center py-2">No forecast votes yet</p>
+          ) : stats?.totalVotes === 0 && stats?.forecastsCreated === 0 ? (
+            <p className="text-xs text-muted-foreground text-center py-2">No forecast activity yet</p>
           ) : (
             <>
-              {/* Stats grid */}
-              <div className="grid grid-cols-2 gap-2">
+              {/* Stats grid — no icons */}
+              <div className="grid grid-cols-3 gap-2">
                 <div className="bg-secondary/50 rounded-lg p-2 text-center">
-                  <BarChart3 className="h-3.5 w-3.5 mx-auto mb-1 text-primary" />
                   <p className="text-lg font-bold text-foreground">{stats?.totalVotes}</p>
                   <p className="text-[9px] text-muted-foreground">Total Votes</p>
                 </div>
                 <div className="bg-secondary/50 rounded-lg p-2 text-center">
-                  <Target className={`h-3.5 w-3.5 mx-auto mb-1 ${accuracyColor}`} />
                   <p className={`text-lg font-bold ${accuracyColor}`}>{stats?.accuracy}%</p>
                   <p className="text-[9px] text-muted-foreground">Accuracy</p>
+                </div>
+                <div className="bg-secondary/50 rounded-lg p-2 text-center">
+                  <p className="text-lg font-bold text-foreground">{stats?.forecastsCreated}</p>
+                  <p className="text-[9px] text-muted-foreground">Created</p>
                 </div>
               </div>
 

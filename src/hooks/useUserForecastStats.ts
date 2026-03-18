@@ -23,6 +23,7 @@ export type UserForecastStats = {
   incorrectVotes: number;
   pendingVotes: number;
   accuracy: number;
+  forecastsCreated: number;
   history: VoteHistoryItem[];
 };
 
@@ -41,8 +42,15 @@ export function useUserForecastStats(userId: string | undefined) {
         .order("created_at", { ascending: false });
 
       if (votesError) throw votesError;
+
+      // Count forecasts created by user
+      const { count: createdCount } = await supabase
+        .from("forecasts")
+        .select("*", { count: "exact", head: true })
+        .eq("creator_user_id", userId!);
+
       if (!votes?.length) {
-        return { totalVotes: 0, correctVotes: 0, incorrectVotes: 0, pendingVotes: 0, accuracy: 0, history: [] };
+        return { totalVotes: 0, correctVotes: 0, incorrectVotes: 0, pendingVotes: 0, accuracy: 0, forecastsCreated: createdCount || 0, history: [] };
       }
 
       // Get the forecasts for these votes
@@ -106,6 +114,7 @@ export function useUserForecastStats(userId: string | undefined) {
         incorrectVotes: incorrect,
         pendingVotes: pending,
         accuracy: correct + incorrect > 0 ? Math.round((correct / (correct + incorrect)) * 100) : 0,
+        forecastsCreated: createdCount || 0,
         history,
       };
     },
