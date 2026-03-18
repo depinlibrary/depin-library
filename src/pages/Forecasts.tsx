@@ -819,9 +819,9 @@ const Forecasts = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
 
-      {/* Polymarket-style Hero with Auto-Slide */}
+      {/* Polymarket-style Hero with Auto-Slide — uses unfiltered data */}
       <HeroSection
-        forecasts={forecasts}
+        forecasts={heroForecastsData}
         trendingTopics={trendingTopics}
         user={user}
         setShowCreate={setShowCreate}
