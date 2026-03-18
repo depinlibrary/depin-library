@@ -690,9 +690,21 @@ const Forecasts = () => {
     staleTime: 5 * 60_000,
   });
 
-  // Unfiltered top forecasts for hero section (not affected by filters)
-  const { data: heroData } = useForecasts("votes", 1, 10);
-  const heroForecastsData = heroData?.forecasts || [];
+  // Unfiltered top forecasts for hero section — recent & high-vote
+  const { data: heroDataVotes } = useForecasts("votes", 1, 5, undefined, undefined, "active");
+  const { data: heroDataNew } = useForecasts("newest", 1, 5, undefined, undefined, "active");
+  const heroForecastsData = useMemo(() => {
+    const seen = new Set<string>();
+    const merged: Forecast[] = [];
+    // Interleave high-vote and newest
+    const vList = heroDataVotes?.forecasts || [];
+    const nList = heroDataNew?.forecasts || [];
+    for (let i = 0; i < Math.max(vList.length, nList.length); i++) {
+      if (vList[i] && !seen.has(vList[i].id)) { seen.add(vList[i].id); merged.push(vList[i]); }
+      if (nList[i] && !seen.has(nList[i].id)) { seen.add(nList[i].id); merged.push(nList[i]); }
+    }
+    return merged.slice(0, 10);
+  }, [heroDataVotes, heroDataNew]);
 
   // Stats
   const stats = useMemo(() => {
