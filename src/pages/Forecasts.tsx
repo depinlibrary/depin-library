@@ -72,54 +72,53 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
       transition={{ delay: index * 0.05, duration: 0.4 }}
       className="group relative rounded-xl border border-border bg-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20 h-full flex flex-col"
     >
-      <div className="p-4 flex-1 flex flex-col">
+      <div className="p-5 flex-1 flex flex-col">
         {/* Header row: logos + time */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <div className="flex items-center -space-x-1.5">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2.5">
+            <div className="flex items-center -space-x-2">
               {forecast.project_a_logo_url ? (
-                <img src={forecast.project_a_logo_url} alt={forecast.project_a_name} className="w-6 h-6 rounded-lg object-contain border border-card bg-secondary relative z-10" />
+                <img src={forecast.project_a_logo_url} alt={forecast.project_a_name} className="w-7 h-7 rounded-lg object-contain border border-card bg-secondary relative z-10" />
               ) : (
-                <span className="w-6 h-6 rounded-lg flex items-center justify-center text-[10px] border border-card bg-secondary relative z-10">{forecast.project_a_logo_emoji || "⬡"}</span>
+                <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs border border-card bg-secondary relative z-10">{forecast.project_a_logo_emoji || "⬡"}</span>
               )}
               {forecast.project_b_name && (
                 forecast.project_b_logo_url ? (
-                  <img src={forecast.project_b_logo_url} alt={forecast.project_b_name} className="w-6 h-6 rounded-lg object-contain border border-card bg-secondary relative z-0" />
+                  <img src={forecast.project_b_logo_url} alt={forecast.project_b_name} className="w-7 h-7 rounded-lg object-contain border border-card bg-secondary relative z-0" />
                 ) : (
-                  <span className="w-6 h-6 rounded-lg flex items-center justify-center text-[10px] border border-card bg-secondary relative z-0">{forecast.project_b_logo_emoji || "⬡"}</span>
+                  <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs border border-card bg-secondary relative z-0">{forecast.project_b_logo_emoji || "⬡"}</span>
                 )
               )}
             </div>
-            <div className="flex items-center gap-1">
-              <Link to={`/project/${forecast.project_a_slug}`} className="text-[10px] font-medium text-muted-foreground hover:text-foreground transition-colors">{forecast.project_a_name}</Link>
+            <div className="flex items-center gap-1.5">
+              <Link to={`/project/${forecast.project_a_slug}`} className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">{forecast.project_a_name}</Link>
               {forecast.project_b_name && (
                 <>
-                  <span className="text-muted-foreground/30 text-[9px]">vs</span>
-                  <Link to={`/project/${forecast.project_b_slug}`} className="text-[10px] font-medium text-muted-foreground hover:text-foreground transition-colors">{forecast.project_b_name}</Link>
+                  <span className="text-muted-foreground/40 text-[10px]">vs</span>
+                  <Link to={`/project/${forecast.project_b_slug}`} className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">{forecast.project_b_name}</Link>
                 </>
               )}
             </div>
           </div>
-          <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded ${isEnded ? 'bg-destructive/10 text-destructive' : 'bg-green-500/10 text-green-600 dark:text-green-400'}`}>
+          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${isEnded ? 'bg-destructive/10 text-destructive' : 'bg-green-500/10 text-green-600 dark:text-green-400'}`}>
             {timeLeft}
           </span>
         </div>
 
-        {/* Title only — no description */}
+        {/* Title only */}
         <Link to={`/forecasts/${forecast.id}`} className="block mb-auto">
-          <h3 className="text-[13px] font-semibold text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors duration-200">
+          <h3 className="text-sm font-semibold text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors duration-200">
             {forecast.title}
           </h3>
         </Link>
 
-        {/* Polymarket-style percentage + bar */}
-        <div className="mt-4 space-y-2">
+        {/* Percentage + bar */}
+        <div className="mt-5 space-y-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-lg font-bold text-foreground">{yesPct.toFixed(0)}% chance</span>
-            <span className="text-[10px] text-muted-foreground">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</span>
+            <span className="text-xl font-bold text-foreground">{yesPct.toFixed(0)}% chance</span>
+            <span className="text-xs text-muted-foreground">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</span>
           </div>
-          {/* Thin percentage bar */}
-          <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+          <div className="h-2 rounded-full bg-secondary overflow-hidden">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${yesPct}%` }}
@@ -130,12 +129,12 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
         </div>
       </div>
 
-      {/* Polymarket-style standalone buttons */}
+      {/* Standalone vote buttons */}
       {!isEnded ? (
-        <div className="px-4 pb-4 pt-1 flex gap-2">
+        <div className="px-5 pb-5 pt-1 flex gap-2.5">
           <button
             onClick={() => isAuthenticated ? onVote(forecast.id, "yes") : toast.error("Sign in to vote")}
-            className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all duration-200 ${
+            className={`flex-1 rounded-lg py-2.5 text-sm font-bold transition-all duration-200 ${
               forecast.user_vote === "yes"
                 ? "bg-primary text-primary-foreground"
                 : "bg-primary/10 text-primary hover:bg-primary/20"
@@ -145,7 +144,7 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
           </button>
           <button
             onClick={() => isAuthenticated ? onVote(forecast.id, "no") : toast.error("Sign in to vote")}
-            className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all duration-200 ${
+            className={`flex-1 rounded-lg py-2.5 text-sm font-bold transition-all duration-200 ${
               forecast.user_vote === "no"
                 ? "bg-destructive text-destructive-foreground"
                 : "bg-destructive/10 text-destructive hover:bg-destructive/20"
@@ -155,12 +154,12 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
           </button>
         </div>
       ) : (
-        <div className={`flex items-center justify-between px-4 py-3 border-t border-border ${finalResult === "yes" ? "bg-primary/5" : "bg-destructive/5"}`}>
-          <span className={`text-xs font-bold ${finalResult === "yes" ? "text-primary" : "text-destructive"}`}>
+        <div className={`flex items-center justify-between px-5 py-3.5 border-t border-border ${finalResult === "yes" ? "bg-primary/5" : "bg-destructive/5"}`}>
+          <span className={`text-sm font-bold ${finalResult === "yes" ? "text-primary" : "text-destructive"}`}>
             Resolved: {finalResult === "yes" ? "Yes" : "No"}
           </span>
           {forecast.user_vote && (
-            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+            <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${
               forecast.user_vote === finalResult ? "bg-green-500/10 text-green-600 dark:text-green-400" : "bg-orange-500/10 text-orange-600 dark:text-orange-400"
             }`}>
               {forecast.user_vote === finalResult ? "✓ Correct" : "✗ Wrong"}
