@@ -748,79 +748,80 @@ const Forecasts = () => {
 
       {/* Controls */}
       <section className="sticky top-16 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
-        <div className="container mx-auto px-4 py-3 space-y-2.5">
-          {/* Row 1: Search + dropdown filters */}
-          <div className="flex items-center gap-2">
+        <div className="container mx-auto px-4 py-3 space-y-3">
+          {/* Row 1: Search + actions */}
+          <div className="flex items-center gap-3">
             <div className="flex-1 min-w-0">
               <Input
-                placeholder="Search by title..."
+                placeholder="Search forecasts..."
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                className="h-9 w-full text-xs placeholder:text-muted-foreground/60 bg-secondary/50 border-border"
+                className="h-10 w-full text-sm placeholder:text-muted-foreground/60 bg-secondary/50 border-border"
               />
             </div>
-            <Select value={sort} onValueChange={(v) => { setSort(v as ForecastSortOption); setPage(1); }}>
-              <SelectTrigger className="h-9 w-[130px] text-[11px] bg-secondary/50 border-border shrink-0">
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent position="popper" side="bottom" sideOffset={4}>
-                {sortOptions.map(({ value, label }) => (
-                  <SelectItem key={value} value={value}>{label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v as ForecastStatusFilter); setPage(1); }}>
-              <SelectTrigger className="h-9 w-[120px] text-[11px] bg-secondary/50 border-border shrink-0">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent position="popper" side="bottom" sideOffset={4}>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="ended">Ended</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={projectFilter || "all"} onValueChange={(v) => { setProjectFilter(v === "all" ? "" : v); setPage(1); }}>
-              <SelectTrigger className="h-9 w-[160px] text-[11px] bg-secondary/50 border-border shrink-0">
-                <Filter className="h-3 w-3 mr-1 text-muted-foreground shrink-0" />
-                <SelectValue placeholder="All Projects" />
-              </SelectTrigger>
-              <SelectContent position="popper" side="bottom" sideOffset={4}>
-                <SelectItem value="all">All Projects</SelectItem>
-                {projects.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    <span className="flex items-center gap-2">
-                      {p.logo_url ? (
-                        <img src={p.logo_url} alt={p.name} className="w-4 h-4 rounded-[7px] overflow-hidden object-contain" />
-                      ) : (
-                        <span className="w-4 h-4 flex items-center justify-center text-xs">{p.logo_emoji}</span>
-                      )}
-                      {p.name}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {projectFilter && (
-              <button
-                onClick={() => { setProjectFilter(""); setPage(1); }}
-                className="flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1.5 text-[11px] font-medium text-primary hover:bg-primary/15 transition-colors whitespace-nowrap shrink-0"
-              >
-                {projects.find(p => p.id === projectFilter)?.name}
-                <X className="h-3 w-3" />
-              </button>
-            )}
+            <div className="flex items-center gap-2 shrink-0">
+              <Select value={sort} onValueChange={(v) => { setSort(v as ForecastSortOption); setPage(1); }}>
+                <SelectTrigger className="h-10 w-[140px] text-xs bg-secondary/50 border-border">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent position="popper" side="bottom" sideOffset={4}>
+                  {sortOptions.map(({ value, label }) => (
+                    <SelectItem key={value} value={value}>{label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v as ForecastStatusFilter); setPage(1); }}>
+                <SelectTrigger className="h-10 w-[120px] text-xs bg-secondary/50 border-border">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent position="popper" side="bottom" sideOffset={4}>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="ended">Ended</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={projectFilter || "all"} onValueChange={(v) => { setProjectFilter(v === "all" ? "" : v); setPage(1); }}>
+                <SelectTrigger className="h-10 w-[150px] text-xs bg-secondary/50 border-border">
+                  <SelectValue placeholder="All Projects" />
+                </SelectTrigger>
+                <SelectContent position="popper" side="bottom" sideOffset={4}>
+                  <SelectItem value="all">All Projects</SelectItem>
+                  {projects.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      <span className="flex items-center gap-2">
+                        {p.logo_url ? (
+                          <img src={p.logo_url} alt={p.name} className="w-4 h-4 rounded-[7px] overflow-hidden object-contain" />
+                        ) : (
+                          <span className="w-4 h-4 flex items-center justify-center text-xs">{p.logo_emoji}</span>
+                        )}
+                        {p.name}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {projectFilter && (
+                <button
+                  onClick={() => { setProjectFilter(""); setPage(1); }}
+                  className="flex items-center gap-1 rounded-md bg-primary/10 px-2.5 py-2 text-xs font-medium text-primary hover:bg-primary/15 transition-colors whitespace-nowrap"
+                >
+                  {projects.find(p => p.id === projectFilter)?.name}
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
             {user ? (
-              <Button onClick={() => setShowCreate(true)} size="sm" className="h-9 gap-1.5 shrink-0 text-xs">
-                <Plus className="h-3.5 w-3.5" /> Create Forecast
+              <Button onClick={() => setShowCreate(true)} size="sm" className="h-10 gap-1.5 shrink-0 text-sm px-4">
+                <Plus className="h-4 w-4" /> Create
               </Button>
             ) : (
-              <Link to="/auth" className="inline-flex items-center gap-1.5 shrink-0 rounded-md bg-primary px-3 h-9 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors">
-                <LogIn className="h-3.5 w-3.5" /> Sign in
+              <Link to="/auth" className="inline-flex items-center shrink-0 rounded-md bg-primary px-5 h-10 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors">
+                Sign in
               </Link>
             )}
           </div>
           {/* Row 2: Topic sub-filters */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5">
+          <div className="flex items-center gap-2 overflow-x-auto pb-0.5">
             {[
               { value: "", label: "All" },
               { value: "token_price", label: "Token Price" },
@@ -833,7 +834,7 @@ const Forecasts = () => {
               <button
                 key={topic.value}
                 onClick={() => { setTopicFilter(topic.value); setPage(1); }}
-                className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-medium transition-all ${
+                className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-medium transition-all ${
                   topicFilter === topic.value
                     ? "bg-primary text-primary-foreground"
                     : "bg-secondary/60 text-muted-foreground hover:bg-secondary hover:text-foreground"
