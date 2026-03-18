@@ -164,12 +164,12 @@ const BillboardHero = ({
   const topGainers = [...projects].
   filter((p) => marketData[p.id]?.price_change_24h && (marketData[p.id]?.price_change_24h || 0) > 0).
   sort((a, b) => (marketData[b.id]?.price_change_24h || 0) - (marketData[a.id]?.price_change_24h || 0)).
-  slice(0, 3);
+  slice(0, 5);
 
   const topLosers = [...projects].
   filter((p) => marketData[p.id]?.price_change_24h && (marketData[p.id]?.price_change_24h || 0) < 0).
   sort((a, b) => (marketData[a.id]?.price_change_24h || 0) - (marketData[b.id]?.price_change_24h || 0)).
-  slice(0, 3);
+  slice(0, 5);
 
   const totalMarketCap = Object.values(marketData).reduce((sum, d) => sum + (d.market_cap_usd || 0), 0);
   const changes = Object.values(marketData).filter((d) => d.price_change_24h !== null);
