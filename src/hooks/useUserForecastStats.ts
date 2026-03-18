@@ -114,6 +114,7 @@ export function useUserForecastStats(userId: string | undefined) {
         incorrectVotes: incorrect,
         pendingVotes: pending,
         accuracy: correct + incorrect > 0 ? Math.round((correct / (correct + incorrect)) * 100) : 0,
+        forecastsCreated: createdCount || 0,
         history,
       };
     },
