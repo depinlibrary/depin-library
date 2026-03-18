@@ -463,11 +463,11 @@ const HeroSection = ({ forecasts, trendingTopics, user, setShowCreate }: {
           >
             {/* Top Forecasts */}
             <div className="rounded-2xl border border-border bg-card overflow-hidden flex-1 flex flex-col min-h-0">
-              <div className="px-5 py-3.5 flex items-center justify-between border-b border-border shrink-0">
+              <div className="px-5 py-3.5 flex items-center justify-between shrink-0">
                 <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Top Forecasts</h3>
                 <Link to="/forecasts" className="text-xs text-muted-foreground hover:text-primary transition-colors">View all →</Link>
               </div>
-              <div className="divide-y divide-border flex-1 overflow-y-auto">
+              <div className="flex-1 overflow-y-auto">
                 {forecasts.slice(0, 5).map((f, i) => {
                   const fTotal = f.total_votes_yes + f.total_votes_no;
                   const fYesPct = fTotal > 0 ? (f.total_votes_yes / fTotal) * 100 : 50;
@@ -503,14 +503,14 @@ const HeroSection = ({ forecasts, trendingTopics, user, setShowCreate }: {
               </div>
             </div>
 
-            {/* Trending Topics */}
+            {/* Trending Projects */}
             {trendingTopics.length > 0 && (
               <div className="rounded-2xl border border-border bg-card overflow-hidden shrink-0">
-                <div className="px-5 py-3.5 flex items-center justify-between border-b border-border">
-                  <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Hot Topics</h3>
-                  <Flame className="h-4 w-4 text-destructive/60" />
+                <div className="px-5 py-3.5 flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Trending Projects</h3>
+                  <TrendingUp className="h-4 w-4 text-primary/60" />
                 </div>
-                <div className="divide-y divide-border">
+                <div>
                   {trendingTopics.map((project: any, i: number) => (
                     <Link key={project.id} to={`/project/${project.slug}`} className="flex items-center gap-3 px-5 py-2.5 hover:bg-secondary/30 transition-colors">
                       <span className="text-xs font-bold text-muted-foreground/50 w-4 shrink-0">{i + 1}</span>
@@ -524,7 +524,7 @@ const HeroSection = ({ forecasts, trendingTopics, user, setShowCreate }: {
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
                         <span className="text-[10px] font-medium text-muted-foreground">{project.totalVotes} votes</span>
-                        <Flame className="h-3 w-3 text-destructive/50" />
+                        <TrendingUp className="h-3 w-3 text-primary/50" />
                       </div>
                     </Link>
                   ))}
@@ -690,9 +690,21 @@ const Forecasts = () => {
     staleTime: 5 * 60_000,
   });
 
-  // Unfiltered top forecasts for hero section (not affected by filters)
-  const { data: heroData } = useForecasts("votes", 1, 10);
-  const heroForecastsData = heroData?.forecasts || [];
+  // Unfiltered top forecasts for hero section — recent & high-vote
+  const { data: heroDataVotes } = useForecasts("votes", 1, 5, undefined, undefined, "active");
+  const { data: heroDataNew } = useForecasts("newest", 1, 5, undefined, undefined, "active");
+  const heroForecastsData = useMemo(() => {
+    const seen = new Set<string>();
+    const merged: Forecast[] = [];
+    // Interleave high-vote and newest
+    const vList = heroDataVotes?.forecasts || [];
+    const nList = heroDataNew?.forecasts || [];
+    for (let i = 0; i < Math.max(vList.length, nList.length); i++) {
+      if (vList[i] && !seen.has(vList[i].id)) { seen.add(vList[i].id); merged.push(vList[i]); }
+      if (nList[i] && !seen.has(nList[i].id)) { seen.add(nList[i].id); merged.push(nList[i]); }
+    }
+    return merged.slice(0, 10);
+  }, [heroDataVotes, heroDataNew]);
 
   // Stats
   const stats = useMemo(() => {
@@ -820,8 +832,9 @@ const Forecasts = () => {
               </Link>
             )}
           </div>
-          {/* Row 2: Topic sub-filters */}
+          {/* Row 2: All Markets sub-filters */}
           <div className="flex items-center gap-2 overflow-x-auto pb-0.5">
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0 mr-1">All Markets</span>
             {[
               { value: "", label: "All" },
               { value: "token_price", label: "Token Price" },

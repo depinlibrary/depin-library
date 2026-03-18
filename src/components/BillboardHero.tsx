@@ -427,8 +427,8 @@ const BillboardHero = ({
                </div>
              </motion.div>
 
-             {/* ── Top Gainers (spans 2 cols) ── */}
-             <motion.div variants={fadeUp} className="col-span-2 rounded-lg border border-border bg-card/40 backdrop-blur-md p-4">
+             {/* ── Top Gainers (spans 1 col on 6-grid) ── */}
+             <motion.div variants={fadeUp} className="col-span-2 sm:col-span-2 lg:col-span-3 rounded-lg border border-border bg-card/40 backdrop-blur-md p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <ArrowUpRight className="h-4 w-4 text-neon-green" />
                   <span className="text-sm font-semibold text-foreground">Top Gainers</span>
@@ -436,26 +436,23 @@ const BillboardHero = ({
                     View all →
                   </Link>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {topGainers.map((p, i) => {
                    const m = marketData[p.id];
+                   const change = m?.price_change_24h || 0;
                    return (
                      <Link
                        key={p.id}
                        to={`/project/${p.slug}`}
                        className="group flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-secondary/50">
-                       
                        <span className="text-xs font-bold text-muted-foreground w-4 text-center">{i + 1}</span>
                        <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="sm" />
                        <div className="min-w-0 flex-1">
                          <p className="text-sm font-semibold text-foreground truncate">{p.name}</p>
                        </div>
-                       <span className="hidden sm:block"><MiniSparkline data={m?.sparkline_7d || null} positive={true} /></span>
                        <div className="text-right shrink-0">
                          <p className="text-xs font-medium text-muted-foreground tabular-nums">{formatPrice(m?.price_usd || null)}</p>
-                         <p className="text-xs font-bold text-neon-green tabular-nums">
-                           +{(m?.price_change_24h || 0).toFixed(1)}%
-                         </p>
+                         <p className="text-xs font-bold text-neon-green tabular-nums">+{change.toFixed(1)}%</p>
                        </div>
                      </Link>);
                  })}
@@ -463,8 +460,8 @@ const BillboardHero = ({
                 </div>
               </motion.div>
 
-             {/* ── Top Losers (spans 2 cols) ── */}
-             <motion.div variants={fadeUp} className="col-span-2 rounded-lg border border-border bg-card/40 backdrop-blur-md p-4">
+             {/* ── Top Losers ── */}
+             <motion.div variants={fadeUp} className="col-span-2 sm:col-span-2 lg:col-span-3 rounded-lg border border-border bg-card/40 backdrop-blur-md p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <ArrowDownRight className="h-4 w-4 text-destructive" />
                   <span className="text-sm font-semibold text-foreground">Top Losers</span>
@@ -472,26 +469,23 @@ const BillboardHero = ({
                     View all →
                   </Link>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {topLosers.map((p, i) => {
                    const m = marketData[p.id];
+                   const change = m?.price_change_24h || 0;
                    return (
                      <Link
                        key={p.id}
                        to={`/project/${p.slug}`}
                        className="group flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-secondary/50">
-                       
                        <span className="text-xs font-bold text-muted-foreground w-4 text-center">{i + 1}</span>
                        <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="sm" />
                        <div className="min-w-0 flex-1">
                          <p className="text-sm font-semibold text-foreground truncate">{p.name}</p>
                        </div>
-                       <span className="hidden sm:block"><MiniSparkline data={m?.sparkline_7d || null} positive={false} /></span>
                        <div className="text-right shrink-0">
                          <p className="text-xs font-medium text-muted-foreground tabular-nums">{formatPrice(m?.price_usd || null)}</p>
-                         <p className="text-xs font-bold text-destructive tabular-nums">
-                           {(m?.price_change_24h || 0).toFixed(1)}%
-                         </p>
+                         <p className="text-xs font-bold text-destructive tabular-nums">{change.toFixed(1)}%</p>
                        </div>
                      </Link>);
                  })}
