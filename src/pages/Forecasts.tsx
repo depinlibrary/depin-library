@@ -516,9 +516,9 @@ const HeroSection = ({ forecasts, trendingTopics, user, setShowCreate }: {
 
             </div>
 
-            {/* Slide dots - outside the card, centered */}
+            {/* Slide dots - left aligned */}
             {heroForecasts.length > 1 && (
-              <div className="flex items-center justify-center gap-2 mt-3">
+              <div className="flex items-center justify-start gap-2 mt-3">
                 {heroForecasts.map((_, i) => (
                   <button
                     key={i}
