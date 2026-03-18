@@ -775,6 +775,10 @@ const Forecasts = () => {
     staleTime: 5 * 60_000,
   });
 
+  // Unfiltered top forecasts for hero section (not affected by filters)
+  const { data: heroData } = useForecasts("votes", 1, 10);
+  const heroForecastsData = heroData?.forecasts || [];
+
   // Stats
   const stats = useMemo(() => {
     const totalVotes = forecasts.reduce((sum, f) => sum + f.total_votes_yes + f.total_votes_no, 0);
