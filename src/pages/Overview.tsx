@@ -258,23 +258,21 @@ const Overview = () => {
                     <div className="p-5 flex-1 flex flex-col">
                       {/* Header: logos + status */}
                       <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-2.5">
-                          <div className="flex items-center -space-x-2">
-                            <ProjectLogo
-                              logoUrl={forecast.project_a_logo_url}
-                              logoEmoji={forecast.project_a_logo_emoji || "⬡"}
-                              name={forecast.project_a_name || ""}
-                              size="xs" />
-                            {forecast.project_b_name && (
+                        <div className="flex items-center gap-1.5">
+                          <ProjectLogo
+                            logoUrl={forecast.project_a_logo_url}
+                            logoEmoji={forecast.project_a_logo_emoji || "⬡"}
+                            name={forecast.project_a_name || ""}
+                            size="xs" />
+                          {forecast.project_b_name && (
+                            <>
+                              <span className="text-[10px] font-bold text-muted-foreground uppercase">vs</span>
                               <ProjectLogo
                                 logoUrl={forecast.project_b_logo_url}
                                 logoEmoji={forecast.project_b_logo_emoji || "⬡"}
                                 name={forecast.project_b_name}
                                 size="xs" />
-                            )}
-                          </div>
-                          {forecast.project_b_name && (
-                            <span className="text-[10px] font-bold text-muted-foreground uppercase">vs</span>
+                            </>
                           )}
                         </div>
                         <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${isEnded ? 'bg-destructive/10 text-destructive' : 'bg-green-500/10 text-green-600 dark:text-green-400'}`}>

@@ -5,6 +5,7 @@ import CompareWithButton from "@/components/CompareWithButton";
 import { useProject } from "@/hooks/useProjects";
 import ProjectRatings from "@/components/ProjectRatings";
 import ReviewSection from "@/components/ReviewSection";
+import ProjectForecasts from "@/components/ProjectForecasts";
 import SentimentBadge from "@/components/SentimentBadge";
 import ProjectLogo from "@/components/ProjectLogo";
 import TokenPriceBadge from "@/components/TokenPriceBadge";
@@ -81,7 +82,10 @@ const ProjectDetail = () => {
             <Link to="/explore" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
               <ArrowLeft className="h-4 w-4" /> Back to explore
             </Link>
-            <ShareButtons title={project.name} description={project.tagline} />
+            <div className="flex items-center gap-2">
+              <CompareWithButton currentProjectId={project.id} currentProjectName={project.name} currentCategory={project.category} />
+              <ShareButtons title={project.name} description={project.tagline} />
+            </div>
           </motion.div>
 
           {/* Hero */}
@@ -97,18 +101,13 @@ const ProjectDetail = () => {
                      <span className="flex items-center gap-1 rounded-lg border border-primary/30 bg-primary/10 px-2 py-1 text-sm font-semibold text-primary">
                        <Star className="h-3.5 w-3.5 fill-primary" />
                        {overallRating.toFixed(1)}
-                       <span className="text-xs font-normal text-muted-foreground">({ratingsData?.averages?.count})</span>
                      </span>
                    )}
                 </div>
                 <p className="mt-1 text-sm sm:text-base text-muted-foreground">{project.tagline}</p>
-                <div className="flex items-center gap-2 lg:justify-end mt-2">
-                   <CompareWithButton currentProjectId={project.id} currentProjectName={project.name} currentCategory={project.category} />
-                 </div>
               </div>
             </div>
 
-            {/* Tags row */}
             <div className="flex flex-wrap gap-2">
               <span className={`rounded-md border px-3 py-1 text-xs font-medium ${statusColors[project.status] || statusColors.development}`}>
                 ● {project.status}
@@ -158,12 +157,16 @@ const ProjectDetail = () => {
                   <TabsList className="mb-4 w-full justify-start bg-card border border-border">
                     <TabsTrigger value="ratings">Ratings</TabsTrigger>
                     <TabsTrigger value="reviews">Reviews</TabsTrigger>
+                    <TabsTrigger value="forecasts">Forecasts</TabsTrigger>
                   </TabsList>
                   <TabsContent value="ratings">
                     <ProjectRatings projectId={project.id} projectName={project.name} />
                   </TabsContent>
                   <TabsContent value="reviews">
                     <ReviewSection projectId={project.id} projectName={project.name} projectSlug={project.slug} />
+                  </TabsContent>
+                  <TabsContent value="forecasts">
+                    <ProjectForecasts projectId={project.id} projectName={project.name} />
                   </TabsContent>
                 </Tabs>
               </motion.div>
@@ -199,9 +202,9 @@ const ProjectDetail = () => {
                       </span>
                     )}
                   </div>
-                  <div className="h-32">
+                  <div className="h-32 -mx-2">
                     <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={(sparkline as number[]).map((v, i) => ({ idx: i, price: v }))} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
+                      <AreaChart data={(sparkline as number[]).map((v, i) => ({ idx: i, price: v }))} margin={{ top: 5, right: 5, left: -10, bottom: 0 }}>
                         <defs>
                           <linearGradient id="priceGrad7d" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="5%" stopColor={(marketData?.price_change_24h ?? 0) >= 0 ? "hsl(var(--neon-green))" : "hsl(var(--destructive))"} stopOpacity={0.25} />
