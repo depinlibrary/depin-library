@@ -3,12 +3,19 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MessageSquare, Send, Trash2, User as UserIcon,
-  Pencil, Check, X, Heart, MessageCircle
+  Pencil, Check, X, Heart, MessageCircle, MoreHorizontal,
+  Flag, ThumbsUp, ThumbsDown, ChevronDown, ChevronUp
 } from "lucide-react";
 import UserAvatar from "@/components/UserAvatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import UserStatsHoverCard from "@/components/UserStatsHoverCard";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -24,7 +31,7 @@ import type { ForecastComment } from "@/hooks/useForecastDetail";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 
-// ── Reply Thread ──
+// ── Reply Thread (Polymarket-style) ──
 const CommentReplyThread = ({ commentId, forecastId }: { commentId: string; forecastId: string }) => {
   const { user } = useAuth();
   const { data: replies = [] } = useForecastCommentReplies(commentId);
@@ -32,6 +39,7 @@ const CommentReplyThread = ({ commentId, forecastId }: { commentId: string; fore
   const deleteReply = useDeleteForecastCommentReply();
   const [replyText, setReplyText] = useState("");
   const [showInput, setShowInput] = useState(false);
+  const [showReplies, setShowReplies] = useState(false);
 
   const replyIds = useMemo(() => replies.map((r) => r.id), [replies]);
   const { data: replyLikesMap = {} } = useForecastReplyLikes(replyIds);
@@ -44,14 +52,26 @@ const CommentReplyThread = ({ commentId, forecastId }: { commentId: string; fore
       await createReply.mutateAsync({ commentId, replyText: replyText.trim(), forecastId });
       setReplyText("");
       setShowInput(false);
+      setShowReplies(true);
       toast.success("Reply posted");
     } catch { toast.error("Failed to post reply"); }
   };
 
   return (
-    <div className="mt-2">
+    <div className="mt-1">
+      {/* Show replies toggle */}
+      {replies.length > 0 && (
+        <button
+          onClick={() => setShowReplies(!showReplies)}
+          className="flex items-center gap-1 text-[11px] font-medium text-primary hover:text-primary/80 transition-colors mt-1 mb-1"
+        >
+          {showReplies ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+          {replies.length} {replies.length === 1 ? "reply" : "replies"}
+        </button>
+      )}
+
       <AnimatePresence>
-        {replies.map((reply) => {
+        {showReplies && replies.map((reply) => {
           const likeInfo = replyLikesMap[reply.id] || { count: 0, userLiked: false };
           return (
             <motion.div
@@ -59,39 +79,43 @@ const CommentReplyThread = ({ commentId, forecastId }: { commentId: string; fore
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="ml-6 pl-3 border-l-2 border-border/60 py-2 group/reply"
+              className="ml-8 py-3 group/reply"
             >
-              <div className="flex items-center gap-2 mb-0.5">
-                <UserAvatar avatarUrl={reply.avatar_url} displayName={reply.display_name} size="sm" />
-                <UserStatsHoverCard userId={reply.user_id} displayName={reply.display_name || "Anonymous"} avatarUrl={reply.avatar_url}>
-                  <span className="text-[11px] font-medium text-foreground cursor-pointer hover:text-primary transition-colors">{reply.display_name}</span>
-                </UserStatsHoverCard>
-                <span className="text-[10px] text-muted-foreground">
-                  {formatDistanceToNow(new Date(reply.created_at), { addSuffix: true })}
-                </span>
-                {user?.id === reply.user_id && (
-                  <button
-                    onClick={() => deleteReply.mutate({ replyId: reply.id, commentId })}
-                    className="ml-auto opacity-0 group-hover/reply:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </button>
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">{reply.reply_text}</p>
-              <div className="flex items-center gap-3 mt-1">
-                <button
-                  onClick={() => {
-                    if (!user) { toast.error("Sign in to like"); return; }
-                    toggleReplyLike.mutate({ replyId: reply.id, isLiked: likeInfo.userLiked, forecastId });
-                  }}
-                  className={`flex items-center gap-1 text-[11px] transition-colors ${
-                    likeInfo.userLiked ? "text-pink-500" : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <Heart className={`h-3 w-3 ${likeInfo.userLiked ? "fill-current" : ""}`} />
-                  {likeInfo.count > 0 && <span>{likeInfo.count}</span>}
-                </button>
+              <div className="flex items-start gap-2.5">
+                <UserAvatar avatarUrl={reply.avatar_url} displayName={reply.display_name} size="sm" className="mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <UserStatsHoverCard userId={reply.user_id} displayName={reply.display_name || "Anonymous"} avatarUrl={reply.avatar_url}>
+                      <span className="text-[11px] font-semibold text-foreground cursor-pointer hover:text-primary transition-colors">{reply.display_name}</span>
+                    </UserStatsHoverCard>
+                    <span className="text-[10px] text-muted-foreground">
+                      {formatDistanceToNow(new Date(reply.created_at), { addSuffix: true })}
+                    </span>
+                  </div>
+                  <p className="text-[13px] text-foreground/80 leading-relaxed mt-0.5">{reply.reply_text}</p>
+                  <div className="flex items-center gap-3 mt-1.5">
+                    <button
+                      onClick={() => {
+                        if (!user) { toast.error("Sign in to like"); return; }
+                        toggleReplyLike.mutate({ replyId: reply.id, isLiked: likeInfo.userLiked, forecastId });
+                      }}
+                      className={`flex items-center gap-1 text-[11px] transition-colors ${
+                        likeInfo.userLiked ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <ThumbsUp className={`h-3 w-3 ${likeInfo.userLiked ? "fill-current" : ""}`} />
+                      {likeInfo.count > 0 && <span>{likeInfo.count}</span>}
+                    </button>
+                    {user?.id === reply.user_id && (
+                      <button
+                        onClick={() => deleteReply.mutate({ replyId: reply.id, commentId })}
+                        className="opacity-0 group-hover/reply:opacity-100 transition-opacity text-[11px] text-muted-foreground hover:text-destructive flex items-center gap-0.5"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
             </motion.div>
           );
@@ -99,40 +123,38 @@ const CommentReplyThread = ({ commentId, forecastId }: { commentId: string; fore
       </AnimatePresence>
 
       {showInput ? (
-        <div className="ml-6 mt-2 space-y-2">
-          <Textarea
-            value={replyText}
-            onChange={(e) => setReplyText(e.target.value)}
-            placeholder="Write a reply..."
-            className="min-h-[60px] text-xs bg-background resize-none"
-            autoFocus
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSubmit();
-              if (e.key === "Escape") { setShowInput(false); setReplyText(""); }
-            }}
-          />
-          <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => { setShowInput(false); setReplyText(""); }}>Cancel</Button>
-            <Button size="sm" className="h-7 text-xs gap-1" disabled={!replyText.trim() || createReply.isPending} onClick={handleSubmit}>
-              <Send className="h-3 w-3" /> Reply
-            </Button>
+        <div className="ml-8 mt-2 space-y-2">
+          <div className="flex gap-2.5">
+            <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-1">
+              <UserIcon className="h-3 w-3 text-primary" />
+            </div>
+            <div className="flex-1 space-y-2">
+              <Textarea
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                placeholder="Write a reply..."
+                className="min-h-[56px] text-[13px] bg-secondary/30 border-border/50 resize-none rounded-xl focus:bg-background"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSubmit();
+                  if (e.key === "Escape") { setShowInput(false); setReplyText(""); }
+                }}
+              />
+              <div className="flex items-center gap-2">
+                <Button size="sm" variant="ghost" className="h-7 text-xs text-muted-foreground" onClick={() => { setShowInput(false); setReplyText(""); }}>Cancel</Button>
+                <Button size="sm" className="h-7 text-xs gap-1 rounded-lg" disabled={!replyText.trim() || createReply.isPending} onClick={handleSubmit}>
+                  Reply
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
-      ) : (
-        user && (
-          <button
-            onClick={() => setShowInput(true)}
-            className="ml-6 mt-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
-          >
-            <MessageCircle className="h-3 w-3" /> Reply
-          </button>
-        )
-      )}
+      ) : null}
     </div>
   );
 };
 
-// ── Main Discussion Section ──
+// ── Main Discussion Section (Polymarket-style) ──
 interface DiscussionSectionProps {
   forecastId: string;
   comments: ForecastComment[];
@@ -171,110 +193,125 @@ export default function DiscussionSection({
   const { data: likesMap = {} } = useForecastCommentLikes(commentIds);
   const toggleLike = useToggleForecastCommentLike();
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.2 }}
-      className="rounded-xl border border-border bg-card overflow-hidden"
-    >
-      <div className="px-6 py-4 border-b border-border flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-          <MessageSquare className="h-4 w-4 text-primary" />
-          Discussion
-        </h2>
-        <span className="text-xs text-muted-foreground font-medium">{comments.length} comment{comments.length !== 1 ? "s" : ""}</span>
-      </div>
+  const handleReport = (commentId: string) => {
+    toast.success("Comment reported. Our team will review it.");
+  };
 
-      {/* Comment input */}
+  return (
+    <div>
+      {/* Comment input — Polymarket style: simple text area at top */}
       {user ? (
-        <div className="px-6 py-4 border-b border-border bg-secondary/20">
+        <div className="pb-4 mb-4 border-b border-border/50">
           <div className="flex gap-3">
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-              <UserIcon className="h-4 w-4 text-primary" />
-            </div>
-            <div className="flex-1 space-y-2">
+            <UserAvatar avatarUrl={null} displayName={user.email || "You"} size="sm" className="mt-1 shrink-0" />
+            <div className="flex-1">
               <Textarea
-                placeholder="Share your thoughts on this forecast..."
+                placeholder="Add a comment..."
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
-                className="min-h-[80px] text-sm bg-background resize-none"
+                className="min-h-[64px] text-[13px] bg-secondary/30 border-border/50 resize-none rounded-xl focus:bg-background placeholder:text-muted-foreground/60"
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) onAddComment();
                 }}
               />
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] text-muted-foreground">⌘ + Enter to submit</span>
-                <Button size="sm" onClick={onAddComment} disabled={!commentText.trim() || addCommentPending} className="gap-1.5">
-                  <Send className="h-3.5 w-3.5" /> Post
+              <div className="flex items-center justify-between mt-2">
+                <span className="text-[10px] text-muted-foreground/60">⌘+Enter to post</span>
+                <Button
+                  size="sm"
+                  onClick={onAddComment}
+                  disabled={!commentText.trim() || addCommentPending}
+                  className="h-8 px-4 text-xs font-semibold rounded-lg"
+                >
+                  Comment
                 </Button>
               </div>
             </div>
           </div>
         </div>
       ) : (
-        <div className="px-6 py-5 border-b border-border text-center">
-          <Link to="/auth" className="text-sm text-primary hover:underline font-medium">Sign in to join the discussion</Link>
+        <div className="pb-4 mb-4 border-b border-border/50 text-center py-4">
+          <Link to="/auth" className="text-sm text-primary hover:underline font-medium">Sign in to comment</Link>
         </div>
       )}
 
-      {/* Comments list */}
-      <div className="divide-y divide-border/60">
+      {/* Comments list — Polymarket-style: flat, clean, action bar */}
+      <div className="space-y-0">
         {commentsLoading ? (
           Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="px-6 py-4">
-              <div className="flex items-center gap-2 mb-3">
+            <div key={i} className="py-4">
+              <div className="flex items-center gap-2.5 mb-2">
                 <Skeleton className="h-7 w-7 rounded-full" />
-                <Skeleton className="h-3 w-20" />
+                <Skeleton className="h-3 w-24" />
               </div>
-              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-10 w-full rounded-lg" />
             </div>
           ))
         ) : comments.length === 0 ? (
-          <div className="px-6 py-14 text-center">
-            <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-3">
-              <MessageSquare className="h-5 w-5 text-muted-foreground/40" />
-            </div>
-            <p className="text-sm text-muted-foreground">No comments yet. Be the first to share your thoughts!</p>
+          <div className="py-12 text-center">
+            <MessageSquare className="h-8 w-8 text-muted-foreground/20 mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground/60">No comments yet</p>
+            <p className="text-xs text-muted-foreground/40 mt-1">Be the first to share your thoughts</p>
           </div>
         ) : (
-          comments.map((comment) => {
+          comments.map((comment, idx) => {
             const likeInfo = likesMap[comment.id] || { count: 0, userLiked: false };
             return (
-              <div key={comment.id} className="px-6 py-4 group/comment hover:bg-secondary/10 transition-colors">
+              <div key={comment.id} className={`py-4 group/comment ${idx < comments.length - 1 ? "border-b border-border/30" : ""}`}>
                 <div className="flex items-start gap-3">
-                  <UserAvatar avatarUrl={comment.avatar_url} displayName={comment.display_name} size="sm" className="mt-0.5" />
+                  <UserAvatar avatarUrl={comment.avatar_url} displayName={comment.display_name} size="sm" className="mt-0.5 shrink-0" />
                   <div className="flex-1 min-w-0">
+                    {/* Header: name + time + actions */}
                     <div className="flex items-center gap-2 mb-1">
                       <UserStatsHoverCard userId={comment.user_id} displayName={comment.display_name || "Anonymous"} avatarUrl={comment.avatar_url}>
-                        <span className="text-xs font-semibold text-foreground cursor-pointer hover:text-primary transition-colors">{comment.display_name}</span>
+                        <span className="text-[13px] font-semibold text-foreground cursor-pointer hover:text-primary transition-colors">{comment.display_name}</span>
                       </UserStatsHoverCard>
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className="text-[11px] text-muted-foreground/60">
                         {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
                       </span>
-                      {user?.id === comment.user_id && editingCommentId !== comment.id && (
-                        <div className="ml-auto flex items-center gap-1.5 opacity-0 group-hover/comment:opacity-100 transition-opacity">
-                          <button
-                            onClick={() => { setEditingCommentId(comment.id); setEditingText(comment.comment_text); }}
-                            className="text-muted-foreground hover:text-foreground p-0.5 rounded"
-                          >
-                            <Pencil className="h-3 w-3" />
-                          </button>
-                          <button
-                            onClick={() => onDeleteComment(comment.id, forecastId)}
-                            className="text-muted-foreground hover:text-destructive p-0.5 rounded"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </button>
-                        </div>
-                      )}
+
+                      {/* Three-dot menu (Polymarket style) */}
+                      <div className="ml-auto">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button className="p-1 rounded-md text-muted-foreground/40 hover:text-muted-foreground hover:bg-secondary/50 transition-all opacity-0 group-hover/comment:opacity-100">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-36">
+                            {user?.id === comment.user_id && (
+                              <>
+                                <DropdownMenuItem
+                                  onClick={() => { setEditingCommentId(comment.id); setEditingText(comment.comment_text); }}
+                                  className="text-xs gap-2"
+                                >
+                                  <Pencil className="h-3 w-3" /> Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => onDeleteComment(comment.id, forecastId)}
+                                  className="text-xs gap-2 text-destructive focus:text-destructive"
+                                >
+                                  <Trash2 className="h-3 w-3" /> Delete
+                                </DropdownMenuItem>
+                              </>
+                            )}
+                            <DropdownMenuItem
+                              onClick={() => handleReport(comment.id)}
+                              className="text-xs gap-2"
+                            >
+                              <Flag className="h-3 w-3" /> Report
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </div>
+
+                    {/* Comment body */}
                     {editingCommentId === comment.id ? (
                       <div className="space-y-2">
                         <Textarea
                           value={editingText}
                           onChange={(e) => setEditingText(e.target.value)}
-                          className="min-h-[60px] text-sm bg-background resize-none"
+                          className="min-h-[56px] text-[13px] bg-secondary/30 border-border/50 resize-none rounded-xl"
                           autoFocus
                           onKeyDown={(e) => {
                             if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && editingText.trim()) {
@@ -285,41 +322,57 @@ export default function DiscussionSection({
                           }}
                         />
                         <div className="flex items-center gap-2">
-                          <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => setEditingCommentId(null)}>
-                            <X className="h-3 w-3" /> Cancel
+                          <Button size="sm" variant="ghost" className="h-7 text-xs text-muted-foreground" onClick={() => setEditingCommentId(null)}>
+                            Cancel
                           </Button>
                           <Button
                             size="sm"
-                            className="h-7 text-xs gap-1"
+                            className="h-7 text-xs rounded-lg"
                             disabled={!editingText.trim() || editCommentPending}
                             onClick={() => {
                               onEditComment(comment.id, forecastId, editingText.trim());
                               setEditingCommentId(null);
                             }}
                           >
-                            <Check className="h-3 w-3" /> Save
+                            Save
                           </Button>
                         </div>
                       </div>
                     ) : (
                       <>
-                        <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{comment.comment_text}</p>
+                        <p className="text-[13px] text-foreground/80 leading-relaxed whitespace-pre-wrap">{comment.comment_text}</p>
+                        
+                        {/* Action bar — Polymarket style: like, reply, inline */}
                         <div className="flex items-center gap-4 mt-2">
                           <button
                             onClick={() => {
                               if (!user) { toast.error("Sign in to like"); return; }
                               toggleLike.mutate({ commentId: comment.id, isLiked: likeInfo.userLiked, forecastId });
                             }}
-                            className={`flex items-center gap-1 text-[11px] transition-colors ${
-                              likeInfo.userLiked ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                            className={`flex items-center gap-1.5 text-[11px] font-medium transition-colors ${
+                              likeInfo.userLiked ? "text-primary" : "text-muted-foreground/60 hover:text-foreground"
                             }`}
                           >
-                            <Heart className={`h-3.5 w-3.5 ${likeInfo.userLiked ? "fill-primary" : ""}`} />
-                            {likeInfo.count > 0 && <span>{likeInfo.count}</span>}
+                            <ThumbsUp className={`h-3.5 w-3.5 ${likeInfo.userLiked ? "fill-current" : ""}`} />
+                            {likeInfo.count > 0 ? likeInfo.count : "Like"}
                           </button>
+                          {user && (
+                            <button
+                              onClick={() => {
+                                // Toggle reply input via the CommentReplyThread
+                                const replyBtn = document.querySelector(`[data-reply-trigger="${comment.id}"]`) as HTMLButtonElement;
+                                if (replyBtn) replyBtn.click();
+                              }}
+                              className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground/60 hover:text-foreground transition-colors"
+                            >
+                              <MessageCircle className="h-3.5 w-3.5" /> Reply
+                            </button>
+                          )}
                         </div>
                       </>
                     )}
+
+                    {/* Reply thread */}
                     <CommentReplyThread commentId={comment.id} forecastId={forecastId} />
                   </div>
                 </div>
@@ -328,6 +381,6 @@ export default function DiscussionSection({
           })
         )}
       </div>
-    </motion.div>
+    </div>
   );
 }

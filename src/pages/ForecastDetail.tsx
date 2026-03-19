@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Clock, CalendarDays, Timer, Users, ExternalLink, Copy, ArrowUpRight, ArrowDownRight, ThumbsUp, ThumbsDown, Gauge, BarChart3, MessageSquare, Vote } from "lucide-react";
+import { ArrowLeft, Clock, CalendarDays, Timer, Users, ExternalLink, Copy, ArrowUpRight, ArrowDownRight, ThumbsUp, ThumbsDown, Gauge, FileText, MessageSquare, Vote } from "lucide-react";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -367,7 +367,7 @@ const ForecastDetail = () => {
               <Tabs defaultValue="overview" className="w-full">
                 <TabsList className="w-full rounded-none border-b border-border bg-transparent h-auto p-0">
                   <TabsTrigger value="overview" className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-3 text-xs font-semibold gap-1.5">
-                    <BarChart3 className="h-3.5 w-3.5" /> Overview
+                    <FileText className="h-3.5 w-3.5" /> Overview
                   </TabsTrigger>
                   <TabsTrigger value="comments" className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none py-3 text-xs font-semibold gap-1.5">
                     <MessageSquare className="h-3.5 w-3.5" /> Comments ({comments.length})
