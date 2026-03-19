@@ -101,14 +101,10 @@ const ProjectDetail = () => {
                      <span className="flex items-center gap-1 rounded-lg border border-primary/30 bg-primary/10 px-2 py-1 text-sm font-semibold text-primary">
                        <Star className="h-3.5 w-3.5 fill-primary" />
                        {overallRating.toFixed(1)}
-                       <span className="text-xs font-normal text-muted-foreground">({ratingsData?.averages?.count})</span>
                      </span>
                    )}
                 </div>
                 <p className="mt-1 text-sm sm:text-base text-muted-foreground">{project.tagline}</p>
-                <div className="flex items-center gap-2 lg:justify-end mt-2">
-                   <CompareWithButton currentProjectId={project.id} currentProjectName={project.name} currentCategory={project.category} />
-                 </div>
               </div>
             </div>
 
