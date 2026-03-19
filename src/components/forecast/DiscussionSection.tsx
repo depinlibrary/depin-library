@@ -191,6 +191,7 @@ export default function DiscussionSection({
   const commentIds = useMemo(() => comments.map((c) => c.id), [comments]);
   const { data: likesMap = {} } = useForecastCommentLikes(commentIds);
   const toggleLike = useToggleForecastCommentLike();
+  const [replyOpenFor, setReplyOpenFor] = useState<string | null>(null);
 
   const handleReport = (commentId: string) => {
     toast.success("Comment reported. Our team will review it.");
