@@ -50,7 +50,7 @@ const CommentReplyThread = ({ commentId, forecastId, showReplyInput, onToggleRep
     try {
       await createReply.mutateAsync({ commentId, replyText: replyText.trim(), forecastId });
       setReplyText("");
-      setShowInput(false);
+      onToggleReplyInput();
       setShowReplies(true);
       toast.success("Reply posted");
     } catch { toast.error("Failed to post reply"); }
