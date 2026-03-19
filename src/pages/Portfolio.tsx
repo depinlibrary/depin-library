@@ -609,9 +609,6 @@ const Portfolio = () => {
                 {/* Header row */}
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10">
-                      <Briefcase className="h-3.5 w-3.5 text-primary" />
-                    </div>
                     <div>
                       <h2 className="text-sm font-semibold text-foreground">Portfolio Value</h2>
                       <p className="text-[10px] text-muted-foreground">{holdings.length} asset{holdings.length !== 1 ? "s" : ""} tracked</p>
