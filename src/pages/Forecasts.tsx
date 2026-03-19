@@ -474,7 +474,7 @@ const HeroSection = ({ forecasts, trendingTopics, user, setShowCreate }: {
                 <Link to="/forecasts" className="text-xs text-muted-foreground hover:text-primary transition-colors">View all →</Link>
               </div>
               <div className="flex-1 overflow-y-auto">
-                {forecasts.slice(0, 5).map((f, i) => {
+                {topLiveForecasts.map((f, i) => {
                   const fTotal = f.total_votes_yes + f.total_votes_no;
                   const fYesPct = fTotal > 0 ? (f.total_votes_yes / fTotal) * 100 : 50;
                   const fIsEnded = new Date(f.end_date) <= new Date();
