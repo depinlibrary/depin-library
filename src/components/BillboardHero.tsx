@@ -529,7 +529,6 @@ const BillboardHero = ({
                           <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${isEnded ? 'bg-destructive/10 text-destructive' : 'bg-green-500/10 text-green-600 dark:text-green-400'}`}>
                             {isEnded ? "Ended" : "Live"}
                           </span>
-                          </span>
                         </div>
 
                         {/* Title */}
