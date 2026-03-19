@@ -140,7 +140,7 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
                 : "bg-primary/10 text-primary hover:bg-primary/20"
             }`}
           >
-            Yes {yesPct.toFixed(0)}¢
+            Yes
           </button>
           <button
             onClick={() => isAuthenticated ? onVote(forecast.id, "no") : toast.error("Sign in to vote")}
