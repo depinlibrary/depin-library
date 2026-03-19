@@ -108,7 +108,6 @@ const ProjectDetail = () => {
               </div>
             </div>
 
-            {/* Tags row */}
             <div className="flex flex-wrap gap-2">
               <span className={`rounded-md border px-3 py-1 text-xs font-medium ${statusColors[project.status] || statusColors.development}`}>
                 ● {project.status}
