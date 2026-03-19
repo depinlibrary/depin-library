@@ -82,7 +82,10 @@ const ProjectDetail = () => {
             <Link to="/explore" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
               <ArrowLeft className="h-4 w-4" /> Back to explore
             </Link>
-            <ShareButtons title={project.name} description={project.tagline} />
+            <div className="flex items-center gap-2">
+              <CompareWithButton currentProjectId={project.id} currentProjectName={project.name} currentCategory={project.category} />
+              <ShareButtons title={project.name} description={project.tagline} />
+            </div>
           </motion.div>
 
           {/* Hero */}
