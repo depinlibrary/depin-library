@@ -32,13 +32,12 @@ import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 
 // ── Reply Thread (Polymarket-style) ──
-const CommentReplyThread = ({ commentId, forecastId }: { commentId: string; forecastId: string }) => {
+const CommentReplyThread = ({ commentId, forecastId, showReplyInput, onToggleReplyInput }: { commentId: string; forecastId: string; showReplyInput: boolean; onToggleReplyInput: () => void }) => {
   const { user } = useAuth();
   const { data: replies = [] } = useForecastCommentReplies(commentId);
   const createReply = useCreateForecastCommentReply();
   const deleteReply = useDeleteForecastCommentReply();
   const [replyText, setReplyText] = useState("");
-  const [showInput, setShowInput] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
 
   const replyIds = useMemo(() => replies.map((r) => r.id), [replies]);
