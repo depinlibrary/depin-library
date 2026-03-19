@@ -921,11 +921,6 @@ const Portfolio = () => {
                 >
                   <tab.icon className="h-3.5 w-3.5" />
                   {tab.label}
-                  {tab.badge && tab.badge > 0 && (
-                    <span className="ml-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
-                      {tab.badge}
-                    </span>
-                  )}
                 </button>
               ))}
             </div>
