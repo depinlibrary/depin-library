@@ -121,7 +121,7 @@ const CommentReplyThread = ({ commentId, forecastId, showReplyInput, onToggleRep
         })}
       </AnimatePresence>
 
-      {showInput ? (
+      {showReplyInput ? (
         <div className="ml-8 mt-2 space-y-2">
           <div className="flex gap-2.5">
             <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-1">
@@ -136,11 +136,11 @@ const CommentReplyThread = ({ commentId, forecastId, showReplyInput, onToggleRep
                 autoFocus
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSubmit();
-                  if (e.key === "Escape") { setShowInput(false); setReplyText(""); }
+                  if (e.key === "Escape") { onToggleReplyInput(); setReplyText(""); }
                 }}
               />
               <div className="flex items-center gap-2">
-                <Button size="sm" variant="ghost" className="h-7 text-xs text-muted-foreground" onClick={() => { setShowInput(false); setReplyText(""); }}>Cancel</Button>
+                <Button size="sm" variant="ghost" className="h-7 text-xs text-muted-foreground" onClick={() => { onToggleReplyInput(); setReplyText(""); }}>Cancel</Button>
                 <Button size="sm" className="h-7 text-xs gap-1 rounded-lg" disabled={!replyText.trim() || createReply.isPending} onClick={handleSubmit}>
                   Reply
                 </Button>
