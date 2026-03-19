@@ -772,9 +772,6 @@ const Portfolio = () => {
               <div className="absolute top-0 right-0 w-20 h-20 rounded-bl-[50px] bg-accent/5 transition-all group-hover:bg-accent/8" />
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-1.5">
-                  <div className="flex h-5 w-5 items-center justify-center rounded-md bg-accent/10">
-                    <BarChart3 className="h-3 w-3 text-accent" />
-                  </div>
                   <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Allocation</p>
                 </div>
                 <span className="text-[11px] text-muted-foreground">{chartData.length} asset{chartData.length !== 1 ? "s" : ""}</span>
