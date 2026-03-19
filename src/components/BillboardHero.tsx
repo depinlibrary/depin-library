@@ -509,67 +509,72 @@ const BillboardHero = ({
                    {topForecasts.slice(0, 4).map((f) => {
                   const totalVotes = f.total_votes_yes + f.total_votes_no;
                   const yesPercent = totalVotes > 0 ? f.total_votes_yes / totalVotes * 100 : 50;
+                  const noPercent = 100 - yesPercent;
+                  const isEnded = f.status === "ended";
                   return (
                     <Link
                       key={f.id}
                       to={`/forecasts/${f.id}`}
-                      className="group relative flex flex-col gap-3 rounded-lg border border-border/50 bg-secondary/20 px-4 py-4 transition-all hover:bg-secondary/40 hover:border-primary/20 hover:shadow-md hover:shadow-primary/5">
+                      className="group relative flex flex-col rounded-xl border border-border/50 bg-secondary/20 overflow-hidden transition-all hover:bg-secondary/40 hover:border-primary/20 hover:shadow-md hover:shadow-primary/5 h-full">
                       
-                          {/* Project logos */}
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <ProjectLogo logoUrl={f.project_a_logo_url || null} logoEmoji={f.project_a_logo_emoji || "⬡"} name={f.project_a_name || "Project"} size="sm" />
-                              {f.project_b_name &&
-                          <>
-                                  <span className="text-[8px] font-bold text-muted-foreground uppercase">vs</span>
-                                  <ProjectLogo logoUrl={f.project_b_logo_url || null} logoEmoji={f.project_b_logo_emoji || "⬡"} name={f.project_b_name} size="sm" />
-                                </>
-                          }
+                      <div className="p-4 flex-1 flex flex-col">
+                        {/* Header: logos + status */}
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center -space-x-2">
+                              <ProjectLogo logoUrl={f.project_a_logo_url || null} logoEmoji={f.project_a_logo_emoji || "⬡"} name={f.project_a_name || "Project"} size="xs" />
+                              {f.project_b_name && (
+                                <ProjectLogo logoUrl={f.project_b_logo_url || null} logoEmoji={f.project_b_logo_emoji || "⬡"} name={f.project_b_name} size="xs" />
+                              )}
                             </div>
-                            <div className="flex items-center gap-2">
-                              {f.status === "ended" &&
-                          <Badge variant="destructive" className="text-[9px] px-1.5 py-0">
-                                  ENDED
-                                </Badge>
-                          }
-                              <span className="text-xs font-medium text-muted-foreground tabular-nums">
-                                {totalVotes} vote{totalVotes !== 1 ? "s" : ""}
-                              </span>
-                            </div>
+                            {f.project_b_name && (
+                              <span className="text-[9px] font-bold text-muted-foreground uppercase">vs</span>
+                            )}
                           </div>
+                          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${isEnded ? 'bg-destructive/10 text-destructive' : 'bg-green-500/10 text-green-600 dark:text-green-400'}`}>
+                            {isEnded ? "Ended" : `${totalVotes} vote${totalVotes !== 1 ? "s" : ""}`}
+                          </span>
+                        </div>
 
-                         {/* Title */}
-                         <p className="text-sm font-semibold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">{f.title}</p>
+                        {/* Title */}
+                        <p className="text-sm font-semibold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors mb-auto">{f.title}</p>
 
-                           {/* Vote bar with labels */}
-                         <div className="mt-auto space-y-2">
-                           <div className="relative h-2.5 rounded-full overflow-hidden flex">
-                             <motion.div
-                            className="h-full rounded-l-full"
-                            style={{ background: "hsl(var(--neon-green))" }}
-                            initial={{ width: 0 }}
-                            whileInView={{ width: `${yesPercent}%` }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }} />
-                          
-                             <motion.div
-                            className="h-full rounded-r-full"
-                            style={{ background: "hsl(var(--destructive))" }}
-                            initial={{ width: 0 }}
-                            whileInView={{ width: `${100 - yesPercent}%` }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }} />
-                          
-                           </div>
-                           <div className="flex items-center justify-between text-sm">
-                             <span className="font-bold text-neon-green">Yes {yesPercent.toFixed(0)}%</span>
-                             <span className="font-bold text-destructive">No {(100 - yesPercent).toFixed(0)}%</span>
-                           </div>
-                         </div>
-                       </Link>);
+                        {/* Percentage + bar */}
+                        <div className="mt-4 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-lg font-bold text-foreground">{yesPercent.toFixed(0)}% chance</span>
+                          </div>
+                          <div className="h-2 rounded-full bg-secondary overflow-hidden">
+                            <motion.div
+                              className="h-full rounded-full bg-primary"
+                              initial={{ width: 0 }}
+                              whileInView={{ width: `${yesPercent}%` }}
+                              viewport={{ once: true }}
+                              transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }} />
+                          </div>
+                        </div>
+                      </div>
 
-                })}
-                 </div>
+                      {/* Vote-style footer */}
+                      {!isEnded ? (
+                        <div className="px-4 pb-4 pt-1 flex gap-2">
+                          <span className="flex-1 rounded-lg py-2 text-xs font-bold text-center bg-primary/10 text-primary">
+                            Yes {yesPercent.toFixed(0)}¢
+                          </span>
+                          <span className="flex-1 rounded-lg py-2 text-xs font-bold text-center bg-destructive/10 text-destructive">
+                            No {noPercent.toFixed(0)}¢
+                          </span>
+                        </div>
+                      ) : (
+                        <div className={`flex items-center justify-center px-4 py-2.5 border-t border-border ${yesPercent >= 50 ? "bg-primary/5" : "bg-destructive/5"}`}>
+                          <span className={`text-xs font-bold ${yesPercent >= 50 ? "text-primary" : "text-destructive"}`}>
+                            Resolved: {yesPercent >= 50 ? "Yes" : "No"}
+                          </span>
+                        </div>
+                      )}
+                    </Link>);
+                 })}
+                  </div>
                </motion.div>
             }
           </motion.div>
