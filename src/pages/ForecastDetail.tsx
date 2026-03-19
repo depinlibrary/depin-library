@@ -584,7 +584,7 @@ const ForecastDetail = () => {
                             : "bg-destructive/10 text-destructive hover:bg-destructive/20"
                         }`}
                       >
-                        {forecast.user_vote === "no" ? "Voted No ✓" : `No ${noPct.toFixed(0)}¢`}
+                        {forecast.user_vote === "no" ? "Voted No ✓" : "No"}
                       </button>
                     </div>
                     {forecast.user_vote && (

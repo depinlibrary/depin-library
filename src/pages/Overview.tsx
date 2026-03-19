@@ -311,10 +311,10 @@ const Overview = () => {
                     <div className="px-5 pb-5 pt-1 space-y-2">
                       <div className="flex gap-2.5">
                         <span className="flex-1 rounded-lg py-2.5 text-sm font-bold text-center bg-primary/10 text-primary">
-                          Yes {yesPct.toFixed(0)}¢
+                          Yes
                         </span>
                         <span className="flex-1 rounded-lg py-2.5 text-sm font-bold text-center bg-destructive/10 text-destructive">
-                          No {noPct.toFixed(0)}¢
+                          No
                         </span>
                       </div>
                       <p className="text-[10px] text-muted-foreground text-center">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</p>

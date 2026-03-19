@@ -150,7 +150,7 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
                 : "bg-destructive/10 text-destructive hover:bg-destructive/20"
             }`}
           >
-            No {noPct.toFixed(0)}¢
+            No
           </button>
         </div>
       ) : (
