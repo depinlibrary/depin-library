@@ -829,9 +829,6 @@ const Portfolio = () => {
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <div className="flex h-5 w-5 items-center justify-center rounded-md bg-primary/10">
-                      <Activity className="h-3 w-3 text-primary" />
-                    </div>
                     <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Performance</p>
                   </div>
                   {portfolioSparkline?.hasData && (
