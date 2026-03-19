@@ -614,12 +614,20 @@ const Portfolio = () => {
                       <p className="text-[10px] text-muted-foreground">{holdings.length} asset{holdings.length !== 1 ? "s" : ""} tracked</p>
                     </div>
                   </div>
-                  <button
-                    onClick={() => setHideBalances(!hideBalances)}
-                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-secondary/30 transition-colors"
-                  >
-                    {hideBalances ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setHideBalances(!hideBalances)}
+                      className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-secondary/30 transition-colors"
+                    >
+                      {hideBalances ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                    </button>
+                    <Link
+                      to="/profile"
+                      className="flex h-8 items-center gap-1.5 rounded-lg border border-border px-2.5 text-muted-foreground hover:text-foreground hover:bg-secondary/30 transition-colors text-xs font-medium"
+                    >
+                      My Profile
+                    </Link>
+                  </div>
                 </div>
 
                 {/* Value display */}
