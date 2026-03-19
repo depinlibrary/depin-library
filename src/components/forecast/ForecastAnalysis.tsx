@@ -84,7 +84,6 @@ export default function ForecastAnalysis({ forecastId, isEnded }: Props) {
       className="rounded-xl border border-border bg-card overflow-hidden"
     >
       <div className="px-6 py-4 border-b border-border flex items-center gap-2">
-        <BarChart3 className="h-4 w-4 text-primary" />
         <h2 className="text-sm font-semibold text-foreground font-['Space_Grotesk']">Forecast Analysis</h2>
         {!isEnded && (
           <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">

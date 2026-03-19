@@ -323,34 +323,14 @@ const ForecastDetail = () => {
                   </div>
                 </div>
 
-                {/* Vote bar */}
-                <div className="h-2.5 rounded-full bg-secondary/80 overflow-hidden flex shadow-inner mb-3">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${yesPct}%` }}
-                    transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-                    className="h-full rounded-l-full bg-gradient-to-r from-primary to-primary/80"
-                  />
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${noPct}%` }}
-                    transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-                    className="h-full rounded-r-full bg-gradient-to-r from-destructive/60 to-destructive/80"
-                  />
-                </div>
-
-                {/* Total votes + Final result */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <Users className="h-3.5 w-3.5" />
-                    <span>{totalVotes.toLocaleString()} total votes</span>
-                  </div>
-                  {isEnded && (
+                {/* Final result badge if ended */}
+                {isEnded && (
+                  <div className="flex items-center justify-end">
                     <Badge variant="secondary" className="text-[10px] font-semibold">
                       Final: {yesPct >= 50 ? "Yes" : "No"} ({yesPct >= 50 ? yesPct.toFixed(0) : noPct.toFixed(0)}%)
                     </Badge>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 {/* Market Stats row */}
                 <div className="mt-4 pt-4 border-t border-border grid grid-cols-4 gap-3">

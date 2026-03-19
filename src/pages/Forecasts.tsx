@@ -180,13 +180,19 @@ const HeroSection = ({ forecasts, trendingTopics, user, setShowCreate }: {
   const [activeSlide, setActiveSlide] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Get top forecasts for carousel: mix of active + ended + highest voted
+  // Left carousel: slide through ALL forecasts
   const heroForecasts = useMemo(() => {
     if (forecasts.length === 0) return [];
-    const sorted = [...forecasts].sort((a, b) => 
-      (b.total_votes_yes + b.total_votes_no) - (a.total_votes_yes + a.total_votes_no)
-    );
-    return sorted.slice(0, 5);
+    return forecasts;
+  }, [forecasts]);
+
+  // Right sidebar: only live forecasts sorted by highest votes
+  const topLiveForecasts = useMemo(() => {
+    const now = new Date();
+    return [...forecasts]
+      .filter(f => new Date(f.end_date) > now)
+      .sort((a, b) => (b.total_votes_yes + b.total_votes_no) - (a.total_votes_yes + a.total_votes_no))
+      .slice(0, 5);
   }, [forecasts]);
 
   const [isPaused, setIsPaused] = useState(false);
@@ -468,7 +474,7 @@ const HeroSection = ({ forecasts, trendingTopics, user, setShowCreate }: {
                 <Link to="/forecasts" className="text-xs text-muted-foreground hover:text-primary transition-colors">View all →</Link>
               </div>
               <div className="flex-1 overflow-y-auto">
-                {forecasts.slice(0, 5).map((f, i) => {
+                {topLiveForecasts.map((f, i) => {
                   const fTotal = f.total_votes_yes + f.total_votes_no;
                   const fYesPct = fTotal > 0 ? (f.total_votes_yes / fTotal) * 100 : 50;
                   const fIsEnded = new Date(f.end_date) <= new Date();
@@ -497,8 +503,8 @@ const HeroSection = ({ forecasts, trendingTopics, user, setShowCreate }: {
                     </Link>
                   );
                 })}
-                {forecasts.length === 0 && (
-                  <div className="px-5 py-6 text-center text-xs text-muted-foreground">No forecasts yet</div>
+                {topLiveForecasts.length === 0 && (
+                  <div className="px-5 py-6 text-center text-xs text-muted-foreground">No live forecasts</div>
                 )}
               </div>
             </div>
