@@ -151,6 +151,7 @@ const NotificationDropdown = () => {
             >
               View all notifications
             </Link>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

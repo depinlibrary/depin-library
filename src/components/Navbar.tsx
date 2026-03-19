@@ -602,6 +602,7 @@ const Navbar = () => {
                           Sign Out
                         </button>
                       </div>
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
