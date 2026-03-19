@@ -322,7 +322,7 @@ const Navbar = () => {
             </button>
             <AnimatePresence>
               {marketDropdownOpen && (
-                <div className="absolute left-1/2 top-full mt-3 z-50" style={{ marginLeft: '-170px' }}>
+                <div className="absolute left-1/2 top-full z-50 pt-2" style={{ marginLeft: '-170px' }}>
                   <motion.div
                     initial={{ opacity: 0, y: 8, scale: 0.96 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
