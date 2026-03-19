@@ -498,8 +498,9 @@ const Navbar = () => {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 6, scale: 0.95 }}
                       transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-                      className="absolute right-0 top-full mt-2 z-50 w-56 rounded-xl border border-border bg-card shadow-xl shadow-background/30 overflow-hidden"
+                      className="absolute right-0 top-full pt-2 z-50 w-56"
                     >
+                      <div className="rounded-xl border border-border bg-card shadow-xl shadow-background/30 overflow-hidden">
                       {/* User info with avatar */}
                       <div className="px-4 py-3 border-b border-border/50 flex items-center gap-3">
                         <div className="relative group/avatar shrink-0">
@@ -600,6 +601,7 @@ const Navbar = () => {
                           <LogOut className="h-3.5 w-3.5" />
                           Sign Out
                         </button>
+                      </div>
                       </div>
                     </motion.div>
                   )}
