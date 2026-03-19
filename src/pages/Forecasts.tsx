@@ -171,8 +171,9 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
   );
 };
 // ---- Hero Section with Auto-Sliding Carousel + Sentiment Chart ----
-const HeroSection = ({ forecasts, trendingTopics, user, setShowCreate }: {
+const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setShowCreate }: {
   forecasts: Forecast[];
+  topLiveForecasts: Forecast[];
   trendingTopics: any[];
   user: any;
   setShowCreate: (v: boolean) => void;
@@ -184,15 +185,6 @@ const HeroSection = ({ forecasts, trendingTopics, user, setShowCreate }: {
   const heroForecasts = useMemo(() => {
     if (forecasts.length === 0) return [];
     return forecasts;
-  }, [forecasts]);
-
-  // Right sidebar: only live forecasts sorted by highest votes
-  const topLiveForecasts = useMemo(() => {
-    const now = new Date();
-    return [...forecasts]
-      .filter(f => new Date(f.end_date) > now)
-      .sort((a, b) => (b.total_votes_yes + b.total_votes_no) - (a.total_votes_yes + a.total_votes_no))
-      .slice(0, 5);
   }, [forecasts]);
 
   const [isPaused, setIsPaused] = useState(false);
@@ -697,21 +689,12 @@ const Forecasts = () => {
     staleTime: 5 * 60_000,
   });
 
-  // Unfiltered top forecasts for hero section — recent & high-vote
-  const { data: heroDataVotes } = useForecasts("votes", 1, 5, undefined, undefined, "active");
-  const { data: heroDataNew } = useForecasts("newest", 1, 5, undefined, undefined, "active");
-  const heroForecastsData = useMemo(() => {
-    const seen = new Set<string>();
-    const merged: Forecast[] = [];
-    // Interleave high-vote and newest
-    const vList = heroDataVotes?.forecasts || [];
-    const nList = heroDataNew?.forecasts || [];
-    for (let i = 0; i < Math.max(vList.length, nList.length); i++) {
-      if (vList[i] && !seen.has(vList[i].id)) { seen.add(vList[i].id); merged.push(vList[i]); }
-      if (nList[i] && !seen.has(nList[i].id)) { seen.add(nList[i].id); merged.push(nList[i]); }
-    }
-    return merged.slice(0, 10);
-  }, [heroDataVotes, heroDataNew]);
+  // Unfiltered forecasts for hero carousel — fetch ALL (up to 50)
+  const { data: heroDataAll } = useForecasts("newest", 1, 50, undefined, undefined, "all");
+  // Separate: top live forecasts for sidebar (highest votes, active only)
+  const { data: heroDataTopLive } = useForecasts("votes", 1, 5, undefined, undefined, "active");
+  const heroAllForecasts = useMemo(() => heroDataAll?.forecasts || [], [heroDataAll]);
+  const heroTopLiveForecasts = useMemo(() => heroDataTopLive?.forecasts || [], [heroDataTopLive]);
 
   // Stats
   const stats = useMemo(() => {
@@ -759,7 +742,8 @@ const Forecasts = () => {
 
       {/* Polymarket-style Hero with Auto-Slide — uses unfiltered data */}
       <HeroSection
-        forecasts={heroForecastsData}
+        forecasts={heroAllForecasts}
+        topLiveForecasts={heroTopLiveForecasts}
         trendingTopics={trendingTopics}
         user={user}
         setShowCreate={setShowCreate}
