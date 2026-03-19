@@ -744,9 +744,6 @@ const Portfolio = () => {
             >
               <div className="absolute top-0 right-0 w-16 h-16 rounded-bl-[40px] bg-accent/5 transition-all group-hover:bg-accent/10" />
               <div className="flex items-center gap-1.5 mb-3">
-                <div className="flex h-5 w-5 items-center justify-center rounded-md bg-accent/10">
-                  <BarChart3 className="h-3 w-3 text-accent" />
-                </div>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Top Dominance</p>
               </div>
               {topDominance ? (
