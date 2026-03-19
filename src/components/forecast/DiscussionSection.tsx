@@ -357,7 +357,12 @@ export default function DiscussionSection({
                             {likeInfo.count > 0 ? likeInfo.count : "Like"}
                           </button>
                           {user && (
-                            <ReplyTriggerButton commentId={comment.id} />
+                            <button
+                              onClick={() => setReplyOpenFor(replyOpenFor === comment.id ? null : comment.id)}
+                              className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground/60 hover:text-foreground transition-colors"
+                            >
+                              <MessageCircle className="h-3.5 w-3.5" /> Reply
+                            </button>
                           )}
                         </div>
                       </>
