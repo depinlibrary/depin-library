@@ -5,6 +5,7 @@ import CompareWithButton from "@/components/CompareWithButton";
 import { useProject } from "@/hooks/useProjects";
 import ProjectRatings from "@/components/ProjectRatings";
 import ReviewSection from "@/components/ReviewSection";
+import ProjectForecasts from "@/components/ProjectForecasts";
 import SentimentBadge from "@/components/SentimentBadge";
 import ProjectLogo from "@/components/ProjectLogo";
 import TokenPriceBadge from "@/components/TokenPriceBadge";
