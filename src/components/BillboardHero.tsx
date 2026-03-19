@@ -517,18 +517,18 @@ const BillboardHero = ({
                       <div className="p-4 flex-1 flex flex-col">
                         {/* Header: logos + status */}
                         <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-2">
-                            <div className="flex items-center gap-1.5">
-                              <ProjectLogo logoUrl={f.project_a_logo_url || null} logoEmoji={f.project_a_logo_emoji || "⬡"} name={f.project_a_name || "Project"} size="xs" />
-                              {f.project_b_name && (
-                                <>
-                                  <span className="text-[9px] font-bold text-muted-foreground uppercase">vs</span>
-                                  <ProjectLogo logoUrl={f.project_b_logo_url || null} logoEmoji={f.project_b_logo_emoji || "⬡"} name={f.project_b_name} size="xs" />
-                                </>
-                              )}
-                            </div>
+                          <div className="flex items-center gap-1.5">
+                            <ProjectLogo logoUrl={f.project_a_logo_url || null} logoEmoji={f.project_a_logo_emoji || "⬡"} name={f.project_a_name || "Project"} size="xs" />
+                            {f.project_b_name && (
+                              <>
+                                <span className="text-[9px] font-bold text-muted-foreground uppercase">vs</span>
+                                <ProjectLogo logoUrl={f.project_b_logo_url || null} logoEmoji={f.project_b_logo_emoji || "⬡"} name={f.project_b_name} size="xs" />
+                              </>
+                            )}
+                          </div>
                           <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${isEnded ? 'bg-destructive/10 text-destructive' : 'bg-green-500/10 text-green-600 dark:text-green-400'}`}>
                             {isEnded ? "Ended" : "Live"}
+                          </span>
                           </span>
                         </div>
 

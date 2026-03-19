@@ -171,8 +171,6 @@ const Overview = () => {
                     className="group relative flex flex-col rounded-xl border border-border bg-card/60 backdrop-blur-sm overflow-hidden transition-all duration-300 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 h-full">
                     
                       <div className="p-5 flex flex-col flex-1 gap-4">
-
-                      <div className="p-5 flex flex-col flex-1 gap-4">
                         {/* Logo + name + price row */}
                         <div className="flex items-start gap-3">
                           <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="md" />
