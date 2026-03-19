@@ -93,17 +93,17 @@ const CommentReplyThread = ({ commentId, forecastId }: { commentId: string; fore
                     </span>
                   </div>
                   <p className="text-[13px] text-foreground/80 leading-relaxed mt-0.5">{reply.reply_text}</p>
-                  <div className="flex items-center gap-3 mt-1.5">
+                   <div className="flex items-center gap-3 mt-1.5">
                     <button
                       onClick={() => {
                         if (!user) { toast.error("Sign in to like"); return; }
                         toggleReplyLike.mutate({ replyId: reply.id, isLiked: likeInfo.userLiked, forecastId });
                       }}
                       className={`flex items-center gap-1 text-[11px] transition-colors ${
-                        likeInfo.userLiked ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                        likeInfo.userLiked ? "text-red-500" : "text-muted-foreground hover:text-foreground"
                       }`}
                     >
-                      <ThumbsUp className={`h-3 w-3 ${likeInfo.userLiked ? "fill-current" : ""}`} />
+                      <Heart className={`h-3 w-3 ${likeInfo.userLiked ? "fill-red-500" : ""}`} />
                       {likeInfo.count > 0 && <span>{likeInfo.count}</span>}
                     </button>
                     {user?.id === reply.user_id && (
