@@ -503,8 +503,8 @@ const HeroSection = ({ forecasts, trendingTopics, user, setShowCreate }: {
                     </Link>
                   );
                 })}
-                {forecasts.length === 0 && (
-                  <div className="px-5 py-6 text-center text-xs text-muted-foreground">No forecasts yet</div>
+                {topLiveForecasts.length === 0 && (
+                  <div className="px-5 py-6 text-center text-xs text-muted-foreground">No live forecasts</div>
                 )}
               </div>
             </div>

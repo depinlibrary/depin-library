@@ -23,8 +23,8 @@ export default function VoteHistoryChart({ voteHistory }: VoteHistoryChartProps)
       className="rounded-xl border border-border bg-card overflow-hidden"
     >
       <div className="px-6 py-4 border-b border-border flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-          <BarChart3 className="h-4 w-4 text-primary" /> Vote Trend
+        <h2 className="text-sm font-semibold text-foreground">
+          Vote Trend
         </h2>
         <span className="text-[11px] text-muted-foreground">
           Current: <span className="font-semibold text-foreground">{latestYesPct}% Yes</span>
