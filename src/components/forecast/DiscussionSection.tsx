@@ -1,10 +1,10 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MessageSquare, Send, Trash2, User as UserIcon,
   Pencil, Check, X, Heart, MessageCircle, MoreHorizontal,
-  Flag, ThumbsUp, ThumbsDown, ChevronDown, ChevronUp
+  Flag, ChevronDown, ChevronUp
 } from "lucide-react";
 import UserAvatar from "@/components/UserAvatar";
 import { Button } from "@/components/ui/button";
