@@ -198,6 +198,12 @@ const Profile = () => {
                     Member since {format(new Date(user.created_at), "MMMM yyyy")}
                   </p>
                 </div>
+                <Link
+                  to="/portfolio"
+                  className="shrink-0 self-center flex h-8 items-center gap-1.5 rounded-lg border border-border px-3 text-muted-foreground hover:text-foreground hover:bg-secondary/30 transition-colors text-xs font-medium"
+                >
+                  My Portfolio
+                </Link>
               </div>
             </CardContent>
           </Card>

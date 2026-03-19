@@ -609,20 +609,25 @@ const Portfolio = () => {
                 {/* Header row */}
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10">
-                      <Briefcase className="h-3.5 w-3.5 text-primary" />
-                    </div>
                     <div>
                       <h2 className="text-sm font-semibold text-foreground">Portfolio Value</h2>
                       <p className="text-[10px] text-muted-foreground">{holdings.length} asset{holdings.length !== 1 ? "s" : ""} tracked</p>
                     </div>
                   </div>
-                  <button
-                    onClick={() => setHideBalances(!hideBalances)}
-                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-secondary/30 transition-colors"
-                  >
-                    {hideBalances ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setHideBalances(!hideBalances)}
+                      className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-secondary/30 transition-colors"
+                    >
+                      {hideBalances ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                    </button>
+                    <Link
+                      to="/profile"
+                      className="flex h-8 items-center gap-1.5 rounded-lg border border-border px-2.5 text-muted-foreground hover:text-foreground hover:bg-secondary/30 transition-colors text-xs font-medium"
+                    >
+                      My Profile
+                    </Link>
+                  </div>
                 </div>
 
                 {/* Value display */}
@@ -664,9 +669,6 @@ const Portfolio = () => {
             >
               <div className="absolute top-0 right-0 w-16 h-16 rounded-bl-[40px] bg-green-500/5 transition-all group-hover:bg-green-500/10" />
               <div className="flex items-center gap-1.5 mb-3">
-                <div className="flex h-5 w-5 items-center justify-center rounded-md bg-green-500/10">
-                  <TrendingUp className="h-3 w-3 text-green-500" />
-                </div>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Best 24h</p>
               </div>
               {bestPerformer?.project ? (
@@ -692,9 +694,6 @@ const Portfolio = () => {
             >
               <div className="absolute top-0 right-0 w-16 h-16 rounded-bl-[40px] bg-red-500/5 transition-all group-hover:bg-red-500/10" />
               <div className="flex items-center gap-1.5 mb-3">
-                <div className="flex h-5 w-5 items-center justify-center rounded-md bg-red-500/10">
-                  <TrendingDown className="h-3 w-3 text-red-500" />
-                </div>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Worst 24h</p>
               </div>
               {worstPerformer?.project ? (
@@ -720,9 +719,6 @@ const Portfolio = () => {
             >
               <div className="absolute top-0 right-0 w-16 h-16 rounded-bl-[40px] bg-primary/5 transition-all group-hover:bg-primary/10" />
               <div className="flex items-center gap-1.5 mb-3">
-                <div className="flex h-5 w-5 items-center justify-center rounded-md bg-primary/10">
-                  <Briefcase className="h-3 w-3 text-primary" />
-                </div>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Top Holding</p>
               </div>
               {topHolding?.project ? (
@@ -748,9 +744,6 @@ const Portfolio = () => {
             >
               <div className="absolute top-0 right-0 w-16 h-16 rounded-bl-[40px] bg-accent/5 transition-all group-hover:bg-accent/10" />
               <div className="flex items-center gap-1.5 mb-3">
-                <div className="flex h-5 w-5 items-center justify-center rounded-md bg-accent/10">
-                  <BarChart3 className="h-3 w-3 text-accent" />
-                </div>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Top Dominance</p>
               </div>
               {topDominance ? (
@@ -779,9 +772,6 @@ const Portfolio = () => {
               <div className="absolute top-0 right-0 w-20 h-20 rounded-bl-[50px] bg-accent/5 transition-all group-hover:bg-accent/8" />
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-1.5">
-                  <div className="flex h-5 w-5 items-center justify-center rounded-md bg-accent/10">
-                    <BarChart3 className="h-3 w-3 text-accent" />
-                  </div>
                   <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Allocation</p>
                 </div>
                 <span className="text-[11px] text-muted-foreground">{chartData.length} asset{chartData.length !== 1 ? "s" : ""}</span>
@@ -839,9 +829,6 @@ const Portfolio = () => {
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <div className="flex h-5 w-5 items-center justify-center rounded-md bg-primary/10">
-                      <Activity className="h-3 w-3 text-primary" />
-                    </div>
                     <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Performance</p>
                   </div>
                   {portfolioSparkline?.hasData && (
@@ -921,7 +908,7 @@ const Portfolio = () => {
                 { key: "holdings" as const, label: "Holdings", icon: Wallet },
                 { key: "alerts" as const, label: "Alerts", icon: Bell },
                 { key: "forecasts" as const, label: "Forecasts", icon: Activity },
-                { key: "watchlist" as const, label: "Watchlist", icon: Star, badge: watchlistAlertCount },
+                { key: "watchlist" as const, label: "Watchlist", icon: Star },
               ]).map((tab) => (
                 <button
                   key={tab.key}
@@ -934,11 +921,6 @@ const Portfolio = () => {
                 >
                   <tab.icon className="h-3.5 w-3.5" />
                   {tab.label}
-                  {tab.badge && tab.badge > 0 && (
-                    <span className="ml-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
-                      {tab.badge}
-                    </span>
-                  )}
                 </button>
               ))}
             </div>
