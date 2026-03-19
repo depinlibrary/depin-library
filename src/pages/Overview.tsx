@@ -45,22 +45,6 @@ function getTimeLeft(endDate: string) {
   return `${minutes}m`;
 }
 
-const CountdownBadge = ({ endDate }: {endDate: string;}) => {
-  const [timeLeft, setTimeLeft] = useState(getTimeLeft(endDate));
-  useEffect(() => {
-    const timer = setInterval(() => setTimeLeft(getTimeLeft(endDate)), 60_000);
-    return () => clearInterval(timer);
-  }, [endDate]);
-  if (!timeLeft) return <span className="text-[10px] font-bold text-destructive">Ended</span>;
-  const isUrgent = new Date(endDate).getTime() - Date.now() < 24 * 60 * 60 * 1000;
-  return (
-    <span className={`inline-flex items-center gap-1 text-[10px] font-bold tabular-nums ${isUrgent ? "text-destructive" : "text-primary"}`}>
-      <Clock className="h-3 w-3" />
-      {timeLeft}
-    </span>);
-
-};
-
 const Overview = () => {
   const { data: projects = [] } = useProjects();
   const { data: marketData = {}, isRefetching } = useAllTokenMarketData(30 * 1000);
