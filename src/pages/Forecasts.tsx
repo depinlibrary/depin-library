@@ -180,13 +180,19 @@ const HeroSection = ({ forecasts, trendingTopics, user, setShowCreate }: {
   const [activeSlide, setActiveSlide] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Get top forecasts for carousel: mix of active + ended + highest voted
+  // Left carousel: slide through ALL forecasts
   const heroForecasts = useMemo(() => {
     if (forecasts.length === 0) return [];
-    const sorted = [...forecasts].sort((a, b) => 
-      (b.total_votes_yes + b.total_votes_no) - (a.total_votes_yes + a.total_votes_no)
-    );
-    return sorted.slice(0, 5);
+    return forecasts;
+  }, [forecasts]);
+
+  // Right sidebar: only live forecasts sorted by highest votes
+  const topLiveForecasts = useMemo(() => {
+    const now = new Date();
+    return [...forecasts]
+      .filter(f => new Date(f.end_date) > now)
+      .sort((a, b) => (b.total_votes_yes + b.total_votes_no) - (a.total_votes_yes + a.total_votes_no))
+      .slice(0, 5);
   }, [forecasts]);
 
   const [isPaused, setIsPaused] = useState(false);
