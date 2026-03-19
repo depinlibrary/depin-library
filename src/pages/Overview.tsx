@@ -170,9 +170,6 @@ const Overview = () => {
                     to={`/project/${project.slug}`}
                     className="group relative flex flex-col rounded-xl border border-border bg-card/60 backdrop-blur-sm overflow-hidden transition-all duration-300 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 h-full">
                     
-                      {/* Top accent */}
-                      <div className="h-0.5 w-full bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
-
                       <div className="p-5 flex flex-col flex-1 gap-4">
                         {/* Logo + name + price row */}
                         <div className="flex items-start gap-3">
@@ -312,10 +309,10 @@ const Overview = () => {
                     <div className="px-5 pb-5 pt-1 space-y-2">
                       <div className="flex gap-2.5">
                         <span className="flex-1 rounded-lg py-2.5 text-sm font-bold text-center bg-primary/10 text-primary">
-                          Yes {yesPct.toFixed(0)}¢
+                          Yes
                         </span>
                         <span className="flex-1 rounded-lg py-2.5 text-sm font-bold text-center bg-destructive/10 text-destructive">
-                          No {noPct.toFixed(0)}¢
+                          No
                         </span>
                       </div>
                       <p className="text-[10px] text-muted-foreground text-center">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</p>

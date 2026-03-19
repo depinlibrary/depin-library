@@ -574,7 +574,7 @@ const ForecastDetail = () => {
                             : "bg-primary/10 text-primary hover:bg-primary/20"
                         }`}
                       >
-                        {forecast.user_vote === "yes" ? "Voted Yes ✓" : `Yes ${yesPct.toFixed(0)}¢`}
+                        {forecast.user_vote === "yes" ? "Voted Yes ✓" : "Yes"}
                       </button>
                       <button
                         onClick={() => handleVote("no")}
@@ -584,7 +584,7 @@ const ForecastDetail = () => {
                             : "bg-destructive/10 text-destructive hover:bg-destructive/20"
                         }`}
                       >
-                        {forecast.user_vote === "no" ? "Voted No ✓" : `No ${noPct.toFixed(0)}¢`}
+                        {forecast.user_vote === "no" ? "Voted No ✓" : "No"}
                       </button>
                     </div>
                     {forecast.user_vote && (

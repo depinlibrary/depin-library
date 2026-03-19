@@ -517,15 +517,13 @@ const BillboardHero = ({
                       <div className="p-4 flex-1 flex flex-col">
                         {/* Header: logos + status */}
                         <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-2">
-                            <div className="flex items-center -space-x-2">
-                              <ProjectLogo logoUrl={f.project_a_logo_url || null} logoEmoji={f.project_a_logo_emoji || "⬡"} name={f.project_a_name || "Project"} size="xs" />
-                              {f.project_b_name && (
-                                <ProjectLogo logoUrl={f.project_b_logo_url || null} logoEmoji={f.project_b_logo_emoji || "⬡"} name={f.project_b_name} size="xs" />
-                              )}
-                            </div>
+                          <div className="flex items-center gap-1.5">
+                            <ProjectLogo logoUrl={f.project_a_logo_url || null} logoEmoji={f.project_a_logo_emoji || "⬡"} name={f.project_a_name || "Project"} size="xs" />
                             {f.project_b_name && (
-                              <span className="text-[9px] font-bold text-muted-foreground uppercase">vs</span>
+                              <>
+                                <span className="text-[9px] font-bold text-muted-foreground uppercase">vs</span>
+                                <ProjectLogo logoUrl={f.project_b_logo_url || null} logoEmoji={f.project_b_logo_emoji || "⬡"} name={f.project_b_name} size="xs" />
+                              </>
                             )}
                           </div>
                           <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${isEnded ? 'bg-destructive/10 text-destructive' : 'bg-green-500/10 text-green-600 dark:text-green-400'}`}>
@@ -557,10 +555,10 @@ const BillboardHero = ({
                         <div className="px-4 pb-4 pt-1 space-y-2">
                           <div className="flex gap-2">
                             <span className="flex-1 rounded-lg py-2 text-xs font-bold text-center bg-primary/10 text-primary">
-                              Yes {yesPercent.toFixed(0)}¢
+                              Yes
                             </span>
                             <span className="flex-1 rounded-lg py-2 text-xs font-bold text-center bg-destructive/10 text-destructive">
-                              No {noPercent.toFixed(0)}¢
+                              No
                             </span>
                           </div>
                           <p className="text-[10px] text-muted-foreground text-center">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</p>
