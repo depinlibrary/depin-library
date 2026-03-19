@@ -164,42 +164,61 @@ const Overview = () => {
                 <motion.div
                   key={project.id}
                   variants={fadeUp}
-                  className="snap-start shrink-0 w-[280px] sm:w-auto h-full">
+                  className="snap-start shrink-0 w-[320px] sm:w-auto h-full">
                   
                     <Link
                     to={`/project/${project.slug}`}
                     className="group relative flex flex-col rounded-xl border border-border bg-card/60 backdrop-blur-sm overflow-hidden transition-all duration-300 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 h-full">
                     
-                      {/* Subtle top accent */}
+                      {/* Top accent */}
                       <div className="h-0.5 w-full bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
 
-                      <div className="p-4 flex flex-col flex-1 gap-3">
-                        {/* Logo row */}
-                        <div className="flex items-center gap-3">
-                          <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="sm" />
+                      <div className="p-5 flex flex-col flex-1 gap-4">
+                        {/* Logo + name + price row */}
+                        <div className="flex items-start gap-3">
+                          <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="md" />
                           <div className="min-w-0 flex-1">
-                            <h3 className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">{project.name}</h3>
-                            <p className="text-[10px] text-muted-foreground">{project.category} · {project.blockchain}</p>
+                            <h3 className="text-base font-semibold text-foreground truncate group-hover:text-primary transition-colors">{project.name}</h3>
+                            <p className="text-xs text-muted-foreground mt-0.5">{project.category} · {project.blockchain}</p>
                           </div>
-                          {m?.price_usd &&
-                        <div className="text-right shrink-0">
-                              <p className="text-xs font-semibold text-foreground tabular-nums">
+                          {project.status === "active" && (
+                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-green-500/10 text-green-600 dark:text-green-400 shrink-0">Active</span>
+                          )}
+                        </div>
+
+                        {/* Description */}
+                        <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3 flex-1">{project.description || project.tagline}</p>
+
+                        {/* Market data row */}
+                        {m?.price_usd && (
+                          <div className="flex items-center gap-4 pt-2 border-t border-border/50">
+                            <div>
+                              <p className="text-[10px] text-muted-foreground mb-0.5">Price</p>
+                              <p className="text-sm font-bold text-foreground tabular-nums">
                                 ${m.price_usd >= 1 ? m.price_usd.toFixed(2) : m.price_usd.toFixed(4)}
                               </p>
-                              <p className={`text-[10px] font-bold tabular-nums ${change >= 0 ? "text-neon-green" : "text-destructive"}`}>
+                            </div>
+                            <div>
+                              <p className="text-[10px] text-muted-foreground mb-0.5">24h</p>
+                              <p className={`text-sm font-bold tabular-nums ${change >= 0 ? "text-neon-green" : "text-destructive"}`}>
                                 {change >= 0 ? "+" : ""}{change.toFixed(1)}%
                               </p>
                             </div>
-                        }
-                        </div>
+                            {m.market_cap_usd && (
+                              <div>
+                                <p className="text-[10px] text-muted-foreground mb-0.5">Market Cap</p>
+                                <p className="text-sm font-bold text-foreground tabular-nums">
+                                  {m.market_cap_usd >= 1e9 ? `$${(m.market_cap_usd / 1e9).toFixed(1)}B` : m.market_cap_usd >= 1e6 ? `$${(m.market_cap_usd / 1e6).toFixed(1)}M` : `$${(m.market_cap_usd / 1e3).toFixed(0)}K`}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        )}
 
-                        {/* Tagline */}
-                        <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2 flex-1">{project.tagline}</p>
-
-                        {/* Bottom CTA hint */}
-                        <div className="flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground/60 group-hover:text-primary transition-colors">
+                        {/* CTA */}
+                        <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground/60 group-hover:text-primary transition-colors">
                           <span>View project</span>
-                          <ArrowRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
+                          <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
                         </div>
                       </div>
                     </Link>
