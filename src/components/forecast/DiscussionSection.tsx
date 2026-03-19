@@ -369,7 +369,7 @@ export default function DiscussionSection({
                     )}
 
                     {/* Reply thread */}
-                    <CommentReplyThread commentId={comment.id} forecastId={forecastId} />
+                    <CommentReplyThread commentId={comment.id} forecastId={forecastId} showReplyInput={replyOpenFor === comment.id} onToggleReplyInput={() => setReplyOpenFor(replyOpenFor === comment.id ? null : comment.id)} />
                   </div>
                 </div>
               </div>
