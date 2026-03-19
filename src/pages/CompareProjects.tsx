@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bot, ArrowRightLeft, Sparkles, Database, AlertTriangle, Shield, TrendingUp, Zap, Loader2, Flame, LogIn, PanelLeftClose, PanelLeft, Plus, Clock, MessageSquare } from "lucide-react";
+import { Bot, ArrowRightLeft, Sparkles, Database, AlertTriangle, Shield, TrendingUp, Zap, Loader2, Flame, LogIn, Plus, Clock, MessageSquare } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import SentimentBadge from "@/components/SentimentBadge";
 import Navbar from "@/components/Navbar";
@@ -40,7 +40,7 @@ const CompareProjects = () => {
   const [analyzing, setAnalyzing] = useState(false);
   const [createdAt, setCreatedAt] = useState<string>("");
   const [showAuthDialog, setShowAuthDialog] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [activeHistoryId, setActiveHistoryId] = useState<string | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -53,7 +53,6 @@ const CompareProjects = () => {
   const projectA = useMemo(() => projects?.find((p) => p.id === projectAId), [projects, projectAId]);
   const projectB = useMemo(() => projects?.find((p) => p.id === projectBId), [projects, projectBId]);
 
-  // All recent comparisons (shown in sidebar as history)
   const { data: allComparisons = [] } = useQuery({
     queryKey: ["all-comparisons"],
     queryFn: async () => {
@@ -61,13 +60,12 @@ const CompareProjects = () => {
         .from("project_comparisons")
         .select("id, project_a_id, project_b_id, comparison_type, created_at, ai_response")
         .order("created_at", { ascending: false })
-        .limit(20);
+        .limit(30);
       if (error) throw error;
       return data || [];
     }
   });
 
-  // Recent standard comparisons for the main area
   const { data: recentComparisons = [] } = useQuery({
     queryKey: ["recent-comparisons"],
     queryFn: async () => {
@@ -106,6 +104,7 @@ const CompareProjects = () => {
     setProjectAId(comp.project_a_id);
     setProjectBId(comp.project_b_id);
     setUserPrompt("");
+    setActiveHistoryId(comp.id);
     const aiResponse = comp.ai_response as ComparisonResult;
     if (aiResponse) {
       setResult(aiResponse);
@@ -121,6 +120,7 @@ const CompareProjects = () => {
     setResult(null);
     setIsCached(false);
     setCreatedAt("");
+    setActiveHistoryId(null);
   };
 
   const handleSwap = () => {
@@ -166,113 +166,129 @@ const CompareProjects = () => {
     }
   };
 
+  // Group history by relative date
+  const groupedHistory = useMemo(() => {
+    const groups: { label: string; items: any[] }[] = [];
+    const now = new Date();
+
+    const todayItems: any[] = [];
+    const weekItems: any[] = [];
+    const olderItems: any[] = [];
+
+    historyWithNames.forEach((c: any) => {
+      const date = new Date(c.created_at);
+      const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+      if (diffDays === 0) todayItems.push(c);
+      else if (diffDays < 7) weekItems.push(c);
+      else olderItems.push(c);
+    });
+
+    if (todayItems.length > 0) groups.push({ label: "Today", items: todayItems });
+    if (weekItems.length > 0) groups.push({ label: "This Week", items: weekItems });
+    if (olderItems.length > 0) groups.push({ label: "Earlier", items: olderItems });
+
+    return groups;
+  }, [historyWithNames]);
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <div className="absolute inset-0 bg-grid opacity-15 pointer-events-none" />
-      <div className="gradient-radial-top fixed inset-0 pointer-events-none" />
       <Navbar />
 
-      <div className="relative flex flex-1 pt-14">
-        {/* ── Sidebar ── */}
-        <AnimatePresence initial={false}>
-          {sidebarOpen && (
-            <motion.aside
-              initial={{ width: 0, opacity: 0 }}
-              animate={{ width: 280, opacity: 1 }}
-              exit={{ width: 0, opacity: 0 }}
-              transition={{ duration: 0.2, ease: "easeInOut" }}
-              className="shrink-0 border-r border-border bg-card/50 backdrop-blur-sm overflow-hidden hidden md:block"
+      <div className="flex flex-1 pt-14">
+        {/* ── Sidebar — always visible on md+ ── */}
+        <aside className="hidden md:flex flex-col w-[260px] shrink-0 border-r border-border bg-card/30">
+          {/* Sidebar header */}
+          <div className="flex items-center justify-between px-4 h-12 border-b border-border/50">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Comparison History</span>
+            <button
+              onClick={handleNewComparison}
+              className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
+              title="New comparison"
             >
-              <div className="flex flex-col h-[calc(100vh-56px)] w-[280px]">
-                {/* Sidebar header */}
-                <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">History</span>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={handleNewComparison}
-                      className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
-                      title="New comparison"
-                    >
-                      <Plus className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      onClick={() => setSidebarOpen(false)}
-                      className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
-                    >
-                      <PanelLeftClose className="h-3.5 w-3.5" />
-                    </button>
+              <Plus className="h-3.5 w-3.5" />
+            </button>
+          </div>
+
+          {/* History list */}
+          <div className="flex-1 overflow-y-auto">
+            {groupedHistory.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-center px-4">
+                <MessageSquare className="h-6 w-6 text-muted-foreground/20 mb-2" />
+                <p className="text-xs text-muted-foreground">No comparisons yet</p>
+                <p className="text-[10px] text-muted-foreground/60 mt-1">Select two projects to get started</p>
+              </div>
+            ) : (
+              groupedHistory.map((group) => (
+                <div key={group.label}>
+                  <div className="px-4 pt-4 pb-1.5">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">{group.label}</p>
+                  </div>
+                  <div className="px-2 space-y-0.5">
+                    {group.items.map((c: any) => (
+                      <button
+                        key={c.id}
+                        onClick={() => handleHistoryClick(c)}
+                        className={`w-full text-left rounded-lg px-3 py-2.5 transition-all ${
+                          activeHistoryId === c.id
+                            ? "bg-secondary border border-border"
+                            : "hover:bg-secondary/30 border border-transparent"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1 shrink-0">
+                            <div className="h-5 w-5 rounded-md overflow-hidden bg-secondary flex items-center justify-center">
+                              {c.projectA.logo_url ? (
+                                <img src={c.projectA.logo_url} alt="" className="h-5 w-5 object-contain" />
+                              ) : (
+                                <span className="text-[10px]">{c.projectA.logo_emoji}</span>
+                              )}
+                            </div>
+                            <span className="text-[9px] text-muted-foreground/50 font-medium">vs</span>
+                            <div className="h-5 w-5 rounded-md overflow-hidden bg-secondary flex items-center justify-center">
+                              {c.projectB.logo_url ? (
+                                <img src={c.projectB.logo_url} alt="" className="h-5 w-5 object-contain" />
+                              ) : (
+                                <span className="text-[10px]">{c.projectB.logo_emoji}</span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-[11px] font-medium text-foreground truncate leading-tight">
+                              {c.projectA.name} vs {c.projectB.name}
+                            </p>
+                            <p className="text-[10px] text-muted-foreground/50 mt-0.5">
+                              {formatDistanceToNow(new Date(c.created_at), { addSuffix: true })}
+                            </p>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
                   </div>
                 </div>
-
-                {/* History list */}
-                <div className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5">
-                  {historyWithNames.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-12 text-center px-4">
-                      <MessageSquare className="h-6 w-6 text-muted-foreground/20 mb-2" />
-                      <p className="text-xs text-muted-foreground">No comparisons yet</p>
-                      <p className="text-[10px] text-muted-foreground/60 mt-1">Start by selecting two projects above</p>
-                    </div>
-                  ) : (
-                    historyWithNames.map((c: any) => {
-                      const isActive = c.project_a_id === projectAId && c.project_b_id === projectBId;
-                      return (
-                        <button
-                          key={c.id}
-                          onClick={() => handleHistoryClick(c)}
-                          className={`w-full text-left rounded-lg px-3 py-2.5 transition-all group ${
-                            isActive
-                              ? "bg-secondary border border-border"
-                              : "hover:bg-secondary/40 border border-transparent"
-                          }`}
-                        >
-                          <div className="flex items-center gap-1.5 mb-1">
-                            <ProjectLogo logoUrl={c.projectA.logo_url} logoEmoji={c.projectA.logo_emoji} name={c.projectA.name} size="xs" />
-                            <span className="text-[10px] text-muted-foreground">vs</span>
-                            <ProjectLogo logoUrl={c.projectB.logo_url} logoEmoji={c.projectB.logo_emoji} name={c.projectB.name} size="xs" />
-                          </div>
-                          <p className="text-xs font-medium text-foreground truncate">
-                            {c.projectA.name} vs {c.projectB.name}
-                          </p>
-                          <p className="text-[10px] text-muted-foreground mt-0.5 flex items-center gap-1">
-                            <Clock className="h-2.5 w-2.5" />
-                            {formatDistanceToNow(new Date(c.created_at), { addSuffix: true })}
-                          </p>
-                        </button>
-                      );
-                    })
-                  )}
-                </div>
-              </div>
-            </motion.aside>
-          )}
-        </AnimatePresence>
+              ))
+            )}
+          </div>
+        </aside>
 
         {/* ── Main Content ── */}
         <main className="flex-1 overflow-y-auto">
-          <div className="max-w-5xl mx-auto px-4 py-8">
-            {/* Toggle sidebar + header */}
-            <div className="flex items-center gap-3 mb-8">
-              {!sidebarOpen && (
-                <button
-                  onClick={() => setSidebarOpen(true)}
-                  className="hidden md:flex h-8 w-8 items-center justify-center rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-secondary/30 transition-colors"
-                >
-                  <PanelLeft className="h-4 w-4" />
-                </button>
-              )}
-              <div className="flex-1">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border bg-secondary/50 mb-3">
-                  <Bot className="w-3.5 h-3.5 text-muted-foreground" />
-                  <span className="text-xs font-medium text-muted-foreground">AI Comparison</span>
-                </div>
-                <h1 className="text-2xl md:text-3xl font-bold font-['Space_Grotesk'] text-foreground">
-                  Compare DePIN Projects
-                </h1>
-                <p className="text-muted-foreground text-sm mt-1">
-                  Select two projects for AI-powered analysis of strengths, risks, and outlook.
-                </p>
+          <div className="absolute inset-0 bg-grid opacity-15 pointer-events-none" />
+          <div className="gradient-radial-top fixed inset-0 pointer-events-none" />
+
+          <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-8">
+            {/* Header */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border bg-secondary/50 mb-3">
+                <Bot className="w-3.5 h-3.5 text-muted-foreground" />
+                <span className="text-xs font-medium text-muted-foreground">AI Comparison</span>
               </div>
-            </div>
+              <h1 className="text-2xl md:text-3xl font-bold font-['Space_Grotesk'] text-foreground">
+                Compare DePIN Projects
+              </h1>
+              <p className="text-muted-foreground text-sm mt-1">
+                Select two projects for AI-powered analysis of strengths, risks, and outlook.
+              </p>
+            </motion.div>
 
             {/* Selection Panel */}
             <motion.div
@@ -440,7 +456,6 @@ const CompareProjects = () => {
                   exit={{ opacity: 0, y: -20 }}
                   className="space-y-6"
                 >
-                  {/* Result header */}
                   <div className="flex items-center gap-3 flex-wrap">
                     {isCached ? (
                       <Badge variant="secondary" className="gap-1 text-xs">
@@ -458,7 +473,6 @@ const CompareProjects = () => {
                     )}
                   </div>
 
-                  {/* Summary */}
                   <div className="rounded-2xl border border-border bg-card/80 p-6">
                     <div className="flex items-center gap-2 mb-3">
                       <Bot className="w-4 h-4 text-muted-foreground" />
@@ -467,7 +481,6 @@ const CompareProjects = () => {
                     <p className="text-sm text-secondary-foreground leading-relaxed">{result.summary}</p>
                   </div>
 
-                  {/* Strengths — side by side */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="rounded-2xl border border-border bg-card/80 p-6">
                       <div className="flex items-center gap-2 mb-4">
@@ -503,7 +516,6 @@ const CompareProjects = () => {
                     </div>
                   </div>
 
-                  {/* Risks */}
                   <div className="rounded-2xl border border-border bg-card/80 p-6">
                     <div className="flex items-center gap-2 mb-4">
                       <AlertTriangle className="w-4 h-4 text-destructive" />
@@ -519,7 +531,6 @@ const CompareProjects = () => {
                     </ul>
                   </div>
 
-                  {/* Long-Term Outlook */}
                   <div className="rounded-2xl border border-border bg-card/80 p-6">
                     <div className="flex items-center gap-2 mb-3">
                       <TrendingUp className="w-4 h-4 text-muted-foreground" />
@@ -528,7 +539,6 @@ const CompareProjects = () => {
                     <p className="text-sm text-secondary-foreground leading-relaxed">{result.long_term_outlook}</p>
                   </div>
 
-                  {/* Conclusion */}
                   <div className="rounded-2xl border border-border bg-secondary/30 p-6">
                     <div className="flex items-center gap-2 mb-3">
                       <Shield className="w-4 h-4 text-muted-foreground" />
@@ -537,7 +547,6 @@ const CompareProjects = () => {
                     <p className="text-sm text-secondary-foreground leading-relaxed">{result.conclusion}</p>
                   </div>
 
-                  {/* Sentiment Side-by-Side */}
                   {projectA && projectB && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <SentimentBadge projectId={projectA.id} projectName={projectA.name} />
@@ -545,7 +554,6 @@ const CompareProjects = () => {
                     </div>
                   )}
 
-                  {/* Create Forecast from comparison */}
                   {user && projectA && projectB && (
                     <div className="rounded-2xl border border-primary/20 bg-primary/5 p-6 text-center">
                       <h3 className="text-sm font-semibold text-foreground mb-2">Have a prediction based on this analysis?</h3>
@@ -566,7 +574,6 @@ const CompareProjects = () => {
                     </div>
                   )}
 
-                  {/* Disclaimer */}
                   <p className="text-[11px] text-muted-foreground text-center pt-2">
                     This analysis is AI-generated and not financial advice. Always do your own research.
                   </p>
