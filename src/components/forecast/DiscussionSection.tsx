@@ -1,10 +1,10 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MessageSquare, Send, Trash2, User as UserIcon,
   Pencil, Check, X, Heart, MessageCircle, MoreHorizontal,
-  Flag, ThumbsUp, ThumbsDown, ChevronDown, ChevronUp
+  Flag, ChevronDown, ChevronUp
 } from "lucide-react";
 import UserAvatar from "@/components/UserAvatar";
 import { Button } from "@/components/ui/button";
@@ -32,13 +32,12 @@ import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 
 // ── Reply Thread (Polymarket-style) ──
-const CommentReplyThread = ({ commentId, forecastId }: { commentId: string; forecastId: string }) => {
+const CommentReplyThread = ({ commentId, forecastId, showReplyInput, onToggleReplyInput }: { commentId: string; forecastId: string; showReplyInput: boolean; onToggleReplyInput: () => void }) => {
   const { user } = useAuth();
   const { data: replies = [] } = useForecastCommentReplies(commentId);
   const createReply = useCreateForecastCommentReply();
   const deleteReply = useDeleteForecastCommentReply();
   const [replyText, setReplyText] = useState("");
-  const [showInput, setShowInput] = useState(false);
   const [showReplies, setShowReplies] = useState(false);
 
   const replyIds = useMemo(() => replies.map((r) => r.id), [replies]);
@@ -51,7 +50,7 @@ const CommentReplyThread = ({ commentId, forecastId }: { commentId: string; fore
     try {
       await createReply.mutateAsync({ commentId, replyText: replyText.trim(), forecastId });
       setReplyText("");
-      setShowInput(false);
+      onToggleReplyInput();
       setShowReplies(true);
       toast.success("Reply posted");
     } catch { toast.error("Failed to post reply"); }
@@ -93,17 +92,17 @@ const CommentReplyThread = ({ commentId, forecastId }: { commentId: string; fore
                     </span>
                   </div>
                   <p className="text-[13px] text-foreground/80 leading-relaxed mt-0.5">{reply.reply_text}</p>
-                  <div className="flex items-center gap-3 mt-1.5">
+                   <div className="flex items-center gap-3 mt-1.5">
                     <button
                       onClick={() => {
                         if (!user) { toast.error("Sign in to like"); return; }
                         toggleReplyLike.mutate({ replyId: reply.id, isLiked: likeInfo.userLiked, forecastId });
                       }}
                       className={`flex items-center gap-1 text-[11px] transition-colors ${
-                        likeInfo.userLiked ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                        likeInfo.userLiked ? "text-red-500" : "text-muted-foreground hover:text-foreground"
                       }`}
                     >
-                      <ThumbsUp className={`h-3 w-3 ${likeInfo.userLiked ? "fill-current" : ""}`} />
+                      <Heart className={`h-3 w-3 ${likeInfo.userLiked ? "fill-red-500" : ""}`} />
                       {likeInfo.count > 0 && <span>{likeInfo.count}</span>}
                     </button>
                     {user?.id === reply.user_id && (
@@ -122,7 +121,7 @@ const CommentReplyThread = ({ commentId, forecastId }: { commentId: string; fore
         })}
       </AnimatePresence>
 
-      {showInput ? (
+      {showReplyInput ? (
         <div className="ml-8 mt-2 space-y-2">
           <div className="flex gap-2.5">
             <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-1">
@@ -137,11 +136,11 @@ const CommentReplyThread = ({ commentId, forecastId }: { commentId: string; fore
                 autoFocus
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSubmit();
-                  if (e.key === "Escape") { setShowInput(false); setReplyText(""); }
+                  if (e.key === "Escape") { onToggleReplyInput(); setReplyText(""); }
                 }}
               />
               <div className="flex items-center gap-2">
-                <Button size="sm" variant="ghost" className="h-7 text-xs text-muted-foreground" onClick={() => { setShowInput(false); setReplyText(""); }}>Cancel</Button>
+                <Button size="sm" variant="ghost" className="h-7 text-xs text-muted-foreground" onClick={() => { onToggleReplyInput(); setReplyText(""); }}>Cancel</Button>
                 <Button size="sm" className="h-7 text-xs gap-1 rounded-lg" disabled={!replyText.trim() || createReply.isPending} onClick={handleSubmit}>
                   Reply
                 </Button>
@@ -192,6 +191,7 @@ export default function DiscussionSection({
   const commentIds = useMemo(() => comments.map((c) => c.id), [comments]);
   const { data: likesMap = {} } = useForecastCommentLikes(commentIds);
   const toggleLike = useToggleForecastCommentLike();
+  const [replyOpenFor, setReplyOpenFor] = useState<string | null>(null);
 
   const handleReport = (commentId: string) => {
     toast.success("Comment reported. Our team will review it.");
@@ -342,7 +342,7 @@ export default function DiscussionSection({
                       <>
                         <p className="text-[13px] text-foreground/80 leading-relaxed whitespace-pre-wrap">{comment.comment_text}</p>
                         
-                        {/* Action bar — Polymarket style: like, reply, inline */}
+                        {/* Action bar */}
                         <div className="flex items-center gap-4 mt-2">
                           <button
                             onClick={() => {
@@ -350,19 +350,15 @@ export default function DiscussionSection({
                               toggleLike.mutate({ commentId: comment.id, isLiked: likeInfo.userLiked, forecastId });
                             }}
                             className={`flex items-center gap-1.5 text-[11px] font-medium transition-colors ${
-                              likeInfo.userLiked ? "text-primary" : "text-muted-foreground/60 hover:text-foreground"
+                              likeInfo.userLiked ? "text-red-500" : "text-muted-foreground/60 hover:text-foreground"
                             }`}
                           >
-                            <ThumbsUp className={`h-3.5 w-3.5 ${likeInfo.userLiked ? "fill-current" : ""}`} />
+                            <Heart className={`h-3.5 w-3.5 ${likeInfo.userLiked ? "fill-red-500" : ""}`} />
                             {likeInfo.count > 0 ? likeInfo.count : "Like"}
                           </button>
                           {user && (
                             <button
-                              onClick={() => {
-                                // Toggle reply input via the CommentReplyThread
-                                const replyBtn = document.querySelector(`[data-reply-trigger="${comment.id}"]`) as HTMLButtonElement;
-                                if (replyBtn) replyBtn.click();
-                              }}
+                              onClick={() => setReplyOpenFor(replyOpenFor === comment.id ? null : comment.id)}
                               className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground/60 hover:text-foreground transition-colors"
                             >
                               <MessageCircle className="h-3.5 w-3.5" /> Reply
@@ -373,7 +369,7 @@ export default function DiscussionSection({
                     )}
 
                     {/* Reply thread */}
-                    <CommentReplyThread commentId={comment.id} forecastId={forecastId} />
+                    <CommentReplyThread commentId={comment.id} forecastId={forecastId} showReplyInput={replyOpenFor === comment.id} onToggleReplyInput={() => setReplyOpenFor(replyOpenFor === comment.id ? null : comment.id)} />
                   </div>
                 </div>
               </div>

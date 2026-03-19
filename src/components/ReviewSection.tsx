@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trash2, ThumbsUp, MessageSquare, Send } from "lucide-react";
+import { Trash2, Heart, MessageSquare, Send } from "lucide-react";
 import UserAvatar from "@/components/UserAvatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useReviews, useCreateReview, useDeleteReview, type Review } from "@/hooks/useReviews";
@@ -241,11 +241,11 @@ const ReviewSection = ({ projectId, projectName, projectSlug }: ReviewSectionPro
                     }}
                     className={`flex items-center gap-1.5 text-xs transition-colors ${
                       likeInfo.userLiked
-                        ? "text-primary font-medium"
+                        ? "text-red-500 font-medium"
                         : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    <ThumbsUp className={`h-3.5 w-3.5 ${likeInfo.userLiked ? "fill-primary" : ""}`} />
+                    <Heart className={`h-3.5 w-3.5 ${likeInfo.userLiked ? "fill-red-500" : ""}`} />
                     {likeInfo.count > 0 ? likeInfo.count : "Like"}
                   </button>
 
