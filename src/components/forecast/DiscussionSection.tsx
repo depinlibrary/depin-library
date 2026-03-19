@@ -342,7 +342,7 @@ export default function DiscussionSection({
                       <>
                         <p className="text-[13px] text-foreground/80 leading-relaxed whitespace-pre-wrap">{comment.comment_text}</p>
                         
-                        {/* Action bar — Polymarket style: like, reply, inline */}
+                        {/* Action bar */}
                         <div className="flex items-center gap-4 mt-2">
                           <button
                             onClick={() => {
@@ -350,23 +350,14 @@ export default function DiscussionSection({
                               toggleLike.mutate({ commentId: comment.id, isLiked: likeInfo.userLiked, forecastId });
                             }}
                             className={`flex items-center gap-1.5 text-[11px] font-medium transition-colors ${
-                              likeInfo.userLiked ? "text-primary" : "text-muted-foreground/60 hover:text-foreground"
+                              likeInfo.userLiked ? "text-red-500" : "text-muted-foreground/60 hover:text-foreground"
                             }`}
                           >
-                            <ThumbsUp className={`h-3.5 w-3.5 ${likeInfo.userLiked ? "fill-current" : ""}`} />
+                            <Heart className={`h-3.5 w-3.5 ${likeInfo.userLiked ? "fill-red-500" : ""}`} />
                             {likeInfo.count > 0 ? likeInfo.count : "Like"}
                           </button>
                           {user && (
-                            <button
-                              onClick={() => {
-                                // Toggle reply input via the CommentReplyThread
-                                const replyBtn = document.querySelector(`[data-reply-trigger="${comment.id}"]`) as HTMLButtonElement;
-                                if (replyBtn) replyBtn.click();
-                              }}
-                              className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground/60 hover:text-foreground transition-colors"
-                            >
-                              <MessageCircle className="h-3.5 w-3.5" /> Reply
-                            </button>
+                            <ReplyTriggerButton commentId={comment.id} />
                           )}
                         </div>
                       </>
