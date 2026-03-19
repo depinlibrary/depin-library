@@ -259,7 +259,7 @@ const Overview = () => {
                     className="group relative flex flex-col rounded-xl border border-border bg-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20 h-full">
                     
                     <div className="p-5 flex-1 flex flex-col">
-                      {/* Header: logos + time */}
+                      {/* Header: logos + status */}
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-2.5">
                           <div className="flex items-center -space-x-2">
@@ -280,13 +280,13 @@ const Overview = () => {
                             <span className="text-[10px] font-bold text-muted-foreground uppercase">vs</span>
                           )}
                         </div>
-                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${!timeLeft ? 'bg-destructive/10 text-destructive' : 'bg-green-500/10 text-green-600 dark:text-green-400'}`}>
-                          {timeLeft ? (
+                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${isEnded ? 'bg-destructive/10 text-destructive' : 'bg-green-500/10 text-green-600 dark:text-green-400'}`}>
+                          {isEnded ? "Ended" : (
                             <span className="inline-flex items-center gap-1">
                               <Clock className="h-3 w-3" />
-                              {timeLeft}
+                              Live · {timeLeft}
                             </span>
-                          ) : "Ended"}
+                          )}
                         </span>
                       </div>
 
@@ -299,7 +299,6 @@ const Overview = () => {
                       <div className="mt-5 space-y-2.5">
                         <div className="flex items-center justify-between">
                           <span className="text-xl font-bold text-foreground">{yesPct.toFixed(0)}% chance</span>
-                          <span className="text-xs text-muted-foreground">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</span>
                         </div>
                         <div className="h-2 rounded-full bg-secondary overflow-hidden">
                           <div
@@ -309,14 +308,17 @@ const Overview = () => {
                       </div>
                     </div>
 
-                    {/* Vote-style footer */}
-                    <div className="px-5 pb-5 pt-1 flex gap-2.5">
-                      <span className="flex-1 rounded-lg py-2.5 text-sm font-bold text-center bg-primary/10 text-primary">
-                        Yes {yesPct.toFixed(0)}¢
-                      </span>
-                      <span className="flex-1 rounded-lg py-2.5 text-sm font-bold text-center bg-destructive/10 text-destructive">
-                        No {noPct.toFixed(0)}¢
-                      </span>
+                    {/* Vote-style footer + total votes */}
+                    <div className="px-5 pb-5 pt-1 space-y-2">
+                      <div className="flex gap-2.5">
+                        <span className="flex-1 rounded-lg py-2.5 text-sm font-bold text-center bg-primary/10 text-primary">
+                          Yes {yesPct.toFixed(0)}¢
+                        </span>
+                        <span className="flex-1 rounded-lg py-2.5 text-sm font-bold text-center bg-destructive/10 text-destructive">
+                          No {noPct.toFixed(0)}¢
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground text-center">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</p>
                     </div>
                   </Link>
                 </motion.div>);

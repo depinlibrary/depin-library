@@ -497,9 +497,6 @@ const BillboardHero = ({
              {topForecasts.length > 0 &&
             <motion.div variants={fadeUp} className="col-span-1 sm:col-span-2 lg:col-span-4 rounded-lg border border-border bg-card/40 backdrop-blur-md p-4 sm:p-5">
                  <div className="flex items-center gap-2 mb-4">
-                   <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10">
-                     <BarChart3 className="h-4 w-4 text-primary" />
-                   </div>
                    <span className="text-sm font-semibold text-foreground">Top Forecasts</span>
                    <Link to="/forecasts" className="ml-auto text-xs font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
                      View all <ArrowRight className="h-3.5 w-3.5" />
@@ -532,7 +529,7 @@ const BillboardHero = ({
                             )}
                           </div>
                           <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${isEnded ? 'bg-destructive/10 text-destructive' : 'bg-green-500/10 text-green-600 dark:text-green-400'}`}>
-                            {isEnded ? "Ended" : `${totalVotes} vote${totalVotes !== 1 ? "s" : ""}`}
+                            {isEnded ? "Ended" : "Live"}
                           </span>
                         </div>
 
@@ -555,21 +552,27 @@ const BillboardHero = ({
                         </div>
                       </div>
 
-                      {/* Vote-style footer */}
+                      {/* Vote-style footer + total votes */}
                       {!isEnded ? (
-                        <div className="px-4 pb-4 pt-1 flex gap-2">
-                          <span className="flex-1 rounded-lg py-2 text-xs font-bold text-center bg-primary/10 text-primary">
-                            Yes {yesPercent.toFixed(0)}¢
-                          </span>
-                          <span className="flex-1 rounded-lg py-2 text-xs font-bold text-center bg-destructive/10 text-destructive">
-                            No {noPercent.toFixed(0)}¢
-                          </span>
+                        <div className="px-4 pb-4 pt-1 space-y-2">
+                          <div className="flex gap-2">
+                            <span className="flex-1 rounded-lg py-2 text-xs font-bold text-center bg-primary/10 text-primary">
+                              Yes {yesPercent.toFixed(0)}¢
+                            </span>
+                            <span className="flex-1 rounded-lg py-2 text-xs font-bold text-center bg-destructive/10 text-destructive">
+                              No {noPercent.toFixed(0)}¢
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground text-center">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</p>
                         </div>
                       ) : (
-                        <div className={`flex items-center justify-center px-4 py-2.5 border-t border-border ${yesPercent >= 50 ? "bg-primary/5" : "bg-destructive/5"}`}>
-                          <span className={`text-xs font-bold ${yesPercent >= 50 ? "text-primary" : "text-destructive"}`}>
-                            Resolved: {yesPercent >= 50 ? "Yes" : "No"}
-                          </span>
+                        <div className="px-4 pb-4 pt-1 space-y-2">
+                          <div className={`flex items-center justify-center rounded-lg py-2.5 ${yesPercent >= 50 ? "bg-primary/5" : "bg-destructive/5"}`}>
+                            <span className={`text-xs font-bold ${yesPercent >= 50 ? "text-primary" : "text-destructive"}`}>
+                              Resolved: {yesPercent >= 50 ? "Yes" : "No"}
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground text-center">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</p>
                         </div>
                       )}
                     </Link>);
