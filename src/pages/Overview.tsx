@@ -9,8 +9,7 @@ import {
   GitCompare,
   Briefcase,
   TrendingUp,
-  Clock,
-  Users } from
+  Clock } from
 "lucide-react";
 import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
