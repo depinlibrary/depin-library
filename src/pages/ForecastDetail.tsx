@@ -566,26 +566,26 @@ const ForecastDetail = () => {
                       </div>
                     </div>
                     <div className="flex gap-2.5">
-                      <Button
+                      <button
                         onClick={() => handleVote("yes")}
-                        variant={forecast.user_vote === "yes" ? "default" : "outline"}
-                        className={`flex-1 gap-2 h-11 text-sm font-semibold transition-all rounded-xl ${
-                          forecast.user_vote === "yes" ? "shadow-md shadow-primary/20" : ""
+                        className={`flex-1 rounded-lg py-2.5 text-sm font-bold transition-all duration-200 ${
+                          forecast.user_vote === "yes"
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-primary/10 text-primary hover:bg-primary/20"
                         }`}
                       >
-                        <ThumbsUp className="h-4 w-4" />
-                        {forecast.user_vote === "yes" ? "Voted Yes ✓" : "Yes"}
-                      </Button>
-                      <Button
+                        {forecast.user_vote === "yes" ? "Voted Yes ✓" : `Yes ${yesPct.toFixed(0)}¢`}
+                      </button>
+                      <button
                         onClick={() => handleVote("no")}
-                        variant={forecast.user_vote === "no" ? "destructive" : "outline"}
-                        className={`flex-1 gap-2 h-11 text-sm font-semibold transition-all rounded-xl ${
-                          forecast.user_vote === "no" ? "shadow-md shadow-destructive/20" : ""
+                        className={`flex-1 rounded-lg py-2.5 text-sm font-bold transition-all duration-200 ${
+                          forecast.user_vote === "no"
+                            ? "bg-destructive text-destructive-foreground"
+                            : "bg-destructive/10 text-destructive hover:bg-destructive/20"
                         }`}
                       >
-                        <ThumbsDown className="h-4 w-4" />
-                        {forecast.user_vote === "no" ? "Voted No ✓" : "No"}
-                      </Button>
+                        {forecast.user_vote === "no" ? "Voted No ✓" : `No ${noPct.toFixed(0)}¢`}
+                      </button>
                     </div>
                     {forecast.user_vote && (
                       <motion.p initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}
