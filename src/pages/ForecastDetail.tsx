@@ -574,7 +574,7 @@ const ForecastDetail = () => {
                             : "bg-primary/10 text-primary hover:bg-primary/20"
                         }`}
                       >
-                        {forecast.user_vote === "yes" ? "Voted Yes ✓" : `Yes ${yesPct.toFixed(0)}¢`}
+                        {forecast.user_vote === "yes" ? "Voted Yes ✓" : "Yes"}
                       </button>
                       <button
                         onClick={() => handleVote("no")}
