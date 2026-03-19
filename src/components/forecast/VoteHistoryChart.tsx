@@ -8,8 +8,6 @@ interface VoteHistoryChartProps {
 }
 
 export default function VoteHistoryChart({ voteHistory }: VoteHistoryChartProps) {
-  if (voteHistory.length <= 1) return null;
-
   // Calculate percentage data for a more dynamic chart
   const chartData = useMemo(() => {
     return voteHistory.map((entry) => {
@@ -23,6 +21,8 @@ export default function VoteHistoryChart({ voteHistory }: VoteHistoryChartProps)
       };
     });
   }, [voteHistory]);
+
+  if (voteHistory.length <= 1) return null;
 
   const latest = chartData[chartData.length - 1];
   const first = chartData[0];
