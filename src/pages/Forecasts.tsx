@@ -465,8 +465,8 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
             {/* Top Forecasts */}
             <div className="rounded-2xl border border-border bg-card overflow-hidden flex-1 flex flex-col min-h-0">
               <div className="px-5 py-3.5 flex items-center justify-between shrink-0">
-                <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Top Forecasts</h3>
-                <Link to="/forecasts" className="text-xs text-muted-foreground hover:text-primary transition-colors">View all →</Link>
+                <h3 className="text-base font-bold text-foreground font-['Space_Grotesk']">Top Forecasts</h3>
+                <span></span>
               </div>
               <div className="flex-1 overflow-y-auto">
                 {topLiveForecasts.map((f, i) => {
@@ -508,7 +508,7 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
             {trendingTopics.length > 0 && (
               <div className="rounded-2xl border border-border bg-card overflow-hidden shrink-0">
                 <div className="px-5 py-3.5 flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Trending Projects</h3>
+                  <h3 className="text-base font-bold text-foreground font-['Space_Grotesk']">Trending Projects</h3>
                   <TrendingUp className="h-4 w-4 text-primary/60" />
                 </div>
                 <div>
@@ -517,15 +517,14 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                       <span className="text-xs font-bold text-muted-foreground/50 w-4 shrink-0">{i + 1}</span>
                       <div className="flex items-center gap-2 flex-1 min-w-0">
                         {project.logo_url ? (
-                          <img src={project.logo_url} alt={project.name} className="w-5 h-5 rounded-md object-contain bg-secondary" />
+                          <img src={project.logo_url} alt={project.name} className="w-7 h-7 rounded-md object-contain bg-secondary" />
                         ) : (
-                          <span className="w-5 h-5 rounded-md flex items-center justify-center text-xs bg-secondary">{project.logo_emoji || "⬡"}</span>
+                          <span className="w-7 h-7 rounded-md flex items-center justify-center text-sm bg-secondary">{project.logo_emoji || "⬡"}</span>
                         )}
                         <span className="text-xs font-semibold text-foreground truncate">{project.name}</span>
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
                         <span className="text-[10px] font-medium text-muted-foreground">{project.totalVotes} votes</span>
-                        <TrendingUp className="h-3 w-3 text-primary/50" />
                       </div>
                     </Link>
                   ))}
@@ -780,11 +779,8 @@ const Forecasts = () => {
       <section className="sticky top-16 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
         <div className="container mx-auto px-4 py-2.5">
           <div className="flex items-center gap-2 overflow-x-auto">
-            {/* All Markets badge */}
-            <div className="flex items-center gap-1.5 shrink-0 rounded-full bg-primary/10 px-3 py-1.5 border border-primary/20">
-              <Radio className="h-3.5 w-3.5 text-primary" />
-              <span className="text-xs font-bold text-primary uppercase tracking-wide">All Markets</span>
-            </div>
+            {/* All Markets label */}
+            <span className="text-xs font-bold text-foreground uppercase tracking-wide shrink-0">All Markets</span>
 
             {/* Divider */}
             <div className="h-5 w-px bg-border shrink-0" />
@@ -843,7 +839,7 @@ const Forecasts = () => {
               onClick={() => setShowFilters(!showFilters)}
               className={`shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
                 showFilters || statusFilter !== "all" || sort !== "votes" || projectFilter
-                  ? "bg-primary/10 text-primary border border-primary/20"
+                  ? "bg-secondary text-foreground border border-border"
                   : "text-muted-foreground hover:bg-secondary hover:text-foreground"
               }`}
             >

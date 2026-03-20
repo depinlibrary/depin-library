@@ -57,9 +57,9 @@ function ProjectChart({ projectId, projectName, dimension }: { projectId: string
   const label = dimension === "token_price" ? "Price" : "Market Cap";
 
   return (
-    <div>
+    <div className="px-0">
       {/* Current value + 24h change */}
-      <div className="flex items-center justify-between mb-3 px-1 flex-wrap gap-y-1">
+      <div className="flex items-center justify-between mb-3 flex-wrap gap-y-1">
         <div className="flex items-center gap-2 min-w-0">
           {currentValue != null && (
             <span className="text-base font-bold text-foreground font-['Space_Grotesk']">
@@ -77,7 +77,7 @@ function ProjectChart({ projectId, projectName, dimension }: { projectId: string
       </div>
       <div className="h-52">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={chartData} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
+          <AreaChart data={chartData} margin={{ top: 5, right: 5, left: -10, bottom: 0 }}>
             <defs>
               <linearGradient id={`priceGrad-${projectId}`} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor={isPositive ? "hsl(var(--primary))" : "hsl(var(--destructive))"} stopOpacity={0.25} />
@@ -164,7 +164,7 @@ export default function PriceChart({ projects, dimension }: PriceChartProps) {
           <span className="text-[11px] text-muted-foreground font-medium truncate">{projects[0].projectName}</span>
         )}
       </div>
-      <div className="p-6">
+      <div className="px-5 py-5">
         <ProjectChart
           key={projects[activeIdx].projectId}
           projectId={projects[activeIdx].projectId}
