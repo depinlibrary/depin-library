@@ -164,7 +164,7 @@ export default function PriceChart({ projects, dimension }: PriceChartProps) {
           <span className="text-[11px] text-muted-foreground font-medium truncate">{projects[0].projectName}</span>
         )}
       </div>
-      <div className="p-6">
+      <div className="px-5 py-5">
         <ProjectChart
           key={projects[activeIdx].projectId}
           projectId={projects[activeIdx].projectId}

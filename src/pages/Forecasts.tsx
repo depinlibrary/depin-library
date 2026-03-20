@@ -839,7 +839,7 @@ const Forecasts = () => {
               onClick={() => setShowFilters(!showFilters)}
               className={`shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
                 showFilters || statusFilter !== "all" || sort !== "votes" || projectFilter
-                  ? "bg-primary/10 text-primary border border-primary/20"
+                  ? "bg-secondary text-foreground border border-border"
                   : "text-muted-foreground hover:bg-secondary hover:text-foreground"
               }`}
             >
