@@ -6,6 +6,7 @@ import { useNavigate, Link } from "react-router-dom";
 import SentimentBadge from "@/components/SentimentBadge";
 import NotificationDropdown from "@/components/NotificationDropdown";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useAvatar } from "@/hooks/useAvatar";
 import ProjectLogo from "@/components/ProjectLogo";
 import { useProjects } from "@/hooks/useProjects";
 import { useAuth } from "@/contexts/AuthContext";
