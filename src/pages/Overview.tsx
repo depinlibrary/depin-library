@@ -175,20 +175,20 @@ const Overview = () => {
                         <div className="flex items-start gap-3">
                           <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="md" />
                           <div className="min-w-0 flex-1">
-                            <h3 className="text-base font-semibold text-foreground truncate group-hover:underline transition-all">{project.name}</h3>
+                            <h3 className="text-base font-semibold text-foreground truncate group-hover:text-primary transition-colors">{project.name}</h3>
                             <p className="text-xs text-muted-foreground mt-0.5">{project.category} · {project.blockchain}</p>
                           </div>
-                          {project.status === "active" && (
-                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-green-500/10 text-green-600 dark:text-green-400 shrink-0">Active</span>
-                          )}
+                          {project.status === "active" &&
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-green-500/10 text-green-600 dark:text-green-400 shrink-0">Active</span>
+                        }
                         </div>
 
                         {/* Description */}
                         <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3 flex-1">{project.description || project.tagline}</p>
 
                         {/* Market data row */}
-                        {m?.price_usd && (
-                          <div className="flex items-center gap-4 pt-2 border-t border-border/50">
+                        {m?.price_usd &&
+                      <div className="flex items-center gap-4 pt-2 border-t border-border/50">
                             <div>
                               <p className="text-[10px] text-muted-foreground mb-0.5">Price</p>
                               <p className="text-sm font-bold text-foreground tabular-nums">
@@ -201,16 +201,16 @@ const Overview = () => {
                                 {change >= 0 ? "+" : ""}{change.toFixed(1)}%
                               </p>
                             </div>
-                            {m.market_cap_usd && (
-                              <div>
+                            {m.market_cap_usd &&
+                        <div>
                                 <p className="text-[10px] text-muted-foreground mb-0.5">Market Cap</p>
                                 <p className="text-sm font-bold text-foreground tabular-nums">
                                   {m.market_cap_usd >= 1e9 ? `$${(m.market_cap_usd / 1e9).toFixed(1)}B` : m.market_cap_usd >= 1e6 ? `$${(m.market_cap_usd / 1e6).toFixed(1)}M` : `$${(m.market_cap_usd / 1e3).toFixed(0)}K`}
                                 </p>
                               </div>
-                            )}
+                        }
                           </div>
-                        )}
+                      }
 
                         {/* CTA */}
                         <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground/60 group-hover:text-primary transition-colors">
@@ -238,7 +238,7 @@ const Overview = () => {
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-destructive" />
                 </span>
               </div>
-              <Link to="/forecasts" className="text-xs font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
+              <Link to="/forecasts" className="text-xs font-medium transition-colors flex items-center gap-1 text-muted-foreground">
                 All forecasts <ArrowRight className="h-3 w-3" />
               </Link>
             </motion.div>
@@ -263,30 +263,30 @@ const Overview = () => {
                             logoUrl={forecast.project_a_logo_url}
                             logoEmoji={forecast.project_a_logo_emoji || "⬡"}
                             name={forecast.project_a_name || ""}
-                            size="sm" />
-                          {forecast.project_b_name && (
-                            <>
+                            size="xs" />
+                          {forecast.project_b_name &&
+                          <>
                               <span className="text-[10px] font-bold text-muted-foreground uppercase">vs</span>
                               <ProjectLogo
-                                logoUrl={forecast.project_b_logo_url}
-                                logoEmoji={forecast.project_b_logo_emoji || "⬡"}
-                                name={forecast.project_b_name}
-                                size="sm" />
+                              logoUrl={forecast.project_b_logo_url}
+                              logoEmoji={forecast.project_b_logo_emoji || "⬡"}
+                              name={forecast.project_b_name}
+                              size="xs" />
                             </>
-                          )}
+                          }
                         </div>
                         <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${isEnded ? 'bg-destructive/10 text-destructive' : 'bg-green-500/10 text-green-600 dark:text-green-400'}`}>
-                          {isEnded ? "Ended" : (
-                            <span className="inline-flex items-center gap-1">
+                          {isEnded ? "Ended" :
+                          <span className="inline-flex items-center gap-1">
                               <Clock className="h-3 w-3" />
                               Live · {timeLeft}
                             </span>
-                          )}
+                          }
                         </span>
                       </div>
 
                       {/* Title */}
-                      <h3 className="text-sm font-semibold text-foreground leading-snug line-clamp-2 group-hover:underline transition-all duration-200 mb-auto">
+                      <h3 className="text-sm font-semibold text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors duration-200 mb-auto">
                         {forecast.title}
                       </h3>
 
