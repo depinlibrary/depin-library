@@ -438,13 +438,13 @@ const BillboardHero = ({
                 </div>
                 <div className="space-y-1.5">
                   {topGainers.map((p, i) => {
-                   const m = marketData[p.id];
-                   const change = m?.price_change_24h || 0;
-                   return (
-                     <Link
-                       key={p.id}
-                       to={`/project/${p.slug}`}
-                       className="group flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-secondary/50">
+                  const m = marketData[p.id];
+                  const change = m?.price_change_24h || 0;
+                  return (
+                    <Link
+                      key={p.id}
+                      to={`/project/${p.slug}`}
+                      className="group flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-secondary/50">
                        <span className="text-xs font-bold text-muted-foreground w-4 text-center">{i + 1}</span>
                        <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="sm" />
                        <div className="min-w-0 flex-1">
@@ -455,7 +455,7 @@ const BillboardHero = ({
                          <p className="text-xs font-bold text-neon-green tabular-nums">+{change.toFixed(1)}%</p>
                        </div>
                      </Link>);
-                 })}
+                })}
                   {topGainers.length === 0 && <p className="text-xs text-muted-foreground">No data yet</p>}
                 </div>
               </motion.div>
@@ -471,13 +471,13 @@ const BillboardHero = ({
                 </div>
                 <div className="space-y-1.5">
                   {topLosers.map((p, i) => {
-                   const m = marketData[p.id];
-                   const change = m?.price_change_24h || 0;
-                   return (
-                     <Link
-                       key={p.id}
-                       to={`/project/${p.slug}`}
-                       className="group flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-secondary/50">
+                  const m = marketData[p.id];
+                  const change = m?.price_change_24h || 0;
+                  return (
+                    <Link
+                      key={p.id}
+                      to={`/project/${p.slug}`}
+                      className="group flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-secondary/50">
                        <span className="text-xs font-bold text-muted-foreground w-4 text-center">{i + 1}</span>
                        <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="sm" />
                        <div className="min-w-0 flex-1">
@@ -488,7 +488,7 @@ const BillboardHero = ({
                          <p className="text-xs font-bold text-destructive tabular-nums">{change.toFixed(1)}%</p>
                        </div>
                      </Link>);
-                 })}
+                })}
                   {topLosers.length === 0 && <p className="text-xs text-muted-foreground">No data yet</p>}
                 </div>
               </motion.div>
@@ -498,7 +498,7 @@ const BillboardHero = ({
             <motion.div variants={fadeUp} className="col-span-1 sm:col-span-2 lg:col-span-4 rounded-lg border border-border bg-card/40 backdrop-blur-md p-4 sm:p-5">
                  <div className="flex items-center gap-2 mb-4">
                    <span className="text-sm font-semibold text-foreground">Top Forecasts</span>
-                   <Link to="/forecasts" className="ml-auto text-xs font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
+                   <Link to="/forecasts" className="ml-auto text-xs font-medium transition-colors flex items-center gap-1 text-muted-foreground">
                      View all <ArrowRight className="h-3.5 w-3.5" />
                    </Link>
                  </div>
@@ -518,13 +518,13 @@ const BillboardHero = ({
                         {/* Header: logos + status */}
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-1.5">
-                            <ProjectLogo logoUrl={f.project_a_logo_url || null} logoEmoji={f.project_a_logo_emoji || "⬡"} name={f.project_a_name || "Project"} size="sm" />
-                            {f.project_b_name && (
-                              <>
+                            <ProjectLogo logoUrl={f.project_a_logo_url || null} logoEmoji={f.project_a_logo_emoji || "⬡"} name={f.project_a_name || "Project"} size="xs" />
+                            {f.project_b_name &&
+                            <>
                                 <span className="text-[9px] font-bold text-muted-foreground uppercase">vs</span>
-                                <ProjectLogo logoUrl={f.project_b_logo_url || null} logoEmoji={f.project_b_logo_emoji || "⬡"} name={f.project_b_name} size="sm" />
+                                <ProjectLogo logoUrl={f.project_b_logo_url || null} logoEmoji={f.project_b_logo_emoji || "⬡"} name={f.project_b_name} size="xs" />
                               </>
-                            )}
+                            }
                           </div>
                           <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${isEnded ? 'bg-destructive/10 text-destructive' : 'bg-green-500/10 text-green-600 dark:text-green-400'}`}>
                             {isEnded ? "Ended" : "Live"}
@@ -532,7 +532,7 @@ const BillboardHero = ({
                         </div>
 
                         {/* Title */}
-                        <p className="text-sm font-semibold text-foreground line-clamp-2 leading-snug group-hover:underline transition-all mb-auto">{f.title}</p>
+                        <p className="text-sm font-semibold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors mb-auto">{f.title}</p>
 
                         {/* Percentage + bar */}
                         <div className="mt-4 space-y-2">
@@ -551,8 +551,8 @@ const BillboardHero = ({
                       </div>
 
                       {/* Vote-style footer + total votes */}
-                      {!isEnded ? (
-                        <div className="px-4 pb-4 pt-1 space-y-2">
+                      {!isEnded ?
+                      <div className="px-4 pb-4 pt-1 space-y-2">
                           <div className="flex gap-2">
                             <span className="flex-1 rounded-lg py-2 text-xs font-bold text-center bg-primary/10 text-primary">
                               Yes
@@ -562,9 +562,9 @@ const BillboardHero = ({
                             </span>
                           </div>
                           <p className="text-[10px] text-muted-foreground text-center">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</p>
-                        </div>
-                      ) : (
-                        <div className="px-4 pb-4 pt-1 space-y-2">
+                        </div> :
+
+                      <div className="px-4 pb-4 pt-1 space-y-2">
                           <div className={`flex items-center justify-center rounded-lg py-2.5 ${yesPercent >= 50 ? "bg-primary/5" : "bg-destructive/5"}`}>
                             <span className={`text-xs font-bold ${yesPercent >= 50 ? "text-primary" : "text-destructive"}`}>
                               Resolved: {yesPercent >= 50 ? "Yes" : "No"}
@@ -572,9 +572,9 @@ const BillboardHero = ({
                           </div>
                           <p className="text-[10px] text-muted-foreground text-center">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</p>
                         </div>
-                      )}
+                      }
                     </Link>);
-                 })}
+                })}
                   </div>
                </motion.div>
             }
