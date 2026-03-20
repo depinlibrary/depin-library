@@ -81,15 +81,15 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
           <div className="flex items-center gap-2.5">
             <div className="flex items-center -space-x-2">
               {forecast.project_a_logo_url ? (
-                <img src={forecast.project_a_logo_url} alt={forecast.project_a_name} className="w-7 h-7 rounded-lg object-contain border border-card bg-secondary relative z-10" />
+                <img src={forecast.project_a_logo_url} alt={forecast.project_a_name} className="w-9 h-9 rounded-lg object-contain border border-card bg-secondary relative z-10" />
               ) : (
-                <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs border border-card bg-secondary relative z-10">{forecast.project_a_logo_emoji || "⬡"}</span>
+                <span className="w-9 h-9 rounded-lg flex items-center justify-center text-sm border border-card bg-secondary relative z-10">{forecast.project_a_logo_emoji || "⬡"}</span>
               )}
               {forecast.project_b_name && (
                 forecast.project_b_logo_url ? (
-                  <img src={forecast.project_b_logo_url} alt={forecast.project_b_name} className="w-7 h-7 rounded-lg object-contain border border-card bg-secondary relative z-0" />
+                  <img src={forecast.project_b_logo_url} alt={forecast.project_b_name} className="w-9 h-9 rounded-lg object-contain border border-card bg-secondary relative z-0" />
                 ) : (
-                  <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs border border-card bg-secondary relative z-0">{forecast.project_b_logo_emoji || "⬡"}</span>
+                  <span className="w-9 h-9 rounded-lg flex items-center justify-center text-sm border border-card bg-secondary relative z-0">{forecast.project_b_logo_emoji || "⬡"}</span>
                 )
               )}
             </div>
@@ -110,7 +110,7 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
 
         {/* Title only */}
         <Link to={`/forecasts/${forecast.id}`} className="block mb-auto">
-          <h3 className="text-sm font-semibold text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors duration-200">
+          <h3 className="text-sm font-semibold text-foreground leading-snug line-clamp-2 group-hover:underline transition-all duration-200">
             {forecast.title}
           </h3>
         </Link>
@@ -184,10 +184,10 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
   const [activeSlide, setActiveSlide] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Left carousel: slide through ALL forecasts
+  // Left carousel: only show top 6 forecasts
   const heroForecasts = useMemo(() => {
     if (forecasts.length === 0) return [];
-    return forecasts;
+    return forecasts.slice(0, 6);
   }, [forecasts]);
 
   const [isPaused, setIsPaused] = useState(false);
@@ -339,7 +339,7 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
 
                   {/* Title */}
                   <Link to={`/forecasts/${current.id}`}>
-                    <h2 className="text-xl sm:text-2xl font-bold text-foreground leading-tight mb-5 font-['Space_Grotesk'] tracking-tight hover:text-primary transition-colors">
+                    <h2 className="text-xl sm:text-2xl font-bold text-foreground leading-tight mb-5 font-['Space_Grotesk'] tracking-tight hover:underline transition-all">
                       {current.title}
                     </h2>
                   </Link>
@@ -434,20 +434,20 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
 
             </div>
 
-            {/* Slide dots - left aligned */}
+            {/* Slide dots - left aligned, tight spacing */}
             {heroForecasts.length > 1 && (
-              <div className="flex items-center justify-start gap-2 mt-3">
+              <div className="flex items-center justify-start gap-0.5 mt-3">
                 {heroForecasts.map((_, i) => (
                   <button
                     key={i}
                     onClick={() => goToSlide(i)}
-                    className="p-1"
+                    className="p-0.5"
                     aria-label={`Go to slide ${i + 1}`}
                   >
                     <span className={`block rounded-full transition-all duration-300 ${
                       i === activeSlide
-                        ? 'w-6 h-2 bg-primary'
-                        : 'w-2 h-2 bg-muted-foreground/30 hover:bg-muted-foreground/50'
+                        ? 'w-5 h-1.5 bg-primary'
+                        : 'w-1.5 h-1.5 bg-muted-foreground/30 hover:bg-muted-foreground/50'
                     }`} />
                   </button>
                 ))}
