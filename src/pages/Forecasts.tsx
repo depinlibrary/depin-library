@@ -434,20 +434,20 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
 
             </div>
 
-            {/* Slide dots - left aligned */}
+            {/* Slide dots - left aligned, tight spacing */}
             {heroForecasts.length > 1 && (
-              <div className="flex items-center justify-start gap-2 mt-3">
+              <div className="flex items-center justify-start gap-0.5 mt-3">
                 {heroForecasts.map((_, i) => (
                   <button
                     key={i}
                     onClick={() => goToSlide(i)}
-                    className="p-1"
+                    className="p-0.5"
                     aria-label={`Go to slide ${i + 1}`}
                   >
                     <span className={`block rounded-full transition-all duration-300 ${
                       i === activeSlide
-                        ? 'w-6 h-2 bg-primary'
-                        : 'w-2 h-2 bg-muted-foreground/30 hover:bg-muted-foreground/50'
+                        ? 'w-5 h-1.5 bg-primary'
+                        : 'w-1.5 h-1.5 bg-muted-foreground/30 hover:bg-muted-foreground/50'
                     }`} />
                   </button>
                 ))}
