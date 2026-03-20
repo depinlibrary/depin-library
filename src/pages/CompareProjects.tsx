@@ -260,26 +260,26 @@ const CompareProjects = () => {
                             : "hover:bg-secondary/30 border border-transparent"
                         }`}
                       >
-                        <div className="flex items-center gap-2">
+                         <div className="flex items-center gap-2">
                           <div className="flex items-center gap-1 shrink-0">
-                            <div className="h-5 w-5 rounded-md overflow-hidden bg-secondary flex items-center justify-center">
+                            <div className="h-6 w-6 rounded-md overflow-hidden bg-secondary flex items-center justify-center">
                               {c.projectA.logo_url ? (
-                                <img src={c.projectA.logo_url} alt="" className="h-5 w-5 object-contain" />
+                                <img src={c.projectA.logo_url} alt="" className="h-6 w-6 object-contain" />
                               ) : (
-                                <span className="text-[10px]">{c.projectA.logo_emoji}</span>
+                                <span className="text-xs">{c.projectA.logo_emoji}</span>
                               )}
                             </div>
                             <span className="text-[9px] text-muted-foreground/50 font-medium">vs</span>
-                            <div className="h-5 w-5 rounded-md overflow-hidden bg-secondary flex items-center justify-center">
+                            <div className="h-6 w-6 rounded-md overflow-hidden bg-secondary flex items-center justify-center">
                               {c.projectB.logo_url ? (
-                                <img src={c.projectB.logo_url} alt="" className="h-5 w-5 object-contain" />
+                                <img src={c.projectB.logo_url} alt="" className="h-6 w-6 object-contain" />
                               ) : (
-                                <span className="text-[10px]">{c.projectB.logo_emoji}</span>
+                                <span className="text-xs">{c.projectB.logo_emoji}</span>
                               )}
                             </div>
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="text-[11px] font-medium text-foreground truncate leading-tight">
+                            <p className="text-xs font-medium text-foreground truncate leading-tight">
                               {c.projectA.name} vs {c.projectB.name}
                             </p>
                             <p className="text-[10px] text-muted-foreground/50 mt-0.5">
