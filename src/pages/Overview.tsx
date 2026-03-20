@@ -175,7 +175,7 @@ const Overview = () => {
                         <div className="flex items-start gap-3">
                           <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="md" />
                           <div className="min-w-0 flex-1">
-                            <h3 className="text-base font-semibold text-foreground truncate group-hover:text-primary transition-colors">{project.name}</h3>
+                            <h3 className="text-base font-semibold text-foreground truncate group-hover:underline transition-all">{project.name}</h3>
                             <p className="text-xs text-muted-foreground mt-0.5">{project.category} · {project.blockchain}</p>
                           </div>
                           {project.status === "active" && (
