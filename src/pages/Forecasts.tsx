@@ -560,7 +560,7 @@ const Forecasts = () => {
   const [projectBId, setProjectBId] = useState("");
   const [endDate, setEndDate] = useState("");
   const [timePreset, setTimePreset] = useState<string>("");
-  const [analysisDimensions, setAnalysisDimensions] = useState<string[]>([]);
+  
 
   const timePresets = [
     { value: "4h", label: "4 Hours", hours: 4 },
@@ -571,10 +571,10 @@ const Forecasts = () => {
   ];
 
   const dimensionOptions = [
-    { value: "token_price", label: "Token Price", Icon: DollarSign },
-    { value: "market_cap", label: "Market Cap", Icon: BarChart3 },
-    { value: "active_nodes", label: "Active Nodes", Icon: Server },
-    { value: "revenue", label: "Revenue", Icon: Activity },
+    { value: "token_price", label: "Token Price", disabled: false },
+    { value: "market_cap", label: "Market Cap", disabled: false },
+    { value: "active_nodes", label: "Nodes Revenue Infrastructure", disabled: true },
+    { value: "community_sentiment", label: "Community Sentiment", disabled: false },
   ];
 
   const handleTimePreset = (preset: string) => {
@@ -590,11 +590,7 @@ const Forecasts = () => {
     }
   };
 
-  const toggleDimension = (dim: string) => {
-    setAnalysisDimensions(prev =>
-      prev.includes(dim) ? prev.filter(d => d !== dim) : [...prev, dim]
-    );
-  };
+  const [forecastMarket, setForecastMarket] = useState<string>("");
 
   // Auto-open create dialog from compare page
   useEffect(() => {
@@ -709,7 +705,9 @@ const Forecasts = () => {
 
   const handleCreate = async () => {
     if (!title.trim()) { toast.error("Title required"); return; }
+    if (!description.trim()) { toast.error("Description required"); return; }
     if (!projectAId) { toast.error("Select a project"); return; }
+    if (!forecastMarket) { toast.error("Forecast market required"); return; }
     if (!endDate) { toast.error("End date required"); return; }
     if (new Date(endDate) <= new Date()) { toast.error("End date must be in the future"); return; }
 
@@ -720,7 +718,7 @@ const Forecasts = () => {
         projectAId,
         projectBId: projectBId && projectBId !== "none" ? projectBId : undefined,
         endDate: new Date(endDate).toISOString(),
-        analysisDimensions,
+        analysisDimensions: [forecastMarket],
       });
       toast.success("Forecast created!");
       setShowCreate(false);
@@ -730,7 +728,7 @@ const Forecasts = () => {
       setProjectBId("");
       setEndDate("");
       setTimePreset("");
-      setAnalysisDimensions([]);
+      setForecastMarket("");
     } catch (err: any) {
       toast.error(err.message || "Failed to create forecast");
     }
@@ -1031,12 +1029,12 @@ const Forecasts = () => {
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Description</label>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Description *</label>
               <Textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Additional context about this prediction..."
-                className="mt-1.5 min-h-[80px] resize-none"
+                className="mt-1.5 min-h-[80px] resize-y"
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -1121,32 +1119,29 @@ const Forecasts = () => {
               )}
             </div>
 
-            {/* Analysis Dimensions */}
+            {/* Forecast Market */}
             <div>
               <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Forecast Analysis <span className="normal-case text-muted-foreground/60">(optional)</span>
+                Forecast Market *
               </label>
-              <p className="text-[10px] text-muted-foreground mt-0.5 mb-2">Select metrics to track during the forecast period</p>
-              <div className="grid grid-cols-2 gap-2">
-                {dimensionOptions.map((dim) => {
-                  const DimIcon = dim.Icon;
-                  return (
-                    <button
-                      key={dim.value}
-                      type="button"
-                      onClick={() => toggleDimension(dim.value)}
-                      className={`flex items-center gap-2 rounded-lg px-3 py-2.5 text-xs font-medium transition-all border ${
-                        analysisDimensions.includes(dim.value)
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-border bg-secondary/30 text-muted-foreground hover:text-foreground hover:bg-secondary/60"
-                      }`}
-                    >
-                      <DimIcon className="h-3.5 w-3.5" />
-                      {dim.label}
-                    </button>
-                  );
-                })}
-              </div>
+              <p className="text-[10px] text-muted-foreground mt-0.5 mb-2">Select the market to track during the forecast period</p>
+              <Select value={forecastMarket} onValueChange={setForecastMarket}>
+                <SelectTrigger className="mt-1.5 h-9">
+                  <SelectValue placeholder="Select forecast market" />
+                </SelectTrigger>
+                <SelectContent position="popper" side="bottom" sideOffset={4} avoidCollisions={false} className="max-h-60">
+                  {dimensionOptions.map((dim) => (
+                    <SelectItem key={dim.value} value={dim.value} disabled={dim.disabled}>
+                      <span className="flex items-center gap-2">
+                        {dim.label}
+                        {dim.disabled && (
+                          <span className="ml-1 text-[10px] rounded-full bg-secondary px-1.5 py-0.5 text-muted-foreground">Coming soon</span>
+                        )}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <DialogFooter>
