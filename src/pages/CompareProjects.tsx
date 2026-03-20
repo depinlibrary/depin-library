@@ -196,7 +196,7 @@ const CompareProjects = () => {
 
       <div className="flex flex-1 pt-14">
         {/* ── Sidebar — always visible on md+ ── */}
-        <aside className="hidden md:flex flex-col w-[260px] shrink-0 border-r border-border bg-card/30 sticky top-14 h-[calc(100vh-3.5rem)]">
+        <aside className="hidden md:flex flex-col w-[260px] shrink-0 border-r border-border bg-card/30 sticky top-14 h-[calc(100vh-3.5rem)] ml-0">
           {/* Sidebar header */}
           <div className="flex items-center px-4 h-12 border-b border-border/50">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Comparison History</span>
