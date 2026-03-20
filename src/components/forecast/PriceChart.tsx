@@ -59,7 +59,7 @@ function ProjectChart({ projectId, projectName, dimension }: { projectId: string
   return (
     <div className="px-0">
       {/* Current value + 24h change */}
-      <div className="flex items-center justify-between mb-3 px-1 flex-wrap gap-y-1">
+      <div className="flex items-center justify-between mb-3 flex-wrap gap-y-1">
         <div className="flex items-center gap-2 min-w-0">
           {currentValue != null && (
             <span className="text-base font-bold text-foreground font-['Space_Grotesk']">
