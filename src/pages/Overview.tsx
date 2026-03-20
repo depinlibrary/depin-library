@@ -328,7 +328,7 @@ const Overview = () => {
         <motion.div initial="hidden" animate="visible" variants={stagger}>
           <motion.div variants={fadeUp} className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-semibold text-foreground font-['Space_Grotesk']">Recently Added</h2>
-            <Link to="/explore?sort=newest" className="text-xs font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
+            <Link to="/explore?sort=newest" className="text-xs font-medium transition-colors flex items-center gap-1 text-muted-foreground">
               View all <ArrowRight className="h-3 w-3" />
             </Link>
           </motion.div>
