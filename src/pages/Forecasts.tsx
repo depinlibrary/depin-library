@@ -1082,7 +1082,14 @@ const Forecasts = () => {
                 Forecast Market *
               </label>
               <p className="text-[10px] text-muted-foreground mt-0.5 mb-2">Select the market to track during the forecast period</p>
-              <Select value={forecastMarket} onValueChange={setForecastMarket}>
+              <Select value={forecastMarket} onValueChange={(v) => {
+                  setForecastMarket(v);
+                  // Reset project selections when market changes to token_price/market_cap
+                  if (v === "token_price" || v === "market_cap") {
+                    setProjectAId("");
+                    setProjectBId("");
+                  }
+                }}>
                 <SelectTrigger className="mt-1.5 h-9">
                   <SelectValue placeholder="Select forecast market" />
                 </SelectTrigger>
