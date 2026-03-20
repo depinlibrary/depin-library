@@ -573,8 +573,9 @@ const Forecasts = () => {
   const dimensionOptions = [
     { value: "token_price", label: "Token Price", disabled: false },
     { value: "market_cap", label: "Market Cap", disabled: false },
-    { value: "active_nodes", label: "Nodes Revenue Infrastructure", disabled: true },
     { value: "community_sentiment", label: "Community Sentiment", disabled: false },
+    { value: "node_revenue", label: "Node Revenue", disabled: true },
+    { value: "infrastructure", label: "Infrastructure", disabled: true },
   ];
 
   const handleTimePreset = (preset: string) => {
