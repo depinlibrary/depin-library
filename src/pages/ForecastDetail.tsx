@@ -71,7 +71,21 @@ const ForecastDetail = () => {
   const [editingText, setEditingText] = useState("");
   const [confidence, setConfidence] = useState(3);
 
-  // Fetch all voters for the Votes tab
+  // Fetch forecast dimension (token_price, market_cap, community_sentiment, etc.)
+  const { data: forecastDimension } = useQuery({
+    queryKey: ["forecast-dimension", id],
+    enabled: !!id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("forecast_targets")
+        .select("dimension")
+        .eq("forecast_id", id!)
+        .maybeSingle();
+      if (error) throw error;
+      return data?.dimension || null;
+    },
+  });
+
   const { data: allVoters = [] } = useQuery({
     queryKey: ["forecast-voters", id],
     enabled: !!id,
