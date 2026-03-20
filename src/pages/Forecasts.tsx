@@ -81,15 +81,15 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
           <div className="flex items-center gap-2.5">
             <div className="flex items-center -space-x-2">
               {forecast.project_a_logo_url ? (
-                <img src={forecast.project_a_logo_url} alt={forecast.project_a_name} className="w-7 h-7 rounded-lg object-contain border border-card bg-secondary relative z-10" />
+                <img src={forecast.project_a_logo_url} alt={forecast.project_a_name} className="w-9 h-9 rounded-lg object-contain border border-card bg-secondary relative z-10" />
               ) : (
-                <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs border border-card bg-secondary relative z-10">{forecast.project_a_logo_emoji || "⬡"}</span>
+                <span className="w-9 h-9 rounded-lg flex items-center justify-center text-sm border border-card bg-secondary relative z-10">{forecast.project_a_logo_emoji || "⬡"}</span>
               )}
               {forecast.project_b_name && (
                 forecast.project_b_logo_url ? (
-                  <img src={forecast.project_b_logo_url} alt={forecast.project_b_name} className="w-7 h-7 rounded-lg object-contain border border-card bg-secondary relative z-0" />
+                  <img src={forecast.project_b_logo_url} alt={forecast.project_b_name} className="w-9 h-9 rounded-lg object-contain border border-card bg-secondary relative z-0" />
                 ) : (
-                  <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs border border-card bg-secondary relative z-0">{forecast.project_b_logo_emoji || "⬡"}</span>
+                  <span className="w-9 h-9 rounded-lg flex items-center justify-center text-sm border border-card bg-secondary relative z-0">{forecast.project_b_logo_emoji || "⬡"}</span>
                 )
               )}
             </div>
