@@ -718,7 +718,7 @@ const Forecasts = () => {
         projectAId,
         projectBId: projectBId && projectBId !== "none" ? projectBId : undefined,
         endDate: new Date(endDate).toISOString(),
-        analysisDimensions,
+        analysisDimensions: [forecastMarket],
       });
       toast.success("Forecast created!");
       setShowCreate(false);
