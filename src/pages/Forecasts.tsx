@@ -465,8 +465,8 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
             {/* Top Forecasts */}
             <div className="rounded-2xl border border-border bg-card overflow-hidden flex-1 flex flex-col min-h-0">
               <div className="px-5 py-3.5 flex items-center justify-between shrink-0">
-                <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Top Forecasts</h3>
-                <Link to="/forecasts" className="text-xs text-muted-foreground hover:text-primary transition-colors">View all →</Link>
+                <h3 className="text-base font-bold text-foreground font-['Space_Grotesk']">Top Forecasts</h3>
+                <span></span>
               </div>
               <div className="flex-1 overflow-y-auto">
                 {topLiveForecasts.map((f, i) => {
