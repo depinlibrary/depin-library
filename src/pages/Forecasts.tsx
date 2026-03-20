@@ -779,11 +779,8 @@ const Forecasts = () => {
       <section className="sticky top-16 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
         <div className="container mx-auto px-4 py-2.5">
           <div className="flex items-center gap-2 overflow-x-auto">
-            {/* All Markets badge */}
-            <div className="flex items-center gap-1.5 shrink-0 rounded-full bg-primary/10 px-3 py-1.5 border border-primary/20">
-              <Radio className="h-3.5 w-3.5 text-primary" />
-              <span className="text-xs font-bold text-primary uppercase tracking-wide">All Markets</span>
-            </div>
+            {/* All Markets label */}
+            <span className="text-xs font-bold text-foreground uppercase tracking-wide shrink-0">All Markets</span>
 
             {/* Divider */}
             <div className="h-5 w-px bg-border shrink-0" />
