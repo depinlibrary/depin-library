@@ -32,8 +32,25 @@ const CompareProjects = () => {
   const { data: projects, isLoading: loadingProjects } = useProjects();
   const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { avatarUrl, displayName, uploading, uploadAvatar, updateDisplayName } = useAvatar();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [editingName, setEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (!user) { setIsAdmin(false); return; }
+    supabase.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin").maybeSingle().then(({ data }) => setIsAdmin(!!data));
+  }, [user]);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate("/");
+  };
 
   const [projectAId, setProjectAId] = useState<string>("");
   const [projectBId, setProjectBId] = useState<string>("");
