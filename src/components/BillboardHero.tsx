@@ -518,11 +518,11 @@ const BillboardHero = ({
                         {/* Header: logos + status */}
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-1.5">
-                            <ProjectLogo logoUrl={f.project_a_logo_url || null} logoEmoji={f.project_a_logo_emoji || "⬡"} name={f.project_a_name || "Project"} size="xs" />
+                            <ProjectLogo logoUrl={f.project_a_logo_url || null} logoEmoji={f.project_a_logo_emoji || "⬡"} name={f.project_a_name || "Project"} size="sm" />
                             {f.project_b_name && (
                               <>
                                 <span className="text-[9px] font-bold text-muted-foreground uppercase">vs</span>
-                                <ProjectLogo logoUrl={f.project_b_logo_url || null} logoEmoji={f.project_b_logo_emoji || "⬡"} name={f.project_b_name} size="xs" />
+                                <ProjectLogo logoUrl={f.project_b_logo_url || null} logoEmoji={f.project_b_logo_emoji || "⬡"} name={f.project_b_name} size="sm" />
                               </>
                             )}
                           </div>
@@ -532,7 +532,7 @@ const BillboardHero = ({
                         </div>
 
                         {/* Title */}
-                        <p className="text-sm font-semibold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors mb-auto">{f.title}</p>
+                        <p className="text-sm font-semibold text-foreground line-clamp-2 leading-snug group-hover:underline transition-all mb-auto">{f.title}</p>
 
                         {/* Percentage + bar */}
                         <div className="mt-4 space-y-2">

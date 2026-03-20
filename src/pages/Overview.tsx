@@ -175,7 +175,7 @@ const Overview = () => {
                         <div className="flex items-start gap-3">
                           <ProjectLogo logoUrl={project.logo_url} logoEmoji={project.logo_emoji} name={project.name} size="md" />
                           <div className="min-w-0 flex-1">
-                            <h3 className="text-base font-semibold text-foreground truncate group-hover:text-primary transition-colors">{project.name}</h3>
+                            <h3 className="text-base font-semibold text-foreground truncate group-hover:underline transition-all">{project.name}</h3>
                             <p className="text-xs text-muted-foreground mt-0.5">{project.category} · {project.blockchain}</p>
                           </div>
                           {project.status === "active" && (
@@ -263,7 +263,7 @@ const Overview = () => {
                             logoUrl={forecast.project_a_logo_url}
                             logoEmoji={forecast.project_a_logo_emoji || "⬡"}
                             name={forecast.project_a_name || ""}
-                            size="xs" />
+                            size="sm" />
                           {forecast.project_b_name && (
                             <>
                               <span className="text-[10px] font-bold text-muted-foreground uppercase">vs</span>
@@ -271,7 +271,7 @@ const Overview = () => {
                                 logoUrl={forecast.project_b_logo_url}
                                 logoEmoji={forecast.project_b_logo_emoji || "⬡"}
                                 name={forecast.project_b_name}
-                                size="xs" />
+                                size="sm" />
                             </>
                           )}
                         </div>
@@ -286,7 +286,7 @@ const Overview = () => {
                       </div>
 
                       {/* Title */}
-                      <h3 className="text-sm font-semibold text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors duration-200 mb-auto">
+                      <h3 className="text-sm font-semibold text-foreground leading-snug line-clamp-2 group-hover:underline transition-all duration-200 mb-auto">
                         {forecast.title}
                       </h3>
 
