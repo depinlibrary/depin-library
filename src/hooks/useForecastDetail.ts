@@ -232,23 +232,20 @@ export function useForecastVoteHistory(forecastId: string | undefined) {
         .eq("forecast_id", forecastId!)
         .order("created_at", { ascending: true });
       if (error) throw error;
+      if (!votes || votes.length === 0) return [];
 
-      // Group votes by date
-      const dateMap: Record<string, { yes: number; no: number }> = {};
-      (votes || []).forEach((v: any) => {
-        const date = new Date(v.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" });
-        if (!dateMap[date]) dateMap[date] = { yes: 0, no: 0 };
-        if (v.vote === "yes") dateMap[date].yes++;
-        else dateMap[date].no++;
-      });
-
-      // Cumulative
+      // Build cumulative data points per individual vote for granular trend
       let cumYes = 0, cumNo = 0;
-      return Object.entries(dateMap).map(([date, counts]) => {
-        cumYes += counts.yes;
-        cumNo += counts.no;
-        return { date, yes_count: cumYes, no_count: cumNo };
+      const points: VoteHistoryEntry[] = votes.map((v: any) => {
+        if (v.vote === "yes") cumYes++;
+        else cumNo++;
+        const d = new Date(v.created_at);
+        const label = d.toLocaleDateString("en-US", { month: "short", day: "numeric" }) +
+          " " + d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+        return { date: label, yes_count: cumYes, no_count: cumNo };
       });
+
+      return points;
     },
   });
 }
