@@ -42,6 +42,8 @@ const dimensionMeta: Record<string, { label: string; icon: typeof TrendingUp; fo
 interface Props {
   forecastId: string;
   isEnded: boolean;
+  totalVotesYes?: number;
+  totalVotesNo?: number;
 }
 
 export default function ForecastAnalysis({ forecastId, isEnded }: Props) {
