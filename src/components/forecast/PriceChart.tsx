@@ -57,7 +57,7 @@ function ProjectChart({ projectId, projectName, dimension }: { projectId: string
   const label = dimension === "token_price" ? "Price" : "Market Cap";
 
   return (
-    <div>
+    <div className="px-0">
       {/* Current value + 24h change */}
       <div className="flex items-center justify-between mb-3 px-1 flex-wrap gap-y-1">
         <div className="flex items-center gap-2 min-w-0">
