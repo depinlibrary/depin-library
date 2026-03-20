@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bot, ArrowRightLeft, Sparkles, Database, AlertTriangle, Shield, TrendingUp, Zap, Loader2, Flame, LogIn, Plus, Clock, MessageSquare } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import SentimentBadge from "@/components/SentimentBadge";
 import Navbar from "@/components/Navbar";
 import ProjectLogo from "@/components/ProjectLogo";
