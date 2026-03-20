@@ -574,7 +574,8 @@ const Forecasts = () => {
     { value: "token_price", label: "Token Price", disabled: false },
     { value: "market_cap", label: "Market Cap", disabled: false },
     { value: "community_sentiment", label: "Community Sentiment", disabled: false },
-    { value: "node_revenue", label: "Node Revenue", disabled: true },
+    { value: "node", label: "Node", disabled: true },
+    { value: "revenue", label: "Revenue", disabled: true },
     { value: "infrastructure", label: "Infrastructure", disabled: true },
   ];
 
@@ -1038,6 +1039,30 @@ const Forecasts = () => {
                 className="mt-1.5 min-h-[80px] resize-y"
               />
             </div>
+            {/* Forecast Market */}
+            <div>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Forecast Market *
+              </label>
+              <p className="text-[10px] text-muted-foreground mt-0.5 mb-2">Select the market to track during the forecast period</p>
+              <Select value={forecastMarket} onValueChange={setForecastMarket}>
+                <SelectTrigger className="mt-1.5 h-9">
+                  <SelectValue placeholder="Select forecast market" />
+                </SelectTrigger>
+                <SelectContent position="popper" side="bottom" sideOffset={4} avoidCollisions={false} className="max-h-60">
+                  {dimensionOptions.map((dim) => (
+                    <SelectItem key={dim.value} value={dim.value} disabled={dim.disabled}>
+                      <span className="flex items-center gap-2">
+                        {dim.label}
+                        {dim.disabled && (
+                          <span className="ml-1 text-[10px] rounded-full bg-secondary px-1.5 py-0.5 text-muted-foreground">Coming soon</span>
+                        )}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Project A *</label>
@@ -1120,30 +1145,6 @@ const Forecasts = () => {
               )}
             </div>
 
-            {/* Forecast Market */}
-            <div>
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Forecast Market *
-              </label>
-              <p className="text-[10px] text-muted-foreground mt-0.5 mb-2">Select the market to track during the forecast period</p>
-              <Select value={forecastMarket} onValueChange={setForecastMarket}>
-                <SelectTrigger className="mt-1.5 h-9">
-                  <SelectValue placeholder="Select forecast market" />
-                </SelectTrigger>
-                <SelectContent position="popper" side="bottom" sideOffset={4} avoidCollisions={false} className="max-h-60">
-                  {dimensionOptions.map((dim) => (
-                    <SelectItem key={dim.value} value={dim.value} disabled={dim.disabled}>
-                      <span className="flex items-center gap-2">
-                        {dim.label}
-                        {dim.disabled && (
-                          <span className="ml-1 text-[10px] rounded-full bg-secondary px-1.5 py-0.5 text-muted-foreground">Coming soon</span>
-                        )}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setShowCreate(false)}>Cancel</Button>
