@@ -28,16 +28,33 @@ export type Forecast = {
 export type ForecastSortOption = "votes" | "newest" | "ending_soon";
 export type ForecastStatusFilter = "all" | "active" | "ended";
 
-export function useForecasts(sort: ForecastSortOption = "newest", page = 1, pageSize = 12, projectFilter?: string, search?: string, statusFilter: ForecastStatusFilter = "all") {
+export function useForecasts(sort: ForecastSortOption = "newest", page = 1, pageSize = 12, projectFilter?: string, search?: string, statusFilter: ForecastStatusFilter = "all", dimensionFilter?: string) {
   return useQuery({
-    queryKey: ["forecasts", sort, page, projectFilter, search, statusFilter],
+    queryKey: ["forecasts", sort, page, projectFilter, search, statusFilter, dimensionFilter],
     queryFn: async (): Promise<{ forecasts: Forecast[]; total: number }> => {
       const now = new Date().toISOString();
+
+      // If filtering by dimension, first get matching forecast IDs
+      let dimensionForecastIds: string[] | null = null;
+      if (dimensionFilter) {
+        const { data: targets } = await supabase
+          .from("forecast_targets")
+          .select("forecast_id")
+          .eq("dimension", dimensionFilter);
+        dimensionForecastIds = (targets || []).map((t: any) => t.forecast_id);
+        if (dimensionForecastIds.length === 0) {
+          return { forecasts: [], total: 0 };
+        }
+      }
       
       // Get total count
       let countQuery = supabase
         .from("forecasts")
         .select("*", { count: "exact", head: true });
+
+      if (dimensionForecastIds) {
+        countQuery = countQuery.in("id", dimensionForecastIds);
+      }
 
       if (projectFilter) {
         countQuery = countQuery.or(`project_a_id.eq.${projectFilter},project_b_id.eq.${projectFilter}`);
