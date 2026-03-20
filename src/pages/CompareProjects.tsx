@@ -1,9 +1,11 @@
 import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bot, ArrowRightLeft, Sparkles, Database, AlertTriangle, Shield, TrendingUp, Zap, Loader2, Flame, LogIn, Plus, Clock, MessageSquare } from "lucide-react";
+import { Bot, ArrowRightLeft, Sparkles, Database, AlertTriangle, Shield, TrendingUp, Zap, Loader2, Flame, LogIn, Plus, Clock, MessageSquare, Sun, Moon, User, Bell } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import SentimentBadge from "@/components/SentimentBadge";
+import NotificationDropdown from "@/components/NotificationDropdown";
+import { useTheme } from "@/contexts/ThemeContext";
 import ProjectLogo from "@/components/ProjectLogo";
 import { useProjects } from "@/hooks/useProjects";
 import { useAuth } from "@/contexts/AuthContext";
@@ -28,6 +30,7 @@ type ComparisonResult = {
 const CompareProjects = () => {
   const { data: projects, isLoading: loadingProjects } = useProjects();
   const { user } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -216,12 +219,25 @@ const CompareProjects = () => {
               </span>
             </Link>
           </div>
-          {/* Right side nav */}
-          <div className="flex-1 flex items-center justify-end px-4 gap-3">
-            <Link to="/" className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">Overview</Link>
-            <Link to="/explore" className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">Explore</Link>
-            <Link to="/market" className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">Market</Link>
-            <Link to="/forecasts" className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">Forecasts</Link>
+          {/* Right side — theme toggle, notifications, profile */}
+          <div className="flex-1 flex items-center justify-end px-4 gap-2">
+            <NotificationDropdown />
+            <button
+              onClick={toggleTheme}
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
+              title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </button>
+            {user ? (
+              <Link to="/profile" className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors">
+                <User className="h-4 w-4" />
+              </Link>
+            ) : (
+              <Link to="/auth" className="text-xs font-semibold text-primary-foreground bg-primary px-4 py-1.5 rounded-lg hover:bg-primary/90 transition-colors">
+                Sign In
+              </Link>
+            )}
           </div>
         </div>
       </header>
