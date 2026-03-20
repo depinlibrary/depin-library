@@ -10,6 +10,7 @@ import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import VoteHistoryChart from "@/components/forecast/VoteHistoryChart";
+import PriceChart from "@/components/forecast/PriceChart";
 import DiscussionSection from "@/components/forecast/DiscussionSection";
 import RelatedForecastsList from "@/components/forecast/RelatedForecasts";
 import ForecastAnalysis from "@/components/forecast/ForecastAnalysis";
