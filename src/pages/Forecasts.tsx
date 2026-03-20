@@ -1063,6 +1063,7 @@ const Forecasts = () => {
                 </SelectContent>
               </Select>
             </div>
+            <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Project A *</label>
                 <Select value={projectAId} onValueChange={setProjectAId}>
