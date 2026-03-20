@@ -1,11 +1,12 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bot, ArrowRightLeft, Sparkles, Database, AlertTriangle, Shield, TrendingUp, Zap, Loader2, Flame, LogIn, Plus, Clock, MessageSquare, Sun, Moon, User, Bell } from "lucide-react";
+import { Bot, ArrowRightLeft, Sparkles, Database, AlertTriangle, Shield, TrendingUp, Zap, Loader2, Flame, LogIn, Plus, Clock, MessageSquare, Sun, Moon, User, Bell, Camera, Pencil, Check, LogOut, Briefcase } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import SentimentBadge from "@/components/SentimentBadge";
 import NotificationDropdown from "@/components/NotificationDropdown";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useAvatar } from "@/hooks/useAvatar";
 import ProjectLogo from "@/components/ProjectLogo";
 import { useProjects } from "@/hooks/useProjects";
 import { useAuth } from "@/contexts/AuthContext";
@@ -31,8 +32,25 @@ const CompareProjects = () => {
   const { data: projects, isLoading: loadingProjects } = useProjects();
   const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { avatarUrl, displayName, uploading, uploadAvatar, updateDisplayName } = useAvatar();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [editingName, setEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (!user) { setIsAdmin(false); return; }
+    supabase.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin").maybeSingle().then(({ data }) => setIsAdmin(!!data));
+  }, [user]);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate("/");
+  };
 
   const [projectAId, setProjectAId] = useState<string>("");
   const [projectBId, setProjectBId] = useState<string>("");
@@ -220,23 +238,174 @@ const CompareProjects = () => {
             </Link>
           </div>
           {/* Right side — theme toggle, notifications, profile */}
-          <div className="flex-1 flex items-center justify-end px-4 gap-2">
-            <NotificationDropdown />
+          <div className="flex-1 flex items-center justify-end px-4 gap-1.5">
             <button
               onClick={toggleTheme}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
-              title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-border transition-all hover:bg-secondary/50"
+              aria-label="Toggle theme"
             >
-              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              {theme === "dark" ? <Sun className="h-3.5 w-3.5 text-foreground" /> : <Moon className="h-3.5 w-3.5 text-foreground" />}
             </button>
+
             {user ? (
-              <Link to="/profile" className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors">
-                <User className="h-4 w-4" />
-              </Link>
+              <>
+                <NotificationDropdown />
+                {/* Profile avatar dropdown — hover */}
+                <div
+                  className="relative"
+                  ref={profileDropdownRef}
+                  onMouseEnter={() => setProfileDropdownOpen(true)}
+                  onMouseLeave={() => setProfileDropdownOpen(false)}
+                >
+                  <button
+                    onClick={() => setProfileDropdownOpen((v) => !v)}
+                    className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/15 border border-primary/30 transition-all hover:bg-primary/25 hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 overflow-hidden"
+                    aria-label="Profile menu"
+                  >
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt="Avatar" className="h-8 w-8 rounded-full object-cover" />
+                    ) : (
+                      <User className="h-3.5 w-3.5 text-primary" />
+                    )}
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) uploadAvatar(file);
+                      e.target.value = "";
+                    }}
+                  />
+                  <AnimatePresence>
+                    {profileDropdownOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 6, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 6, scale: 0.95 }}
+                        transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                        className="absolute right-0 top-full pt-2 z-50 w-56"
+                      >
+                        <div className="rounded-xl border border-border bg-card shadow-xl shadow-background/30 overflow-hidden">
+                          {/* User info with avatar */}
+                          <div className="px-4 py-3 border-b border-border/50 flex items-center gap-3">
+                            <div className="relative group/avatar shrink-0">
+                              <div className="h-10 w-10 rounded-full bg-primary/15 border border-primary/30 overflow-hidden flex items-center justify-center">
+                                {avatarUrl ? (
+                                  <img src={avatarUrl} alt="Avatar" className="h-10 w-10 rounded-full object-cover" />
+                                ) : (
+                                  <User className="h-4 w-4 text-primary" />
+                                )}
+                              </div>
+                              <button
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={uploading}
+                                className="absolute inset-0 flex items-center justify-center rounded-full bg-background/70 opacity-0 group-hover/avatar:opacity-100 transition-opacity"
+                              >
+                                <Camera className="h-3.5 w-3.5 text-foreground" />
+                              </button>
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              {editingName ? (
+                                <form
+                                  className="flex items-center gap-1"
+                                  onSubmit={async (e) => {
+                                    e.preventDefault();
+                                    await updateDisplayName(nameInput);
+                                    setEditingName(false);
+                                  }}
+                                >
+                                  <input
+                                    autoFocus
+                                    value={nameInput}
+                                    onChange={(e) => setNameInput(e.target.value.slice(0, 50))}
+                                    onKeyDown={(e) => { if (e.key === "Escape") setEditingName(false); }}
+                                    className="w-full bg-secondary/50 border border-border rounded px-1.5 py-0.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-border"
+                                    maxLength={50}
+                                  />
+                                  <button type="submit" className="shrink-0 p-0.5 rounded hover:bg-primary/15 transition-colors">
+                                    <Check className="h-3 w-3 text-primary" />
+                                  </button>
+                                </form>
+                              ) : (
+                                <div className="flex items-center gap-1 group/name">
+                                  <p className="text-xs font-semibold text-foreground truncate">
+                                    {displayName || user.email?.split("@")[0]}
+                                  </p>
+                                  <button
+                                    onClick={() => { setNameInput(displayName || ""); setEditingName(true); }}
+                                    className="shrink-0 p-0.5 rounded opacity-0 group-hover/name:opacity-100 hover:bg-secondary/50 transition-all"
+                                  >
+                                    <Pencil className="h-2.5 w-2.5 text-muted-foreground" />
+                                  </button>
+                                </div>
+                              )}
+                              <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{uploading ? "Uploading…" : user.email}</p>
+                            </div>
+                          </div>
+                          <div className="py-1.5 px-1.5">
+                            <Link
+                              to="/profile"
+                              onClick={() => setProfileDropdownOpen(false)}
+                              className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-muted-foreground hover:bg-secondary/50 hover:text-foreground transition-all"
+                            >
+                              <User className="h-3.5 w-3.5" />
+                              My Profile
+                            </Link>
+                            {isAdmin && (
+                              <Link
+                                to="/admin"
+                                onClick={() => setProfileDropdownOpen(false)}
+                                className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-muted-foreground hover:bg-secondary/50 hover:text-foreground transition-all"
+                              >
+                                <Shield className="h-3.5 w-3.5" />
+                                Admin Dashboard
+                              </Link>
+                            )}
+                            <Link
+                              to="/portfolio"
+                              onClick={() => setProfileDropdownOpen(false)}
+                              className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-muted-foreground hover:bg-secondary/50 hover:text-foreground transition-all"
+                            >
+                              <Briefcase className="h-3.5 w-3.5" />
+                              Portfolio
+                            </Link>
+                            <Link
+                              to="/submit"
+                              onClick={() => setProfileDropdownOpen(false)}
+                              className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-muted-foreground hover:bg-secondary/50 hover:text-foreground transition-all"
+                            >
+                              <Plus className="h-3.5 w-3.5" />
+                              Submit Project
+                            </Link>
+                          </div>
+                          <div className="border-t border-border/50 py-1.5 px-1.5">
+                            <button
+                              onClick={() => { handleSignOut(); setProfileDropdownOpen(false); }}
+                              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-destructive hover:bg-destructive/10 transition-all"
+                            >
+                              <LogOut className="h-3.5 w-3.5" />
+                              Sign Out
+                            </button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </>
             ) : (
-              <Link to="/auth" className="text-xs font-semibold text-primary-foreground bg-primary px-4 py-1.5 rounded-lg hover:bg-primary/90 transition-colors">
-                Sign In
-              </Link>
+              <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} className="rounded-lg">
+                <Link
+                  to="/auth"
+                  className="group relative flex items-center gap-2 overflow-hidden rounded-lg bg-primary px-6 py-2 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:shadow-md hover:shadow-primary/30"
+                >
+                  <User className="h-4 w-4" />
+                  <span>Sign In</span>
+                </Link>
+              </motion.div>
             )}
           </div>
         </div>
