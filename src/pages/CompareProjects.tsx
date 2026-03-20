@@ -216,12 +216,25 @@ const CompareProjects = () => {
               </span>
             </Link>
           </div>
-          {/* Right side nav */}
-          <div className="flex-1 flex items-center justify-end px-4 gap-3">
-            <Link to="/" className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">Overview</Link>
-            <Link to="/explore" className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">Explore</Link>
-            <Link to="/market" className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">Market</Link>
-            <Link to="/forecasts" className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">Forecasts</Link>
+          {/* Right side — theme toggle, notifications, profile */}
+          <div className="flex-1 flex items-center justify-end px-4 gap-2">
+            <NotificationDropdown />
+            <button
+              onClick={toggleTheme}
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
+              title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </button>
+            {user ? (
+              <Link to="/profile" className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors">
+                <User className="h-4 w-4" />
+              </Link>
+            ) : (
+              <Link to="/auth" className="text-xs font-semibold text-primary-foreground bg-primary px-4 py-1.5 rounded-lg hover:bg-primary/90 transition-colors">
+                Sign In
+              </Link>
+            )}
           </div>
         </div>
       </header>
