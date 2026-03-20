@@ -605,7 +605,7 @@ const ForecastDetail = () => {
             </motion.div>
 
             {/* Forecast Analysis */}
-            <ForecastAnalysis forecastId={forecast.id} isEnded={isEnded} />
+            <ForecastAnalysis forecastId={forecast.id} isEnded={isEnded} totalVotesYes={forecast.total_votes_yes} totalVotesNo={forecast.total_votes_no} />
 
             {/* Related Forecasts — column layout */}
             {relatedForecasts.length > 0 && (
