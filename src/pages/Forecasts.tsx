@@ -584,8 +584,15 @@ const Forecasts = () => {
     if (preset !== "custom") {
       const p = timePresets.find(t => t.value === preset);
       if (p) {
-        const end = new Date(Date.now() + p.hours * 60 * 60 * 1000);
-        setEndDate(end.toISOString().slice(0, 16));
+        const now = new Date();
+        const end = new Date(now.getTime() + p.hours * 60 * 60 * 1000);
+        // Format for datetime-local input in local timezone
+        const year = end.getFullYear();
+        const month = String(end.getMonth() + 1).padStart(2, '0');
+        const day = String(end.getDate()).padStart(2, '0');
+        const hours = String(end.getHours()).padStart(2, '0');
+        const minutes = String(end.getMinutes()).padStart(2, '0');
+        setEndDate(`${year}-${month}-${day}T${hours}:${minutes}`);
       }
     } else {
       setEndDate("");
