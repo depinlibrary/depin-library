@@ -85,6 +85,7 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
   };
 
   const getSource = (dim: string) => {
+    if (dim === "community_sentiment") return "votes";
     const s = snapshots.find((s: any) => s.dimension === dim && s.snapshot_type === "start");
     return s?.source ?? "pending";
   };
