@@ -184,10 +184,10 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
   const [activeSlide, setActiveSlide] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Left carousel: slide through ALL forecasts
+  // Left carousel: only show top 6 forecasts
   const heroForecasts = useMemo(() => {
     if (forecasts.length === 0) return [];
-    return forecasts;
+    return forecasts.slice(0, 6);
   }, [forecasts]);
 
   const [isPaused, setIsPaused] = useState(false);
