@@ -590,11 +590,7 @@ const Forecasts = () => {
     }
   };
 
-  const toggleDimension = (dim: string) => {
-    setAnalysisDimensions(prev =>
-      prev.includes(dim) ? prev.filter(d => d !== dim) : [...prev, dim]
-    );
-  };
+  const [forecastMarket, setForecastMarket] = useState<string>("");
 
   // Auto-open create dialog from compare page
   useEffect(() => {
