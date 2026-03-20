@@ -1029,12 +1029,12 @@ const Forecasts = () => {
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Description</label>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Description *</label>
               <Textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Additional context about this prediction..."
-                className="mt-1.5 min-h-[80px] resize-none"
+                className="mt-1.5 min-h-[80px] resize-y"
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
