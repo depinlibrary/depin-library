@@ -525,7 +525,6 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
                         <span className="text-[10px] font-medium text-muted-foreground">{project.totalVotes} votes</span>
-                        <TrendingUp className="h-3 w-3 text-primary/50" />
                       </div>
                     </Link>
                   ))}
