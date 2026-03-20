@@ -728,7 +728,7 @@ const Forecasts = () => {
       setProjectBId("");
       setEndDate("");
       setTimePreset("");
-      setAnalysisDimensions([]);
+      setForecastMarket("");
     } catch (err: any) {
       toast.error(err.message || "Failed to create forecast");
     }
