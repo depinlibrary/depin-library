@@ -772,23 +772,35 @@ const Forecasts = () => {
             {/* Topic chips */}
             {[
               { value: "", label: "All" },
-              { value: "token_price", label: "Token Price" },
-              { value: "market_cap", label: "Market Cap" },
-              { value: "revenue", label: "Revenue" },
-              { value: "active_nodes", label: "Nodes" },
-              { value: "infrastructure", label: "Infrastructure" },
-              { value: "community", label: "Community Voice" },
+              { value: "token_price", label: "Token Price", comingSoon: false },
+              { value: "market_cap", label: "Market Cap", comingSoon: false },
+              { value: "community_sentiment", label: "Community Sentiment", comingSoon: false },
+              { value: "revenue", label: "Revenue", comingSoon: true },
+              { value: "node", label: "Nodes", comingSoon: true },
+              { value: "infrastructure", label: "Infrastructure", comingSoon: true },
             ].map((topic) => (
               <button
                 key={topic.value}
-                onClick={() => { setTopicFilter(topic.value); setPage(1); }}
+                onClick={() => {
+                  if (topic.comingSoon) {
+                    toast.info(`${topic.label} market is coming soon`);
+                    return;
+                  }
+                  setTopicFilter(topic.value);
+                  setPage(1);
+                }}
                 className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-all whitespace-nowrap ${
                   topicFilter === topic.value
                     ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                    : topic.comingSoon
+                      ? "text-muted-foreground/50 hover:bg-secondary/50 cursor-default"
+                      : "text-muted-foreground hover:bg-secondary hover:text-foreground"
                 }`}
               >
                 {topic.label}
+                {topic.comingSoon && (
+                  <span className="ml-1 text-[9px] bg-secondary px-1 py-0.5 rounded-full">Soon</span>
+                )}
               </button>
             ))}
 
