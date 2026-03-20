@@ -522,7 +522,7 @@ const BillboardHero = ({
                             {f.project_b_name && (
                               <>
                                 <span className="text-[9px] font-bold text-muted-foreground uppercase">vs</span>
-                                <ProjectLogo logoUrl={f.project_b_logo_url || null} logoEmoji={f.project_b_logo_emoji || "⬡"} name={f.project_b_name} size="xs" />
+                                <ProjectLogo logoUrl={f.project_b_logo_url || null} logoEmoji={f.project_b_logo_emoji || "⬡"} name={f.project_b_name} size="sm" />
                               </>
                             )}
                           </div>
