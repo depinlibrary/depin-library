@@ -1,11 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
-import { TrendingUp, TrendingDown, Minus, BarChart3, Activity, DollarSign, Server } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, BarChart3, Activity, DollarSign, Server, Users } from "lucide-react";
 
 const sourceBadges: Record<string, { label: string; color: string }> = {
   coingecko: { label: "CoinGecko", color: "bg-green-500/10 text-green-600 dark:text-green-400" },
   depin_pulse: { label: "DePIN Pulse", color: "bg-blue-500/10 text-blue-600 dark:text-blue-400" },
+  votes: { label: "Community Votes", color: "bg-purple-500/10 text-purple-600 dark:text-purple-400" },
   pending: { label: "Pending", color: "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400" },
   unavailable: { label: "No API Source", color: "bg-muted text-muted-foreground" },
 };
@@ -20,6 +21,11 @@ const dimensionMeta: Record<string, { label: string; icon: typeof TrendingUp; fo
     label: "Market Cap",
     icon: BarChart3,
     format: (v) => v == null ? "N/A" : v >= 1e9 ? `$${(v / 1e9).toFixed(2)}B` : v >= 1e6 ? `$${(v / 1e6).toFixed(2)}M` : `$${v.toLocaleString()}`,
+  },
+  community_sentiment: {
+    label: "Community Sentiment",
+    icon: Users,
+    format: (v) => v == null ? "N/A" : `${v.toFixed(1)}% Yes`,
   },
   active_nodes: {
     label: "Active Nodes",
