@@ -55,6 +55,77 @@ const confidenceLabels: Record<number, { label: string; color: string }> = {
   5: { label: "Maximum", color: "text-accent" },
 };
 
+function CreatorCardWithCountdown({ forecast, isEnded, timeLeft }: { forecast: any; isEnded: boolean; timeLeft: string }) {
+  const [countdown, setCountdown] = useState("");
+
+  useEffect(() => {
+    if (isEnded) {
+      setCountdown("Ended");
+      return;
+    }
+    const tick = () => {
+      const now = Date.now();
+      const end = new Date(forecast.end_date).getTime();
+      const diff = end - now;
+      if (diff <= 0) { setCountdown("Ended"); return; }
+      const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const s = Math.floor((diff % (1000 * 60)) / 1000);
+      const parts: string[] = [];
+      if (d > 0) parts.push(`${d}d`);
+      parts.push(`${String(h).padStart(2, "0")}h`);
+      parts.push(`${String(m).padStart(2, "0")}m`);
+      parts.push(`${String(s).padStart(2, "0")}s`);
+      setCountdown(parts.join(" "));
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [forecast.end_date, isEnded]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="rounded-2xl border border-border bg-card overflow-hidden"
+    >
+      <div className="p-5">
+        <div className="flex items-start justify-between gap-3">
+          <UserStatsHoverCard userId={forecast.creator_user_id} displayName={forecast.creator_name} avatarUrl={forecast.creator_avatar_url}>
+            <div className="flex items-center gap-3 cursor-pointer group">
+              <UserAvatar avatarUrl={forecast.creator_avatar_url} displayName={forecast.creator_name} size="md" />
+              <div className="flex flex-col">
+                <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{forecast.creator_name}</span>
+                <span className="text-[10px] text-muted-foreground">Forecast Creator</span>
+              </div>
+            </div>
+          </UserStatsHoverCard>
+          {/* Countdown */}
+          <div className="text-right shrink-0">
+            <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-medium mb-0.5">
+              {isEnded ? "Ended" : "Time Left"}
+            </p>
+            <p className={`text-xs font-bold font-['Space_Grotesk'] tabular-nums ${isEnded ? "text-muted-foreground" : "text-primary"}`}>
+              {countdown}
+            </p>
+          </div>
+        </div>
+        <div className="mt-3 pt-3 border-t border-border grid grid-cols-2 gap-2 text-center">
+          <div>
+            <p className="text-[10px] text-muted-foreground mb-0.5">Created</p>
+            <p className="text-[11px] font-medium text-foreground">{format(new Date(forecast.created_at), "MMM d, yyyy")}</p>
+          </div>
+          <div>
+            <p className="text-[10px] text-muted-foreground mb-0.5">{isEnded ? "Ended" : "Ends"}</p>
+            <p className="text-[11px] font-medium text-foreground">{format(new Date(forecast.end_date), "MMM d, yyyy")}</p>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 const ForecastDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
