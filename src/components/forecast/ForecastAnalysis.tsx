@@ -46,7 +46,7 @@ interface Props {
   totalVotesNo?: number;
 }
 
-export default function ForecastAnalysis({ forecastId, isEnded }: Props) {
+export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 0, totalVotesNo = 0 }: Props) {
   const { data: targets = [] } = useQuery({
     queryKey: ["forecast-targets", forecastId],
     queryFn: async () => {
