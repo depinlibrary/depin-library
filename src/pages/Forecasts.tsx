@@ -508,7 +508,7 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
             {trendingTopics.length > 0 && (
               <div className="rounded-2xl border border-border bg-card overflow-hidden shrink-0">
                 <div className="px-5 py-3.5 flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Trending Projects</h3>
+                  <h3 className="text-base font-bold text-foreground font-['Space_Grotesk']">Trending Projects</h3>
                   <TrendingUp className="h-4 w-4 text-primary/60" />
                 </div>
                 <div>
