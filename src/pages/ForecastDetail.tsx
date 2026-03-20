@@ -140,7 +140,18 @@ const ForecastDetail = () => {
   const [commentText, setCommentText] = useState("");
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState("");
-  const [confidence, setConfidence] = useState(3);
+  const [confidence, setConfidence] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = sessionStorage.getItem(`forecast-confidence-${id}`);
+      return saved ? parseInt(saved, 10) : 3;
+    }
+    return 3;
+  });
+
+  // Persist confidence to sessionStorage when it changes
+  useEffect(() => {
+    if (id) sessionStorage.setItem(`forecast-confidence-${id}`, String(confidence));
+  }, [confidence, id]);
 
   // Fetch forecast dimension (token_price, market_cap, community_sentiment, etc.)
   const { data: forecastDimension } = useQuery({

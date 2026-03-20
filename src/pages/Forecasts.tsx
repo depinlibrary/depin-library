@@ -339,7 +339,7 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
 
                   {/* Title */}
                   <Link to={`/forecasts/${current.id}`}>
-                    <h2 className="text-xl sm:text-2xl font-bold text-foreground leading-tight mb-5 font-['Space_Grotesk'] tracking-tight hover:text-primary transition-colors">
+                    <h2 className="text-xl sm:text-2xl font-bold text-foreground leading-tight mb-5 font-['Space_Grotesk'] tracking-tight hover:underline transition-all">
                       {current.title}
                     </h2>
                   </Link>

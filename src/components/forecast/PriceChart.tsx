@@ -98,7 +98,7 @@ function ProjectChart({ projectId, projectName, dimension }: { projectId: string
               axisLine={false}
               tickFormatter={(v) => formatValue(v)}
               domain={["auto", "auto"]}
-              width={65}
+              width={75}
             />
             <Tooltip
               contentStyle={{
