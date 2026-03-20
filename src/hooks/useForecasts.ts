@@ -77,6 +77,10 @@ export function useForecasts(sort: ForecastSortOption = "newest", page = 1, page
         .select("*")
         .range((page - 1) * pageSize, page * pageSize - 1);
 
+      if (dimensionForecastIds) {
+        query = query.in("id", dimensionForecastIds);
+      }
+
       if (projectFilter) {
         query = query.or(`project_a_id.eq.${projectFilter},project_b_id.eq.${projectFilter}`);
       }
