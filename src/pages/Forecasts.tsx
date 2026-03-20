@@ -110,7 +110,7 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
 
         {/* Title only */}
         <Link to={`/forecasts/${forecast.id}`} className="block mb-auto">
-          <h3 className="text-sm font-semibold text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors duration-200">
+          <h3 className="text-sm font-semibold text-foreground leading-snug line-clamp-2 group-hover:underline transition-all duration-200">
             {forecast.title}
           </h3>
         </Link>
