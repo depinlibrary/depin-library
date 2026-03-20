@@ -517,9 +517,9 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                       <span className="text-xs font-bold text-muted-foreground/50 w-4 shrink-0">{i + 1}</span>
                       <div className="flex items-center gap-2 flex-1 min-w-0">
                         {project.logo_url ? (
-                          <img src={project.logo_url} alt={project.name} className="w-5 h-5 rounded-md object-contain bg-secondary" />
+                          <img src={project.logo_url} alt={project.name} className="w-7 h-7 rounded-md object-contain bg-secondary" />
                         ) : (
-                          <span className="w-5 h-5 rounded-md flex items-center justify-center text-xs bg-secondary">{project.logo_emoji || "⬡"}</span>
+                          <span className="w-7 h-7 rounded-md flex items-center justify-center text-sm bg-secondary">{project.logo_emoji || "⬡"}</span>
                         )}
                         <span className="text-xs font-semibold text-foreground truncate">{project.name}</span>
                       </div>
