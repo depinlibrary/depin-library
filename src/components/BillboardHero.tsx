@@ -532,7 +532,7 @@ const BillboardHero = ({
                         </div>
 
                         {/* Title */}
-                        <p className="text-sm font-semibold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors mb-auto">{f.title}</p>
+                        <p className="text-sm font-semibold text-foreground line-clamp-2 leading-snug group-hover:underline transition-all mb-auto">{f.title}</p>
 
                         {/* Percentage + bar */}
                         <div className="mt-4 space-y-2">

@@ -286,7 +286,7 @@ const Overview = () => {
                       </div>
 
                       {/* Title */}
-                      <h3 className="text-sm font-semibold text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors duration-200 mb-auto">
+                      <h3 className="text-sm font-semibold text-foreground leading-snug line-clamp-2 group-hover:underline transition-all duration-200 mb-auto">
                         {forecast.title}
                       </h3>
 
