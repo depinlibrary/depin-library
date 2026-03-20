@@ -1,11 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
-import { TrendingUp, TrendingDown, Minus, BarChart3, Activity, DollarSign, Server } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, BarChart3, Activity, DollarSign, Server, Users } from "lucide-react";
 
 const sourceBadges: Record<string, { label: string; color: string }> = {
   coingecko: { label: "CoinGecko", color: "bg-green-500/10 text-green-600 dark:text-green-400" },
   depin_pulse: { label: "DePIN Pulse", color: "bg-blue-500/10 text-blue-600 dark:text-blue-400" },
+  votes: { label: "Community Votes", color: "bg-purple-500/10 text-purple-600 dark:text-purple-400" },
   pending: { label: "Pending", color: "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400" },
   unavailable: { label: "No API Source", color: "bg-muted text-muted-foreground" },
 };
@@ -20,6 +21,11 @@ const dimensionMeta: Record<string, { label: string; icon: typeof TrendingUp; fo
     label: "Market Cap",
     icon: BarChart3,
     format: (v) => v == null ? "N/A" : v >= 1e9 ? `$${(v / 1e9).toFixed(2)}B` : v >= 1e6 ? `$${(v / 1e6).toFixed(2)}M` : `$${v.toLocaleString()}`,
+  },
+  community_sentiment: {
+    label: "Community Sentiment",
+    icon: Users,
+    format: (v) => v == null ? "N/A" : `${v.toFixed(1)}% Yes`,
   },
   active_nodes: {
     label: "Active Nodes",
@@ -36,9 +42,11 @@ const dimensionMeta: Record<string, { label: string; icon: typeof TrendingUp; fo
 interface Props {
   forecastId: string;
   isEnded: boolean;
+  totalVotesYes?: number;
+  totalVotesNo?: number;
 }
 
-export default function ForecastAnalysis({ forecastId, isEnded }: Props) {
+export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 0, totalVotesNo = 0 }: Props) {
   const { data: targets = [] } = useQuery({
     queryKey: ["forecast-targets", forecastId],
     queryFn: async () => {
@@ -67,11 +75,17 @@ export default function ForecastAnalysis({ forecastId, isEnded }: Props) {
   if (targets.length === 0) return null;
 
   const getSnapshot = (dim: string, type: string) => {
+    if (dim === "community_sentiment") {
+      const total = totalVotesYes + totalVotesNo;
+      if (total === 0) return null;
+      return (totalVotesYes / total) * 100;
+    }
     const s = snapshots.find((s: any) => s.dimension === dim && s.snapshot_type === type);
     return s?.value ?? null;
   };
 
   const getSource = (dim: string) => {
+    if (dim === "community_sentiment") return "votes";
     const s = snapshots.find((s: any) => s.dimension === dim && s.snapshot_type === "start");
     return s?.source ?? "pending";
   };
@@ -99,16 +113,63 @@ export default function ForecastAnalysis({ forecastId, isEnded }: Props) {
 
       <div className="divide-y divide-border">
         {targets.map((target: any) => {
+          const isSentiment = target.dimension === "community_sentiment";
           const meta = dimensionMeta[target.dimension] || {
             label: target.dimension,
             icon: Activity,
             format: (v: number | null) => v?.toString() ?? "N/A",
           };
           const Icon = meta.icon;
-          const startVal = getSnapshot(target.dimension, "start");
-          const endVal = getSnapshot(target.dimension, "end");
           const source = getSource(target.dimension);
           const badge = sourceBadges[source] || sourceBadges.pending;
+
+          if (isSentiment) {
+            const total = totalVotesYes + totalVotesNo;
+            const yesPct = total > 0 ? (totalVotesYes / total) * 100 : 0;
+            const noPct = total > 0 ? (totalVotesNo / total) * 100 : 0;
+            const result = isEnded ? (yesPct >= 50 ? "Yes" : "No") : null;
+
+            return (
+              <div key={target.id} className="px-6 py-4">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
+                    <Icon className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <span className="text-xs font-semibold text-foreground">{meta.label}</span>
+                  <span className={`text-[9px] font-medium px-1.5 py-0.5 rounded-full ${badge.color}`}>
+                    {badge.label}
+                  </span>
+                  {isEnded && result && (
+                    <span className={`ml-auto text-xs font-bold ${result === "Yes" ? "text-primary" : "text-destructive"}`}>
+                      Result: {result}
+                    </span>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="rounded-lg bg-secondary/50 px-3 py-2.5">
+                    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Yes Votes</p>
+                    <p className="text-sm font-semibold text-foreground font-['Space_Grotesk']">
+                      {totalVotesYes} ({yesPct.toFixed(1)}%)
+                    </p>
+                  </div>
+                  <div className="rounded-lg bg-secondary/50 px-3 py-2.5">
+                    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">No Votes</p>
+                    <p className="text-sm font-semibold text-foreground font-['Space_Grotesk']">
+                      {totalVotesNo} ({noPct.toFixed(1)}%)
+                    </p>
+                  </div>
+                </div>
+                {total > 0 && (
+                  <div className="mt-2 h-2 rounded-full bg-secondary overflow-hidden">
+                    <div className="h-full rounded-full bg-primary" style={{ width: `${yesPct}%` }} />
+                  </div>
+                )}
+              </div>
+            );
+          }
+
+          const startVal = getSnapshot(target.dimension, "start");
+          const endVal = getSnapshot(target.dimension, "end");
 
           const change = startVal != null && endVal != null && startVal !== 0
             ? ((endVal - startVal) / startVal) * 100

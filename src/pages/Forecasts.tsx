@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useForecasts, useCreateForecast, useVoteForecast, type ForecastSortOption, type ForecastStatusFilter, type Forecast } from "@/hooks/useForecasts";
 import { useProjects } from "@/hooks/useProjects";
+import { useAllTokenMarketData } from "@/hooks/useTokenMarketData";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,6 +21,7 @@ import { toast } from "sonner";
 const dimensionIconMap: Record<string, typeof DollarSign> = {
   token_price: DollarSign,
   market_cap: BarChart3,
+  community_sentiment: Users,
   active_nodes: Server,
   revenue: Activity,
 };
@@ -27,6 +29,7 @@ const dimensionIconMap: Record<string, typeof DollarSign> = {
 const dimensionLabelMap: Record<string, string> = {
   token_price: "Price",
   market_cap: "MCap",
+  community_sentiment: "Sentiment",
   active_nodes: "Nodes",
   revenue: "Revenue",
 };
@@ -546,12 +549,12 @@ const Forecasts = () => {
   const [projectFilter, setProjectFilter] = useState<string>("");
   const [search, setSearch] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<ForecastStatusFilter>("all");
-  const { data, isLoading } = useForecasts(sort, page, PAGE_SIZE, projectFilter || undefined, search || undefined, statusFilter);
+  const [topicFilter, setTopicFilter] = useState<string>("");
+  const [showFilters, setShowFilters] = useState(false);
+  const { data, isLoading } = useForecasts(sort, page, PAGE_SIZE, projectFilter || undefined, search || undefined, statusFilter, topicFilter || undefined);
   const createForecast = useCreateForecast();
   const voteForecast = useVoteForecast();
   const [showCreate, setShowCreate] = useState(false);
-   const [topicFilter, setTopicFilter] = useState<string>("");
-  const [showFilters, setShowFilters] = useState(false);
 
   // Create form state
   const [title, setTitle] = useState("");
@@ -584,8 +587,15 @@ const Forecasts = () => {
     if (preset !== "custom") {
       const p = timePresets.find(t => t.value === preset);
       if (p) {
-        const end = new Date(Date.now() + p.hours * 60 * 60 * 1000);
-        setEndDate(end.toISOString().slice(0, 16));
+        const now = new Date();
+        const end = new Date(now.getTime() + p.hours * 60 * 60 * 1000);
+        // Format for datetime-local input in local timezone
+        const year = end.getFullYear();
+        const month = String(end.getMonth() + 1).padStart(2, '0');
+        const day = String(end.getDate()).padStart(2, '0');
+        const hours = String(end.getHours()).padStart(2, '0');
+        const minutes = String(end.getMinutes()).padStart(2, '0');
+        setEndDate(`${year}-${month}-${day}T${hours}:${minutes}`);
       }
     } else {
       setEndDate("");
@@ -593,6 +603,23 @@ const Forecasts = () => {
   };
 
   const [forecastMarket, setForecastMarket] = useState<string>("");
+
+  // Fetch token market data to filter projects with price/market cap
+  const { data: allMarketData = {} } = useAllTokenMarketData();
+
+  // Filter projects based on selected forecast market
+  const filteredProjects = useMemo(() => {
+    if (forecastMarket === "token_price" || forecastMarket === "market_cap") {
+      return projects.filter(p => {
+        const md = allMarketData[p.id];
+        if (!md) return false;
+        if (forecastMarket === "token_price") return md.price_usd != null && md.price_usd > 0;
+        if (forecastMarket === "market_cap") return md.market_cap_usd != null && md.market_cap_usd > 0;
+        return true;
+      });
+    }
+    return projects;
+  }, [projects, forecastMarket, allMarketData]);
 
   // Auto-open create dialog from compare page
   useEffect(() => {
@@ -765,23 +792,35 @@ const Forecasts = () => {
             {/* Topic chips */}
             {[
               { value: "", label: "All" },
-              { value: "token_price", label: "Token Price" },
-              { value: "market_cap", label: "Market Cap" },
-              { value: "revenue", label: "Revenue" },
-              { value: "active_nodes", label: "Nodes" },
-              { value: "infrastructure", label: "Infrastructure" },
-              { value: "community", label: "Community Voice" },
+              { value: "token_price", label: "Token Price", comingSoon: false },
+              { value: "market_cap", label: "Market Cap", comingSoon: false },
+              { value: "community_sentiment", label: "Community Sentiment", comingSoon: false },
+              { value: "revenue", label: "Revenue", comingSoon: true },
+              { value: "node", label: "Nodes", comingSoon: true },
+              { value: "infrastructure", label: "Infrastructure", comingSoon: true },
             ].map((topic) => (
               <button
                 key={topic.value}
-                onClick={() => { setTopicFilter(topic.value); setPage(1); }}
+                onClick={() => {
+                  if (topic.comingSoon) {
+                    toast.info(`${topic.label} market is coming soon`);
+                    return;
+                  }
+                  setTopicFilter(topic.value);
+                  setPage(1);
+                }}
                 className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-all whitespace-nowrap ${
                   topicFilter === topic.value
                     ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                    : topic.comingSoon
+                      ? "text-muted-foreground/50 hover:bg-secondary/50 cursor-default"
+                      : "text-muted-foreground hover:bg-secondary hover:text-foreground"
                 }`}
               >
                 {topic.label}
+                {topic.comingSoon && (
+                  <span className="ml-1 text-[9px] bg-secondary px-1 py-0.5 rounded-full">Soon</span>
+                )}
               </button>
             ))}
 
@@ -1045,7 +1084,14 @@ const Forecasts = () => {
                 Forecast Market *
               </label>
               <p className="text-[10px] text-muted-foreground mt-0.5 mb-2">Select the market to track during the forecast period</p>
-              <Select value={forecastMarket} onValueChange={setForecastMarket}>
+              <Select value={forecastMarket} onValueChange={(v) => {
+                  setForecastMarket(v);
+                  // Reset project selections when market changes to token_price/market_cap
+                  if (v === "token_price" || v === "market_cap") {
+                    setProjectAId("");
+                    setProjectBId("");
+                  }
+                }}>
                 <SelectTrigger className="mt-1.5 h-9">
                   <SelectValue placeholder="Select forecast market" />
                 </SelectTrigger>
@@ -1071,7 +1117,7 @@ const Forecasts = () => {
                     <SelectValue placeholder="Select project" />
                   </SelectTrigger>
                   <SelectContent position="popper" side="bottom" sideOffset={4} avoidCollisions={false} className="max-h-60">
-                    {projects.map((p) => (
+                    {filteredProjects.map((p) => (
                       <SelectItem key={p.id} value={p.id}>
                         <span className="flex items-center gap-2">
                           {p.logo_url ? (
@@ -1094,7 +1140,7 @@ const Forecasts = () => {
                   </SelectTrigger>
                   <SelectContent position="popper" side="bottom" sideOffset={4} avoidCollisions={false} className="max-h-60">
                     <SelectItem value="none">None</SelectItem>
-                    {projects.filter((p) => p.id !== projectAId).map((p) => (
+                    {filteredProjects.filter((p) => p.id !== projectAId).map((p) => (
                       <SelectItem key={p.id} value={p.id}>
                         <span className="flex items-center gap-2">
                           {p.logo_url ? (
