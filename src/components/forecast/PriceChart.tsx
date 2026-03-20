@@ -59,23 +59,23 @@ function ProjectChart({ projectId, projectName, dimension }: { projectId: string
   return (
     <div>
       {/* Current value + 24h change */}
-      <div className="flex items-center justify-between mb-3 px-1">
+      <div className="flex items-center justify-between mb-3 px-1 flex-wrap gap-y-1">
         <div className="flex items-center gap-2 min-w-0">
           {currentValue != null && (
-            <span className="text-sm font-bold text-foreground font-['Space_Grotesk'] truncate">
+            <span className="text-base font-bold text-foreground font-['Space_Grotesk']">
               {formatValue(currentValue)}
             </span>
           )}
           {change24h != null && (
-            <span className={`text-[11px] font-semibold flex items-center gap-0.5 shrink-0 ${isPositive ? "text-green-500" : "text-destructive"}`}>
-              {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+            <span className={`text-xs font-semibold flex items-center gap-0.5 shrink-0 ${isPositive ? "text-green-500" : "text-destructive"}`}>
+              {isPositive ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
               {isPositive ? "+" : ""}{change24h.toFixed(2)}%
             </span>
           )}
         </div>
-        <span className="text-[10px] text-muted-foreground shrink-0">Source: CoinGecko · 7D</span>
+        <span className="text-[11px] text-muted-foreground shrink-0">Source: CoinGecko · 7D</span>
       </div>
-      <div className="h-48">
+      <div className="h-52">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={chartData} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
             <defs>
