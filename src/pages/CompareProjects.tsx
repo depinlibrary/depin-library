@@ -192,14 +192,47 @@ const CompareProjects = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Navbar />
+      {/* Custom Compare Header */}
+      <header className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/90 backdrop-blur-xl">
+        <div className="flex h-14 items-center">
+          {/* Logo area — matches sidebar width */}
+          <div className="hidden md:flex items-center w-[260px] shrink-0 px-4 border-r border-border/50 h-full">
+            <Link to="/" className="flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10">
+                <span className="text-xs">⬡</span>
+              </div>
+              <span className="text-base font-semibold tracking-tight text-foreground">
+                DePIN <span className="text-primary">Library</span>
+              </span>
+            </Link>
+          </div>
+          {/* Mobile logo */}
+          <div className="flex md:hidden items-center px-4">
+            <Link to="/" className="flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10">
+                <span className="text-xs">⬡</span>
+              </div>
+              <span className="text-base font-semibold tracking-tight text-foreground">
+                DePIN <span className="text-primary">Library</span>
+              </span>
+            </Link>
+          </div>
+          {/* Right side nav */}
+          <div className="flex-1 flex items-center justify-end px-4 gap-3">
+            <Link to="/" className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">Overview</Link>
+            <Link to="/explore" className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">Explore</Link>
+            <Link to="/market" className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">Market</Link>
+            <Link to="/forecasts" className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">Forecasts</Link>
+          </div>
+        </div>
+      </header>
 
       <div className="flex flex-1 pt-14">
         {/* ── Sidebar — always visible on md+ ── */}
-        <aside className="hidden md:flex flex-col w-[260px] shrink-0 border-r border-border bg-card/30 sticky top-14 h-[calc(100vh-3.5rem)] ml-0">
+        <aside className="hidden md:flex flex-col w-[260px] shrink-0 border-r border-border bg-card/30 sticky top-14 h-[calc(100vh-3.5rem)]">
           {/* Sidebar header */}
           <div className="flex items-center px-4 h-12 border-b border-border/50">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Comparison History</span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Comparison History</span>
           </div>
 
           {/* History list */}
