@@ -518,7 +518,7 @@ const BillboardHero = ({
                         {/* Header: logos + status */}
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-1.5">
-                            <ProjectLogo logoUrl={f.project_a_logo_url || null} logoEmoji={f.project_a_logo_emoji || "⬡"} name={f.project_a_name || "Project"} size="xs" />
+                            <ProjectLogo logoUrl={f.project_a_logo_url || null} logoEmoji={f.project_a_logo_emoji || "⬡"} name={f.project_a_name || "Project"} size="sm" />
                             {f.project_b_name && (
                               <>
                                 <span className="text-[9px] font-bold text-muted-foreground uppercase">vs</span>
