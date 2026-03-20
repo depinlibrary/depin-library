@@ -525,40 +525,8 @@ const ForecastDetail = () => {
 
           {/* ═══════ RIGHT COLUMN (1/3): Creator + Vote + Analysis + Related ═══════ */}
           <div className="space-y-4">
-            {/* Creator Card — compact */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="rounded-2xl border border-border bg-card overflow-hidden"
-            >
-              <div className="p-5">
-                <UserStatsHoverCard userId={forecast.creator_user_id} displayName={forecast.creator_name} avatarUrl={forecast.creator_avatar_url}>
-                  <div className="flex items-center gap-3 cursor-pointer group">
-                    <UserAvatar avatarUrl={forecast.creator_avatar_url} displayName={forecast.creator_name} size="md" />
-                    <div className="flex flex-col">
-                      <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{forecast.creator_name}</span>
-                      <span className="text-[10px] text-muted-foreground">Forecast Creator</span>
-                    </div>
-                  </div>
-                </UserStatsHoverCard>
-                <div className="mt-3 pt-3 border-t border-border grid grid-cols-3 gap-2 text-center">
-                  <div>
-                    <p className="text-[10px] text-muted-foreground mb-0.5">Created</p>
-                    <p className="text-[11px] font-medium text-foreground">{format(new Date(forecast.created_at), "MMM d")}</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-muted-foreground mb-0.5">Ends</p>
-                    <p className="text-[11px] font-medium text-foreground">{format(new Date(forecast.end_date), "MMM d")}</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-muted-foreground mb-0.5">Status</p>
-                    <Badge variant={isEnded ? "secondary" : "default"} className={`text-[9px] ${!isEnded ? "bg-primary/10 text-primary border-primary/20 hover:bg-primary/10" : ""}`}>
-                      {isEnded ? "Ended" : timeLeft}
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
+            {/* Creator Card — compact with countdown */}
+            <CreatorCardWithCountdown forecast={forecast} isEnded={isEnded} timeLeft={timeLeft} />
 
             {/* Cast Your Vote */}
             <motion.div
