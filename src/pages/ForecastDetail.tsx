@@ -375,15 +375,10 @@ const ForecastDetail = () => {
             {/* Price / Market Cap Chart for token_price or market_cap forecasts */}
             {(forecastDimension === "token_price" || forecastDimension === "market_cap") && forecast.project_a_id && (
               <PriceChart
-                projectId={forecast.project_a_id}
-                projectName={forecast.project_a?.name || "Project A"}
-                dimension={forecastDimension as "token_price" | "market_cap"}
-              />
-            )}
-            {(forecastDimension === "token_price" || forecastDimension === "market_cap") && forecast.project_b_id && (
-              <PriceChart
-                projectId={forecast.project_b_id}
-                projectName={forecast.project_b?.name || "Project B"}
+                projects={[
+                  { projectId: forecast.project_a_id, projectName: forecast.project_a?.name || "Project A" },
+                  ...(forecast.project_b_id ? [{ projectId: forecast.project_b_id, projectName: forecast.project_b?.name || "Project B" }] : []),
+                ]}
                 dimension={forecastDimension as "token_price" | "market_cap"}
               />
             )}
