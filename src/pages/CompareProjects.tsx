@@ -2,9 +2,8 @@ import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bot, ArrowRightLeft, Sparkles, Database, AlertTriangle, Shield, TrendingUp, Zap, Loader2, Flame, LogIn, Plus, Clock, MessageSquare } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import SentimentBadge from "@/components/SentimentBadge";
-import Navbar from "@/components/Navbar";
 import ProjectLogo from "@/components/ProjectLogo";
 import { useProjects } from "@/hooks/useProjects";
 import { useAuth } from "@/contexts/AuthContext";
@@ -192,14 +191,47 @@ const CompareProjects = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Navbar />
+      {/* Custom Compare Header */}
+      <header className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/90 backdrop-blur-xl">
+        <div className="flex h-14 items-center">
+          {/* Logo area — matches sidebar width */}
+          <div className="hidden md:flex items-center w-[260px] shrink-0 px-4 border-r border-border/50 h-full">
+            <Link to="/" className="flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10">
+                <span className="text-xs">⬡</span>
+              </div>
+              <span className="text-base font-semibold tracking-tight text-foreground">
+                DePIN <span className="text-primary">Library</span>
+              </span>
+            </Link>
+          </div>
+          {/* Mobile logo */}
+          <div className="flex md:hidden items-center px-4">
+            <Link to="/" className="flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10">
+                <span className="text-xs">⬡</span>
+              </div>
+              <span className="text-base font-semibold tracking-tight text-foreground">
+                DePIN <span className="text-primary">Library</span>
+              </span>
+            </Link>
+          </div>
+          {/* Right side nav */}
+          <div className="flex-1 flex items-center justify-end px-4 gap-3">
+            <Link to="/" className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">Overview</Link>
+            <Link to="/explore" className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">Explore</Link>
+            <Link to="/market" className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">Market</Link>
+            <Link to="/forecasts" className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">Forecasts</Link>
+          </div>
+        </div>
+      </header>
 
       <div className="flex flex-1 pt-14">
         {/* ── Sidebar — always visible on md+ ── */}
-        <aside className="hidden md:flex flex-col w-[260px] shrink-0 border-r border-border bg-card/30 sticky top-14 h-[calc(100vh-3.5rem)] ml-0">
+        <aside className="hidden md:flex flex-col w-[260px] shrink-0 border-r border-border bg-card/30 sticky top-14 h-[calc(100vh-3.5rem)]">
           {/* Sidebar header */}
           <div className="flex items-center px-4 h-12 border-b border-border/50">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Comparison History</span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Comparison History</span>
           </div>
 
           {/* History list */}
@@ -227,26 +259,26 @@ const CompareProjects = () => {
                             : "hover:bg-secondary/30 border border-transparent"
                         }`}
                       >
-                        <div className="flex items-center gap-2">
+                         <div className="flex items-center gap-2">
                           <div className="flex items-center gap-1 shrink-0">
-                            <div className="h-5 w-5 rounded-md overflow-hidden bg-secondary flex items-center justify-center">
+                            <div className="h-6 w-6 rounded-md overflow-hidden bg-secondary flex items-center justify-center">
                               {c.projectA.logo_url ? (
-                                <img src={c.projectA.logo_url} alt="" className="h-5 w-5 object-contain" />
+                                <img src={c.projectA.logo_url} alt="" className="h-6 w-6 object-contain" />
                               ) : (
-                                <span className="text-[10px]">{c.projectA.logo_emoji}</span>
+                                <span className="text-xs">{c.projectA.logo_emoji}</span>
                               )}
                             </div>
                             <span className="text-[9px] text-muted-foreground/50 font-medium">vs</span>
-                            <div className="h-5 w-5 rounded-md overflow-hidden bg-secondary flex items-center justify-center">
+                            <div className="h-6 w-6 rounded-md overflow-hidden bg-secondary flex items-center justify-center">
                               {c.projectB.logo_url ? (
-                                <img src={c.projectB.logo_url} alt="" className="h-5 w-5 object-contain" />
+                                <img src={c.projectB.logo_url} alt="" className="h-6 w-6 object-contain" />
                               ) : (
-                                <span className="text-[10px]">{c.projectB.logo_emoji}</span>
+                                <span className="text-xs">{c.projectB.logo_emoji}</span>
                               )}
                             </div>
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="text-[11px] font-medium text-foreground truncate leading-tight">
+                            <p className="text-xs font-medium text-foreground truncate leading-tight">
                               {c.projectA.name} vs {c.projectB.name}
                             </p>
                             <p className="text-[10px] text-muted-foreground/50 mt-0.5">
