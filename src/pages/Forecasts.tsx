@@ -1138,7 +1138,7 @@ const Forecasts = () => {
                   </SelectTrigger>
                   <SelectContent position="popper" side="bottom" sideOffset={4} avoidCollisions={false} className="max-h-60">
                     <SelectItem value="none">None</SelectItem>
-                    {projects.filter((p) => p.id !== projectAId).map((p) => (
+                    {filteredProjects.filter((p) => p.id !== projectAId).map((p) => (
                       <SelectItem key={p.id} value={p.id}>
                         <span className="flex items-center gap-2">
                           {p.logo_url ? (
