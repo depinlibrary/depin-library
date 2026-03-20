@@ -372,7 +372,22 @@ const ForecastDetail = () => {
             {/* Vote History Chart */}
             <VoteHistoryChart voteHistory={voteHistory} />
 
-            {/* Tabs: Overview, Comments, Votes */}
+            {/* Price / Market Cap Chart for token_price or market_cap forecasts */}
+            {(forecastDimension === "token_price" || forecastDimension === "market_cap") && forecast.project_a_id && (
+              <PriceChart
+                projectId={forecast.project_a_id}
+                projectName={forecast.project_a?.name || "Project A"}
+                dimension={forecastDimension as "token_price" | "market_cap"}
+              />
+            )}
+            {(forecastDimension === "token_price" || forecastDimension === "market_cap") && forecast.project_b_id && (
+              <PriceChart
+                projectId={forecast.project_b_id}
+                projectName={forecast.project_b?.name || "Project B"}
+                dimension={forecastDimension as "token_price" | "market_cap"}
+              />
+            )}
+
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
