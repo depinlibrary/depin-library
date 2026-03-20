@@ -30,6 +30,7 @@ type ComparisonResult = {
 const CompareProjects = () => {
   const { data: projects, isLoading: loadingProjects } = useProjects();
   const { user } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const { toast } = useToast();
   const navigate = useNavigate();
 
