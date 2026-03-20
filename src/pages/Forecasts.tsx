@@ -560,7 +560,7 @@ const Forecasts = () => {
   const [projectBId, setProjectBId] = useState("");
   const [endDate, setEndDate] = useState("");
   const [timePreset, setTimePreset] = useState<string>("");
-  const [analysisDimensions, setAnalysisDimensions] = useState<string[]>([]);
+  
 
   const timePresets = [
     { value: "4h", label: "4 Hours", hours: 4 },
