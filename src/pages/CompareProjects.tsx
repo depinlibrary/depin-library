@@ -380,7 +380,7 @@ const CompareProjects = () => {
                       placeholder="Ask a custom question (optional)... e.g. Which has better long-term growth potential?"
                       value={userPrompt}
                       onChange={(e) => setUserPrompt(e.target.value)}
-                      className="bg-card border-border resize-none h-11 min-h-[44px] py-2.5 text-sm"
+                      className="bg-card border-border resize-y h-11 min-h-[44px] py-2.5 text-sm"
                     />
                   </div>
                   <Button
