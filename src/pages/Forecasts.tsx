@@ -602,6 +602,23 @@ const Forecasts = () => {
 
   const [forecastMarket, setForecastMarket] = useState<string>("");
 
+  // Fetch token market data to filter projects with price/market cap
+  const { data: allMarketData = {} } = useAllTokenMarketData();
+
+  // Filter projects based on selected forecast market
+  const filteredProjects = useMemo(() => {
+    if (forecastMarket === "token_price" || forecastMarket === "market_cap") {
+      return projects.filter(p => {
+        const md = allMarketData[p.id];
+        if (!md) return false;
+        if (forecastMarket === "token_price") return md.price_usd != null && md.price_usd > 0;
+        if (forecastMarket === "market_cap") return md.market_cap_usd != null && md.market_cap_usd > 0;
+        return true;
+      });
+    }
+    return projects;
+  }, [projects, forecastMarket, allMarketData]);
+
   // Auto-open create dialog from compare page
   useEffect(() => {
     if (searchParams.get("create") === "true" && user) {
