@@ -705,7 +705,9 @@ const Forecasts = () => {
 
   const handleCreate = async () => {
     if (!title.trim()) { toast.error("Title required"); return; }
+    if (!description.trim()) { toast.error("Description required"); return; }
     if (!projectAId) { toast.error("Select a project"); return; }
+    if (!forecastMarket) { toast.error("Forecast market required"); return; }
     if (!endDate) { toast.error("End date required"); return; }
     if (new Date(endDate) <= new Date()) { toast.error("End date must be in the future"); return; }
 
