@@ -263,7 +263,7 @@ const Overview = () => {
                             logoUrl={forecast.project_a_logo_url}
                             logoEmoji={forecast.project_a_logo_emoji || "⬡"}
                             name={forecast.project_a_name || ""}
-                            size="xs" />
+                            size="sm" />
                           {forecast.project_b_name && (
                             <>
                               <span className="text-[10px] font-bold text-muted-foreground uppercase">vs</span>
@@ -271,7 +271,7 @@ const Overview = () => {
                                 logoUrl={forecast.project_b_logo_url}
                                 logoEmoji={forecast.project_b_logo_emoji || "⬡"}
                                 name={forecast.project_b_name}
-                                size="xs" />
+                                size="sm" />
                             </>
                           )}
                         </div>
