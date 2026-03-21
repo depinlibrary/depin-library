@@ -400,7 +400,7 @@ const ForecastDetail = () => {
                   <div className="flex items-center justify-between rounded-xl bg-primary/5 border border-primary/10 px-4 py-2.5">
                     <div className="flex items-center gap-2">
                       <ArrowUpRight className="h-4 w-4 text-primary" />
-                      <span className="text-sm font-semibold text-foreground">Yes</span>
+                      <span className="text-sm font-semibold text-foreground">{yesLabel}</span>
                       <span className="text-[10px] text-muted-foreground">{forecast.total_votes_yes} votes</span>
                       {forecast.avg_confidence_yes != null && (
                         <span className="text-[10px] text-primary/60 flex items-center gap-0.5">
@@ -413,7 +413,7 @@ const ForecastDetail = () => {
                   <div className="flex items-center justify-between rounded-xl bg-destructive/5 border border-destructive/10 px-4 py-2.5">
                     <div className="flex items-center gap-2">
                       <ArrowDownRight className="h-4 w-4 text-destructive" />
-                      <span className="text-sm font-semibold text-foreground">No</span>
+                      <span className="text-sm font-semibold text-foreground">{noLabel}</span>
                       <span className="text-[10px] text-muted-foreground">{forecast.total_votes_no} votes</span>
                       {forecast.avg_confidence_no != null && (
                         <span className="text-[10px] text-destructive/60 flex items-center gap-0.5">
