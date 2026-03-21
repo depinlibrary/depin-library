@@ -677,7 +677,7 @@ const ForecastDetail = () => {
                 ) : (
                   <div className="rounded-xl bg-muted/50 border border-border px-4 py-3.5 text-center">
                     <span className="text-xs font-medium text-muted-foreground">
-                      Voting has ended · Final: <span className="text-foreground font-semibold">{yesPct >= 50 ? "Yes" : "No"}</span> ({yesPct.toFixed(0)}%)
+                      Voting has ended · Final: <span className="text-foreground font-semibold">{yesPct >= 50 ? yesLabel : noLabel}</span> ({yesPct.toFixed(0)}%)
                     </span>
                   </div>
                 )}
