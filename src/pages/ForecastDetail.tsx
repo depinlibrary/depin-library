@@ -441,11 +441,11 @@ const ForecastDetail = () => {
                     <p className="text-sm font-bold text-foreground font-['Space_Grotesk']">{totalVotes.toLocaleString()}</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-[10px] text-muted-foreground mb-0.5">Yes Votes</p>
+                    <p className="text-[10px] text-muted-foreground mb-0.5">{yesLabel} Votes</p>
                     <p className="text-sm font-bold text-primary font-['Space_Grotesk']">{forecast.total_votes_yes}</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-[10px] text-muted-foreground mb-0.5">No Votes</p>
+                    <p className="text-[10px] text-muted-foreground mb-0.5">{noLabel} Votes</p>
                     <p className="text-sm font-bold text-destructive font-['Space_Grotesk']">{forecast.total_votes_no}</p>
                   </div>
                   <div className="text-center">
