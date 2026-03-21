@@ -14,6 +14,9 @@ export type Forecast = {
   total_votes_yes: number;
   total_votes_no: number;
   created_at: string;
+  prediction_target: number | null;
+  prediction_direction: string | null;
+  start_price: number | null;
   project_a_name?: string;
   project_b_name?: string;
   project_a_slug?: string;
