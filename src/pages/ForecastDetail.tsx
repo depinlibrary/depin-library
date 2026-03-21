@@ -312,6 +312,9 @@ const ForecastDetail = () => {
   const isEnded = new Date(forecast.end_date) <= new Date();
   const timeLeft = getTimeRemaining(forecast.end_date);
   const confInfo = confidenceLabels[confidence] || confidenceLabels[3];
+  const isPriceMarket = forecastDimension === "token_price" || forecastDimension === "market_cap";
+  const yesLabel = isPriceMarket ? "Long" : "Yes";
+  const noLabel = isPriceMarket ? "Short" : "No";
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
