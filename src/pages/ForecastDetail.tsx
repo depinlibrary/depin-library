@@ -654,7 +654,7 @@ const ForecastDetail = () => {
                             : "bg-primary/10 text-primary hover:bg-primary/20"
                         }`}
                       >
-                        {forecast.user_vote === "yes" ? "Voted Yes ✓" : "Yes"}
+                        {forecast.user_vote === "yes" ? `Voted ${yesLabel} ✓` : yesLabel}
                       </button>
                       <button
                         onClick={() => handleVote("no")}
@@ -664,13 +664,13 @@ const ForecastDetail = () => {
                             : "bg-destructive/10 text-destructive hover:bg-destructive/20"
                         }`}
                       >
-                        {forecast.user_vote === "no" ? "Voted No ✓" : "No"}
+                        {forecast.user_vote === "no" ? `Voted ${noLabel} ✓` : noLabel}
                       </button>
                     </div>
                     {forecast.user_vote && (
                       <motion.p initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}
                         className="text-[10px] text-muted-foreground text-center mt-3">
-                        You voted <span className={`font-semibold ${forecast.user_vote === "yes" ? "text-primary" : "text-destructive"}`}>{forecast.user_vote === "yes" ? "Yes" : "No"}</span> · Vote again to change
+                        You voted <span className={`font-semibold ${forecast.user_vote === "yes" ? "text-primary" : "text-destructive"}`}>{forecast.user_vote === "yes" ? yesLabel : noLabel}</span> · Vote again to change
                       </motion.p>
                     )}
                   </>
