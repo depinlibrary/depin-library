@@ -44,9 +44,13 @@ interface Props {
   isEnded: boolean;
   totalVotesYes?: number;
   totalVotesNo?: number;
+  predictionTarget?: number | null;
+  predictionDirection?: string | null;
+  startPrice?: number | null;
+  forecastDimension?: string | null;
 }
 
-export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 0, totalVotesNo = 0 }: Props) {
+export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 0, totalVotesNo = 0, predictionTarget, predictionDirection, startPrice, forecastDimension }: Props) {
   const { data: targets = [] } = useQuery({
     queryKey: ["forecast-targets", forecastId],
     queryFn: async () => {
