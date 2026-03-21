@@ -146,7 +146,8 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
                 : "bg-primary/10 text-primary hover:bg-primary/20"
             }`}
           >
-            Yes
+            {isPriceMarket && <TrendingUp className="h-3.5 w-3.5 inline mr-1" />}
+            {yesLabel}
           </button>
           <button
             onClick={() => isAuthenticated ? onVote(forecast.id, "no") : toast.error("Sign in to vote")}
@@ -156,13 +157,14 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
                 : "bg-destructive/10 text-destructive hover:bg-destructive/20"
             }`}
           >
-            No
+            {isPriceMarket && <ArrowDownRight className="h-3.5 w-3.5 inline mr-1" />}
+            {noLabel}
           </button>
         </div>
       ) : (
         <div className={`flex items-center justify-between px-5 py-3.5 border-t border-border ${finalResult === "yes" ? "bg-primary/5" : "bg-destructive/5"}`}>
           <span className={`text-sm font-bold ${finalResult === "yes" ? "text-primary" : "text-destructive"}`}>
-            Resolved: {finalResult === "yes" ? "Yes" : "No"}
+            Resolved: {finalResult === "yes" ? yesLabel : noLabel}
           </span>
           {forecast.user_vote && (
             <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${
