@@ -67,6 +67,9 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
   const isEnded = new Date(forecast.end_date) <= new Date();
   const timeLeft = getTimeRemaining(forecast.end_date);
   const finalResult = isEnded ? (yesPct >= 50 ? "yes" : "no") : null;
+  const isPriceMarket = dimensions.some(d => d === "token_price" || d === "market_cap");
+  const yesLabel = isPriceMarket ? "Long" : "Yes";
+  const noLabel = isPriceMarket ? "Short" : "No";
 
   return (
     <motion.div
@@ -143,7 +146,8 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
                 : "bg-primary/10 text-primary hover:bg-primary/20"
             }`}
           >
-            Yes
+            {isPriceMarket && <TrendingUp className="h-3.5 w-3.5 inline mr-1" />}
+            {yesLabel}
           </button>
           <button
             onClick={() => isAuthenticated ? onVote(forecast.id, "no") : toast.error("Sign in to vote")}
@@ -153,13 +157,14 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
                 : "bg-destructive/10 text-destructive hover:bg-destructive/20"
             }`}
           >
-            No
+            {isPriceMarket && <ArrowDownRight className="h-3.5 w-3.5 inline mr-1" />}
+            {noLabel}
           </button>
         </div>
       ) : (
         <div className={`flex items-center justify-between px-5 py-3.5 border-t border-border ${finalResult === "yes" ? "bg-primary/5" : "bg-destructive/5"}`}>
           <span className={`text-sm font-bold ${finalResult === "yes" ? "text-primary" : "text-destructive"}`}>
-            Resolved: {finalResult === "yes" ? "Yes" : "No"}
+            Resolved: {finalResult === "yes" ? yesLabel : noLabel}
           </span>
           {forecast.user_vote && (
             <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${
@@ -562,6 +567,8 @@ const Forecasts = () => {
   const [projectBId, setProjectBId] = useState("");
   const [endDate, setEndDate] = useState("");
   const [timePreset, setTimePreset] = useState<string>("");
+  const [predictionDirection, setPredictionDirection] = useState<"long" | "short" | "">("");
+  const [predictionTarget, setPredictionTarget] = useState<string>("");
   
 
   const timePresets = [
@@ -739,6 +746,13 @@ const Forecasts = () => {
     if (!endDate) { toast.error("End date required"); return; }
     if (new Date(endDate) <= new Date()) { toast.error("End date must be in the future"); return; }
 
+    // Validate prediction direction and target for price-based markets
+    const isPriceMarket = forecastMarket === "token_price" || forecastMarket === "market_cap";
+    if (isPriceMarket && !predictionDirection) { toast.error("Select Long or Short"); return; }
+    if (isPriceMarket && !predictionTarget) { toast.error("Enter a target price"); return; }
+
+    const currentPrice = isPriceMarket && projectAId ? (forecastMarket === "token_price" ? allMarketData[projectAId]?.price_usd : allMarketData[projectAId]?.market_cap_usd) : undefined;
+
     try {
       await createForecast.mutateAsync({
         title: title.trim(),
@@ -747,6 +761,9 @@ const Forecasts = () => {
         projectBId: projectBId && projectBId !== "none" ? projectBId : undefined,
         endDate: new Date(endDate).toISOString(),
         analysisDimensions: [forecastMarket],
+        predictionTarget: isPriceMarket ? parseFloat(predictionTarget) : undefined,
+        predictionDirection: isPriceMarket ? predictionDirection : undefined,
+        startPrice: currentPrice ?? undefined,
       });
       toast.success("Forecast created!");
       setShowCreate(false);
@@ -757,6 +774,8 @@ const Forecasts = () => {
       setEndDate("");
       setTimePreset("");
       setForecastMarket("");
+      setPredictionDirection("");
+      setPredictionTarget("");
     } catch (err: any) {
       toast.error(err.message || "Failed to create forecast");
     }
@@ -1080,17 +1099,19 @@ const Forecasts = () => {
                 Forecast Market *
               </label>
               <p className="text-[10px] text-muted-foreground mt-0.5 mb-2">Select the market to track during the forecast period</p>
-              <Select value={forecastMarket} onValueChange={(v) => {
-                  setForecastMarket(v);
-                  // Reset project selections when market changes to token_price/market_cap
-                  if (v === "token_price" || v === "market_cap") {
-                    setProjectAId("");
-                    setProjectBId("");
-                  }
-                }}>
-                <SelectTrigger className="mt-1.5 h-9">
-                  <SelectValue placeholder="Select forecast market" />
-                </SelectTrigger>
+                <Select value={forecastMarket} onValueChange={(v) => {
+                    setForecastMarket(v);
+                    setPredictionDirection("");
+                    setPredictionTarget("");
+                    // Reset project selections when market changes to token_price/market_cap
+                    if (v === "token_price" || v === "market_cap") {
+                      setProjectAId("");
+                      setProjectBId("");
+                    }
+                  }}>
+                  <SelectTrigger className="mt-1.5 h-9">
+                    <SelectValue placeholder="Select forecast market" />
+                  </SelectTrigger>
                 <SelectContent position="popper" side="bottom" sideOffset={4} avoidCollisions={false} className="max-h-60">
                   {dimensionOptions.map((dim) => (
                     <SelectItem key={dim.value} value={dim.value} disabled={dim.disabled}>
@@ -1105,6 +1126,83 @@ const Forecasts = () => {
                 </SelectContent>
               </Select>
             </div>
+            {/* Long/Short direction + Target Price — only for token_price / market_cap */}
+            {(forecastMarket === "token_price" || forecastMarket === "market_cap") && (
+              <div className="rounded-xl border border-border bg-secondary/20 p-4 space-y-3">
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Position Direction *</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPredictionDirection("long")}
+                    className={`rounded-lg py-2.5 text-sm font-bold transition-all border ${
+                      predictionDirection === "long"
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border bg-card text-muted-foreground hover:text-foreground hover:bg-secondary"
+                    }`}
+                  >
+                    <TrendingUp className="h-3.5 w-3.5 inline mr-1.5" />
+                    Long
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPredictionDirection("short")}
+                    className={`rounded-lg py-2.5 text-sm font-bold transition-all border ${
+                      predictionDirection === "short"
+                        ? "border-destructive bg-destructive/10 text-destructive"
+                        : "border-border bg-card text-muted-foreground hover:text-foreground hover:bg-secondary"
+                    }`}
+                  >
+                    <ArrowDownRight className="h-3.5 w-3.5 inline mr-1.5" />
+                    Short
+                  </button>
+                </div>
+                {predictionDirection && projectAId && (() => {
+                  const md = allMarketData[projectAId];
+                  const currentPrice = forecastMarket === "token_price" ? md?.price_usd : md?.market_cap_usd;
+                  const targetNum = parseFloat(predictionTarget);
+                  const pctChange = currentPrice && targetNum ? (((targetNum - currentPrice) / currentPrice) * 100) : null;
+                  const formatVal = (v: number | null | undefined) => {
+                    if (v == null) return "—";
+                    if (forecastMarket === "market_cap") {
+                      if (v >= 1e9) return `$${(v / 1e9).toFixed(2)}B`;
+                      if (v >= 1e6) return `$${(v / 1e6).toFixed(2)}M`;
+                      return `$${v.toLocaleString()}`;
+                    }
+                    return v < 0.01 ? `$${v.toFixed(6)}` : v < 1 ? `$${v.toFixed(4)}` : `$${v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                  };
+                  return (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground">Current {forecastMarket === "token_price" ? "Price" : "Market Cap"}</span>
+                        <span className="font-semibold text-foreground">{formatVal(currentPrice)}</span>
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                          Target {forecastMarket === "token_price" ? "Price" : "Market Cap"} *
+                        </label>
+                        <div className="relative mt-1.5">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">$</span>
+                          <Input
+                            type="number"
+                            step="any"
+                            value={predictionTarget}
+                            onChange={(e) => setPredictionTarget(e.target.value)}
+                            placeholder="0.00"
+                            className="pl-7 h-9"
+                          />
+                        </div>
+                      </div>
+                      {pctChange != null && !isNaN(pctChange) && (
+                        <div className={`flex items-center gap-1.5 text-xs font-semibold ${pctChange >= 0 ? "text-primary" : "text-destructive"}`}>
+                          {pctChange >= 0 ? <TrendingUp className="h-3.5 w-3.5" /> : <ArrowDownRight className="h-3.5 w-3.5" />}
+                          {pctChange >= 0 ? "+" : ""}{pctChange.toFixed(2)}% from current
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Project A *</label>

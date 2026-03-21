@@ -312,6 +312,9 @@ const ForecastDetail = () => {
   const isEnded = new Date(forecast.end_date) <= new Date();
   const timeLeft = getTimeRemaining(forecast.end_date);
   const confInfo = confidenceLabels[confidence] || confidenceLabels[3];
+  const isPriceMarket = forecastDimension === "token_price" || forecastDimension === "market_cap";
+  const yesLabel = isPriceMarket ? "Long" : "Yes";
+  const noLabel = isPriceMarket ? "Short" : "No";
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -397,7 +400,7 @@ const ForecastDetail = () => {
                   <div className="flex items-center justify-between rounded-xl bg-primary/5 border border-primary/10 px-4 py-2.5">
                     <div className="flex items-center gap-2">
                       <ArrowUpRight className="h-4 w-4 text-primary" />
-                      <span className="text-sm font-semibold text-foreground">Yes</span>
+                      <span className="text-sm font-semibold text-foreground">{yesLabel}</span>
                       <span className="text-[10px] text-muted-foreground">{forecast.total_votes_yes} votes</span>
                       {forecast.avg_confidence_yes != null && (
                         <span className="text-[10px] text-primary/60 flex items-center gap-0.5">
@@ -410,7 +413,7 @@ const ForecastDetail = () => {
                   <div className="flex items-center justify-between rounded-xl bg-destructive/5 border border-destructive/10 px-4 py-2.5">
                     <div className="flex items-center gap-2">
                       <ArrowDownRight className="h-4 w-4 text-destructive" />
-                      <span className="text-sm font-semibold text-foreground">No</span>
+                      <span className="text-sm font-semibold text-foreground">{noLabel}</span>
                       <span className="text-[10px] text-muted-foreground">{forecast.total_votes_no} votes</span>
                       {forecast.avg_confidence_no != null && (
                         <span className="text-[10px] text-destructive/60 flex items-center gap-0.5">
@@ -426,7 +429,7 @@ const ForecastDetail = () => {
                 {isEnded && (
                   <div className="flex items-center justify-end">
                     <Badge variant="secondary" className="text-[10px] font-semibold">
-                      Final: {yesPct >= 50 ? "Yes" : "No"} ({yesPct >= 50 ? yesPct.toFixed(0) : noPct.toFixed(0)}%)
+                      Final: {yesPct >= 50 ? yesLabel : noLabel} ({yesPct >= 50 ? yesPct.toFixed(0) : noPct.toFixed(0)}%)
                     </Badge>
                   </div>
                 )}
@@ -438,11 +441,11 @@ const ForecastDetail = () => {
                     <p className="text-sm font-bold text-foreground font-['Space_Grotesk']">{totalVotes.toLocaleString()}</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-[10px] text-muted-foreground mb-0.5">Yes Votes</p>
+                    <p className="text-[10px] text-muted-foreground mb-0.5">{yesLabel} Votes</p>
                     <p className="text-sm font-bold text-primary font-['Space_Grotesk']">{forecast.total_votes_yes}</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-[10px] text-muted-foreground mb-0.5">No Votes</p>
+                    <p className="text-[10px] text-muted-foreground mb-0.5">{noLabel} Votes</p>
                     <p className="text-sm font-bold text-destructive font-['Space_Grotesk']">{forecast.total_votes_no}</p>
                   </div>
                   <div className="text-center">
@@ -594,7 +597,7 @@ const ForecastDetail = () => {
                                 variant={voter.vote === "yes" ? "default" : "destructive"}
                                 className={`text-[10px] ${voter.vote === "yes" ? "bg-primary/10 text-primary border-primary/20 hover:bg-primary/10" : "bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive/10"}`}
                               >
-                                {voter.vote === "yes" ? "Yes" : "No"}
+                                {voter.vote === "yes" ? yesLabel : noLabel}
                               </Badge>
                             </div>
                           </div>
@@ -651,7 +654,7 @@ const ForecastDetail = () => {
                             : "bg-primary/10 text-primary hover:bg-primary/20"
                         }`}
                       >
-                        {forecast.user_vote === "yes" ? "Voted Yes ✓" : "Yes"}
+                        {forecast.user_vote === "yes" ? `Voted ${yesLabel} ✓` : yesLabel}
                       </button>
                       <button
                         onClick={() => handleVote("no")}
@@ -661,20 +664,20 @@ const ForecastDetail = () => {
                             : "bg-destructive/10 text-destructive hover:bg-destructive/20"
                         }`}
                       >
-                        {forecast.user_vote === "no" ? "Voted No ✓" : "No"}
+                        {forecast.user_vote === "no" ? `Voted ${noLabel} ✓` : noLabel}
                       </button>
                     </div>
                     {forecast.user_vote && (
                       <motion.p initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}
                         className="text-[10px] text-muted-foreground text-center mt-3">
-                        You voted <span className={`font-semibold ${forecast.user_vote === "yes" ? "text-primary" : "text-destructive"}`}>{forecast.user_vote === "yes" ? "Yes" : "No"}</span> · Vote again to change
+                        You voted <span className={`font-semibold ${forecast.user_vote === "yes" ? "text-primary" : "text-destructive"}`}>{forecast.user_vote === "yes" ? yesLabel : noLabel}</span> · Vote again to change
                       </motion.p>
                     )}
                   </>
                 ) : (
                   <div className="rounded-xl bg-muted/50 border border-border px-4 py-3.5 text-center">
                     <span className="text-xs font-medium text-muted-foreground">
-                      Voting has ended · Final: <span className="text-foreground font-semibold">{yesPct >= 50 ? "Yes" : "No"}</span> ({yesPct.toFixed(0)}%)
+                      Voting has ended · Final: <span className="text-foreground font-semibold">{yesPct >= 50 ? yesLabel : noLabel}</span> ({yesPct.toFixed(0)}%)
                     </span>
                   </div>
                 )}
@@ -682,7 +685,7 @@ const ForecastDetail = () => {
             </motion.div>
 
             {/* Forecast Analysis */}
-            <ForecastAnalysis forecastId={forecast.id} isEnded={isEnded} totalVotesYes={forecast.total_votes_yes} totalVotesNo={forecast.total_votes_no} />
+            <ForecastAnalysis forecastId={forecast.id} isEnded={isEnded} totalVotesYes={forecast.total_votes_yes} totalVotesNo={forecast.total_votes_no} predictionTarget={forecast.prediction_target} predictionDirection={forecast.prediction_direction} startPrice={forecast.start_price} forecastDimension={forecastDimension} />
 
             {/* Related Forecasts — column layout */}
             {relatedForecasts.length > 0 && (

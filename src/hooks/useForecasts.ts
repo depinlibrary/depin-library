@@ -14,6 +14,9 @@ export type Forecast = {
   total_votes_yes: number;
   total_votes_no: number;
   created_at: string;
+  prediction_target: number | null;
+  prediction_direction: string | null;
+  start_price: number | null;
   project_a_name?: string;
   project_b_name?: string;
   project_a_slug?: string;
@@ -173,6 +176,9 @@ export function useCreateForecast() {
       projectBId,
       endDate,
       analysisDimensions = [],
+      predictionTarget,
+      predictionDirection,
+      startPrice,
     }: {
       title: string;
       description: string;
@@ -180,6 +186,9 @@ export function useCreateForecast() {
       projectBId?: string;
       endDate: string;
       analysisDimensions?: string[];
+      predictionTarget?: number;
+      predictionDirection?: string;
+      startPrice?: number;
     }) => {
       if (!user) throw new Error("Must be logged in");
       const { data: forecast, error } = await supabase.from("forecasts").insert({
@@ -189,6 +198,9 @@ export function useCreateForecast() {
         project_b_id: projectBId || null,
         creator_user_id: user.id,
         end_date: endDate,
+        prediction_target: predictionTarget ?? null,
+        prediction_direction: predictionDirection ?? null,
+        start_price: startPrice ?? null,
       }).select("id").single();
       if (error) throw error;
 

@@ -376,8 +376,11 @@ export type Database = {
           end_date: string
           end_notifications_sent: boolean
           id: string
+          prediction_direction: string | null
+          prediction_target: number | null
           project_a_id: string
           project_b_id: string | null
+          start_price: number | null
           status: string
           title: string
           total_votes_no: number
@@ -390,8 +393,11 @@ export type Database = {
           end_date: string
           end_notifications_sent?: boolean
           id?: string
+          prediction_direction?: string | null
+          prediction_target?: number | null
           project_a_id: string
           project_b_id?: string | null
+          start_price?: number | null
           status?: string
           title: string
           total_votes_no?: number
@@ -404,8 +410,11 @@ export type Database = {
           end_date?: string
           end_notifications_sent?: boolean
           id?: string
+          prediction_direction?: string | null
+          prediction_target?: number | null
           project_a_id?: string
           project_b_id?: string | null
+          start_price?: number | null
           status?: string
           title?: string
           total_votes_no?: number

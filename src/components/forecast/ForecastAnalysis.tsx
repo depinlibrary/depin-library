@@ -44,9 +44,13 @@ interface Props {
   isEnded: boolean;
   totalVotesYes?: number;
   totalVotesNo?: number;
+  predictionTarget?: number | null;
+  predictionDirection?: string | null;
+  startPrice?: number | null;
+  forecastDimension?: string | null;
 }
 
-export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 0, totalVotesNo = 0 }: Props) {
+export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 0, totalVotesNo = 0, predictionTarget, predictionDirection, startPrice, forecastDimension }: Props) {
   const { data: targets = [] } = useQuery({
     queryKey: ["forecast-targets", forecastId],
     queryFn: async () => {
@@ -112,6 +116,46 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
       </div>
 
       <div className="divide-y divide-border">
+        {/* Prediction Target Section — for token_price / market_cap */}
+        {(forecastDimension === "token_price" || forecastDimension === "market_cap") && startPrice != null && predictionTarget != null && predictionDirection && (() => {
+          const pctChange = startPrice !== 0 ? ((predictionTarget - startPrice) / startPrice) * 100 : null;
+          const dimLabel = forecastDimension === "token_price" ? "Price" : "Market Cap";
+          const formatVal = (v: number) => {
+            if (forecastDimension === "market_cap") {
+              if (v >= 1e9) return `$${(v / 1e9).toFixed(2)}B`;
+              if (v >= 1e6) return `$${(v / 1e6).toFixed(2)}M`;
+              return `$${v.toLocaleString()}`;
+            }
+            return v < 0.01 ? `$${v.toFixed(6)}` : v < 1 ? `$${v.toFixed(4)}` : `$${v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+          };
+          return (
+            <div className="px-6 py-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${predictionDirection === "long" ? "bg-primary/10" : "bg-destructive/10"}`}>
+                  {predictionDirection === "long" ? <TrendingUp className="h-4 w-4 text-primary" /> : <TrendingDown className="h-4 w-4 text-destructive" />}
+                </div>
+                <span className="text-xs font-semibold text-foreground">
+                  {predictionDirection === "long" ? "Long" : "Short"} — {dimLabel}
+                </span>
+                {pctChange != null && (
+                  <span className={`ml-auto text-xs font-bold ${pctChange >= 0 ? "text-primary" : "text-destructive"}`}>
+                    Target: {pctChange >= 0 ? "+" : ""}{pctChange.toFixed(2)}%
+                  </span>
+                )}
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="rounded-lg bg-secondary/50 px-3 py-2.5">
+                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">{dimLabel} at Creation</p>
+                  <p className="text-sm font-semibold text-foreground font-['Space_Grotesk']">{formatVal(startPrice)}</p>
+                </div>
+                <div className="rounded-lg bg-secondary/50 px-3 py-2.5">
+                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Prediction Target</p>
+                  <p className={`text-sm font-semibold font-['Space_Grotesk'] ${predictionDirection === "long" ? "text-primary" : "text-destructive"}`}>{formatVal(predictionTarget)}</p>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
         {targets.map((target: any) => {
           const isSentiment = target.dimension === "community_sentiment";
           const meta = dimensionMeta[target.dimension] || {
