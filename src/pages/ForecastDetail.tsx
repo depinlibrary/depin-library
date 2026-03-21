@@ -597,7 +597,7 @@ const ForecastDetail = () => {
                                 variant={voter.vote === "yes" ? "default" : "destructive"}
                                 className={`text-[10px] ${voter.vote === "yes" ? "bg-primary/10 text-primary border-primary/20 hover:bg-primary/10" : "bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive/10"}`}
                               >
-                                {voter.vote === "yes" ? "Yes" : "No"}
+                                {voter.vote === "yes" ? yesLabel : noLabel}
                               </Badge>
                             </div>
                           </div>
