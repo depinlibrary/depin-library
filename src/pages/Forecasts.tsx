@@ -562,6 +562,8 @@ const Forecasts = () => {
   const [projectBId, setProjectBId] = useState("");
   const [endDate, setEndDate] = useState("");
   const [timePreset, setTimePreset] = useState<string>("");
+  const [predictionDirection, setPredictionDirection] = useState<"long" | "short" | "">("");
+  const [predictionTarget, setPredictionTarget] = useState<string>("");
   
 
   const timePresets = [
