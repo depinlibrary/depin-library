@@ -1082,17 +1082,19 @@ const Forecasts = () => {
                 Forecast Market *
               </label>
               <p className="text-[10px] text-muted-foreground mt-0.5 mb-2">Select the market to track during the forecast period</p>
-              <Select value={forecastMarket} onValueChange={(v) => {
-                  setForecastMarket(v);
-                  // Reset project selections when market changes to token_price/market_cap
-                  if (v === "token_price" || v === "market_cap") {
-                    setProjectAId("");
-                    setProjectBId("");
-                  }
-                }}>
-                <SelectTrigger className="mt-1.5 h-9">
-                  <SelectValue placeholder="Select forecast market" />
-                </SelectTrigger>
+                <Select value={forecastMarket} onValueChange={(v) => {
+                    setForecastMarket(v);
+                    setPredictionDirection("");
+                    setPredictionTarget("");
+                    // Reset project selections when market changes to token_price/market_cap
+                    if (v === "token_price" || v === "market_cap") {
+                      setProjectAId("");
+                      setProjectBId("");
+                    }
+                  }}>
+                  <SelectTrigger className="mt-1.5 h-9">
+                    <SelectValue placeholder="Select forecast market" />
+                  </SelectTrigger>
                 <SelectContent position="popper" side="bottom" sideOffset={4} avoidCollisions={false} className="max-h-60">
                   {dimensionOptions.map((dim) => (
                     <SelectItem key={dim.value} value={dim.value} disabled={dim.disabled}>
