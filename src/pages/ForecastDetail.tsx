@@ -429,7 +429,7 @@ const ForecastDetail = () => {
                 {isEnded && (
                   <div className="flex items-center justify-end">
                     <Badge variant="secondary" className="text-[10px] font-semibold">
-                      Final: {yesPct >= 50 ? "Yes" : "No"} ({yesPct >= 50 ? yesPct.toFixed(0) : noPct.toFixed(0)}%)
+                      Final: {yesPct >= 50 ? yesLabel : noLabel} ({yesPct >= 50 ? yesPct.toFixed(0) : noPct.toFixed(0)}%)
                     </Badge>
                   </div>
                 )}
