@@ -741,6 +741,13 @@ const Forecasts = () => {
     if (!endDate) { toast.error("End date required"); return; }
     if (new Date(endDate) <= new Date()) { toast.error("End date must be in the future"); return; }
 
+    // Validate prediction direction and target for price-based markets
+    const isPriceMarket = forecastMarket === "token_price" || forecastMarket === "market_cap";
+    if (isPriceMarket && !predictionDirection) { toast.error("Select Long or Short"); return; }
+    if (isPriceMarket && !predictionTarget) { toast.error("Enter a target price"); return; }
+
+    const currentPrice = isPriceMarket && projectAId ? (forecastMarket === "token_price" ? allMarketData[projectAId]?.price_usd : allMarketData[projectAId]?.market_cap_usd) : undefined;
+
     try {
       await createForecast.mutateAsync({
         title: title.trim(),
@@ -749,6 +756,9 @@ const Forecasts = () => {
         projectBId: projectBId && projectBId !== "none" ? projectBId : undefined,
         endDate: new Date(endDate).toISOString(),
         analysisDimensions: [forecastMarket],
+        predictionTarget: isPriceMarket ? parseFloat(predictionTarget) : undefined,
+        predictionDirection: isPriceMarket ? predictionDirection : undefined,
+        startPrice: currentPrice ?? undefined,
       });
       toast.success("Forecast created!");
       setShowCreate(false);
@@ -759,6 +769,8 @@ const Forecasts = () => {
       setEndDate("");
       setTimePreset("");
       setForecastMarket("");
+      setPredictionDirection("");
+      setPredictionTarget("");
     } catch (err: any) {
       toast.error(err.message || "Failed to create forecast");
     }
