@@ -750,7 +750,7 @@ const Forecasts = () => {
     // Validate prediction direction and target for price-based markets
     const isPriceMarket = forecastMarket === "token_price" || forecastMarket === "market_cap";
     if (isPriceMarket && !predictionDirection) { toast.error("Select Long or Short"); return; }
-    if (isPriceMarket && !predictionTarget) { toast.error("Enter a target price"); return; }
+    if (isPriceMarket && !predictionTarget) { toast.error(hasTwoProjectsForCreate ? "Enter a target percentage" : "Enter a target price"); return; }
 
     const currentPrice = isPriceMarket && projectAId ? (forecastMarket === "token_price" ? allMarketData[projectAId]?.price_usd : allMarketData[projectAId]?.market_cap_usd) : undefined;
 
