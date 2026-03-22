@@ -105,8 +105,8 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
     const s = snapshots.find((s: any) => s.dimension === dim && s.snapshot_type === type);
     if (s?.value != null) return s.value;
 
-    // Fallback: use live market data if no snapshot exists
-    if (type === "end" || (!isEnded && type === "start")) {
+    // Fallback: use live market data only for active forecasts
+    if (!isEnded) {
       if (dim === "token_price" && liveMarketData?.price_usd != null) return Number(liveMarketData.price_usd);
       if (dim === "market_cap" && liveMarketData?.market_cap_usd != null) return Number(liveMarketData.market_cap_usd);
     }
