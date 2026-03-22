@@ -215,11 +215,6 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
                 </div>
                 <div className="flex items-center justify-between mt-1">
                   <span className="text-[9px] text-muted-foreground">{formatVal(startPrice)}</span>
-                  {currentVal != null && currentVal !== startPrice && (
-                    <span className={`text-[9px] font-semibold ${currentDistance >= 0 === (totalDistance >= 0) ? "text-primary" : "text-destructive"}`}>
-                      Current: {formatVal(currentVal)}
-                    </span>
-                  )}
                   <span className="text-[9px] text-muted-foreground">{formatVal(predictionTarget)}</span>
                 </div>
               </div>
