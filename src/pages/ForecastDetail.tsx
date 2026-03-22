@@ -400,30 +400,25 @@ const ForecastDetail = () => {
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="mb-4 rounded-xl border border-accent/30 bg-accent/10 px-4 py-3 flex items-center gap-3"
+                    className="mb-4 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3 flex items-center gap-3"
                   >
-                    <div className="flex items-center justify-center h-8 w-8 rounded-full bg-accent/20 shrink-0">
-                      <Target className="h-4 w-4 text-accent" />
+                    <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary/15 shrink-0">
+                      <Target className="h-4 w-4 text-primary" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 mb-0.5">
-                        <span className="text-xs font-bold text-accent">Target Hit</span>
-                        <Zap className="h-3 w-3 text-accent" />
+                        <span className="text-xs font-bold text-primary">Target Hit</span>
+                        <Zap className="h-3 w-3 text-primary" />
                       </div>
                       <p className="text-[11px] text-muted-foreground leading-snug">
-                        This forecast was auto-resolved early because the {forecastDimension === "market_cap" ? "market cap" : "token price"}{" "}
+                        Auto-resolved early — {forecastDimension === "market_cap" ? "market cap" : "token price"}{" "}
                         reached the {forecast.prediction_direction === "long" ? "long" : "short"} target of{" "}
                         <span className="font-semibold text-foreground">
                           ${Number(forecast.prediction_target).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}
                         </span>
-                        {forecast.start_price != null && (
-                          <>
-                            {" "}({((Number(forecast.prediction_target) - Number(forecast.start_price)) / Number(forecast.start_price) * 100).toFixed(1)}% from start price)
-                          </>
-                        )}
                       </p>
                     </div>
-                    <Badge variant="outline" className="border-accent/40 text-accent text-[10px] shrink-0">
+                    <Badge variant="outline" className="border-primary/40 text-primary text-[10px] shrink-0">
                       Early Close
                     </Badge>
                   </motion.div>
