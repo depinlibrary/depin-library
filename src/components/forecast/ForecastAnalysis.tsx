@@ -280,8 +280,8 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
           const startVal = getSnapshot(target.dimension, "start");
           const endSnapVal = getSnapshot(target.dimension, "end");
           const liveVal = getCurrentValue(target.dimension);
-          // For active: show live price; for ended: show end snapshot or live fallback
-          const displayVal = isEnded ? (endSnapVal ?? liveVal) : (liveVal ?? endSnapVal);
+          // Active: show live price; Ended: show end snapshot only
+          const displayVal = isEnded ? endSnapVal : (liveVal ?? endSnapVal);
 
           const change = startVal != null && displayVal != null && startVal !== 0
             ? ((displayVal - startVal) / startVal) * 100
