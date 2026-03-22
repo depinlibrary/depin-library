@@ -317,18 +317,18 @@ const ForecastDetail = () => {
   const noLabel = isPriceMarket ? "Short" : "No";
 
   return (
-    <div className="h-screen bg-background flex flex-col overflow-hidden">
+    <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
 
-      <main className="container mx-auto px-4 pt-24 pb-0 max-w-7xl flex-1 min-h-0 flex flex-col">
+      <main className="container mx-auto px-4 pt-24 pb-16 max-w-7xl">
         {/* Breadcrumb */}
-        <Link to="/forecasts" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-4 shrink-0">
+        <Link to="/forecasts" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-5">
           <ArrowLeft className="h-3.5 w-3.5" /> Back to Forecasts
         </Link>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* ═══════ LEFT COLUMN (2/3): Hero Card + Tabs ═══════ */}
-          <div className="lg:col-span-2 space-y-4 lg:overflow-y-auto lg:pr-2 pb-8" style={{ scrollbarGutter: 'stable' }}>
+          <div className="lg:col-span-2 space-y-4">
             {/* Hero Card — matches Forecasts page hero style */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -400,15 +400,28 @@ const ForecastDetail = () => {
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="mb-4 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3 flex items-center gap-3"
+                    transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                    className="mb-4 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3 flex items-center gap-3 glow-primary-sm relative overflow-hidden"
                   >
-                    <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary/15 shrink-0">
+                    {/* Shimmer overlay */}
+                    <div className="absolute inset-0 opacity-[0.07] pointer-events-none" style={{
+                      background: 'linear-gradient(105deg, transparent 40%, hsl(var(--primary)) 50%, transparent 60%)',
+                      backgroundSize: '200% 100%',
+                      animation: 'shimmer 3s ease-in-out infinite',
+                    }} />
+                    <motion.div
+                      className="flex items-center justify-center h-8 w-8 rounded-full bg-primary/15 shrink-0"
+                      animate={{ scale: [1, 1.1, 1] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                    >
                       <Target className="h-4 w-4 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
+                    </motion.div>
+                    <div className="flex-1 min-w-0 relative">
                       <div className="flex items-center gap-1.5 mb-0.5">
                         <span className="text-xs font-bold text-primary">Target Hit</span>
-                        <Zap className="h-3 w-3 text-primary" />
+                        <motion.div animate={{ rotate: [0, 15, -15, 0] }} transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}>
+                          <Zap className="h-3 w-3 text-primary" />
+                        </motion.div>
                       </div>
                       <p className="text-[11px] text-muted-foreground leading-snug">
                         Auto-resolved early — {forecastDimension === "market_cap" ? "market cap" : "token price"}{" "}
@@ -418,7 +431,7 @@ const ForecastDetail = () => {
                         </span>
                       </p>
                     </div>
-                    <Badge variant="outline" className="border-primary/40 text-primary text-[10px] shrink-0">
+                    <Badge variant="outline" className="border-primary/40 text-primary text-[10px] shrink-0 relative">
                       Early Close
                     </Badge>
                   </motion.div>
@@ -642,7 +655,7 @@ const ForecastDetail = () => {
           </div>
 
           {/* ═══════ RIGHT COLUMN (1/3): Creator + Vote + Analysis + Related ═══════ */}
-          <div className="space-y-4 lg:overflow-y-auto lg:pl-2 pb-8" style={{ scrollbarGutter: 'stable' }}>
+          <div className="space-y-4">
             {/* Creator Card — compact with countdown */}
             <CreatorCardWithCountdown forecast={forecast} isEnded={isEnded} timeLeft={timeLeft} />
 
@@ -732,6 +745,8 @@ const ForecastDetail = () => {
           </div>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 };
