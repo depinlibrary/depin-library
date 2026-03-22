@@ -359,7 +359,7 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
         })}
       </div>
 
-      {!isEnded && (
+      {!isEnded && targets.some((t: any) => t.dimension !== "community_sentiment") && (
         <div className="px-6 py-3 border-t border-border bg-secondary/20">
           <p className="text-[10px] text-muted-foreground text-center">
             Metrics are snapshotted at creation and compared when the forecast ends. Data from CoinGecko &amp; DePIN Pulse.

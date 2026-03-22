@@ -101,17 +101,17 @@ function CreatorCardWithCountdown({ forecast, isEnded, timeLeft }: { forecast: a
               </div>
             </div>
           </UserStatsHoverCard>
-          {/* Countdown */}
-          <div className="text-right shrink-0">
-            {!isEnded && (
+          {/* Countdown — hidden when ended */}
+          {!isEnded && countdown !== "Ended" && (
+            <div className="text-right shrink-0">
               <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-medium mb-0.5">
                 Time Left
               </p>
-            )}
-            <p className={`text-xs font-bold font-['Space_Grotesk'] tabular-nums ${isEnded ? "text-muted-foreground" : "text-primary"}`}>
-              {countdown}
-            </p>
-          </div>
+              <p className="text-xs font-bold font-['Space_Grotesk'] tabular-nums text-foreground">
+                {countdown}
+              </p>
+            </div>
+          )}
         </div>
         <div className="mt-3 pt-3 border-t border-border grid grid-cols-2 gap-2 text-center">
           <div>
