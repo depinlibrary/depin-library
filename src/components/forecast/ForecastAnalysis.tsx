@@ -77,7 +77,7 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
     enabled: targets.length > 0,
   });
 
-  // Fetch live market data for active forecasts or as fallback for ended ones without end snapshots
+  // Fetch live market data only for active forecasts
   const { data: liveMarketData } = useQuery({
     queryKey: ["forecast-live-market", projectAId],
     queryFn: async () => {
@@ -90,8 +90,8 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
       if (error) throw error;
       return data;
     },
-    enabled: !!projectAId,
-    refetchInterval: isEnded ? false : 60000, // refresh every minute for active forecasts
+    enabled: !!projectAId && !isEnded,
+    refetchInterval: 60000,
   });
 
   if (targets.length === 0) return null;
@@ -105,8 +105,8 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
     const s = snapshots.find((s: any) => s.dimension === dim && s.snapshot_type === type);
     if (s?.value != null) return s.value;
 
-    // Fallback: use live market data if no snapshot exists
-    if (type === "end" || (!isEnded && type === "start")) {
+    // Fallback: use live market data only for active forecasts
+    if (!isEnded) {
       if (dim === "token_price" && liveMarketData?.price_usd != null) return Number(liveMarketData.price_usd);
       if (dim === "market_cap" && liveMarketData?.market_cap_usd != null) return Number(liveMarketData.market_cap_usd);
     }
@@ -161,12 +161,11 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
             return v < 0.01 ? `$${v.toFixed(6)}` : v < 1 ? `$${v.toFixed(4)}` : `$${v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
           };
 
-          // Calculate progress toward target — use live data for active, end snapshot (or live fallback) for ended
           const dim = forecastDimension === "token_price" ? "token_price" : "market_cap";
           const endSnap = getSnapshot(dim, "end");
           const liveVal = getCurrentValue(dim);
-          // For active forecasts: use live market data; for ended: use end snapshot, fallback to live
-          const currentVal = isEnded ? (endSnap ?? liveVal) : (liveVal ?? endSnap);
+          // Active: use live data; Ended: use end snapshot only (no live fallback)
+          const currentVal = isEnded ? endSnap : (liveVal ?? endSnap);
           const totalDistance = predictionTarget - startPrice;
           const currentDistance = currentVal != null ? currentVal - startPrice : 0;
           const progressPct = totalDistance !== 0 ? Math.min(Math.max((currentDistance / totalDistance) * 100, 0), 100) : 0;
@@ -216,11 +215,6 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
                 </div>
                 <div className="flex items-center justify-between mt-1">
                   <span className="text-[9px] text-muted-foreground">{formatVal(startPrice)}</span>
-                  {currentVal != null && currentVal !== startPrice && (
-                    <span className={`text-[9px] font-semibold ${currentDistance >= 0 === (totalDistance >= 0) ? "text-primary" : "text-destructive"}`}>
-                      Current: {formatVal(currentVal)}
-                    </span>
-                  )}
                   <span className="text-[9px] text-muted-foreground">{formatVal(predictionTarget)}</span>
                 </div>
               </div>
@@ -286,8 +280,8 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
           const startVal = getSnapshot(target.dimension, "start");
           const endSnapVal = getSnapshot(target.dimension, "end");
           const liveVal = getCurrentValue(target.dimension);
-          // For active: show live price; for ended: show end snapshot or live fallback
-          const displayVal = isEnded ? (endSnapVal ?? liveVal) : (liveVal ?? endSnapVal);
+          // Active: show live price; Ended: show end snapshot only
+          const displayVal = isEnded ? endSnapVal : (liveVal ?? endSnapVal);
 
           const change = startVal != null && displayVal != null && startVal !== 0
             ? ((displayVal - startVal) / startVal) * 100
