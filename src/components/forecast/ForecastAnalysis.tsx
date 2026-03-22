@@ -326,11 +326,6 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
                   <p className="text-sm font-semibold text-foreground font-['Space_Grotesk']">
                     {displayVal != null ? meta.format(displayVal) : "—"}
                   </p>
-                  {change != null && (
-                    <p className={`text-[10px] font-bold mt-0.5 ${change > 0 ? "text-green-500" : change < 0 ? "text-destructive" : "text-muted-foreground"}`}>
-                      {change > 0 ? "+" : ""}{change.toFixed(2)}% from creation
-                    </p>
-                  )}
                 </div>
               </div>
             </div>
