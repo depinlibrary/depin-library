@@ -41,10 +41,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Get forecast to find project
+    // Get forecast to find projects
     const { data: forecast } = await supabase
       .from("forecasts")
-      .select("project_a_id")
+      .select("project_a_id, project_b_id")
       .eq("id", forecast_id)
       .single();
 
@@ -62,12 +62,23 @@ Deno.serve(async (req) => {
       .eq("id", forecast.project_a_id)
       .single();
 
-    // Get current market data for the project (CoinGecko-sourced)
+    // Get current market data for Project A (CoinGecko-sourced)
     const { data: marketData } = await supabase
       .from("token_market_data")
       .select("price_usd, market_cap_usd")
       .eq("project_id", forecast.project_a_id)
       .single();
+
+    // Get current market data for Project B if it exists
+    let marketDataB: any = null;
+    if (forecast.project_b_id) {
+      const { data: mdB } = await supabase
+        .from("token_market_data")
+        .select("price_usd, market_cap_usd")
+        .eq("project_id", forecast.project_b_id)
+        .single();
+      marketDataB = mdB;
+    }
 
     const dimensions = targets.map((t: any) => t.dimension);
     const snapshots: any[] = [];
@@ -87,11 +98,9 @@ Deno.serve(async (req) => {
           );
           if (res.ok) {
             const data = await res.json();
-            // DePIN Pulse returns an array of projects with mrr (monthly recurring revenue)
             if (Array.isArray(data) && data.length > 0) {
               depinPulseRevenue = data[0].mrr ?? null;
             } else if (data?.breakDown && Array.isArray(data.breakDown)) {
-              // /latest endpoint format
               const match = data.breakDown.find(
                 (p: any) => p.name?.toLowerCase() === project.name.toLowerCase()
               );
@@ -109,7 +118,7 @@ Deno.serve(async (req) => {
             }
           } else {
             console.error(`DePIN Pulse API returned ${res.status}`);
-            await res.text(); // consume body
+            await res.text();
           }
         } catch (err) {
           console.error("DePIN Pulse fetch error:", err);
@@ -133,8 +142,6 @@ Deno.serve(async (req) => {
           source = value != null ? "coingecko" : "pending";
           break;
         case "active_nodes":
-          // DePINScan does not provide a public API for device counts.
-          // This remains a placeholder until an API source is available.
           value = null;
           source = "unavailable";
           break;
@@ -152,6 +159,29 @@ Deno.serve(async (req) => {
         source,
         captured_at: new Date().toISOString(),
       });
+
+      // Also snapshot Project B's data for comparison forecasts
+      if (forecast.project_b_id && marketDataB && (dim === "token_price" || dim === "market_cap")) {
+        let valueB: number | null = null;
+        let sourceB = "pending";
+
+        if (dim === "token_price") {
+          valueB = marketDataB.price_usd ?? null;
+          sourceB = valueB != null ? "coingecko" : "pending";
+        } else if (dim === "market_cap") {
+          valueB = marketDataB.market_cap_usd ?? null;
+          sourceB = valueB != null ? "coingecko" : "pending";
+        }
+
+        snapshots.push({
+          forecast_id,
+          dimension: `${dim}_b`,
+          snapshot_type,
+          value: valueB,
+          source: sourceB,
+          captured_at: new Date().toISOString(),
+        });
+      }
     }
 
     const { error: insertErr } = await supabase
