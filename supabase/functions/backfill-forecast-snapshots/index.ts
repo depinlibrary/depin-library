@@ -107,7 +107,8 @@ Deno.serve(async (req) => {
       const mData = priceMap[item.project_id];
       if (!mData) continue;
 
-      const value = item.dimension === "token_price" ? mData.price : mData.mcap;
+      const baseDim = item.dimension.replace(/_b$/, "");
+      const value = baseDim === "token_price" ? mData.price : mData.mcap;
       if (value == null) continue;
 
       const forecast = forecasts.find((f: any) => f.id === item.forecast_id);
