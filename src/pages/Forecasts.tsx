@@ -499,13 +499,13 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
 
             {/* Trending Projects */}
             {trendingTopics.length > 0 && (
-              <div className="rounded-2xl border border-border bg-card overflow-hidden shrink-0">
-                <div className="px-5 py-3.5 flex items-center justify-between">
+              <div className="rounded-2xl border border-border bg-card overflow-hidden shrink-0 flex flex-col" style={{ maxHeight: '220px' }}>
+                <div className="px-5 py-3.5 flex items-center justify-between shrink-0">
                   <h3 className="text-base font-bold text-foreground font-['Space_Grotesk']">Trending Projects</h3>
                   <TrendingUp className="h-4 w-4 text-primary/60" />
                 </div>
-                <div>
-                  {trendingTopics.map((project: any, i: number) => (
+                <div className="overflow-y-auto flex-1">
+                  {trendingTopics.slice(0, 4).map((project: any, i: number) => (
                     <Link key={project.id} to={`/project/${project.slug}`} className="flex items-center gap-3 px-5 py-2.5 hover:bg-secondary/30 transition-colors">
                       <span className="text-xs font-bold text-muted-foreground/50 w-4 shrink-0">{i + 1}</span>
                       <div className="flex items-center gap-2 flex-1 min-w-0">
