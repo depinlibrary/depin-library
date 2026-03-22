@@ -317,16 +317,16 @@ const ForecastDetail = () => {
   const noLabel = isPriceMarket ? "Short" : "No";
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="h-screen bg-background flex flex-col overflow-hidden">
       <Navbar />
 
-      <main className="container mx-auto px-4 pt-24 pb-16 max-w-7xl">
+      <main className="container mx-auto px-4 pt-24 pb-0 max-w-7xl flex-1 min-h-0 flex flex-col">
         {/* Breadcrumb */}
-        <Link to="/forecasts" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-5">
+        <Link to="/forecasts" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-4 shrink-0">
           <ArrowLeft className="h-3.5 w-3.5" /> Back to Forecasts
         </Link>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
           {/* ═══════ LEFT COLUMN (2/3): Hero Card + Tabs ═══════ */}
           <div className="lg:col-span-2 space-y-4">
             {/* Hero Card — matches Forecasts page hero style */}
