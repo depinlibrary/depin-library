@@ -58,6 +58,17 @@ Deno.serve(async (req) => {
             dimension: target.dimension,
             project_id: forecast.project_a_id,
           });
+          // Also backfill Project B snapshots for comparison forecasts
+          if (forecast.project_b_id) {
+            const keyB = `${target.forecast_id}:${target.dimension}_b`;
+            if (!existingEndKeys.has(keyB)) {
+              needsBackfill.push({
+                forecast_id: target.forecast_id,
+                dimension: `${target.dimension}_b`,
+                project_id: forecast.project_b_id,
+              });
+            }
+          }
         }
       }
     }
