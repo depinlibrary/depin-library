@@ -128,6 +128,16 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
             }
             return v < 0.01 ? `$${v.toFixed(6)}` : v < 1 ? `$${v.toFixed(4)}` : `$${v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
           };
+
+          // Calculate progress toward target
+          const dim = forecastDimension === "token_price" ? "token_price" : "market_cap";
+          const endSnap = getSnapshot(dim, "end");
+          const currentVal = endSnap ?? getSnapshot(dim, "start"); // fallback to start if no end yet
+          const totalDistance = predictionTarget - startPrice;
+          const currentDistance = currentVal != null ? currentVal - startPrice : 0;
+          const progressPct = totalDistance !== 0 ? Math.min(Math.max((currentDistance / totalDistance) * 100, 0), 100) : 0;
+          const targetReached = progressPct >= 100;
+
           return (
             <div className="px-6 py-4">
               <div className="flex items-center gap-3 mb-3">
@@ -151,6 +161,33 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
                 <div className="rounded-lg bg-secondary/50 px-3 py-2.5">
                   <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Prediction Target</p>
                   <p className={`text-sm font-semibold font-['Space_Grotesk'] ${predictionDirection === "long" ? "text-primary" : "text-destructive"}`}>{formatVal(predictionTarget)}</p>
+                </div>
+              </div>
+
+              {/* Progress toward target */}
+              <div className="mt-4">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Progress to Target</span>
+                  <span className={`text-[11px] font-bold font-['Space_Grotesk'] ${targetReached ? "text-primary" : "text-muted-foreground"}`}>
+                    {progressPct.toFixed(1)}%
+                  </span>
+                </div>
+                <div className="relative h-2.5 w-full rounded-full bg-secondary overflow-hidden">
+                  <motion.div
+                    className={`h-full rounded-full ${targetReached ? "bg-primary" : predictionDirection === "long" ? "bg-primary/70" : "bg-destructive/70"}`}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progressPct}%` }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                  />
+                </div>
+                <div className="flex items-center justify-between mt-1">
+                  <span className="text-[9px] text-muted-foreground">{formatVal(startPrice)}</span>
+                  {currentVal != null && currentVal !== startPrice && (
+                    <span className={`text-[9px] font-semibold ${currentDistance >= 0 === (totalDistance >= 0) ? "text-primary" : "text-destructive"}`}>
+                      Current: {formatVal(currentVal)}
+                    </span>
+                  )}
+                  <span className="text-[9px] text-muted-foreground">{formatVal(predictionTarget)}</span>
                 </div>
               </div>
             </div>
