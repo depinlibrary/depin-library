@@ -462,7 +462,7 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                 <span></span>
               </div>
               <div className="flex-1 overflow-y-auto">
-                {topLiveForecasts.map((f, i) => {
+                {topLiveForecasts.slice(0, 4).map((f, i) => {
                   const fTotal = f.total_votes_yes + f.total_votes_no;
                   const fYesPct = fTotal > 0 ? (f.total_votes_yes / fTotal) * 100 : 50;
                   const fIsEnded = new Date(f.end_date) <= new Date();
