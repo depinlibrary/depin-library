@@ -237,40 +237,72 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
             const yesPct = total > 0 ? (totalVotesYes / total) * 100 : 0;
             const noPct = total > 0 ? (totalVotesNo / total) * 100 : 0;
             const result = isEnded ? (yesPct >= 50 ? "Yes" : "No") : null;
+            const leading = yesPct >= noPct ? "Yes" : "No";
 
             return (
-              <div key={target.id} className="px-6 py-4">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
-                    <Icon className="h-4 w-4 text-muted-foreground" />
+              <div key={target.id} className="px-6 py-5">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-xl bg-purple-500/10 flex items-center justify-center">
+                      <Icon className="h-4.5 w-4.5 text-purple-500" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-semibold text-foreground block">{meta.label}</span>
+                      <span className="text-[10px] text-muted-foreground">Based on community votes</span>
+                    </div>
                   </div>
-                  <span className="text-xs font-semibold text-foreground">{meta.label}</span>
-                  <span className={`text-[9px] font-medium px-1.5 py-0.5 rounded-full ${badge.color}`}>
-                    {badge.label}
-                  </span>
                   {isEnded && result && (
-                    <span className={`ml-auto text-xs font-bold ${result === "Yes" ? "text-primary" : "text-destructive"}`}>
+                    <span className={`text-xs font-bold px-2.5 py-1 rounded-lg ${result === "Yes" ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"}`}>
                       Result: {result}
                     </span>
                   )}
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="rounded-lg bg-secondary/50 px-3 py-2.5">
-                    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Yes Votes</p>
-                    <p className="text-sm font-semibold text-foreground font-['Space_Grotesk']">
-                      {totalVotesYes} ({yesPct.toFixed(1)}%)
-                    </p>
-                  </div>
-                  <div className="rounded-lg bg-secondary/50 px-3 py-2.5">
-                    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">No Votes</p>
-                    <p className="text-sm font-semibold text-foreground font-['Space_Grotesk']">
-                      {totalVotesNo} ({noPct.toFixed(1)}%)
-                    </p>
-                  </div>
-                </div>
-                {total > 0 && (
-                  <div className="mt-2 h-2 rounded-full bg-secondary overflow-hidden">
-                    <div className="h-full rounded-full bg-primary" style={{ width: `${yesPct}%` }} />
+
+                {/* Vote distribution */}
+                {total > 0 ? (
+                  <>
+                    <div className="flex items-end justify-between mb-2">
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-2xl font-bold text-foreground font-['Space_Grotesk']">{yesPct.toFixed(0)}%</span>
+                        <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">Yes</span>
+                      </div>
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-[10px] font-semibold text-destructive uppercase tracking-wider">No</span>
+                        <span className="text-2xl font-bold text-foreground font-['Space_Grotesk']">{noPct.toFixed(0)}%</span>
+                      </div>
+                    </div>
+                    <div className="h-3 rounded-full bg-secondary overflow-hidden flex mb-3">
+                      <div className="h-full rounded-l-full bg-primary transition-all duration-500" style={{ width: `${yesPct}%` }} />
+                      <div className="h-full rounded-r-full bg-destructive/60 transition-all duration-500" style={{ width: `${noPct}%` }} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="rounded-xl bg-primary/5 border border-primary/10 px-3 py-2.5 text-center">
+                        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-0.5">Yes Votes</p>
+                        <p className="text-sm font-bold text-primary font-['Space_Grotesk']">{totalVotesYes.toLocaleString()}</p>
+                      </div>
+                      <div className="rounded-xl bg-destructive/5 border border-destructive/10 px-3 py-2.5 text-center">
+                        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-0.5">No Votes</p>
+                        <p className="text-sm font-bold text-destructive font-['Space_Grotesk']">{totalVotesNo.toLocaleString()}</p>
+                      </div>
+                    </div>
+                    <div className="mt-3 flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground">
+                      <Users className="h-3 w-3" />
+                      <span>{total.toLocaleString()} total vote{total !== 1 ? "s" : ""}</span>
+                      {!isEnded && (
+                        <>
+                          <span className="text-muted-foreground/30">·</span>
+                          <span className={leading === "Yes" ? "text-primary font-medium" : "text-destructive font-medium"}>
+                            {leading} leading
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <div className="rounded-xl bg-muted/50 border border-border px-4 py-6 text-center">
+                    <Users className="h-5 w-5 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-xs text-muted-foreground">No votes yet</p>
                   </div>
                 )}
               </div>
