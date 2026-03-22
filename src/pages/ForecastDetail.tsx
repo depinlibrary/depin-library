@@ -490,8 +490,10 @@ const ForecastDetail = () => {
               </div>
             </motion.div>
 
-            {/* Vote History Chart */}
-            <VoteHistoryChart voteHistory={voteHistory} />
+            {/* Vote History Chart — for community sentiment, show here in left column */}
+            {forecastDimension !== "token_price" && forecastDimension !== "market_cap" && (
+              <VoteHistoryChart voteHistory={voteHistory} />
+            )}
 
             {/* Price / Market Cap Chart for token_price or market_cap forecasts */}
             {(forecastDimension === "token_price" || forecastDimension === "market_cap") && forecast.project_a_id && (
@@ -649,77 +651,84 @@ const ForecastDetail = () => {
             {/* Creator Card — compact with countdown */}
             <CreatorCardWithCountdown forecast={forecast} isEnded={isEnded} timeLeft={timeLeft} />
 
-            {/* Cast Your Vote */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.05 }}
-              className="rounded-2xl border border-border bg-card overflow-hidden"
-            >
-              <div className="px-5 py-3.5 border-b border-border">
-                <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Cast Your Vote</h3>
-              </div>
-              <div className="p-5">
-                {!isEnded ? (
-                  <>
-                    <div className="mb-4 rounded-xl bg-secondary/30 border border-border/50 px-4 py-3.5">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-1.5">
-                          <Gauge className="h-3.5 w-3.5 text-muted-foreground" />
-                          <span className="text-[11px] font-medium text-muted-foreground">Confidence</span>
+            {/* Cast Your Vote — hide for ended price/market cap forecasts */}
+            {!(isEnded && isPriceMarket) && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.05 }}
+                className="rounded-2xl border border-border bg-card overflow-hidden"
+              >
+                <div className="px-5 py-3.5 border-b border-border">
+                  <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Cast Your Vote</h3>
+                </div>
+                <div className="p-5">
+                  {!isEnded ? (
+                    <>
+                      <div className="mb-4 rounded-xl bg-secondary/30 border border-border/50 px-4 py-3.5">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-1.5">
+                            <Gauge className="h-3.5 w-3.5 text-muted-foreground" />
+                            <span className="text-[11px] font-medium text-muted-foreground">Confidence</span>
+                          </div>
+                          <span className={`text-[11px] font-semibold ${confInfo.color}`}>
+                            {confInfo.label} ({confidence}/5)
+                          </span>
                         </div>
-                        <span className={`text-[11px] font-semibold ${confInfo.color}`}>
-                          {confInfo.label} ({confidence}/5)
-                        </span>
+                        <Slider value={[confidence]} onValueChange={(val) => setConfidence(val[0])} min={1} max={5} step={1} className="w-full" />
+                        <div className="flex justify-between mt-1.5 px-0.5">
+                          {[1, 2, 3, 4, 5].map((n) => (
+                            <span key={n} className={`text-[9px] ${confidence === n ? "text-foreground font-semibold" : "text-muted-foreground/50"}`}>{n}</span>
+                          ))}
+                        </div>
                       </div>
-                      <Slider value={[confidence]} onValueChange={(val) => setConfidence(val[0])} min={1} max={5} step={1} className="w-full" />
-                      <div className="flex justify-between mt-1.5 px-0.5">
-                        {[1, 2, 3, 4, 5].map((n) => (
-                          <span key={n} className={`text-[9px] ${confidence === n ? "text-foreground font-semibold" : "text-muted-foreground/50"}`}>{n}</span>
-                        ))}
+                      <div className="flex gap-2.5">
+                        <button
+                          onClick={() => handleVote("yes")}
+                          className={`flex-1 rounded-lg py-2.5 text-sm font-bold transition-all duration-200 ${
+                            forecast.user_vote === "yes"
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-primary/10 text-primary hover:bg-primary/20"
+                          }`}
+                        >
+                          {forecast.user_vote === "yes" ? `Voted ${yesLabel} ✓` : yesLabel}
+                        </button>
+                        <button
+                          onClick={() => handleVote("no")}
+                          className={`flex-1 rounded-lg py-2.5 text-sm font-bold transition-all duration-200 ${
+                            forecast.user_vote === "no"
+                              ? "bg-destructive text-destructive-foreground"
+                              : "bg-destructive/10 text-destructive hover:bg-destructive/20"
+                          }`}
+                        >
+                          {forecast.user_vote === "no" ? `Voted ${noLabel} ✓` : noLabel}
+                        </button>
                       </div>
+                      {forecast.user_vote && (
+                        <motion.p initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}
+                          className="text-[10px] text-muted-foreground text-center mt-3">
+                          You voted <span className={`font-semibold ${forecast.user_vote === "yes" ? "text-primary" : "text-destructive"}`}>{forecast.user_vote === "yes" ? yesLabel : noLabel}</span> · Vote again to change
+                        </motion.p>
+                      )}
+                    </>
+                  ) : (
+                    <div className="rounded-xl bg-muted/50 border border-border px-4 py-3.5 text-center">
+                      <span className="text-xs font-medium text-muted-foreground">
+                        Voting has ended · Final: <span className="text-foreground font-semibold">{yesPct >= 50 ? yesLabel : noLabel}</span> ({yesPct.toFixed(0)}%)
+                      </span>
                     </div>
-                    <div className="flex gap-2.5">
-                      <button
-                        onClick={() => handleVote("yes")}
-                        className={`flex-1 rounded-lg py-2.5 text-sm font-bold transition-all duration-200 ${
-                          forecast.user_vote === "yes"
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-primary/10 text-primary hover:bg-primary/20"
-                        }`}
-                      >
-                        {forecast.user_vote === "yes" ? `Voted ${yesLabel} ✓` : yesLabel}
-                      </button>
-                      <button
-                        onClick={() => handleVote("no")}
-                        className={`flex-1 rounded-lg py-2.5 text-sm font-bold transition-all duration-200 ${
-                          forecast.user_vote === "no"
-                            ? "bg-destructive text-destructive-foreground"
-                            : "bg-destructive/10 text-destructive hover:bg-destructive/20"
-                        }`}
-                      >
-                        {forecast.user_vote === "no" ? `Voted ${noLabel} ✓` : noLabel}
-                      </button>
-                    </div>
-                    {forecast.user_vote && (
-                      <motion.p initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}
-                        className="text-[10px] text-muted-foreground text-center mt-3">
-                        You voted <span className={`font-semibold ${forecast.user_vote === "yes" ? "text-primary" : "text-destructive"}`}>{forecast.user_vote === "yes" ? yesLabel : noLabel}</span> · Vote again to change
-                      </motion.p>
-                    )}
-                  </>
-                ) : (
-                  <div className="rounded-xl bg-muted/50 border border-border px-4 py-3.5 text-center">
-                    <span className="text-xs font-medium text-muted-foreground">
-                      Voting has ended · Final: <span className="text-foreground font-semibold">{yesPct >= 50 ? yesLabel : noLabel}</span> ({yesPct.toFixed(0)}%)
-                    </span>
-                  </div>
-                )}
-              </div>
-            </motion.div>
+                  )}
+                </div>
+              </motion.div>
+            )}
 
             {/* Forecast Analysis */}
             <ForecastAnalysis forecastId={forecast.id} isEnded={isEnded} totalVotesYes={forecast.total_votes_yes} totalVotesNo={forecast.total_votes_no} predictionTarget={forecast.prediction_target} predictionDirection={forecast.prediction_direction} startPrice={forecast.start_price} forecastDimension={forecastDimension} projectAId={forecast.project_a_id} />
+
+            {/* Vote Trend — for token_price/market_cap, show in right column below analysis */}
+            {(forecastDimension === "token_price" || forecastDimension === "market_cap") && (
+              <VoteHistoryChart voteHistory={voteHistory} />
+            )}
 
             {/* Related Forecasts — column layout */}
             {relatedForecasts.length > 0 && (
