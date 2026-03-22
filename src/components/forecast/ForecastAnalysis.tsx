@@ -284,10 +284,13 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
           }
 
           const startVal = getSnapshot(target.dimension, "start");
-          const endVal = getSnapshot(target.dimension, "end");
+          const endSnapVal = getSnapshot(target.dimension, "end");
+          const liveVal = getCurrentValue(target.dimension);
+          // For active: show live price; for ended: show end snapshot or live fallback
+          const displayVal = isEnded ? (endSnapVal ?? liveVal) : (liveVal ?? endSnapVal);
 
-          const change = startVal != null && endVal != null && startVal !== 0
-            ? ((endVal - startVal) / startVal) * 100
+          const change = startVal != null && displayVal != null && startVal !== 0
+            ? ((displayVal - startVal) / startVal) * 100
             : null;
 
           return (
@@ -321,7 +324,7 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
                     {isEnded ? "Price at Close" : "Current Price"}
                   </p>
                   <p className="text-sm font-semibold text-foreground font-['Space_Grotesk']">
-                    {isEnded ? meta.format(endVal) : (endVal != null ? meta.format(endVal) : "—")}
+                    {displayVal != null ? meta.format(displayVal) : "—"}
                   </p>
                   {change != null && (
                     <p className={`text-[10px] font-bold mt-0.5 ${change > 0 ? "text-green-500" : change < 0 ? "text-destructive" : "text-muted-foreground"}`}>
