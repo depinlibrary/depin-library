@@ -19,7 +19,7 @@ Deno.serve(async (req) => {
     // 1. Find all resolved/ended forecasts that have targets but are missing end snapshots
     const { data: forecasts, error: fErr } = await supabase
       .from("forecasts")
-      .select("id, project_a_id, start_price, status, end_date, prediction_target, prediction_direction")
+      .select("id, project_a_id, project_b_id, start_price, status, end_date, prediction_target, prediction_direction, created_at")
       .or("status.eq.resolved,end_date.lt." + new Date().toISOString());
 
     if (fErr) throw fErr;
@@ -58,6 +58,17 @@ Deno.serve(async (req) => {
             dimension: target.dimension,
             project_id: forecast.project_a_id,
           });
+          // Also backfill Project B snapshots for comparison forecasts
+          if (forecast.project_b_id) {
+            const keyB = `${target.forecast_id}:${target.dimension}_b`;
+            if (!existingEndKeys.has(keyB)) {
+              needsBackfill.push({
+                forecast_id: target.forecast_id,
+                dimension: `${target.dimension}_b`,
+                project_id: forecast.project_b_id,
+              });
+            }
+          }
         }
       }
     }
@@ -96,7 +107,8 @@ Deno.serve(async (req) => {
       const mData = priceMap[item.project_id];
       if (!mData) continue;
 
-      const value = item.dimension === "token_price" ? mData.price : mData.mcap;
+      const baseDim = item.dimension.replace(/_b$/, "");
+      const value = baseDim === "token_price" ? mData.price : mData.mcap;
       if (value == null) continue;
 
       const forecast = forecasts.find((f: any) => f.id === item.forecast_id);
