@@ -739,6 +739,7 @@ const Forecasts = () => {
     voteForecast.mutate({ forecastId, vote });
   };
 
+  const hasTwoProjectsForCreate = projectBId && projectBId !== "none";
   const handleCreate = async () => {
     if (!title.trim()) { toast.error("Title required"); return; }
     if (!description.trim()) { toast.error("Description required"); return; }
