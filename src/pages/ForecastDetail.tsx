@@ -745,6 +745,8 @@ const ForecastDetail = () => {
           </div>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 };
