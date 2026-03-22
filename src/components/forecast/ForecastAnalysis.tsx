@@ -240,18 +240,23 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="rounded-lg bg-secondary/50 px-3 py-2.5">
-                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Start</p>
+                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Price at Creation</p>
                   <p className="text-sm font-semibold text-foreground font-['Space_Grotesk']">
                     {meta.format(startVal)}
                   </p>
                 </div>
                 <div className="rounded-lg bg-secondary/50 px-3 py-2.5">
                   <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">
-                    {isEnded ? "End" : "Current"}
+                    {isEnded ? "Price at Close" : "Current Price"}
                   </p>
                   <p className="text-sm font-semibold text-foreground font-['Space_Grotesk']">
                     {isEnded ? meta.format(endVal) : (endVal != null ? meta.format(endVal) : "—")}
                   </p>
+                  {change != null && (
+                    <p className={`text-[10px] font-bold mt-0.5 ${change > 0 ? "text-green-500" : change < 0 ? "text-destructive" : "text-muted-foreground"}`}>
+                      {change > 0 ? "+" : ""}{change.toFixed(2)}% from creation
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
