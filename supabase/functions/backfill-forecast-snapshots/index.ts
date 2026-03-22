@@ -19,7 +19,7 @@ Deno.serve(async (req) => {
     // 1. Find all resolved/ended forecasts that have targets but are missing end snapshots
     const { data: forecasts, error: fErr } = await supabase
       .from("forecasts")
-      .select("id, project_a_id, start_price, status, end_date, prediction_target, prediction_direction")
+      .select("id, project_a_id, project_b_id, start_price, status, end_date, prediction_target, prediction_direction, created_at")
       .or("status.eq.resolved,end_date.lt." + new Date().toISOString());
 
     if (fErr) throw fErr;
