@@ -313,8 +313,9 @@ const ForecastDetail = () => {
   const timeLeft = getTimeRemaining(forecast.end_date);
   const confInfo = confidenceLabels[confidence] || confidenceLabels[3];
   const isPriceMarket = forecastDimension === "token_price" || forecastDimension === "market_cap";
-  const yesLabel = isPriceMarket ? "Long" : "Yes";
-  const noLabel = isPriceMarket ? "Short" : "No";
+  const isSentimentWithTwoProjects = forecastDimension === "community_sentiment" && !!forecast.project_b;
+  const yesLabel = isPriceMarket ? "Long" : isSentimentWithTwoProjects ? forecast.project_a?.name : "Yes";
+  const noLabel = isPriceMarket ? "Short" : isSentimentWithTwoProjects ? forecast.project_b?.name : "No";
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
