@@ -97,6 +97,23 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
     refetchInterval: 60000,
   });
 
+  // Fetch live market data for Project B (two-project comparisons)
+  const { data: liveMarketDataB } = useQuery({
+    queryKey: ["forecast-live-market-b", projectBId],
+    queryFn: async () => {
+      if (!projectBId) return null;
+      const { data, error } = await supabase
+        .from("token_market_data")
+        .select("price_usd, market_cap_usd")
+        .eq("project_id", projectBId)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!projectBId && !isEnded,
+    refetchInterval: 60000,
+  });
+
   if (targets.length === 0) return null;
 
   const getSnapshot = (dim: string, type: string) => {
