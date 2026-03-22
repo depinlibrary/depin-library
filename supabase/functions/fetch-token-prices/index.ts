@@ -156,7 +156,7 @@ Deno.serve(async (req) => {
       // Get active forecasts with prediction targets
       const { data: activeForecasts } = await supabase
         .from("forecasts")
-        .select("id, project_a_id, prediction_target, prediction_direction, start_price, title, total_votes_yes, total_votes_no, end_notifications_sent")
+        .select("id, project_a_id, project_b_id, prediction_target, prediction_direction, start_price, title, total_votes_yes, total_votes_no, end_notifications_sent")
         .eq("status", "active")
         .gt("end_date", now.toISOString())
         .not("prediction_target", "is", null)
@@ -176,37 +176,90 @@ Deno.serve(async (req) => {
           dimensionMap[t.forecast_id].push(t.dimension);
         });
 
-        // Get current prices for relevant projects
-        const projectIds = [...new Set(activeForecasts.map((f: any) => f.project_a_id))];
+        // Get current prices for all relevant projects (A and B)
+        const allProjectIds = new Set<string>();
+        activeForecasts.forEach((f: any) => {
+          allProjectIds.add(f.project_a_id);
+          if (f.project_b_id) allProjectIds.add(f.project_b_id);
+        });
         const { data: marketData } = await supabase
           .from("token_market_data")
           .select("project_id, price_usd, market_cap_usd")
-          .in("project_id", projectIds);
+          .in("project_id", [...allProjectIds]);
 
         const priceMap: Record<string, { price: number | null; mcap: number | null }> = {};
         (marketData || []).forEach((m: any) => {
           priceMap[m.project_id] = { price: m.price_usd, mcap: m.market_cap_usd };
         });
 
+        // Get start snapshots for dual-project forecasts (need start prices for both)
+        const dualForecastIds = activeForecasts.filter((f: any) => f.project_b_id).map((f: any) => f.id);
+        let snapshotMap: Record<string, Record<string, number | null>> = {};
+        if (dualForecastIds.length > 0) {
+          const { data: snapshots } = await supabase
+            .from("forecast_metric_snapshots")
+            .select("forecast_id, dimension, value")
+            .in("forecast_id", dualForecastIds)
+            .eq("snapshot_type", "start");
+
+          (snapshots || []).forEach((s: any) => {
+            if (!snapshotMap[s.forecast_id]) snapshotMap[s.forecast_id] = {};
+            snapshotMap[s.forecast_id][s.dimension] = s.value;
+          });
+        }
+
         for (const forecast of activeForecasts) {
           const dims = dimensionMap[forecast.id] || [];
           const isPriceForecast = dims.includes("token_price") || dims.includes("market_cap");
           if (!isPriceForecast) continue;
 
-          const mData = priceMap[forecast.project_a_id];
-          if (!mData) continue;
+          const mDataA = priceMap[forecast.project_a_id];
+          if (!mDataA) continue;
 
-          const currentValue = dims.includes("token_price") ? mData.price : mData.mcap;
-          if (currentValue == null || forecast.prediction_target == null) continue;
+          const dim = dims.includes("token_price") ? "token_price" : "market_cap";
+          const currentA = dim === "token_price" ? mDataA.price : mDataA.mcap;
+          if (currentA == null || forecast.prediction_target == null) continue;
 
           const target = Number(forecast.prediction_target);
           const direction = forecast.prediction_direction; // "long" or "short"
           let targetHit = false;
+          let notifMessage = "";
 
-          if (direction === "long" && currentValue >= target) {
-            targetHit = true;
-          } else if (direction === "short" && currentValue <= target) {
-            targetHit = true;
+          if (forecast.project_b_id) {
+            // --- Dual-project: target is outperformance % ---
+            const mDataB = priceMap[forecast.project_b_id];
+            if (!mDataB) continue;
+            const currentB = dim === "token_price" ? mDataB.price : mDataB.mcap;
+            if (currentB == null) continue;
+
+            const startSnaps = snapshotMap[forecast.id] || {};
+            const startA = startSnaps[dim] ?? (forecast.start_price ? Number(forecast.start_price) : null);
+            const startB = startSnaps[`${dim}_b`] ?? null;
+            if (startA == null || startB == null || startA === 0 || startB === 0) continue;
+
+            const changeA = ((currentA - startA) / startA) * 100;
+            const changeB = ((currentB - startB) / startB) * 100;
+            const outperformance = changeA - changeB;
+
+            if (direction === "long" && outperformance >= target) {
+              targetHit = true;
+            } else if (direction === "short" && outperformance <= -Math.abs(target)) {
+              targetHit = true;
+            }
+
+            notifMessage = `hit its ${direction} outperformance target of ${target}% (current: ${outperformance.toFixed(1)}%)`;
+          } else {
+            // --- Single-project: target is absolute price ---
+            if (direction === "long" && currentA >= target) {
+              targetHit = true;
+            } else if (direction === "short" && currentA <= target) {
+              targetHit = true;
+            }
+
+            const pctMove = forecast.start_price
+              ? ((currentA - Number(forecast.start_price)) / Number(forecast.start_price) * 100).toFixed(1)
+              : null;
+            notifMessage = `hit its ${direction} target${pctMove ? ` (${pctMove}% move)` : ""}`;
           }
 
           if (targetHit) {
@@ -228,12 +281,6 @@ Deno.serve(async (req) => {
                 .select("user_id, vote")
                 .eq("forecast_id", forecast.id);
 
-              const totalVotes = forecast.total_votes_yes + forecast.total_votes_no;
-              const winningVote = direction; // "long" hit = long voters win, "short" hit = short voters win
-              const pctMove = forecast.start_price
-                ? ((currentValue - Number(forecast.start_price)) / Number(forecast.start_price) * 100).toFixed(1)
-                : null;
-
               const userIds = [...new Set((votes || []).map((v: any) => v.user_id))];
               for (const userId of userIds) {
                 const { data: prefs } = await supabase
@@ -250,7 +297,7 @@ Deno.serve(async (req) => {
                     user_id: userId,
                     type: "forecast_result",
                     title: "Forecast target hit!",
-                    message: `"${forecast.title.slice(0, 50)}${forecast.title.length > 50 ? "..." : ""}" hit its ${direction} target${pctMove ? ` (${pctMove}% move)` : ""}. ${userWon ? "Your prediction was correct! 🎯" : ""}`,
+                    message: `"${forecast.title.slice(0, 50)}${forecast.title.length > 50 ? "..." : ""}" ${notifMessage}. ${userWon ? "Your prediction was correct! 🎯" : ""}`,
                     link: `/forecasts/${forecast.id}`,
                     metadata: { forecastId: forecast.id, result: direction, userVote, targetHit: true },
                   });
