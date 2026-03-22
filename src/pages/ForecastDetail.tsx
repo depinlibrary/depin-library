@@ -719,7 +719,7 @@ const ForecastDetail = () => {
             </motion.div>
 
             {/* Forecast Analysis */}
-            <ForecastAnalysis forecastId={forecast.id} isEnded={isEnded} totalVotesYes={forecast.total_votes_yes} totalVotesNo={forecast.total_votes_no} predictionTarget={forecast.prediction_target} predictionDirection={forecast.prediction_direction} startPrice={forecast.start_price} forecastDimension={forecastDimension} />
+            <ForecastAnalysis forecastId={forecast.id} isEnded={isEnded} totalVotesYes={forecast.total_votes_yes} totalVotesNo={forecast.total_votes_no} predictionTarget={forecast.prediction_target} predictionDirection={forecast.prediction_direction} startPrice={forecast.start_price} forecastDimension={forecastDimension} projectAId={forecast.project_a_id} />
 
             {/* Related Forecasts — column layout */}
             {relatedForecasts.length > 0 && (

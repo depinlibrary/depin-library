@@ -48,9 +48,10 @@ interface Props {
   predictionDirection?: string | null;
   startPrice?: number | null;
   forecastDimension?: string | null;
+  projectAId?: string;
 }
 
-export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 0, totalVotesNo = 0, predictionTarget, predictionDirection, startPrice, forecastDimension }: Props) {
+export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 0, totalVotesNo = 0, predictionTarget, predictionDirection, startPrice, forecastDimension, projectAId }: Props) {
   const { data: targets = [] } = useQuery({
     queryKey: ["forecast-targets", forecastId],
     queryFn: async () => {
@@ -76,6 +77,23 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
     enabled: targets.length > 0,
   });
 
+  // Fetch live market data for active forecasts or as fallback for ended ones without end snapshots
+  const { data: liveMarketData } = useQuery({
+    queryKey: ["forecast-live-market", projectAId],
+    queryFn: async () => {
+      if (!projectAId) return null;
+      const { data, error } = await supabase
+        .from("token_market_data")
+        .select("price_usd, market_cap_usd")
+        .eq("project_id", projectAId)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!projectAId,
+    refetchInterval: isEnded ? false : 60000, // refresh every minute for active forecasts
+  });
+
   if (targets.length === 0) return null;
 
   const getSnapshot = (dim: string, type: string) => {
@@ -85,7 +103,21 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
       return (totalVotesYes / total) * 100;
     }
     const s = snapshots.find((s: any) => s.dimension === dim && s.snapshot_type === type);
-    return s?.value ?? null;
+    if (s?.value != null) return s.value;
+
+    // Fallback: use live market data if no snapshot exists
+    if (type === "end" || (!isEnded && type === "start")) {
+      if (dim === "token_price" && liveMarketData?.price_usd != null) return Number(liveMarketData.price_usd);
+      if (dim === "market_cap" && liveMarketData?.market_cap_usd != null) return Number(liveMarketData.market_cap_usd);
+    }
+    return null;
+  };
+
+  // For active forecasts, get "current" value from live data
+  const getCurrentValue = (dim: string): number | null => {
+    if (dim === "token_price" && liveMarketData?.price_usd != null) return Number(liveMarketData.price_usd);
+    if (dim === "market_cap" && liveMarketData?.market_cap_usd != null) return Number(liveMarketData.market_cap_usd);
+    return null;
   };
 
   const getSource = (dim: string) => {
@@ -129,10 +161,12 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
             return v < 0.01 ? `$${v.toFixed(6)}` : v < 1 ? `$${v.toFixed(4)}` : `$${v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
           };
 
-          // Calculate progress toward target
+          // Calculate progress toward target — use live data for active, end snapshot (or live fallback) for ended
           const dim = forecastDimension === "token_price" ? "token_price" : "market_cap";
           const endSnap = getSnapshot(dim, "end");
-          const currentVal = endSnap ?? getSnapshot(dim, "start"); // fallback to start if no end yet
+          const liveVal = getCurrentValue(dim);
+          // For active forecasts: use live market data; for ended: use end snapshot, fallback to live
+          const currentVal = isEnded ? (endSnap ?? liveVal) : (liveVal ?? endSnap);
           const totalDistance = predictionTarget - startPrice;
           const currentDistance = currentVal != null ? currentVal - startPrice : 0;
           const progressPct = totalDistance !== 0 ? Math.min(Math.max((currentDistance / totalDistance) * 100, 0), 100) : 0;
@@ -250,10 +284,13 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
           }
 
           const startVal = getSnapshot(target.dimension, "start");
-          const endVal = getSnapshot(target.dimension, "end");
+          const endSnapVal = getSnapshot(target.dimension, "end");
+          const liveVal = getCurrentValue(target.dimension);
+          // For active: show live price; for ended: show end snapshot or live fallback
+          const displayVal = isEnded ? (endSnapVal ?? liveVal) : (liveVal ?? endSnapVal);
 
-          const change = startVal != null && endVal != null && startVal !== 0
-            ? ((endVal - startVal) / startVal) * 100
+          const change = startVal != null && displayVal != null && startVal !== 0
+            ? ((displayVal - startVal) / startVal) * 100
             : null;
 
           return (
@@ -287,7 +324,7 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
                     {isEnded ? "Price at Close" : "Current Price"}
                   </p>
                   <p className="text-sm font-semibold text-foreground font-['Space_Grotesk']">
-                    {isEnded ? meta.format(endVal) : (endVal != null ? meta.format(endVal) : "—")}
+                    {displayVal != null ? meta.format(displayVal) : "—"}
                   </p>
                   {change != null && (
                     <p className={`text-[10px] font-bold mt-0.5 ${change > 0 ? "text-green-500" : change < 0 ? "text-destructive" : "text-muted-foreground"}`}>
