@@ -136,8 +136,8 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
         </div>
       </div>
 
-      {/* Standalone vote buttons */}
-      {!isEnded ? (
+      {/* Standalone vote buttons — hide resolved footer on forecast listing */}
+      {!isEnded && (
         <div className="px-5 pb-5 pt-1 flex gap-2.5">
           <button
             onClick={() => isAuthenticated ? onVote(forecast.id, "yes") : toast.error("Sign in to vote")}
@@ -161,19 +161,6 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
             {isPriceMarket && <ArrowDownRight className="h-3.5 w-3.5 inline mr-1" />}
             {noLabel}
           </button>
-        </div>
-      ) : (
-        <div className={`flex items-center justify-between px-5 py-3.5 border-t border-border ${finalResult === "yes" ? "bg-primary/5" : "bg-destructive/5"}`}>
-          <span className={`text-sm font-bold ${finalResult === "yes" ? "text-primary" : "text-destructive"}`}>
-            Resolved: {finalResult === "yes" ? yesLabel : noLabel}
-          </span>
-          {forecast.user_vote && (
-            <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${
-              forecast.user_vote === finalResult ? "bg-green-500/10 text-green-600 dark:text-green-400" : "bg-orange-500/10 text-orange-600 dark:text-orange-400"
-            }`}>
-              {forecast.user_vote === finalResult ? "✓ Correct" : "✗ Wrong"}
-            </span>
-          )}
         </div>
       )}
     </motion.div>
@@ -475,7 +462,7 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                 <span></span>
               </div>
               <div className="flex-1 overflow-y-auto">
-                {topLiveForecasts.map((f, i) => {
+                {topLiveForecasts.slice(0, 4).map((f, i) => {
                   const fTotal = f.total_votes_yes + f.total_votes_no;
                   const fYesPct = fTotal > 0 ? (f.total_votes_yes / fTotal) * 100 : 50;
                   const fIsEnded = new Date(f.end_date) <= new Date();
@@ -512,13 +499,13 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
 
             {/* Trending Projects */}
             {trendingTopics.length > 0 && (
-              <div className="rounded-2xl border border-border bg-card overflow-hidden shrink-0">
-                <div className="px-5 py-3.5 flex items-center justify-between">
+              <div className="rounded-2xl border border-border bg-card overflow-hidden shrink-0 flex flex-col" style={{ maxHeight: '220px' }}>
+                <div className="px-5 py-3.5 flex items-center justify-between shrink-0">
                   <h3 className="text-base font-bold text-foreground font-['Space_Grotesk']">Trending Projects</h3>
                   <TrendingUp className="h-4 w-4 text-primary/60" />
                 </div>
-                <div>
-                  {trendingTopics.map((project: any, i: number) => (
+                <div className="overflow-y-auto flex-1">
+                  {trendingTopics.slice(0, 4).map((project: any, i: number) => (
                     <Link key={project.id} to={`/project/${project.slug}`} className="flex items-center gap-3 px-5 py-2.5 hover:bg-secondary/30 transition-colors">
                       <span className="text-xs font-bold text-muted-foreground/50 w-4 shrink-0">{i + 1}</span>
                       <div className="flex items-center gap-2 flex-1 min-w-0">
