@@ -49,9 +49,12 @@ interface Props {
   startPrice?: number | null;
   forecastDimension?: string | null;
   projectAId?: string;
+  projectBId?: string | null;
+  projectAName?: string;
+  projectBName?: string;
 }
 
-export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 0, totalVotesNo = 0, predictionTarget, predictionDirection, startPrice, forecastDimension, projectAId }: Props) {
+export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 0, totalVotesNo = 0, predictionTarget, predictionDirection, startPrice, forecastDimension, projectAId, projectBId, projectAName, projectBName }: Props) {
   const { data: targets = [] } = useQuery({
     queryKey: ["forecast-targets", forecastId],
     queryFn: async () => {
@@ -91,6 +94,23 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
       return data;
     },
     enabled: !!projectAId && !isEnded,
+    refetchInterval: 60000,
+  });
+
+  // Fetch live market data for Project B (two-project comparisons)
+  const { data: liveMarketDataB } = useQuery({
+    queryKey: ["forecast-live-market-b", projectBId],
+    queryFn: async () => {
+      if (!projectBId) return null;
+      const { data, error } = await supabase
+        .from("token_market_data")
+        .select("price_usd, market_cap_usd")
+        .eq("project_id", projectBId)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!projectBId && !isEnded,
     refetchInterval: 60000,
   });
 
@@ -148,8 +168,123 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
       </div>
 
       <div className="divide-y divide-border">
-        {/* Prediction Target Section — for token_price / market_cap */}
-        {(forecastDimension === "token_price" || forecastDimension === "market_cap") && startPrice != null && predictionTarget != null && predictionDirection && (() => {
+        {/* Two-Project Comparison Section — for token_price / market_cap with two projects */}
+        {(forecastDimension === "token_price" || forecastDimension === "market_cap") && !!projectBId && predictionTarget != null && predictionDirection && startPrice != null && (() => {
+          const dimLabel = forecastDimension === "token_price" ? "Price" : "Market Cap";
+          const dimKey = forecastDimension === "token_price" ? "token_price" : "market_cap";
+          const formatVal = (v: number) => {
+            if (forecastDimension === "market_cap") {
+              if (v >= 1e9) return `$${(v / 1e9).toFixed(2)}B`;
+              if (v >= 1e6) return `$${(v / 1e6).toFixed(2)}M`;
+              return `$${v.toLocaleString()}`;
+            }
+            return v < 0.01 ? `$${v.toFixed(6)}` : v < 1 ? `$${v.toFixed(4)}` : `$${v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+          };
+
+          // Start prices
+          const startA = startPrice;
+          // Get Project B start from snapshots (look for a snapshot with project B context, or use a secondary approach)
+          // For now, we derive B's start from the snapshot system or live data
+          const startSnapB = snapshots.find((s: any) => s.dimension === `${dimKey}_b` && s.snapshot_type === "start");
+          const startB = startSnapB?.value != null ? startSnapB.value : null;
+
+          // Current/end values
+          const liveA = !isEnded && liveMarketData ? (forecastDimension === "token_price" ? Number(liveMarketData.price_usd) : Number(liveMarketData.market_cap_usd)) : null;
+          const liveB = !isEnded && liveMarketDataB ? (forecastDimension === "token_price" ? Number(liveMarketDataB.price_usd) : Number(liveMarketDataB.market_cap_usd)) : null;
+          const endSnapA = getSnapshot(dimKey, "end");
+          const endSnapB = snapshots.find((s: any) => s.dimension === `${dimKey}_b` && s.snapshot_type === "end")?.value ?? null;
+
+          const currentA = isEnded ? endSnapA : (liveA ?? endSnapA);
+          const currentB = isEnded ? endSnapB : (liveB ?? endSnapB);
+
+          // Calculate performance
+          const changeA = startA && currentA != null ? ((currentA - startA) / startA) * 100 : null;
+          const changeB = startB != null && currentB != null && startB !== 0 ? ((currentB - startB) / startB) * 100 : null;
+          const outperformance = changeA != null && changeB != null ? changeA - changeB : null;
+          const targetPct = predictionTarget; // stored as percentage
+
+          // Progress: outperformance / targetPct
+          const progressPct = outperformance != null && targetPct !== 0 ? Math.min(Math.max((outperformance / targetPct) * 100, 0), 100) : 0;
+          const targetReached = progressPct >= 100;
+
+          return (
+            <div className="px-6 py-5">
+              <div className="flex items-center gap-3 mb-4">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${predictionDirection === "long" ? "bg-primary/10" : "bg-destructive/10"}`}>
+                  {predictionDirection === "long" ? <TrendingUp className="h-4 w-4 text-primary" /> : <TrendingDown className="h-4 w-4 text-destructive" />}
+                </div>
+                <div>
+                  <span className="text-xs font-semibold text-foreground block">
+                    {predictionDirection === "long" ? "Long" : "Short"} — {dimLabel} Comparison
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">
+                    {projectAName || "Project A"} vs {projectBName || "Project B"}
+                  </span>
+                </div>
+                <span className={`ml-auto text-xs font-bold ${predictionDirection === "long" ? "text-primary" : "text-destructive"}`}>
+                  Target: {predictionDirection === "long" ? "+" : "-"}{targetPct.toFixed(1)}%
+                </span>
+              </div>
+
+              {/* Project comparison cards */}
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-2.5">
+                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">{projectAName || "Project A"}</p>
+                  <p className="text-sm font-semibold text-foreground font-['Space_Grotesk'] mb-0.5">{currentA != null ? formatVal(currentA) : "—"}</p>
+                  {changeA != null && (
+                    <span className={`text-[10px] font-semibold ${changeA >= 0 ? "text-primary" : "text-destructive"}`}>
+                      {changeA >= 0 ? "+" : ""}{changeA.toFixed(2)}%
+                    </span>
+                  )}
+                </div>
+                <div className="rounded-lg border border-border bg-secondary/50 px-3 py-2.5">
+                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">{projectBName || "Project B"}</p>
+                  <p className="text-sm font-semibold text-foreground font-['Space_Grotesk'] mb-0.5">{currentB != null ? formatVal(currentB) : "—"}</p>
+                  {changeB != null && (
+                    <span className={`text-[10px] font-semibold ${changeB >= 0 ? "text-primary" : "text-destructive"}`}>
+                      {changeB >= 0 ? "+" : ""}{changeB.toFixed(2)}%
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Outperformance metric */}
+              {outperformance != null && (
+                <div className="rounded-lg bg-secondary/30 border border-border px-3 py-2.5 mb-4 flex items-center justify-between">
+                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Current Outperformance</span>
+                  <span className={`text-sm font-bold font-['Space_Grotesk'] ${outperformance >= 0 ? "text-primary" : "text-destructive"}`}>
+                    {outperformance >= 0 ? "+" : ""}{outperformance.toFixed(2)}%
+                  </span>
+                </div>
+              )}
+
+              {/* Progress toward target */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Progress to Target</span>
+                  <span className={`text-[11px] font-bold font-['Space_Grotesk'] ${targetReached ? "text-primary" : "text-muted-foreground"}`}>
+                    {progressPct.toFixed(1)}%
+                  </span>
+                </div>
+                <div className="relative h-2.5 w-full rounded-full bg-secondary overflow-hidden">
+                  <motion.div
+                    className={`h-full rounded-full ${targetReached ? "bg-primary" : predictionDirection === "long" ? "bg-primary/70" : "bg-destructive/70"}`}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progressPct}%` }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                  />
+                </div>
+                <div className="flex items-center justify-between mt-1">
+                  <span className="text-[9px] text-muted-foreground">0%</span>
+                  <span className="text-[9px] text-muted-foreground">{targetPct.toFixed(1)}%</span>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Single-Project Prediction Target Section — for token_price / market_cap without project B */}
+        {(forecastDimension === "token_price" || forecastDimension === "market_cap") && !projectBId && startPrice != null && predictionTarget != null && predictionDirection && (() => {
           const pctChange = startPrice !== 0 ? ((predictionTarget - startPrice) / startPrice) * 100 : null;
           const dimLabel = forecastDimension === "token_price" ? "Price" : "Market Cap";
           const formatVal = (v: number) => {
@@ -164,7 +299,6 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
           const dim = forecastDimension === "token_price" ? "token_price" : "market_cap";
           const endSnap = getSnapshot(dim, "end");
           const liveVal = getCurrentValue(dim);
-          // Active: use live data; Ended: use end snapshot only (no live fallback)
           const currentVal = isEnded ? endSnap : (liveVal ?? endSnap);
           const totalDistance = predictionTarget - startPrice;
           const currentDistance = currentVal != null ? currentVal - startPrice : 0;

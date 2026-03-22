@@ -739,6 +739,7 @@ const Forecasts = () => {
     voteForecast.mutate({ forecastId, vote });
   };
 
+  const hasTwoProjectsForCreate = projectBId && projectBId !== "none";
   const handleCreate = async () => {
     if (!title.trim()) { toast.error("Title required"); return; }
     if (!description.trim()) { toast.error("Description required"); return; }
@@ -750,7 +751,7 @@ const Forecasts = () => {
     // Validate prediction direction and target for price-based markets
     const isPriceMarket = forecastMarket === "token_price" || forecastMarket === "market_cap";
     if (isPriceMarket && !predictionDirection) { toast.error("Select Long or Short"); return; }
-    if (isPriceMarket && !predictionTarget) { toast.error("Enter a target price"); return; }
+    if (isPriceMarket && !predictionTarget) { toast.error(hasTwoProjectsForCreate ? "Enter a target percentage" : "Enter a target price"); return; }
 
     const currentPrice = isPriceMarket && projectAId ? (forecastMarket === "token_price" ? allMarketData[projectAId]?.price_usd : allMarketData[projectAId]?.market_cap_usd) : undefined;
 
@@ -1127,7 +1128,7 @@ const Forecasts = () => {
                 </SelectContent>
               </Select>
             </div>
-            {/* Long/Short direction + Target Price — only for token_price / market_cap */}
+            {/* Long/Short direction + Target Price/Percentage — only for token_price / market_cap */}
             {(forecastMarket === "token_price" || forecastMarket === "market_cap") && (
               <div className="rounded-xl border border-border bg-secondary/20 p-4 space-y-3">
                 <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Position Direction *</label>
@@ -1158,10 +1159,14 @@ const Forecasts = () => {
                   </button>
                 </div>
                 {predictionDirection && projectAId && (() => {
-                  const md = allMarketData[projectAId];
-                  const currentPrice = forecastMarket === "token_price" ? md?.price_usd : md?.market_cap_usd;
-                  const targetNum = parseFloat(predictionTarget);
-                  const pctChange = currentPrice && targetNum ? (((targetNum - currentPrice) / currentPrice) * 100) : null;
+                  const mdA = allMarketData[projectAId];
+                  const currentPriceA = forecastMarket === "token_price" ? mdA?.price_usd : mdA?.market_cap_usd;
+                  const hasTwoProjects = projectBId && projectBId !== "none";
+                  const mdB = hasTwoProjects ? allMarketData[projectBId] : null;
+                  const currentPriceB = mdB ? (forecastMarket === "token_price" ? mdB.price_usd : mdB.market_cap_usd) : null;
+                  const projectAName = filteredProjects.find(p => p.id === projectAId)?.name || "Project A";
+                  const projectBName = hasTwoProjects ? (filteredProjects.find(p => p.id === projectBId)?.name || "Project B") : null;
+
                   const formatVal = (v: number | null | undefined) => {
                     if (v == null) return "—";
                     if (forecastMarket === "market_cap") {
@@ -1171,11 +1176,63 @@ const Forecasts = () => {
                     }
                     return v < 0.01 ? `$${v.toFixed(6)}` : v < 1 ? `$${v.toFixed(4)}` : `$${v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
                   };
+
+                  if (hasTwoProjects) {
+                    // Two-project mode: Target Percentage
+                    const targetPct = parseFloat(predictionTarget);
+                    // Calculate what price Project A needs if Project B stays same
+                    const impliedPriceA = currentPriceA != null && !isNaN(targetPct) ? currentPriceA * (1 + targetPct / 100) : null;
+                    return (
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <div className="rounded-lg bg-card border border-border px-3 py-2">
+                            <span className="text-muted-foreground block text-[10px] mb-0.5">{projectAName}</span>
+                            <span className="font-semibold text-foreground">{formatVal(currentPriceA)}</span>
+                          </div>
+                          <div className="rounded-lg bg-card border border-border px-3 py-2">
+                            <span className="text-muted-foreground block text-[10px] mb-0.5">{projectBName}</span>
+                            <span className="font-semibold text-foreground">{formatVal(currentPriceB)}</span>
+                          </div>
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                            Target Outperformance % *
+                          </label>
+                          <p className="text-[10px] text-muted-foreground mt-0.5 mb-1.5">
+                            How much {projectAName} will {predictionDirection === "long" ? "outperform" : "underperform"} {projectBName}
+                          </p>
+                          <div className="relative mt-1.5">
+                            <Input
+                              type="number"
+                              step="any"
+                              value={predictionTarget}
+                              onChange={(e) => setPredictionTarget(e.target.value)}
+                              placeholder="e.g. 25"
+                              className="pr-7 h-9"
+                            />
+                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">%</span>
+                          </div>
+                        </div>
+                        {impliedPriceA != null && !isNaN(targetPct) && targetPct !== 0 && (
+                          <div className="rounded-lg bg-card border border-border px-3 py-2.5 space-y-1">
+                            <p className="text-[10px] text-muted-foreground">If {projectBName} stays the same, {projectAName} needs to reach:</p>
+                            <p className={`text-sm font-bold font-['Space_Grotesk'] ${predictionDirection === "long" ? "text-primary" : "text-destructive"}`}>
+                              {formatVal(impliedPriceA)}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+
+                  // Single-project mode: Target Price (existing behavior)
+                  const targetNum = parseFloat(predictionTarget);
+                  const pctChange = currentPriceA && targetNum ? (((targetNum - currentPriceA) / currentPriceA) * 100) : null;
                   return (
                     <div className="space-y-3">
                       <div className="flex items-center justify-between text-xs">
                         <span className="text-muted-foreground">Current {forecastMarket === "token_price" ? "Price" : "Market Cap"}</span>
-                        <span className="font-semibold text-foreground">{formatVal(currentPrice)}</span>
+                        <span className="font-semibold text-foreground">{formatVal(currentPriceA)}</span>
                       </div>
                       <div>
                         <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
