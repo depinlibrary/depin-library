@@ -490,8 +490,10 @@ const ForecastDetail = () => {
               </div>
             </motion.div>
 
-            {/* Vote History Chart */}
-            <VoteHistoryChart voteHistory={voteHistory} />
+            {/* Vote History Chart — for community sentiment, show here in left column */}
+            {forecastDimension !== "token_price" && forecastDimension !== "market_cap" && (
+              <VoteHistoryChart voteHistory={voteHistory} />
+            )}
 
             {/* Price / Market Cap Chart for token_price or market_cap forecasts */}
             {(forecastDimension === "token_price" || forecastDimension === "market_cap") && forecast.project_a_id && (
