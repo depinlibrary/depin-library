@@ -136,8 +136,8 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
         </div>
       </div>
 
-      {/* Standalone vote buttons */}
-      {!isEnded ? (
+      {/* Standalone vote buttons — hide resolved footer on forecast listing */}
+      {!isEnded && (
         <div className="px-5 pb-5 pt-1 flex gap-2.5">
           <button
             onClick={() => isAuthenticated ? onVote(forecast.id, "yes") : toast.error("Sign in to vote")}
@@ -161,19 +161,6 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
             {isPriceMarket && <ArrowDownRight className="h-3.5 w-3.5 inline mr-1" />}
             {noLabel}
           </button>
-        </div>
-      ) : (
-        <div className={`flex items-center justify-between px-5 py-3.5 border-t border-border ${finalResult === "yes" ? "bg-primary/5" : "bg-destructive/5"}`}>
-          <span className={`text-sm font-bold ${finalResult === "yes" ? "text-primary" : "text-destructive"}`}>
-            Resolved: {finalResult === "yes" ? yesLabel : noLabel}
-          </span>
-          {forecast.user_vote && (
-            <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${
-              forecast.user_vote === finalResult ? "bg-green-500/10 text-green-600 dark:text-green-400" : "bg-orange-500/10 text-orange-600 dark:text-orange-400"
-            }`}>
-              {forecast.user_vote === finalResult ? "✓ Correct" : "✗ Wrong"}
-            </span>
-          )}
         </div>
       )}
     </motion.div>
