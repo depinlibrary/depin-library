@@ -161,10 +161,12 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
             return v < 0.01 ? `$${v.toFixed(6)}` : v < 1 ? `$${v.toFixed(4)}` : `$${v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
           };
 
-          // Calculate progress toward target
+          // Calculate progress toward target — use live data for active, end snapshot (or live fallback) for ended
           const dim = forecastDimension === "token_price" ? "token_price" : "market_cap";
           const endSnap = getSnapshot(dim, "end");
-          const currentVal = endSnap ?? getSnapshot(dim, "start"); // fallback to start if no end yet
+          const liveVal = getCurrentValue(dim);
+          // For active forecasts: use live market data; for ended: use end snapshot, fallback to live
+          const currentVal = isEnded ? (endSnap ?? liveVal) : (liveVal ?? endSnap);
           const totalDistance = predictionTarget - startPrice;
           const currentDistance = currentVal != null ? currentVal - startPrice : 0;
           const progressPct = totalDistance !== 0 ? Math.min(Math.max((currentDistance / totalDistance) * 100, 0), 100) : 0;
