@@ -77,7 +77,7 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
     enabled: targets.length > 0,
   });
 
-  // Fetch live market data for active forecasts or as fallback for ended ones without end snapshots
+  // Fetch live market data only for active forecasts
   const { data: liveMarketData } = useQuery({
     queryKey: ["forecast-live-market", projectAId],
     queryFn: async () => {
@@ -90,8 +90,8 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
       if (error) throw error;
       return data;
     },
-    enabled: !!projectAId,
-    refetchInterval: isEnded ? false : 60000, // refresh every minute for active forecasts
+    enabled: !!projectAId && !isEnded,
+    refetchInterval: 60000,
   });
 
   if (targets.length === 0) return null;
