@@ -233,17 +233,22 @@ body {
   box-shadow: none;
 }
 
-/* Button press effect */
+/* Button press effect — 3D */
 .btn-press {
   transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1),
               box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1),
               background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px -1px hsl(var(--foreground) / 0.1),
+              0 1px 2px -1px hsl(var(--foreground) / 0.06);
 }
 .btn-press:hover {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px -4px hsl(var(--glow-primary) / 0.2),
+              0 3px 8px -2px hsl(var(--foreground) / 0.08);
 }
 .btn-press:active {
-  transform: translateY(0px) scale(0.98);
+  transform: translateY(1px) scale(0.97);
+  box-shadow: 0 1px 2px 0 hsl(var(--foreground) / 0.08);
 }
 
 /* Focus ring animation */
