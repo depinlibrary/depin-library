@@ -306,3 +306,61 @@ body {
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
 }
+
+/* ──────────────────────────────────────────
+   3D Depth System
+   ────────────────────────────────────────── */
+
+/* Elevated surface — layered shadow for depth */
+.depth-sm {
+  box-shadow: 0 1px 3px -1px hsl(var(--foreground) / 0.07),
+              0 2px 6px -2px hsl(var(--foreground) / 0.05);
+}
+
+.depth-md {
+  box-shadow: 0 4px 12px -4px hsl(var(--foreground) / 0.1),
+              0 8px 24px -8px hsl(var(--foreground) / 0.06),
+              0 1px 3px -1px hsl(var(--foreground) / 0.04);
+}
+
+.depth-lg {
+  box-shadow: 0 8px 24px -6px hsl(var(--glow-primary) / 0.1),
+              0 16px 48px -12px hsl(var(--foreground) / 0.08),
+              0 2px 6px -2px hsl(var(--foreground) / 0.04);
+}
+
+/* Inner light — top edge highlight for embossed feel */
+.depth-inset {
+  box-shadow: inset 0 1px 0 0 hsl(var(--foreground) / 0.06),
+              0 2px 8px -2px hsl(var(--foreground) / 0.08);
+}
+
+/* Glass surface with depth */
+.glass-3d {
+  background: hsl(var(--surface-glass) / 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid hsl(var(--border) / 0.6);
+  box-shadow: inset 0 1px 0 0 hsl(var(--foreground) / 0.04),
+              0 4px 16px -4px hsl(var(--foreground) / 0.1),
+              0 8px 32px -8px hsl(var(--foreground) / 0.06);
+}
+
+/* Floating element — strong lift */
+.float-3d {
+  box-shadow: 0 12px 32px -8px hsl(var(--glow-primary) / 0.12),
+              0 24px 60px -16px hsl(var(--foreground) / 0.1),
+              0 2px 6px -2px hsl(var(--foreground) / 0.05);
+}
+
+/* Pressed/inset state */
+.pressed-3d {
+  box-shadow: inset 0 2px 4px -1px hsl(var(--foreground) / 0.1),
+              inset 0 1px 2px 0 hsl(var(--foreground) / 0.06);
+}
+
+/* Primary glow with 3D depth */
+.glow-primary-3d {
+  box-shadow: 0 0 20px -5px hsl(var(--glow-primary) / 0.35),
+              0 0 60px -15px hsl(var(--glow-primary) / 0.18),
+              0 8px 24px -8px hsl(var(--foreground) / 0.08);
+}
