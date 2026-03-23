@@ -197,12 +197,13 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
   );
 };
 // ---- Hero Section with Auto-Sliding Carousel + Sentiment Chart ----
-const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setShowCreate }: {
+const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setShowCreate, heroDimensionsMap }: {
   forecasts: Forecast[];
   topLiveForecasts: Forecast[];
   trendingTopics: any[];
   user: any;
   setShowCreate: (v: boolean) => void;
+  heroDimensionsMap: Record<string, string[]>;
 }) => {
   const [activeSlide, setActiveSlide] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -281,6 +282,13 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
   const cYesPct = cTotal > 0 ? (current.total_votes_yes / cTotal) * 100 : 50;
   const cIsEnded = new Date(current.end_date) <= new Date();
   const cTimeLeft = getTimeRemaining(current.end_date);
+
+  // Dynamic labels based on dimension
+  const cDims = heroDimensionsMap[current.id] || [];
+  const cIsPriceMarket = cDims.some(d => d === "token_price" || d === "market_cap");
+  const cIsSentimentDual = cDims.some(d => d === "community_sentiment") && !!current.project_b_name;
+  const cYesLabel = cIsPriceMarket ? "Long" : cIsSentimentDual ? (current.project_a_name || "Yes") : "Yes";
+  const cNoLabel = cIsPriceMarket ? "Short" : cIsSentimentDual ? (current.project_b_name || "No") : "No";
 
   return (
     <section className="relative overflow-hidden pt-24 pb-8">
@@ -371,15 +379,15 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                   <div className="space-y-2 mb-4">
                     <div className="flex items-center justify-between rounded-xl bg-primary/5 border border-primary/10 px-4 py-2.5">
                       <div className="flex items-center gap-2">
-                        <ArrowUpRight className="h-4 w-4 text-primary" />
-                        <span className="text-sm font-semibold text-foreground">Yes</span>
+                        {cIsPriceMarket ? <TrendingUp className="h-4 w-4 text-primary" /> : <ArrowUpRight className="h-4 w-4 text-primary" />}
+                        <span className="text-sm font-semibold text-foreground">{cYesLabel}</span>
                       </div>
                       <span className="text-xl font-bold text-foreground font-['Space_Grotesk']">{cYesPct.toFixed(0)}%</span>
                     </div>
                     <div className="flex items-center justify-between rounded-xl bg-destructive/5 border border-destructive/10 px-4 py-2.5">
                       <div className="flex items-center gap-2">
                         <ArrowDownRight className="h-4 w-4 text-destructive" />
-                        <span className="text-sm font-semibold text-foreground">No</span>
+                        <span className="text-sm font-semibold text-foreground">{cNoLabel}</span>
                       </div>
                       <span className="text-xl font-bold text-foreground font-['Space_Grotesk']">{(100 - cYesPct).toFixed(0)}%</span>
                     </div>
@@ -745,6 +753,27 @@ const Forecasts = () => {
   const heroAllForecasts = useMemo(() => heroDataAll?.forecasts || [], [heroDataAll]);
   const heroTopLiveForecasts = useMemo(() => heroDataTopLive?.forecasts || [], [heroDataTopLive]);
 
+  // Fetch dimensions for hero forecasts
+  const heroForecastIds = useMemo(() => heroAllForecasts.map(f => f.id), [heroAllForecasts]);
+  const { data: heroDimensionsMap = {} } = useQuery({
+    queryKey: ["hero-forecast-dimensions", heroForecastIds],
+    queryFn: async () => {
+      if (heroForecastIds.length === 0) return {};
+      const { data } = await supabase
+        .from("forecast_targets")
+        .select("forecast_id, dimension")
+        .in("forecast_id", heroForecastIds);
+      const map: Record<string, string[]> = {};
+      (data || []).forEach((t: any) => {
+        if (!map[t.forecast_id]) map[t.forecast_id] = [];
+        map[t.forecast_id].push(t.dimension);
+      });
+      return map;
+    },
+    enabled: heroForecastIds.length > 0,
+    staleTime: 60_000,
+  });
+
   // Stats
   const stats = useMemo(() => {
     const totalVotes = forecasts.reduce((sum, f) => sum + f.total_votes_yes + f.total_votes_no, 0);
@@ -811,6 +840,7 @@ const Forecasts = () => {
         trendingTopics={trendingTopics}
         user={user}
         setShowCreate={setShowCreate}
+        heroDimensionsMap={heroDimensionsMap as Record<string, string[]>}
       />
 
       {/* Controls — Polymarket-style single row */}
@@ -986,402 +1016,330 @@ const Forecasts = () => {
         </div>
       </section>
 
-      {/* Forecast Grid */}
-      <section className="container mx-auto px-4 py-8 flex-1">
-        {isLoading ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="animate-pulse rounded-xl border border-border bg-card overflow-hidden">
-                <div className="p-5 space-y-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-[7px] bg-secondary" />
-                    <div className="h-3 w-24 bg-secondary rounded" />
+      {/* Forecast Grid + Create Panel */}
+      <div className="container mx-auto px-4 py-8 flex-1 flex gap-6">
+        {/* Main content */}
+        <section className={`flex-1 min-w-0 transition-all duration-300`}>
+          {isLoading ? (
+            <div className={`grid gap-4 sm:grid-cols-2 ${showCreate ? 'lg:grid-cols-2' : 'lg:grid-cols-3'}`}>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="animate-pulse rounded-xl border border-border bg-card overflow-hidden">
+                  <div className="p-5 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-[7px] bg-secondary" />
+                      <div className="h-3 w-24 bg-secondary rounded" />
+                    </div>
+                    <div className="h-4 w-3/4 bg-secondary rounded" />
+                    <div className="h-3 w-full bg-secondary rounded" />
+                    <div className="h-2 w-full bg-secondary rounded-full mt-4" />
                   </div>
-                  <div className="h-4 w-3/4 bg-secondary rounded" />
-                  <div className="h-3 w-full bg-secondary rounded" />
-                  <div className="h-2 w-full bg-secondary rounded-full mt-4" />
+                  <div className="h-10 border-t border-border bg-secondary/30" />
                 </div>
-                <div className="h-10 border-t border-border bg-secondary/30" />
-              </div>
-            ))}
-          </div>
-        ) : forecasts.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center py-20"
-          >
-            <div className="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center mx-auto mb-4">
-              <BarChart3 className="h-7 w-7 text-muted-foreground/40" />
+              ))}
             </div>
-            <h3 className="text-base font-semibold text-foreground mb-1">No forecasts yet</h3>
-            <p className="text-sm text-muted-foreground mb-5 max-w-xs mx-auto">
-              Be the first to create a prediction and let the community vote on it.
-            </p>
-            {user ? (
-              <Button onClick={() => setShowCreate(true)} className="gap-1.5">
-                <Plus className="h-3.5 w-3.5" /> Create First Forecast
-              </Button>
-            ) : (
+          ) : forecasts.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center py-20"
+            >
+              <div className="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center mx-auto mb-4">
+                <BarChart3 className="h-7 w-7 text-muted-foreground/40" />
+              </div>
+              <h3 className="text-base font-semibold text-foreground mb-1">No forecasts yet</h3>
+              <p className="text-sm text-muted-foreground mb-5 max-w-xs mx-auto">
+                Be the first to create a prediction and let the community vote on it.
+              </p>
               <Button onClick={() => {
-                toast("Please log in to create a forecast", {
-                  action: { label: "Log in", onClick: () => navigate("/auth?redirect=/forecasts") },
-                });
+                if (user) { setShowCreate(true); }
+                else { toast("Please log in to create a forecast", { action: { label: "Log in", onClick: () => navigate("/auth?redirect=/forecasts") } }); }
               }} className="gap-1.5">
                 <Plus className="h-3.5 w-3.5" /> Create First Forecast
               </Button>
-            )}
-          </motion.div>
-        ) : (
-          <>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <AnimatePresence mode="popLayout">
-                {forecasts.map((forecast, i) => (
-                  <ForecastCard
-                    key={forecast.id}
-                    forecast={forecast}
-                    onVote={handleVote}
-                    isAuthenticated={!!user}
-                    index={i}
-                    dimensions={forecastTargetsMap[forecast.id] || []}
-                  />
-                ))}
-              </AnimatePresence>
-            </div>
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-3 mt-10">
-                <button
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  className="flex items-center gap-1.5 rounded-lg border border-border bg-card px-3.5 py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-secondary disabled:opacity-40 disabled:pointer-events-none"
-                >
-                  <ChevronLeft className="h-3.5 w-3.5" /> Previous
-                </button>
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: Math.min(totalPages, 5) }).map((_, i) => {
-                    const pageNum = i + 1;
-                    return (
-                      <button
-                        key={pageNum}
-                        onClick={() => setPage(pageNum)}
-                        className={`w-8 h-8 rounded-lg text-xs font-medium transition-all ${
-                          page === pageNum
-                            ? "bg-primary text-primary-foreground"
-                            : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                        }`}
-                      >
-                        {pageNum}
-                      </button>
-                    );
-                  })}
-                </div>
-                <button
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                  className="flex items-center gap-1.5 rounded-lg border border-border bg-card px-3.5 py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-secondary disabled:opacity-40 disabled:pointer-events-none"
-                >
-                  Next <ChevronRight className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            )}
-          </>
-        )}
-      </section>
-
-      {/* Create Forecast Dialog */}
-      <Dialog open={showCreate} onOpenChange={setShowCreate}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader className="flex flex-row items-center justify-between">
-            <DialogTitle className="font-['Space_Grotesk']">Create Forecast</DialogTitle>
-            {(title || description) && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => { setTitle(""); setDescription(""); }}
-                className="h-7 gap-1.5 text-xs text-muted-foreground hover:text-foreground -mt-1"
-              >
-                <RotateCcw className="h-3 w-3" /> Reset
-              </Button>
-            )}
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Title *</label>
-              <Input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Will Hivemapper surpass Helium nodes by 2026?"
-                className="mt-1.5"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Description *</label>
-              <Textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Additional context about this prediction..."
-                className="mt-1.5 min-h-[80px] resize-y"
-              />
-            </div>
-            {/* Forecast Market */}
-            <div>
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Forecast Market *
-              </label>
-              <p className="text-[10px] text-muted-foreground mt-0.5 mb-2">Select the market to track during the forecast period</p>
-                <Select value={forecastMarket} onValueChange={(v) => {
-                    setForecastMarket(v);
-                    setPredictionDirection("");
-                    setPredictionTarget("");
-                    // Reset project selections when market changes to token_price/market_cap
-                    if (v === "token_price" || v === "market_cap") {
-                      setProjectAId("");
-                      setProjectBId("");
-                    }
-                  }}>
-                  <SelectTrigger className="mt-1.5 h-9">
-                    <SelectValue placeholder="Select forecast market" />
-                  </SelectTrigger>
-                <SelectContent position="popper" side="bottom" sideOffset={4} avoidCollisions={false} className="max-h-60">
-                  {dimensionOptions.map((dim) => (
-                    <SelectItem key={dim.value} value={dim.value} disabled={dim.disabled}>
-                      <span className="flex items-center gap-2">
-                        {dim.label}
-                        {dim.disabled && (
-                          <span className="ml-1 text-[10px] rounded-full bg-secondary px-1.5 py-0.5 text-muted-foreground">Coming soon</span>
-                        )}
-                      </span>
-                    </SelectItem>
+            </motion.div>
+          ) : (
+            <>
+              <div className={`grid gap-4 sm:grid-cols-2 ${showCreate ? 'lg:grid-cols-2' : 'lg:grid-cols-3'}`}>
+                <AnimatePresence mode="popLayout">
+                  {forecasts.map((forecast, i) => (
+                    <ForecastCard
+                      key={forecast.id}
+                      forecast={forecast}
+                      onVote={handleVote}
+                      isAuthenticated={!!user}
+                      index={i}
+                      dimensions={forecastTargetsMap[forecast.id] || []}
+                    />
                   ))}
-                </SelectContent>
-              </Select>
-            </div>
-            {/* Long/Short direction + Target Price/Percentage — only for token_price / market_cap */}
-            {(forecastMarket === "token_price" || forecastMarket === "market_cap") && (
-              <div className="rounded-xl border border-border bg-secondary/20 p-4 space-y-3">
-                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Position Direction *</label>
-                <div className="grid grid-cols-2 gap-2">
+                </AnimatePresence>
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-3 mt-10">
                   <button
-                    type="button"
-                    onClick={() => setPredictionDirection("long")}
-                    className={`rounded-lg py-2.5 text-sm font-bold transition-all border ${
-                      predictionDirection === "long"
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border bg-card text-muted-foreground hover:text-foreground hover:bg-secondary"
-                    }`}
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                    className="flex items-center gap-1.5 rounded-lg border border-border bg-card px-3.5 py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-secondary disabled:opacity-40 disabled:pointer-events-none"
                   >
-                    <TrendingUp className="h-3.5 w-3.5 inline mr-1.5" />
-                    Long
+                    <ChevronLeft className="h-3.5 w-3.5" /> Previous
                   </button>
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: Math.min(totalPages, 5) }).map((_, i) => {
+                      const pageNum = i + 1;
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => setPage(pageNum)}
+                          className={`w-8 h-8 rounded-lg text-xs font-medium transition-all ${
+                            page === pageNum
+                              ? "bg-primary text-primary-foreground"
+                              : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
+                  </div>
                   <button
-                    type="button"
-                    onClick={() => setPredictionDirection("short")}
-                    className={`rounded-lg py-2.5 text-sm font-bold transition-all border ${
-                      predictionDirection === "short"
-                        ? "border-destructive bg-destructive/10 text-destructive"
-                        : "border-border bg-card text-muted-foreground hover:text-foreground hover:bg-secondary"
-                    }`}
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={page === totalPages}
+                    className="flex items-center gap-1.5 rounded-lg border border-border bg-card px-3.5 py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-secondary disabled:opacity-40 disabled:pointer-events-none"
                   >
-                    <ArrowDownRight className="h-3.5 w-3.5 inline mr-1.5" />
-                    Short
+                    Next <ChevronRight className="h-3.5 w-3.5" />
                   </button>
                 </div>
-                {predictionDirection && projectAId && (() => {
-                  const mdA = allMarketData[projectAId];
-                  const currentPriceA = forecastMarket === "token_price" ? mdA?.price_usd : mdA?.market_cap_usd;
-                  const hasTwoProjects = projectBId && projectBId !== "none";
-                  const mdB = hasTwoProjects ? allMarketData[projectBId] : null;
-                  const currentPriceB = mdB ? (forecastMarket === "token_price" ? mdB.price_usd : mdB.market_cap_usd) : null;
-                  const projectAName = filteredProjects.find(p => p.id === projectAId)?.name || "Project A";
-                  const projectBName = hasTwoProjects ? (filteredProjects.find(p => p.id === projectBId)?.name || "Project B") : null;
+              )}
+            </>
+          )}
+        </section>
 
-                  const formatVal = (v: number | null | undefined) => {
-                    if (v == null) return "—";
-                    if (forecastMarket === "market_cap") {
-                      if (v >= 1e9) return `$${(v / 1e9).toFixed(2)}B`;
-                      if (v >= 1e6) return `$${(v / 1e6).toFixed(2)}M`;
-                      return `$${v.toLocaleString()}`;
-                    }
-                    return v < 0.01 ? `$${v.toFixed(6)}` : v < 1 ? `$${v.toFixed(4)}` : `$${v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                  };
+        {/* Inline Create Forecast Panel — desktop */}
+        <AnimatePresence>
+          {showCreate && (
+            <motion.aside
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: 420, opacity: 1 }}
+              exit={{ width: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="hidden lg:block shrink-0 overflow-hidden"
+            >
+              <div className="w-[420px] sticky top-24">
+                <div className="rounded-2xl border border-border bg-card overflow-hidden">
+                  {/* Panel header */}
+                  <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+                    <h2 className="text-base font-bold text-foreground font-['Space_Grotesk']">Create Forecast</h2>
+                    <div className="flex items-center gap-1.5">
+                      {(title || description) && (
+                        <Button variant="ghost" size="sm" onClick={() => { setTitle(""); setDescription(""); }} className="h-7 gap-1.5 text-xs text-muted-foreground hover:text-foreground">
+                          <RotateCcw className="h-3 w-3" /> Reset
+                        </Button>
+                      )}
+                      <button onClick={() => setShowCreate(false)} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
 
-                  if (hasTwoProjects) {
-                    // Two-project mode: Target Percentage
-                    const targetPct = parseFloat(predictionTarget);
-                    // Calculate what price Project A needs if Project B stays same
-                    const impliedPriceA = currentPriceA != null && !isNaN(targetPct) ? currentPriceA * (1 + targetPct / 100) : null;
-                    return (
-                      <div className="space-y-3">
-                        <div className="grid grid-cols-2 gap-2 text-xs">
-                          <div className="rounded-lg bg-card border border-border px-3 py-2">
-                            <span className="text-muted-foreground block text-[10px] mb-0.5">{projectAName}</span>
-                            <span className="font-semibold text-foreground">{formatVal(currentPriceA)}</span>
-                          </div>
-                          <div className="rounded-lg bg-card border border-border px-3 py-2">
-                            <span className="text-muted-foreground block text-[10px] mb-0.5">{projectBName}</span>
-                            <span className="font-semibold text-foreground">{formatVal(currentPriceB)}</span>
-                          </div>
+                  {/* Panel body */}
+                  <div className="p-5 space-y-4 max-h-[calc(100vh-12rem)] overflow-y-auto">
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Title *</label>
+                      <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Will Hivemapper surpass Helium nodes by 2026?" className="mt-1.5" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Description *</label>
+                      <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Additional context about this prediction..." className="mt-1.5 min-h-[80px] resize-y" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Forecast Market *</label>
+                      <p className="text-[10px] text-muted-foreground mt-0.5 mb-2">Select the market to track</p>
+                      <Select value={forecastMarket} onValueChange={(v) => { setForecastMarket(v); setPredictionDirection(""); setPredictionTarget(""); if (v === "token_price" || v === "market_cap") { setProjectAId(""); setProjectBId(""); } }}>
+                        <SelectTrigger className="mt-1.5 h-9"><SelectValue placeholder="Select forecast market" /></SelectTrigger>
+                        <SelectContent position="popper" side="bottom" sideOffset={4} avoidCollisions={false} className="max-h-60">
+                          {dimensionOptions.map((dim) => (
+                            <SelectItem key={dim.value} value={dim.value} disabled={dim.disabled}>
+                              <span className="flex items-center gap-2">{dim.label}{dim.disabled && <span className="ml-1 text-[10px] rounded-full bg-secondary px-1.5 py-0.5 text-muted-foreground">Coming soon</span>}</span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {(forecastMarket === "token_price" || forecastMarket === "market_cap") && (
+                      <div className="rounded-xl border border-border bg-secondary/20 p-4 space-y-3">
+                        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Position Direction *</label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <button type="button" onClick={() => setPredictionDirection("long")} className={`rounded-lg py-2.5 text-sm font-bold transition-all border ${predictionDirection === "long" ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground hover:text-foreground hover:bg-secondary"}`}>
+                            <TrendingUp className="h-3.5 w-3.5 inline mr-1.5" />Long
+                          </button>
+                          <button type="button" onClick={() => setPredictionDirection("short")} className={`rounded-lg py-2.5 text-sm font-bold transition-all border ${predictionDirection === "short" ? "border-destructive bg-destructive/10 text-destructive" : "border-border bg-card text-muted-foreground hover:text-foreground hover:bg-secondary"}`}>
+                            <ArrowDownRight className="h-3.5 w-3.5 inline mr-1.5" />Short
+                          </button>
                         </div>
-                        <div>
-                          <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                            Target Outperformance % *
-                          </label>
-                          <p className="text-[10px] text-muted-foreground mt-0.5 mb-1.5">
-                            How much {projectAName} will {predictionDirection === "long" ? "outperform" : "underperform"} {projectBName}
-                          </p>
-                          <div className="relative mt-1.5">
-                            <Input
-                              type="number"
-                              step="any"
-                              value={predictionTarget}
-                              onChange={(e) => setPredictionTarget(e.target.value)}
-                              placeholder="e.g. 25"
-                              className="pr-7 h-9"
-                            />
-                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">%</span>
-                          </div>
-                        </div>
-                        {impliedPriceA != null && !isNaN(targetPct) && targetPct !== 0 && (
-                          <div className="rounded-lg bg-card border border-border px-3 py-2.5 space-y-1">
-                            <p className="text-[10px] text-muted-foreground">If {projectBName} stays the same, {projectAName} needs to reach:</p>
-                            <p className={`text-sm font-bold font-['Space_Grotesk'] ${predictionDirection === "long" ? "text-primary" : "text-destructive"}`}>
-                              {formatVal(impliedPriceA)}
-                            </p>
-                          </div>
-                        )}
+                        {predictionDirection && projectAId && (() => {
+                          const mdA = allMarketData[projectAId];
+                          const currentPriceA = forecastMarket === "token_price" ? mdA?.price_usd : mdA?.market_cap_usd;
+                          const hasTwoProjects = projectBId && projectBId !== "none";
+                          const mdB = hasTwoProjects ? allMarketData[projectBId] : null;
+                          const currentPriceB = mdB ? (forecastMarket === "token_price" ? mdB.price_usd : mdB.market_cap_usd) : null;
+                          const projectAName = filteredProjects.find(p => p.id === projectAId)?.name || "Project A";
+                          const projectBName = hasTwoProjects ? (filteredProjects.find(p => p.id === projectBId)?.name || "Project B") : null;
+                          const formatVal = (v: number | null | undefined) => {
+                            if (v == null) return "—";
+                            if (forecastMarket === "market_cap") { if (v >= 1e9) return `$${(v / 1e9).toFixed(2)}B`; if (v >= 1e6) return `$${(v / 1e6).toFixed(2)}M`; return `$${v.toLocaleString()}`; }
+                            return v < 0.01 ? `$${v.toFixed(6)}` : v < 1 ? `$${v.toFixed(4)}` : `$${v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                          };
+                          if (hasTwoProjects) {
+                            const targetPct = parseFloat(predictionTarget);
+                            const impliedPriceA = currentPriceA != null && !isNaN(targetPct) ? currentPriceA * (1 + targetPct / 100) : null;
+                            return (
+                              <div className="space-y-3">
+                                <div className="grid grid-cols-2 gap-2 text-xs">
+                                  <div className="rounded-lg bg-card border border-border px-3 py-2"><span className="text-muted-foreground block text-[10px] mb-0.5">{projectAName}</span><span className="font-semibold text-foreground">{formatVal(currentPriceA)}</span></div>
+                                  <div className="rounded-lg bg-card border border-border px-3 py-2"><span className="text-muted-foreground block text-[10px] mb-0.5">{projectBName}</span><span className="font-semibold text-foreground">{formatVal(currentPriceB)}</span></div>
+                                </div>
+                                <div>
+                                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Target Outperformance % *</label>
+                                  <div className="relative mt-1.5"><Input type="number" step="any" value={predictionTarget} onChange={(e) => setPredictionTarget(e.target.value)} placeholder="e.g. 25" className="pr-7 h-9" /><span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">%</span></div>
+                                </div>
+                                {impliedPriceA != null && !isNaN(targetPct) && targetPct !== 0 && (
+                                  <div className="rounded-lg bg-card border border-border px-3 py-2.5 space-y-1">
+                                    <p className="text-[10px] text-muted-foreground">If {projectBName} stays the same, {projectAName} needs to reach:</p>
+                                    <p className={`text-sm font-bold font-['Space_Grotesk'] ${predictionDirection === "long" ? "text-primary" : "text-destructive"}`}>{formatVal(impliedPriceA)}</p>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          }
+                          const targetNum = parseFloat(predictionTarget);
+                          const pctChange = currentPriceA && targetNum ? (((targetNum - currentPriceA) / currentPriceA) * 100) : null;
+                          return (
+                            <div className="space-y-3">
+                              <div className="flex items-center justify-between text-xs"><span className="text-muted-foreground">Current {forecastMarket === "token_price" ? "Price" : "Market Cap"}</span><span className="font-semibold text-foreground">{formatVal(currentPriceA)}</span></div>
+                              <div>
+                                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Target {forecastMarket === "token_price" ? "Price" : "Market Cap"} *</label>
+                                <div className="relative mt-1.5"><span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">$</span><Input type="number" step="any" value={predictionTarget} onChange={(e) => setPredictionTarget(e.target.value)} placeholder="0.00" className="pl-7 h-9" /></div>
+                              </div>
+                              {pctChange != null && !isNaN(pctChange) && (
+                                <div className={`flex items-center gap-1.5 text-xs font-semibold ${pctChange >= 0 ? "text-primary" : "text-destructive"}`}>
+                                  {pctChange >= 0 ? <TrendingUp className="h-3.5 w-3.5" /> : <ArrowDownRight className="h-3.5 w-3.5" />}
+                                  {pctChange >= 0 ? "+" : ""}{pctChange.toFixed(2)}% from current
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
                       </div>
-                    );
-                  }
-
-                  // Single-project mode: Target Price (existing behavior)
-                  const targetNum = parseFloat(predictionTarget);
-                  const pctChange = currentPriceA && targetNum ? (((targetNum - currentPriceA) / currentPriceA) * 100) : null;
-                  return (
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-muted-foreground">Current {forecastMarket === "token_price" ? "Price" : "Market Cap"}</span>
-                        <span className="font-semibold text-foreground">{formatVal(currentPriceA)}</span>
+                    )}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Project A *</label>
+                        <Select value={projectAId} onValueChange={setProjectAId}>
+                          <SelectTrigger className="mt-1.5 h-9"><SelectValue placeholder="Select project" /></SelectTrigger>
+                          <SelectContent position="popper" side="bottom" sideOffset={4} avoidCollisions={false} className="max-h-60">
+                            {filteredProjects.map((p) => (<SelectItem key={p.id} value={p.id}><span className="flex items-center gap-2">{p.logo_url ? <img src={p.logo_url} alt={p.name} className="w-5 h-5 rounded-[7px] overflow-hidden object-contain" /> : <span className="w-5 h-5 flex items-center justify-center text-sm">{p.logo_emoji}</span>}{p.name}</span></SelectItem>))}
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div>
-                        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                          Target {forecastMarket === "token_price" ? "Price" : "Market Cap"} *
-                        </label>
-                        <div className="relative mt-1.5">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">$</span>
-                          <Input
-                            type="number"
-                            step="any"
-                            value={predictionTarget}
-                            onChange={(e) => setPredictionTarget(e.target.value)}
-                            placeholder="0.00"
-                            className="pl-7 h-9"
-                          />
-                        </div>
+                        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Project B <span className="normal-case text-muted-foreground/60">(optional)</span></label>
+                        <Select value={projectBId} onValueChange={setProjectBId}>
+                          <SelectTrigger className="mt-1.5 h-9"><SelectValue placeholder="Select project" /></SelectTrigger>
+                          <SelectContent position="popper" side="bottom" sideOffset={4} avoidCollisions={false} className="max-h-60">
+                            <SelectItem value="none">None</SelectItem>
+                            {filteredProjects.filter((p) => p.id !== projectAId).map((p) => (<SelectItem key={p.id} value={p.id}><span className="flex items-center gap-2">{p.logo_url ? <img src={p.logo_url} alt={p.name} className="w-5 h-5 rounded-[7px] overflow-hidden object-contain" /> : <span className="w-5 h-5 flex items-center justify-center text-sm">{p.logo_emoji}</span>}{p.name}</span></SelectItem>))}
+                          </SelectContent>
+                        </Select>
                       </div>
-                      {pctChange != null && !isNaN(pctChange) && (
-                        <div className={`flex items-center gap-1.5 text-xs font-semibold ${pctChange >= 0 ? "text-primary" : "text-destructive"}`}>
-                          {pctChange >= 0 ? <TrendingUp className="h-3.5 w-3.5" /> : <ArrowDownRight className="h-3.5 w-3.5" />}
-                          {pctChange >= 0 ? "+" : ""}{pctChange.toFixed(2)}% from current
-                        </div>
-                      )}
                     </div>
-                  );
-                })()}
-              </div>
-            )}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Project A *</label>
-                <Select value={projectAId} onValueChange={setProjectAId}>
-                  <SelectTrigger className="mt-1.5 h-9">
-                    <SelectValue placeholder="Select project" />
-                  </SelectTrigger>
-                  <SelectContent position="popper" side="bottom" sideOffset={4} avoidCollisions={false} className="max-h-60">
-                    {filteredProjects.map((p) => (
-                      <SelectItem key={p.id} value={p.id}>
-                        <span className="flex items-center gap-2">
-                          {p.logo_url ? (
-                            <img src={p.logo_url} alt={p.name} className="w-5 h-5 rounded-[7px] overflow-hidden object-contain" />
-                          ) : (
-                            <span className="w-5 h-5 flex items-center justify-center text-sm">{p.logo_emoji}</span>
-                          )}
-                          {p.name}
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Project B <span className="normal-case text-muted-foreground/60">(optional)</span></label>
-                <Select value={projectBId} onValueChange={setProjectBId}>
-                  <SelectTrigger className="mt-1.5 h-9">
-                    <SelectValue placeholder="Select project" />
-                  </SelectTrigger>
-                  <SelectContent position="popper" side="bottom" sideOffset={4} avoidCollisions={false} className="max-h-60">
-                    <SelectItem value="none">None</SelectItem>
-                    {filteredProjects.filter((p) => p.id !== projectAId).map((p) => (
-                      <SelectItem key={p.id} value={p.id}>
-                        <span className="flex items-center gap-2">
-                          {p.logo_url ? (
-                            <img src={p.logo_url} alt={p.name} className="w-5 h-5 rounded-[7px] overflow-hidden object-contain" />
-                          ) : (
-                            <span className="w-5 h-5 flex items-center justify-center text-sm">{p.logo_emoji}</span>
-                          )}
-                          {p.name}
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            {/* Time Window Presets */}
-            <div>
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Time Window *</label>
-              <div className="grid grid-cols-5 gap-1.5 mt-1.5">
-                {timePresets.map((preset) => (
-                  <button
-                    key={preset.value}
-                    type="button"
-                    onClick={() => handleTimePreset(preset.value)}
-                    className={`rounded-lg px-2 py-2 text-[11px] font-semibold transition-all border ${
-                      timePreset === preset.value
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border bg-secondary/50 text-muted-foreground hover:text-foreground hover:bg-secondary"
-                    }`}
-                  >
-                    {preset.label}
-                  </button>
-                ))}
-              </div>
-              {timePreset === "custom" && (
-                <Input
-                  type="datetime-local"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  min={new Date().toISOString().slice(0, 16)}
-                  className="mt-2"
-                />
-              )}
-              {timePreset && timePreset !== "custom" && endDate && (
-                <p className="text-[10px] text-muted-foreground mt-1.5">
-                  Ends: {new Date(endDate).toLocaleString()}
-                </p>
-              )}
-            </div>
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Time Window *</label>
+                      <div className="grid grid-cols-5 gap-1.5 mt-1.5">
+                        {timePresets.map((preset) => (
+                          <button key={preset.value} type="button" onClick={() => handleTimePreset(preset.value)} className={`rounded-lg px-2 py-2 text-[11px] font-semibold transition-all border ${timePreset === preset.value ? "border-primary bg-primary/10 text-primary" : "border-border bg-secondary/50 text-muted-foreground hover:text-foreground hover:bg-secondary"}`}>
+                            {preset.label}
+                          </button>
+                        ))}
+                      </div>
+                      {timePreset === "custom" && <Input type="datetime-local" value={endDate} onChange={(e) => setEndDate(e.target.value)} min={new Date().toISOString().slice(0, 16)} className="mt-2" />}
+                      {timePreset && timePreset !== "custom" && endDate && <p className="text-[10px] text-muted-foreground mt-1.5">Ends: {new Date(endDate).toLocaleString()}</p>}
+                    </div>
+                  </div>
 
-          </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setShowCreate(false)}>Cancel</Button>
-            <Button onClick={handleCreate} disabled={createForecast.isPending}>
-              {createForecast.isPending ? "Creating..." : "Create Forecast"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+                  {/* Panel footer */}
+                  <div className="flex items-center justify-between gap-3 px-5 py-4 border-t border-border">
+                    <Button variant="ghost" onClick={() => setShowCreate(false)} className="text-xs">Cancel</Button>
+                    <Button onClick={handleCreate} disabled={createForecast.isPending} className="gap-1.5">
+                      {createForecast.isPending ? "Creating..." : "Create Forecast"}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </motion.aside>
+          )}
+        </AnimatePresence>
+
+        {/* Mobile fallback: Dialog on smaller screens */}
+        {showCreate && (
+          <Dialog open={showCreate} onOpenChange={setShowCreate}>
+            <DialogContent className="sm:max-w-lg lg:hidden">
+              <DialogHeader>
+                <DialogTitle className="font-['Space_Grotesk']">Create Forecast</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Title *</label>
+                  <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Forecast title..." className="mt-1.5" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Description *</label>
+                  <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Context..." className="mt-1.5 min-h-[80px] resize-y" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Forecast Market *</label>
+                  <Select value={forecastMarket} onValueChange={(v) => { setForecastMarket(v); setPredictionDirection(""); setPredictionTarget(""); if (v === "token_price" || v === "market_cap") { setProjectAId(""); setProjectBId(""); } }}>
+                    <SelectTrigger className="mt-1.5 h-9"><SelectValue placeholder="Select market" /></SelectTrigger>
+                    <SelectContent>{dimensionOptions.map((dim) => (<SelectItem key={dim.value} value={dim.value} disabled={dim.disabled}>{dim.label}</SelectItem>))}</SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Project A *</label>
+                    <Select value={projectAId} onValueChange={setProjectAId}>
+                      <SelectTrigger className="mt-1.5 h-9"><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectContent>{filteredProjects.map((p) => (<SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>))}</SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Project B</label>
+                    <Select value={projectBId} onValueChange={setProjectBId}>
+                      <SelectTrigger className="mt-1.5 h-9"><SelectValue placeholder="Optional" /></SelectTrigger>
+                      <SelectContent><SelectItem value="none">None</SelectItem>{filteredProjects.filter((p) => p.id !== projectAId).map((p) => (<SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>))}</SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Time Window *</label>
+                  <div className="grid grid-cols-5 gap-1.5 mt-1.5">
+                    {timePresets.map((preset) => (
+                      <button key={preset.value} type="button" onClick={() => handleTimePreset(preset.value)}
+                        className={`rounded-lg px-2 py-2 text-[11px] font-semibold border ${timePreset === preset.value ? "border-primary bg-primary/10 text-primary" : "border-border bg-secondary/50 text-muted-foreground"}`}>
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
+                  {timePreset === "custom" && <Input type="datetime-local" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="mt-2" />}
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="ghost" onClick={() => setShowCreate(false)}>Cancel</Button>
+                <Button onClick={handleCreate} disabled={createForecast.isPending}>{createForecast.isPending ? "Creating..." : "Create"}</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
+      </div>
 
       <Footer />
     </div>
