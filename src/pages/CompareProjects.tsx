@@ -217,24 +217,18 @@ const CompareProjects = () => {
         <div className="flex h-14 items-center">
           {/* Logo area — matches sidebar width */}
           <div className="hidden md:flex items-center w-[260px] shrink-0 px-4 border-r border-border/50 h-full">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10">
-                <span className="text-xs">⬡</span>
-              </div>
+            <Link to="/" className="flex items-center gap-0">
+              <img src={logoImg} alt="DePIN Library" className="h-10 w-10 object-contain" />
               <span className="text-base font-semibold tracking-tight text-foreground">
-                DePIN <span className="text-primary">Library</span>
+                DePIN Library
               </span>
             </Link>
           </div>
           {/* Mobile logo */}
           <div className="flex md:hidden items-center px-4">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10">
-                <span className="text-xs">⬡</span>
-              </div>
-              <span className="text-base font-semibold tracking-tight text-foreground">
-                DePIN <span className="text-primary">Library</span>
-              </span>
+            <Link to="/" className="flex items-center gap-0">
+              <img src={logoImg} alt="DePIN Library" className="h-9 w-9 object-contain" />
+              <span className="text-sm font-semibold tracking-tight text-foreground">DePIN Library</span>
             </Link>
           </div>
           {/* Right side — theme toggle, notifications, profile */}
