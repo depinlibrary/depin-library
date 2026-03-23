@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Trash2, Briefcase, TrendingUp, TrendingDown, Minus, Pencil, Check, X, BarChart3, ChevronDown, ChevronUp, Eye, EyeOff, Download, Activity, Bell, Wallet, Home, LineChart, Compass, GitCompare, Sun, Moon, User, LogOut, Shield, Camera, Layout, Star } from "lucide-react";
+import { Plus, Trash2, Briefcase, TrendingUp, TrendingDown, Minus, Pencil, Check, X, BarChart3, ChevronDown, ChevronUp, Eye, EyeOff, Download, Activity, Bell, Wallet, Home, LineChart, Compass, GitCompare, Sun, Moon, User, LogOut, Shield, Camera, Layout, Star, Lock, Mail, Award, Crosshair, BookmarkIcon, Clock, CheckCircle2, XCircle, HelpCircle } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, AreaChart, Area, XAxis, YAxis } from "recharts";
 import ProjectLogo from "@/components/ProjectLogo";
 import { useAuth } from "@/contexts/AuthContext";
@@ -22,6 +22,20 @@ import NotificationDropdown from "@/components/NotificationDropdown";
 import { useBookmarks, useToggleBookmark } from "@/hooks/useBookmarks";
 import { useUpsertPriceAlert } from "@/hooks/usePriceAlerts";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useUserForecastStats } from "@/hooks/useUserForecastStats";
+import { useNotificationPreferences, useUpdateNotificationPreferences } from "@/hooks/useNotificationPreferences";
+import ProfileActivityCharts from "@/components/ProfileActivityCharts";
+import UserAvatar from "@/components/UserAvatar";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { format, formatDistanceToNow } from "date-fns";
 
 function formatPrice(price: number | null): string {
   if (price === null || price === undefined) return "—";
