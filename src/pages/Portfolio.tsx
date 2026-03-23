@@ -695,6 +695,8 @@ const Portfolio = () => {
     { key: "alerts" as const, label: "Alerts", icon: Bell },
     { key: "forecasts" as const, label: "Forecasts", icon: Activity },
     { key: "watchlist" as const, label: "Watchlist", icon: Star },
+    { key: "activities" as const, label: "Activities", icon: BarChart3 },
+    { key: "profile" as const, label: "Profile", icon: User },
   ];
 
   const sidebarLinks = [
