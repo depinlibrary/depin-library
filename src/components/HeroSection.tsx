@@ -52,7 +52,7 @@ const HeroSection = ({ searchQuery, onSearchChange, totalProjects }: HeroSection
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
               placeholder="Search projects, blockchains, categories..."
-              className="h-13 w-full rounded-xl border border-border bg-card/80 py-3.5 pl-12 pr-4 text-sm text-foreground placeholder:text-muted-foreground backdrop-blur-sm transition-all focus:border-border focus:outline-none focus:ring-1 focus:ring-border glow-primary-sm"
+              className="h-13 w-full rounded-xl border border-border bg-card/80 py-3.5 pl-12 pr-4 text-sm text-foreground placeholder:text-muted-foreground backdrop-blur-sm transition-all focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30 glass-3d"
             />
           </div>
         </motion.div>
