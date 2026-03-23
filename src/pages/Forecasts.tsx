@@ -840,6 +840,7 @@ const Forecasts = () => {
         trendingTopics={trendingTopics}
         user={user}
         setShowCreate={setShowCreate}
+        heroDimensionsMap={heroDimensionsMap as Record<string, string[]>}
       />
 
       {/* Controls — Polymarket-style single row */}
