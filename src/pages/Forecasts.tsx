@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Timer, ThumbsUp, ThumbsDown, Plus, TrendingUp, Clock, Flame, ChevronLeft, ChevronRight, LogIn, Users, BarChart3, Zap, X, Filter, Trophy, CheckCircle, Circle, RotateCcw, DollarSign, Server, Activity, ArrowUpRight, ArrowDownRight, Bookmark, Copy, ChevronRight as ChevronRightIcon, Radio, Search } from "lucide-react";
+import { Timer, ThumbsUp, ThumbsDown, Plus, TrendingUp, Clock, Flame, ChevronLeft, ChevronRight, LogIn, Users, BarChart3, Zap, X, Filter, Trophy, CheckCircle, CheckCircle2, Circle, RotateCcw, DollarSign, Server, Activity, ArrowUpRight, ArrowDownRight, Bookmark, Copy, ChevronRight as ChevronRightIcon, Radio, Search, XCircle } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -134,32 +134,33 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
             />
           </div>
         </div>
+      </div>
 
-        {/* Your Prediction indicator for ended forecasts */}
-        {isEnded && forecast.user_vote && (
-          <div className="px-5 pb-4 pt-1">
-            {(() => {
-              const outcomeResult = finalResult;
-              const userCorrect = outcomeResult === forecast.user_vote;
-              const userVoteLabel = forecast.user_vote === "yes" ? yesLabel : noLabel;
-              const resultLabel = outcomeResult === "yes" ? yesLabel : noLabel;
-              return (
-                <div className={`flex items-center justify-between rounded-lg px-3 py-2 text-[11px] font-semibold ${
-                  userCorrect
-                    ? "bg-primary/10 text-primary border border-primary/20"
-                    : "bg-destructive/10 text-destructive border border-destructive/20"
-                }`}>
-                  <span>You voted {userVoteLabel}</span>
-                  <span>{userCorrect ? "Correct 🎯" : `Result: ${resultLabel}`}</span>
-                </div>
-              );
-            })()}
-          </div>
-        )}
-
-        {/* Vote buttons for active forecasts */}
-        {!isEnded && (
-          <div className="px-5 pb-5 pt-1 flex gap-2.5">
+      {/* Bottom section — consistent spacing for all card states */}
+      <div className="px-5 pb-5">
+        {isEnded && forecast.user_vote ? (() => {
+          const outcomeResult = finalResult;
+          const userCorrect = outcomeResult === forecast.user_vote;
+          const userVoteLabel = forecast.user_vote === "yes" ? yesLabel : noLabel;
+          const resultLabel = outcomeResult === "yes" ? yesLabel : noLabel;
+          return (
+            <div className={`flex items-center justify-between rounded-lg px-3 py-2.5 text-[11px] font-semibold ${
+              userCorrect
+                ? "bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20"
+                : "bg-destructive/10 text-destructive border border-destructive/20"
+            }`}>
+              <span>You voted {userVoteLabel}</span>
+              <span className="flex items-center gap-1">
+                {userCorrect ? (
+                  <><CheckCircle2 className="h-3 w-3" /> Correct</>
+                ) : (
+                  <><XCircle className="h-3 w-3" /> Result: {resultLabel}</>
+                )}
+              </span>
+            </div>
+          );
+        })() : !isEnded ? (
+          <div className="flex gap-2.5">
             <button
               onClick={() => isAuthenticated ? onVote(forecast.id, "yes") : toast.error("Sign in to vote")}
               className={`flex-1 rounded-lg py-2.5 text-sm font-bold transition-all duration-200 ${
@@ -183,7 +184,7 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
               {noLabel}
             </button>
           </div>
-        )}
+        ) : null}
       </div>
     </motion.div>
   );
