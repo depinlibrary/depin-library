@@ -1159,7 +1159,14 @@ const Forecasts = () => {
                 <div className="rounded-2xl border border-border bg-card overflow-hidden">
                   {/* Panel header */}
                   <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-                    <h2 className="text-base font-bold text-foreground font-['Space_Grotesk']">Create Forecast</h2>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-base font-bold text-foreground font-['Space_Grotesk']">Create Forecast</h2>
+                      {user && (
+                        <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${dailyRemaining === 0 ? 'bg-destructive/10 text-destructive' : 'bg-secondary text-muted-foreground'}`}>
+                          {dailyRemaining}/5 today
+                        </span>
+                      )}
+                    </div>
                     <div className="flex items-center gap-1.5">
                       {(title || description) && (
                         <Button variant="ghost" size="sm" onClick={() => { setTitle(""); setDescription(""); }} className="h-7 gap-1.5 text-xs text-muted-foreground hover:text-foreground">
