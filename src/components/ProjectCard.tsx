@@ -41,7 +41,7 @@ const ProjectCard = ({ project, index, marketData }: ProjectCardProps) => {
     >
       <Link
         to={`/project/${project.slug}`}
-        className="group relative flex h-full flex-col rounded-xl border border-border bg-card p-5 transition-all duration-300 hover:border-border hover:bg-card/80"
+        className="group relative flex h-full flex-col rounded-xl border border-border bg-card p-5 transition-all duration-300 hover:border-primary/30 hover:bg-card/80 depth-sm card-hover"
       >
         {/* Bookmark button */}
         {user && (
