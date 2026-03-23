@@ -64,7 +64,24 @@ const Overview = () => {
     project_b_name: f.project_b_name
   }));
   const endingSoon = endingSoonData?.forecasts || [];
+  const endingSoonIds = endingSoon.map((f) => f.id);
   const { data: trendingProjects = [] } = useTrendingProjects(5);
+
+  // Fetch dimensions for ending soon forecasts
+  const { data: forecastDimensionsMap = {} } = useQuery({
+    queryKey: ["forecast-dimensions-overview", endingSoonIds],
+    enabled: endingSoonIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("forecast_targets")
+        .select("forecast_id, dimension")
+        .in("forecast_id", endingSoonIds);
+      if (error) throw error;
+      const map: Record<string, string> = {};
+      (data || []).forEach((d: any) => { map[d.forecast_id] = d.dimension; });
+      return map;
+    },
+  });
   const { data: spotlightEntries = [] } = useSpotlightProjects();
 
   const spotlightProjects = spotlightEntries.
