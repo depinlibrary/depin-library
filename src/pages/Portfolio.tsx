@@ -1,9 +1,7 @@
 import { useState, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Trash2, Briefcase, TrendingUp, TrendingDown, Minus, Pencil, Check, X, BarChart3, ChevronDown, ChevronUp, Eye, EyeOff, Download, Activity, Bell, Wallet, AlertTriangle } from "lucide-react";
+import { Plus, Trash2, Briefcase, TrendingUp, TrendingDown, Minus, Pencil, Check, X, BarChart3, ChevronDown, ChevronUp, Eye, EyeOff, Download, Activity, Bell, Wallet, AlertTriangle, Home, LineChart, Compass, GitCompare } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, AreaChart, Area, XAxis, YAxis } from "recharts";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import ProjectLogo from "@/components/ProjectLogo";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProjects } from "@/hooks/useProjects";
@@ -15,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Link, Navigate } from "react-router-dom";
+import logoImg from "@/assets/logo.png";
 import MyForecasts from "@/components/MyForecasts";
 import PriceAlertsManager from "@/components/PriceAlertsManager";
 import { useBookmarks, useToggleBookmark } from "@/hooks/useBookmarks";
@@ -586,14 +585,111 @@ const Portfolio = () => {
     return sortDir === "desc" ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />;
   };
 
-  return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="relative pt-24 pb-20">
-        <div className="absolute inset-0 bg-grid opacity-20" />
-        <div className="gradient-radial-top absolute inset-0" />
+  const sidebarTabs = [
+    { key: "holdings" as const, label: "Holdings", icon: Wallet },
+    { key: "alerts" as const, label: "Alerts", icon: Bell },
+    { key: "forecasts" as const, label: "Forecasts", icon: Activity },
+    { key: "watchlist" as const, label: "Watchlist", icon: Star },
+  ];
 
-        <div className="container relative mx-auto max-w-7xl px-4">
+  const sidebarLinks = [
+    { to: "/", label: "Overview", icon: Home },
+    { to: "/explore", label: "Explore", icon: Compass },
+    { to: "/market", label: "Market", icon: BarChart3 },
+    { to: "/forecasts", label: "Forecasts", icon: LineChart },
+    { to: "/compare", label: "Compare", icon: GitCompare },
+  ];
+
+  return (
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Fixed header with sidebar-matched logo area */}
+      <header className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/90 backdrop-blur-xl">
+        <div className="flex h-14 items-center">
+          <div className="hidden md:flex items-center w-[240px] shrink-0 px-4 border-r border-border/50 h-full">
+            <Link to="/" className="flex items-center gap-1.5">
+              <img src={logoImg} alt="DePIN Library" className="h-10 w-10 object-contain" />
+              <span className="text-base font-semibold tracking-tight text-foreground">
+                DePIN Library
+              </span>
+            </Link>
+          </div>
+          <div className="flex md:hidden items-center px-4">
+            <Link to="/" className="flex items-center gap-1.5">
+              <img src={logoImg} alt="DePIN Library" className="h-9 w-9 object-contain" />
+              <span className="text-sm font-semibold tracking-tight text-foreground">DePIN Library</span>
+            </Link>
+          </div>
+          <div className="flex-1 flex items-center justify-between px-4">
+            <div className="flex items-center gap-2">
+              <Briefcase className="h-4 w-4 text-primary" />
+              <span className="text-sm font-semibold text-foreground">Portfolio</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Link
+                to="/profile"
+                className="flex h-8 items-center gap-1.5 rounded-lg border border-border px-2.5 text-muted-foreground hover:text-foreground hover:bg-secondary/30 transition-colors text-xs font-medium"
+              >
+                My Profile
+              </Link>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div className="flex flex-1 pt-14">
+        {/* Sidebar */}
+        <aside className="hidden md:flex flex-col w-[240px] shrink-0 border-r border-border bg-card/30 sticky top-14 h-[calc(100vh-3.5rem)]">
+          {/* Portfolio tabs */}
+          <div className="flex items-center px-4 h-12 border-b border-border/50">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Portfolio</span>
+          </div>
+          <div className="flex-1 overflow-y-auto">
+            <div className="px-2 py-2 space-y-0.5">
+              {sidebarTabs.map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`w-full flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
+                    activeTab === tab.key
+                      ? "bg-primary/10 text-foreground border border-primary/15"
+                      : "text-muted-foreground hover:bg-secondary/40 hover:text-foreground border border-transparent"
+                  }`}
+                >
+                  <tab.icon className={`h-4 w-4 ${activeTab === tab.key ? "text-primary" : ""}`} />
+                  {tab.label}
+                  {activeTab === tab.key && <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />}
+                </button>
+              ))}
+            </div>
+
+            <div className="my-2 mx-4 h-px bg-border/50" />
+
+            {/* Navigation links */}
+            <div className="px-4 py-1.5">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/50 mb-1.5">Navigate</p>
+            </div>
+            <div className="px-2 space-y-0.5">
+              {sidebarLinks.map((link) => (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary/40 hover:text-foreground transition-all border border-transparent"
+                >
+                  <link.icon className="h-4 w-4" />
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </aside>
+
+        {/* Main content */}
+        <main className="flex-1 overflow-y-auto">
+          <div className="relative pb-20">
+            <div className="absolute inset-0 bg-grid opacity-20" />
+            <div className="gradient-radial-top absolute inset-0" />
+
+            <div className="relative mx-auto max-w-6xl px-4 pt-6">
           {/* ── Hero Banner ── */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -897,23 +993,14 @@ const Portfolio = () => {
             </motion.div>
           </div>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="mb-4"
-          >
+          {/* Mobile tab selector (visible only on small screens) */}
+          <div className="md:hidden mb-4">
             <div className="flex items-center gap-1 rounded-lg bg-secondary/40 p-0.5 w-fit overflow-x-auto scrollbar-none max-w-full">
-              {([
-                { key: "holdings" as const, label: "Holdings", icon: Wallet },
-                { key: "alerts" as const, label: "Alerts", icon: Bell },
-                { key: "forecasts" as const, label: "Forecasts", icon: Activity },
-                { key: "watchlist" as const, label: "Watchlist", icon: Star },
-              ]).map((tab) => (
+              {sidebarTabs.map((tab) => (
                 <button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key)}
-                  className={`relative flex items-center gap-1.5 rounded-md px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium transition-all whitespace-nowrap shrink-0 ${
+                  className={`relative flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-all whitespace-nowrap shrink-0 ${
                     activeTab === tab.key
                       ? "bg-card text-foreground shadow-sm border border-border"
                       : "text-muted-foreground hover:text-foreground"
@@ -924,7 +1011,7 @@ const Portfolio = () => {
                 </button>
               ))}
             </div>
-          </motion.div>
+          </div>
 
           {/* ── Holdings Tab ── */}
           <AnimatePresence mode="wait">
@@ -1327,9 +1414,10 @@ const Portfolio = () => {
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
+            </div>
+          </div>
+        </main>
       </div>
-      <Footer />
     </div>
   );
 };
