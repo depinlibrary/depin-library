@@ -283,6 +283,13 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
   const cIsEnded = new Date(current.end_date) <= new Date();
   const cTimeLeft = getTimeRemaining(current.end_date);
 
+  // Dynamic labels based on dimension
+  const cDims = heroDimensionsMap[current.id] || [];
+  const cIsPriceMarket = cDims.some(d => d === "token_price" || d === "market_cap");
+  const cIsSentimentDual = cDims.some(d => d === "community_sentiment") && !!current.project_b_name;
+  const cYesLabel = cIsPriceMarket ? "Long" : cIsSentimentDual ? (current.project_a_name || "Yes") : "Yes";
+  const cNoLabel = cIsPriceMarket ? "Short" : cIsSentimentDual ? (current.project_b_name || "No") : "No";
+
   return (
     <section className="relative overflow-hidden pt-24 pb-8">
       <div className="absolute inset-0 bg-grid opacity-10" />
