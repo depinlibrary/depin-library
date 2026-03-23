@@ -160,35 +160,7 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
     </motion.div>
   );
 };
-      {!isEnded && (
-        <div className="px-5 pb-5 pt-1 flex gap-2.5">
-          <button
-            onClick={() => isAuthenticated ? onVote(forecast.id, "yes") : toast.error("Sign in to vote")}
-            className={`flex-1 rounded-lg py-2.5 text-sm font-bold transition-all duration-200 ${
-              forecast.user_vote === "yes"
-                ? "bg-primary text-primary-foreground"
-                : "bg-primary/10 text-primary hover:bg-primary/20"
-            }`}
-          >
-            {isPriceMarket && <TrendingUp className="h-3.5 w-3.5 inline mr-1" />}
-            {yesLabel}
-          </button>
-          <button
-            onClick={() => isAuthenticated ? onVote(forecast.id, "no") : toast.error("Sign in to vote")}
-            className={`flex-1 rounded-lg py-2.5 text-sm font-bold transition-all duration-200 ${
-              forecast.user_vote === "no"
-                ? "bg-destructive text-destructive-foreground"
-                : "bg-destructive/10 text-destructive hover:bg-destructive/20"
-            }`}
-          >
-            {isPriceMarket && <ArrowDownRight className="h-3.5 w-3.5 inline mr-1" />}
-            {noLabel}
-          </button>
-        </div>
-      )}
-    </motion.div>
-  );
-};
+// ---- Hero Section with Auto-Sliding Carousel + Sentiment Chart ----
 // ---- Hero Section with Auto-Sliding Carousel + Sentiment Chart ----
 const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setShowCreate }: {
   forecasts: Forecast[];
