@@ -24,7 +24,6 @@ const ProjectForecasts = ({ projectId, projectName }: ProjectForecastsProps) => 
   const { data: forecasts = [], isLoading } = useQuery({
     queryKey: ["project-forecasts", projectId],
     queryFn: async () => {
-      // Get forecasts where this project is project_a or project_b
       const { data, error } = await supabase
         .from("forecasts")
         .select(`
@@ -40,6 +39,22 @@ const ProjectForecasts = ({ projectId, projectName }: ProjectForecastsProps) => 
       return data || [];
     },
     enabled: !!projectId,
+  });
+
+  const forecastIds = forecasts.map((f: any) => f.id);
+  const { data: dimensionsMap = {} } = useQuery({
+    queryKey: ["project-forecast-dimensions", projectId, forecastIds],
+    enabled: forecastIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("forecast_targets")
+        .select("forecast_id, dimension")
+        .in("forecast_id", forecastIds);
+      if (error) throw error;
+      const map: Record<string, string> = {};
+      (data || []).forEach((d: any) => { map[d.forecast_id] = d.dimension; });
+      return map;
+    },
   });
 
   if (isLoading) {
