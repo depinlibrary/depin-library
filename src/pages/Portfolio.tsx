@@ -843,26 +843,6 @@ const Portfolio = () => {
                               <Plus className="h-3.5 w-3.5" />
                               Submit Project
                             </Link>
-                          </div>
-                            {isAdmin && (
-                              <Link
-                                to="/admin"
-                                onClick={() => setProfileDropdownOpen(false)}
-                                className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-muted-foreground hover:bg-secondary/50 hover:text-foreground transition-all"
-                              >
-                                <Shield className="h-3.5 w-3.5" />
-                                Admin Dashboard
-                              </Link>
-                            )}
-                            <Link
-                              to="/submit"
-                              onClick={() => setProfileDropdownOpen(false)}
-                              className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-muted-foreground hover:bg-secondary/50 hover:text-foreground transition-all"
-                            >
-                              <Plus className="h-3.5 w-3.5" />
-                              Submit Project
-                            </Link>
-                          </div>
                           <div className="border-t border-border/50 py-1.5 px-1.5">
                             <button
                               onClick={() => { handleSignOut(); setProfileDropdownOpen(false); }}
