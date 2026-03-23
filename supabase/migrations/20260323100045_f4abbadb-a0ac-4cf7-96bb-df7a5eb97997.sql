@@ -1,0 +1,1 @@
+ALTER TABLE public.forecasts ADD COLUMN IF NOT EXISTS outcome text DEFAULT NULL;

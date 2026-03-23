@@ -16,11 +16,10 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Find forecasts that have ended but haven't sent notifications yet
     const now = new Date().toISOString();
     const { data: endedForecasts, error: fetchError } = await supabase
       .from("forecasts")
-      .select("id, title, total_votes_yes, total_votes_no, end_date, project_a_id, project_b_id, status")
+      .select("id, title, total_votes_yes, total_votes_no, end_date, project_a_id, project_b_id, status, prediction_direction, prediction_target, start_price, outcome")
       .eq("end_notifications_sent", false)
       .lt("end_date", now);
 
@@ -50,13 +49,35 @@ Deno.serve(async (req) => {
         console.error(`Error capturing end snapshots for ${forecast.id}:`, snapErr);
       }
 
-      // --- UPDATE STATUS TO "ended" if still "active" ---
-      if (forecast.status === "active") {
-        await supabase
-          .from("forecasts")
-          .update({ status: "ended" })
-          .eq("id", forecast.id);
+      // --- DETERMINE OUTCOME ---
+      // Get forecast dimension
+      const { data: targets } = await supabase
+        .from("forecast_targets")
+        .select("dimension")
+        .eq("forecast_id", forecast.id);
+
+      const dimensions = (targets || []).map((t: any) => t.dimension);
+      const isPriceMarket = dimensions.some((d: string) => d === "token_price" || d === "market_cap");
+
+      let outcome: string | null = forecast.outcome; // use existing if already set (e.g. auto-resolved)
+
+      if (!outcome && isPriceMarket) {
+        outcome = await determinePriceOutcome(supabase, forecast, dimensions);
       }
+
+      // For non-price forecasts (sentiment etc.), fall back to vote majority
+      if (!outcome && !isPriceMarket) {
+        const totalVotes = forecast.total_votes_yes + forecast.total_votes_no;
+        const yesPct = totalVotes > 0 ? (forecast.total_votes_yes / totalVotes) * 100 : 50;
+        outcome = yesPct >= 50 ? "yes" : "no";
+      }
+
+      // --- UPDATE STATUS + OUTCOME ---
+      const updates: any = { end_notifications_sent: true };
+      if (forecast.status === "active") updates.status = "ended";
+      if (outcome) updates.outcome = outcome;
+
+      await supabase.from("forecasts").update(updates).eq("id", forecast.id);
 
       // --- SEND NOTIFICATIONS ---
       const { data: votes, error: votesError } = await supabase
@@ -69,18 +90,9 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      if (!votes || votes.length === 0) {
-        await supabase
-          .from("forecasts")
-          .update({ end_notifications_sent: true })
-          .eq("id", forecast.id);
-        continue;
-      }
+      if (!votes || votes.length === 0) continue;
 
-      const totalVotes = forecast.total_votes_yes + forecast.total_votes_no;
-      const yesPct = totalVotes > 0 ? Math.round((forecast.total_votes_yes / totalVotes) * 100) : 50;
-      const result = yesPct >= 50 ? "Yes" : "No";
-
+      const resultLabel = outcome === "yes" ? "Long" : outcome === "no" ? "Short" : "Undetermined";
       const userIds = [...new Set(votes.map((v: any) => v.user_id))];
 
       for (const userId of userIds) {
@@ -94,25 +106,19 @@ Deno.serve(async (req) => {
 
         if (shouldNotify) {
           const userVote = votes.find((v: any) => v.user_id === userId)?.vote;
-          const userWon = userVote === result.toLowerCase();
+          const userCorrect = outcome ? userVote === outcome : false;
 
           await supabase.from("notifications").insert({
             user_id: userId,
             type: "forecast_result",
             title: "Forecast ended",
-            message: `"${forecast.title.slice(0, 50)}${forecast.title.length > 50 ? "..." : ""}" ended with ${yesPct}% Yes. ${userWon ? "Your vote was with the majority!" : ""}`,
+            message: `"${forecast.title.slice(0, 50)}${forecast.title.length > 50 ? "..." : ""}" ended. Result: ${resultLabel}. ${userCorrect ? "Your prediction was correct! 🎯" : "Better luck next time!"}`,
             link: `/forecasts/${forecast.id}`,
-            metadata: { forecastId: forecast.id, result, userVote, yesPct },
+            metadata: { forecastId: forecast.id, result: outcome, userVote, userCorrect },
           });
           notificationsSent++;
         }
       }
-
-      // Mark forecast as processed
-      await supabase
-        .from("forecasts")
-        .update({ end_notifications_sent: true })
-        .eq("id", forecast.id);
     }
 
     return new Response(
@@ -131,14 +137,85 @@ Deno.serve(async (req) => {
 });
 
 /**
+ * Determines the outcome for a price/market_cap forecast based on actual price movement.
+ * Returns "yes" (Long wins) or "no" (Short wins).
+ */
+async function determinePriceOutcome(
+  supabase: any,
+  forecast: { id: string; project_a_id: string; project_b_id: string | null; prediction_direction: string | null; prediction_target: number | null; start_price: number | null },
+  dimensions: string[]
+): Promise<string | null> {
+  const dim = dimensions.find((d: string) => d === "token_price" || d === "market_cap");
+  if (!dim) return null;
+
+  // Get start and end snapshots
+  const { data: snaps } = await supabase
+    .from("forecast_metric_snapshots")
+    .select("dimension, snapshot_type, value")
+    .eq("forecast_id", forecast.id);
+
+  if (!snaps || snaps.length === 0) return null;
+
+  const getSnap = (dimension: string, type: string) => {
+    const s = snaps.find((s: any) => s.dimension === dimension && s.snapshot_type === type);
+    return s?.value != null ? Number(s.value) : null;
+  };
+
+  if (forecast.project_b_id) {
+    // --- DUAL-PROJECT COMPARISON ---
+    const startA = forecast.start_price != null ? Number(forecast.start_price) : getSnap(dim, "start");
+    const endA = getSnap(dim, "end");
+    const startB = getSnap(`${dim}_b`, "start");
+    const endB = getSnap(`${dim}_b`, "end");
+
+    if (startA == null || endA == null || startB == null || endB == null) return null;
+
+    const changeA = ((endA - startA) / startA) * 100;
+    const changeB = ((endB - startB) / startB) * 100;
+    const outperformance = changeA - changeB;
+
+    // If there's a target, check if outperformance met it
+    if (forecast.prediction_target != null) {
+      const targetMet = forecast.prediction_direction === "long"
+        ? outperformance >= forecast.prediction_target
+        : outperformance <= -forecast.prediction_target;
+      // Long wins if Project A outperformed B (positive outperformance)
+      // Short wins if Project B outperformed A (negative outperformance)
+      return targetMet ? "yes" : "no";
+    }
+
+    // No specific target: Long wins if A outperformed B
+    return outperformance > 0 ? "yes" : "no";
+  } else {
+    // --- SINGLE-PROJECT ---
+    const startVal = forecast.start_price != null ? Number(forecast.start_price) : getSnap(dim, "start");
+    const endVal = getSnap(dim, "end");
+
+    if (startVal == null || endVal == null) return null;
+
+    // If there's a target price, check if it was reached
+    if (forecast.prediction_target != null) {
+      const target = Number(forecast.prediction_target);
+      if (forecast.prediction_direction === "long") {
+        return endVal >= target ? "yes" : "no";
+      } else {
+        return endVal <= target ? "yes" : "no";
+      }
+    }
+
+    // No specific target: Long wins if price went up
+    const priceWentUp = endVal > startVal;
+    return priceWentUp ? "yes" : "no";
+  }
+}
+
+/**
  * Captures end snapshots for a concluded forecast by reading current market data.
- * Returns the number of snapshots inserted.
  */
 async function captureEndSnapshots(
   supabase: any,
   forecast: { id: string; project_a_id: string; project_b_id: string | null }
 ): Promise<number> {
-  // Get forecast targets
   const { data: targets } = await supabase
     .from("forecast_targets")
     .select("dimension")
@@ -146,7 +223,6 @@ async function captureEndSnapshots(
 
   if (!targets || targets.length === 0) return 0;
 
-  // Check which end snapshots already exist
   const { data: existingSnaps } = await supabase
     .from("forecast_metric_snapshots")
     .select("dimension")
@@ -155,14 +231,12 @@ async function captureEndSnapshots(
 
   const existingDims = new Set((existingSnaps || []).map((s: any) => s.dimension));
 
-  // Get current market data for Project A
   const { data: marketA } = await supabase
     .from("token_market_data")
     .select("price_usd, market_cap_usd")
     .eq("project_id", forecast.project_a_id)
     .single();
 
-  // Get current market data for Project B if exists
   let marketB: any = null;
   if (forecast.project_b_id) {
     const { data: mb } = await supabase
@@ -174,12 +248,10 @@ async function captureEndSnapshots(
   }
 
   const snapshots: any[] = [];
-  const now = new Date().toISOString();
+  const nowStr = new Date().toISOString();
 
   for (const t of targets) {
     const dim = t.dimension;
-
-    // Skip if end snapshot already exists for this dimension
     if (existingDims.has(dim)) continue;
 
     let value: number | null = null;
@@ -199,16 +271,14 @@ async function captureEndSnapshots(
       snapshot_type: "end",
       value,
       source,
-      captured_at: now,
+      captured_at: nowStr,
     });
 
-    // Also capture Project B's end data for comparison forecasts
     if (forecast.project_b_id && (dim === "token_price" || dim === "market_cap")) {
       const bDim = `${dim}_b`;
       if (!existingDims.has(bDim)) {
         let valueB: number | null = null;
         let sourceB = "pending";
-
         if (dim === "token_price" && marketB?.price_usd != null) {
           valueB = Number(marketB.price_usd);
           sourceB = "coingecko";
@@ -216,14 +286,13 @@ async function captureEndSnapshots(
           valueB = Number(marketB.market_cap_usd);
           sourceB = "coingecko";
         }
-
         snapshots.push({
           forecast_id: forecast.id,
           dimension: bDim,
           snapshot_type: "end",
           value: valueB,
           source: sourceB,
-          captured_at: now,
+          captured_at: nowStr,
         });
       }
     }

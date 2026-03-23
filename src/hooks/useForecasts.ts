@@ -26,6 +26,7 @@ export type Forecast = {
   project_b_logo_url?: string | null;
   project_b_logo_emoji?: string;
   user_vote?: string | null;
+  outcome?: string | null;
 };
 
 export type ForecastSortOption = "votes" | "newest" | "ending_soon";

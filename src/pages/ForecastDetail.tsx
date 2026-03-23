@@ -469,13 +469,26 @@ const ForecastDetail = () => {
                 </div>
 
                 {/* Final result badge if ended */}
-                {isEnded && (
-                  <div className="flex items-center justify-end">
-                    <Badge variant="secondary" className="text-[10px] font-semibold">
-                      Final: {yesPct >= 50 ? yesLabel : noLabel} ({yesPct >= 50 ? yesPct.toFixed(0) : noPct.toFixed(0)}%)
-                    </Badge>
-                  </div>
-                )}
+                {isEnded && (() => {
+                  // For price/market cap forecasts, use the stored outcome (price-based resolution)
+                  // For sentiment/other forecasts, fall back to vote majority
+                  const outcomeResult = forecast.outcome
+                    ? forecast.outcome
+                    : (yesPct >= 50 ? "yes" : "no");
+                  const outcomeLabel = outcomeResult === "yes" ? yesLabel : noLabel;
+                  const outcomeIsLong = outcomeResult === "yes";
+
+                  return (
+                    <div className="flex items-center justify-end">
+                      <Badge
+                        variant="secondary"
+                        className={`text-[10px] font-semibold ${outcomeIsLong ? "bg-primary/10 text-primary border-primary/20" : "bg-destructive/10 text-destructive border-destructive/20"}`}
+                      >
+                        Result: {outcomeLabel} {isPriceMarket ? (outcomeIsLong ? "📈" : "📉") : `(${outcomeIsLong ? yesPct.toFixed(0) : noPct.toFixed(0)}%)`}
+                      </Badge>
+                    </div>
+                  );
+                })()}
 
                 {/* Market Stats row */}
                 <div className="mt-4 pt-4 border-t border-border grid grid-cols-4 gap-3">
