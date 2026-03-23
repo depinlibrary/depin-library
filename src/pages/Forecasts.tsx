@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef, useSyncExternalStore } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Timer, ThumbsUp, ThumbsDown, Plus, TrendingUp, Clock, Flame, ChevronLeft, ChevronRight, LogIn, Users, BarChart3, Zap, X, Filter, Trophy, CheckCircle, CheckCircle2, Circle, RotateCcw, DollarSign, Server, Activity, ArrowUpRight, ArrowDownRight, Bookmark, Copy, ChevronRight as ChevronRightIcon, Radio, Search, XCircle } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
@@ -595,7 +595,14 @@ const Forecasts = () => {
   const [timePreset, setTimePreset] = useState<string>("");
   const [predictionDirection, setPredictionDirection] = useState<"long" | "short" | "">("");
   const [predictionTarget, setPredictionTarget] = useState<string>("");
-  
+
+  // Track if viewport is lg+ (1024px) to conditionally render Dialog vs inline panel
+  const isLgScreen = useSyncExternalStore(
+    (cb) => { const mql = window.matchMedia("(min-width: 1024px)"); mql.addEventListener("change", cb); return () => mql.removeEventListener("change", cb); },
+    () => window.matchMedia("(min-width: 1024px)").matches,
+    () => true
+  );
+
 
   const timePresets = [
     { value: "4h", label: "4 Hours", hours: 4 },
@@ -1281,9 +1288,9 @@ const Forecasts = () => {
         </AnimatePresence>
 
         {/* Mobile fallback: Dialog on smaller screens */}
-        {showCreate && (
+        {showCreate && !isLgScreen && (
           <Dialog open={showCreate} onOpenChange={setShowCreate}>
-            <DialogContent className="sm:max-w-lg lg:hidden">
+            <DialogContent className="sm:max-w-lg">
               <DialogHeader>
                 <DialogTitle className="font-['Space_Grotesk']">Create Forecast</DialogTitle>
               </DialogHeader>
