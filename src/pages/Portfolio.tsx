@@ -921,18 +921,15 @@ const Portfolio = () => {
                 Admin
               </Link>
             )}
-            <div className="flex items-center gap-2.5 px-3 py-2">
-              <UserAvatar avatarUrl={avatarUrl} displayName={displayName} size="sm" />
-              <span className="text-sm font-medium text-foreground truncate flex-1">
-                {displayName || user?.email?.split("@")[0] || "User"}
-              </span>
-            </div>
             <button
               onClick={handleSignOut}
-              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 transition-all"
+              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-secondary/40 transition-all"
             >
-              <LogOut className="h-4 w-4" />
-              Sign Out
+              <UserAvatar avatarUrl={avatarUrl} displayName={displayName} size="sm" />
+              <span className="text-foreground truncate flex-1 text-left">
+                {displayName || user?.email?.split("@")[0] || "User"}
+              </span>
+              <LogOut className="h-4 w-4 text-destructive shrink-0" />
             </button>
           </div>
         </aside>
