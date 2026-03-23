@@ -261,19 +261,15 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
             <BarChart3 className="h-10 w-10 text-muted-foreground/30 mb-3" />
             <h2 className="text-lg font-bold text-foreground font-['Space_Grotesk'] mb-1">No forecasts yet</h2>
             <p className="text-sm text-muted-foreground mb-4">Create the first prediction for the community.</p>
-            {user ? (
-              <Button onClick={() => setShowCreate(true)} className="gap-1.5">
-                <Plus className="h-3.5 w-3.5" /> Create Forecast
-              </Button>
-            ) : (
-              <Button onClick={() => {
-                toast("Please log in to create a forecast", {
-                  action: { label: "Log in", onClick: () => navigate("/auth?redirect=/forecasts") },
-                });
+            <Button onClick={() => {
+                if (user) {
+                  setShowCreate(true);
+                } else {
+                  window.location.href = "/auth?redirect=/forecasts";
+                }
               }} className="gap-1.5">
                 <Plus className="h-3.5 w-3.5" /> Create Forecast
               </Button>
-            )}
           </motion.div>
         </div>
       </section>
