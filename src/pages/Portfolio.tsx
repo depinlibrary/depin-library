@@ -334,10 +334,18 @@ const WatchlistContent = ({ projects, marketDataMap }: { projects: any[]; market
 };
 
 const Portfolio = () => {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, signOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+  const { avatarUrl, displayName, uploading, uploadAvatar, updateDisplayName } = useAvatar();
   const { data: projects = [] } = useProjects();
   const { data: marketDataMap = {} } = useAllTokenMarketData();
   const queryClient = useQueryClient();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
+  const [editingName, setEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const [selectedProjectId, setSelectedProjectId] = useState<string>("");
   const [tokenAmount, setTokenAmount] = useState("");
@@ -348,7 +356,28 @@ const Portfolio = () => {
   const [sortBy, setSortBy] = useState<"value" | "change" | "name">("value");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [perfRange, setPerfRange] = useState<"1D" | "7D" | "30D" | "90D">("7D");
-  const [activeTab, setActiveTab] = useState<"holdings" | "forecasts" | "alerts" | "watchlist">("holdings");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "forecasts" | "alerts" | "watchlist">("dashboard");
+
+  useEffect(() => {
+    if (!user) { setIsAdmin(false); return; }
+    supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .eq("role", "admin")
+      .maybeSingle()
+      .then(({ data }) => setIsAdmin(!!data));
+  }, [user]);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(e.target as Node)) {
+        setProfileDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   const { data: bookmarkIdsForBadge = [] } = useBookmarks();
   const watchlistAlertCount = useMemo(() => {
