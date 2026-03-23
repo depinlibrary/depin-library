@@ -146,6 +146,18 @@ Deno.serve(async (req) => {
       inserted = snapshots.length;
     }
 
+    // Update status to "ended" for any active forecasts that are past their end_date
+    const activeEndedIds = forecasts
+      .filter((f: any) => f.status === "active" && new Date(f.end_date) < new Date())
+      .map((f: any) => f.id);
+
+    if (activeEndedIds.length > 0) {
+      await supabase
+        .from("forecasts")
+        .update({ status: "ended" })
+        .in("id", activeEndedIds);
+    }
+
     return new Response(
       JSON.stringify({ status: "ok", backfilled: inserted, forecasts_checked: forecasts.length }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
