@@ -302,55 +302,35 @@ const BillboardHero = ({
 
            {/* Compact Stats Row with animated glow */}
            <motion.div variants={fadeUp} className="mb-4">
-             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-               <div className="flex items-center gap-2.5 rounded-lg border border-border bg-card/40 backdrop-blur-md px-3 py-3">
-                 <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 shrink-0">
-                   <Layers className="h-4 w-4 text-primary" />
-                 </div>
-                 <div className="min-w-0">
-                   <p className="text-xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums leading-tight">
-                     <AnimatedNumber target={projects.length} />
-                   </p>
-                   <p className="text-xs text-muted-foreground font-medium">Projects</p>
-                 </div>
-               </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div className="rounded-lg border border-border bg-card/40 backdrop-blur-md px-3 py-3">
+                  <p className="text-xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums leading-tight">
+                    <AnimatedNumber target={projects.length} />
+                  </p>
+                  <p className="text-xs text-muted-foreground font-bold mt-1">Projects</p>
+                </div>
 
-               <div className="flex items-center gap-2.5 rounded-lg border border-border bg-card/40 backdrop-blur-md px-3 py-3">
-                 <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 shrink-0">
-                   <BarChart3 className="h-4 w-4 text-primary" />
-                 </div>
-                 <div className="min-w-0">
-                   <p className="text-xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums leading-tight">
-                     {formatCompact(totalMarketCap)}
-                   </p>
-                   <p className="text-xs text-muted-foreground font-medium">Market Cap</p>
-                 </div>
-               </div>
+                <div className="rounded-lg border border-border bg-card/40 backdrop-blur-md px-3 py-3">
+                  <p className="text-xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums leading-tight">
+                    {formatCompact(totalMarketCap)}
+                  </p>
+                  <p className="text-xs text-muted-foreground font-bold mt-1">Market Cap</p>
+                </div>
 
-               <div className="flex items-center gap-2.5 rounded-lg border border-border bg-card/40 backdrop-blur-md px-3 py-3">
-                 <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 shrink-0">
-                   <TrendingUp className="h-4 w-4 text-primary" />
-                 </div>
-                 <div className="min-w-0">
-                   <p className={`text-xl font-bold font-['Space_Grotesk'] tabular-nums leading-tight ${avgChange >= 0 ? "text-neon-green" : "text-destructive"}`}>
-                     {avgChange >= 0 ? "+" : ""}{avgChange.toFixed(1)}%
-                   </p>
-                   <p className="text-xs text-muted-foreground font-medium">Avg 24h</p>
-                 </div>
-               </div>
+                <div className="rounded-lg border border-border bg-card/40 backdrop-blur-md px-3 py-3">
+                  <p className={`text-xl font-bold font-['Space_Grotesk'] tabular-nums leading-tight ${avgChange >= 0 ? "text-neon-green" : "text-destructive"}`}>
+                    {avgChange >= 0 ? "+" : ""}{avgChange.toFixed(1)}%
+                  </p>
+                  <p className="text-xs text-muted-foreground font-bold mt-1">Avg 24h</p>
+                </div>
 
-               <div className="flex items-center gap-2.5 rounded-lg border border-border bg-card/40 backdrop-blur-md px-3 py-3">
-                 <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 shrink-0">
-                   <LinkIcon className="h-4 w-4 text-primary" />
-                 </div>
-                 <div className="min-w-0">
-                   <p className="text-xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums leading-tight">
-                     <AnimatedNumber target={totalBlockchains} />
-                   </p>
-                   <p className="text-xs text-muted-foreground font-medium">Chains</p>
-                 </div>
-               </div>
-             </div>
+                <div className="rounded-lg border border-border bg-card/40 backdrop-blur-md px-3 py-3">
+                  <p className="text-xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums leading-tight">
+                    <AnimatedNumber target={totalBlockchains} />
+                  </p>
+                  <p className="text-xs text-muted-foreground font-bold mt-1">Chains</p>
+                </div>
+              </div>
            </motion.div>
 
            {/* Bento Grid - all 4 sections in one row */}
