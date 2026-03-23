@@ -783,18 +783,22 @@ const Navbar = () => {
                     </button>
                   </>
                 ) : (
-                  <motion.div whileTap={{ scale: 0.97 }}>
+                  <div className="flex flex-col gap-1">
                     <Link
-                      to="/auth"
+                      to="/auth?mode=login"
                       onClick={() => setMobileOpen(false)}
-                      className="group relative flex items-center justify-center gap-2 overflow-hidden rounded-lg bg-primary px-3 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/20"
+                      className="flex items-center justify-center rounded-lg border border-border px-3 py-2.5 text-sm font-medium text-foreground hover:bg-secondary/40 transition-all"
                     >
-                      <span className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-foreground/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700" />
-                      <User className="h-4 w-4" />
-                      Sign In
-                      <ArrowRight className="h-3.5 w-3.5 opacity-70" />
+                      Login
                     </Link>
-                  </motion.div>
+                    <Link
+                      to="/auth?mode=signup"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center justify-center rounded-lg bg-primary px-3 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/20 transition-all"
+                    >
+                      Signup
+                    </Link>
+                  </div>
                 )}
               </div>
             </div>
