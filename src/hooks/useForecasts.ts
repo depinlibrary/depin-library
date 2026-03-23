@@ -192,6 +192,27 @@ export function useCreateForecast() {
       startPrice?: number;
     }) => {
       if (!user) throw new Error("Must be logged in");
+
+      // Check for duplicate forecasts
+      if (analysisDimensions.length > 0) {
+        const { data: dupCheck, error: dupError } = await supabase.rpc("check_forecast_duplicate", {
+          p_project_a_id: projectAId,
+          p_project_b_id: projectBId || null,
+          p_dimension: analysisDimensions[0],
+          p_end_date: endDate,
+          p_title: title,
+          p_creator_user_id: user.id,
+        });
+        if (!dupError && dupCheck && dupCheck.length > 0 && dupCheck[0].is_duplicate) {
+          const dup = dupCheck[0];
+          if (dup.duplicate_type === "structural") {
+            throw new Error(`A similar active forecast already exists for this project and market: "${dup.duplicate_title}"`);
+          } else if (dup.duplicate_type === "title_similar") {
+            throw new Error(`A forecast with a very similar title already exists: "${dup.duplicate_title}" (${Math.round((dup.similarity_score || 0) * 100)}% match)`);
+          }
+        }
+      }
+
       const { data: forecast, error } = await supabase.from("forecasts").insert({
         title,
         description,

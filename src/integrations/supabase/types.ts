@@ -1131,6 +1131,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_forecast_duplicate: {
+        Args: {
+          p_creator_user_id?: string
+          p_dimension: string
+          p_end_date: string
+          p_project_a_id: string
+          p_project_b_id: string
+          p_title: string
+        }
+        Returns: {
+          duplicate_forecast_id: string
+          duplicate_title: string
+          duplicate_type: string
+          is_duplicate: boolean
+          similarity_score: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
