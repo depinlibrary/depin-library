@@ -49,7 +49,28 @@ const Overview = () => {
   const { data: marketData = {}, isRefetching } = useAllTokenMarketData(30 * 1000);
   const { data: forecastData } = useForecasts("votes", 1, 4);
   const { data: endingSoonData } = useForecasts("ending_soon", 1, 4, undefined, undefined, "active");
-  const topForecasts = (forecastData?.forecasts || []).map((f) => ({
+  const topForecastsRaw = forecastData?.forecasts || [];
+  const endingSoon = endingSoonData?.forecasts || [];
+  const allForecastIds = [...topForecastsRaw, ...endingSoon].map((f) => f.id);
+  const { data: trendingProjects = [] } = useTrendingProjects(5);
+
+  // Fetch dimensions for all forecasts (top + ending soon)
+  const { data: forecastDimensionsMap = {} } = useQuery({
+    queryKey: ["forecast-dimensions-overview", allForecastIds],
+    enabled: allForecastIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("forecast_targets")
+        .select("forecast_id, dimension")
+        .in("forecast_id", allForecastIds);
+      if (error) throw error;
+      const map: Record<string, string> = {};
+      (data || []).forEach((d: any) => { map[d.forecast_id] = d.dimension; });
+      return map;
+    },
+  });
+
+  const topForecasts = topForecastsRaw.map((f) => ({
     id: f.id,
     title: f.title,
     total_votes_yes: f.total_votes_yes,
@@ -61,27 +82,10 @@ const Overview = () => {
     project_a_name: f.project_a_name,
     project_b_logo_url: f.project_b_logo_url,
     project_b_logo_emoji: f.project_b_logo_emoji,
-    project_b_name: f.project_b_name
+    project_b_name: f.project_b_name,
+    dimension: (forecastDimensionsMap as Record<string, string>)[f.id] || undefined,
   }));
-  const endingSoon = endingSoonData?.forecasts || [];
   const endingSoonIds = endingSoon.map((f) => f.id);
-  const { data: trendingProjects = [] } = useTrendingProjects(5);
-
-  // Fetch dimensions for ending soon forecasts
-  const { data: forecastDimensionsMap = {} } = useQuery({
-    queryKey: ["forecast-dimensions-overview", endingSoonIds],
-    enabled: endingSoonIds.length > 0,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("forecast_targets")
-        .select("forecast_id, dimension")
-        .in("forecast_id", endingSoonIds);
-      if (error) throw error;
-      const map: Record<string, string> = {};
-      (data || []).forEach((d: any) => { map[d.forecast_id] = d.dimension; });
-      return map;
-    },
-  });
   const { data: spotlightEntries = [] } = useSpotlightProjects();
 
   const spotlightProjects = spotlightEntries.
