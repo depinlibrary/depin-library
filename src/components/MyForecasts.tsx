@@ -253,6 +253,11 @@ export default function MyForecasts() {
                 const noPct = 100 - yesPct;
                 const timeLeft = getTimeRemaining(f.end_date);
                 const finalResult = isEnded ? (yesPct >= 50 ? "yes" : "no") : null;
+                const dims = (dimensionsMap as Record<string, string[]>)[f.id] || [];
+                const isPriceMarket = dims.some(d => d === "token_price" || d === "market_cap");
+                const isSentimentDual = dims.some(d => d === "community_sentiment") && !!projB;
+                const yesLabel = isPriceMarket ? "Long" : isSentimentDual ? (projA?.name || "Yes") : "Yes";
+                const noLabel = isPriceMarket ? "Short" : isSentimentDual ? (projB?.name || "No") : "No";
 
                 return (
                   <motion.div
