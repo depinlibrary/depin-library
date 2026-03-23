@@ -33,6 +33,7 @@ interface TopForecast {
   project_b_logo_url?: string | null;
   project_b_logo_emoji?: string;
   project_b_name?: string | null;
+  dimension?: string;
 }
 
 interface BillboardHeroProps {
