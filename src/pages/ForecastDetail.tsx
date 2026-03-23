@@ -486,7 +486,7 @@ const ForecastDetail = () => {
                           variant="secondary"
                           className={`text-[10px] font-semibold ${outcomeIsLong ? "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20" : "bg-destructive/10 text-destructive border-destructive/20"}`}
                         >
-                          Result: {outcomeLabel} {isPriceMarket ? (outcomeIsLong ? "(Long)" : "(Short)") : `(${outcomeIsLong ? yesPct.toFixed(0) : noPct.toFixed(0)}%)`}
+                          Result: {outcomeLabel} {!isPriceMarket ? `(${outcomeIsLong ? yesPct.toFixed(0) : noPct.toFixed(0)}%)` : ""}
                         </Badge>
                       </div>
                       {userVote && (
