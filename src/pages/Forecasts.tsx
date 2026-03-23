@@ -871,7 +871,7 @@ const Forecasts = () => {
       {/* Controls — Polymarket-style single row */}
       <section className="sticky top-16 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
         <div className="container mx-auto px-4 py-2.5">
-          <div className="flex items-center gap-2 overflow-x-auto">
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
             {/* All Markets label */}
             <span className="text-xs font-bold text-foreground uppercase tracking-wide shrink-0">All Markets</span>
 

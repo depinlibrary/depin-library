@@ -327,9 +327,9 @@ const ForecastDetail = () => {
           <ArrowLeft className="h-3.5 w-3.5" /> Back to Forecasts
         </Link>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:h-[calc(100vh-10rem)]">
           {/* ═══════ LEFT COLUMN (2/3): Hero Card + Tabs ═══════ */}
-          <div className="lg:col-span-2 space-y-4">
+          <div className="lg:col-span-2 space-y-4 lg:overflow-y-auto lg:pr-2 scrollbar-hide">
             {/* Hero Card — matches Forecasts page hero style */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
