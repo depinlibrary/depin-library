@@ -377,7 +377,6 @@ const BillboardHero = ({
              {/* ── Trending Projects ── */}
              <motion.div variants={fadeUp} className="col-span-1 rounded-lg border border-border bg-card/40 backdrop-blur-md p-4">
                <div className="flex items-center gap-2 mb-3">
-                 <Flame className="h-4 w-4 text-primary" />
                  <span className="text-sm font-semibold text-foreground">Trending Now</span>
                  <Link to="/explore" className="ml-auto text-xs text-muted-foreground hover:text-primary transition-colors">
                    View all →
