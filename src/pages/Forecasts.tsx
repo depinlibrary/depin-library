@@ -379,15 +379,15 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                   <div className="space-y-2 mb-4">
                     <div className="flex items-center justify-between rounded-xl bg-primary/5 border border-primary/10 px-4 py-2.5">
                       <div className="flex items-center gap-2">
-                        <ArrowUpRight className="h-4 w-4 text-primary" />
-                        <span className="text-sm font-semibold text-foreground">Yes</span>
+                        {cIsPriceMarket ? <TrendingUp className="h-4 w-4 text-primary" /> : <ArrowUpRight className="h-4 w-4 text-primary" />}
+                        <span className="text-sm font-semibold text-foreground">{cYesLabel}</span>
                       </div>
                       <span className="text-xl font-bold text-foreground font-['Space_Grotesk']">{cYesPct.toFixed(0)}%</span>
                     </div>
                     <div className="flex items-center justify-between rounded-xl bg-destructive/5 border border-destructive/10 px-4 py-2.5">
                       <div className="flex items-center gap-2">
                         <ArrowDownRight className="h-4 w-4 text-destructive" />
-                        <span className="text-sm font-semibold text-foreground">No</span>
+                        <span className="text-sm font-semibold text-foreground">{cNoLabel}</span>
                       </div>
                       <span className="text-xl font-bold text-foreground font-['Space_Grotesk']">{(100 - cYesPct).toFixed(0)}%</span>
                     </div>
