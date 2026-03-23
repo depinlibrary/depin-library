@@ -617,7 +617,7 @@ const Portfolio = () => {
   };
 
   const sidebarTabs = [
-    { key: "holdings" as const, label: "Holdings", icon: Wallet },
+    { key: "dashboard" as const, label: "Dashboard", icon: Layout },
     { key: "alerts" as const, label: "Alerts", icon: Bell },
     { key: "forecasts" as const, label: "Forecasts", icon: Activity },
     { key: "watchlist" as const, label: "Watchlist", icon: Star },
