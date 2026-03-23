@@ -926,6 +926,32 @@ const Portfolio = () => {
               ))}
             </div>
           </div>
+
+          {/* Sidebar bottom: Admin + User profile + Sign out */}
+          <div className="border-t border-border/50 p-2 space-y-0.5">
+            {isAdmin && (
+              <Link
+                to="/admin"
+                className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary/40 hover:text-foreground transition-all"
+              >
+                <Shield className="h-4 w-4" />
+                Admin
+              </Link>
+            )}
+            <div className="flex items-center gap-2.5 px-3 py-2">
+              <UserAvatar avatarUrl={avatarUrl} displayName={displayName} size="sm" />
+              <span className="text-sm font-medium text-foreground truncate flex-1">
+                {displayName || user?.email?.split("@")[0] || "User"}
+              </span>
+            </div>
+            <button
+              onClick={handleSignOut}
+              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 transition-all"
+            >
+              <LogOut className="h-4 w-4" />
+              Sign Out
+            </button>
+          </div>
         </aside>
 
         {/* Main content — offset by sidebar width */}
