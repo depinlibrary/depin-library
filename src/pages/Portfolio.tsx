@@ -961,6 +961,8 @@ const Portfolio = () => {
             <div className="gradient-radial-top absolute inset-0" />
 
             <div className="relative px-4 md:px-6 pt-6">
+          {activeTab === "dashboard" && (
+          <>
           {/* ── Hero Banner ── */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -969,11 +971,9 @@ const Portfolio = () => {
             className="mb-6"
           >
             <div className="group relative rounded-xl border border-border bg-card overflow-hidden">
-              {/* Decorative corner accent */}
               <div className="absolute top-0 right-0 w-24 h-24 rounded-bl-[60px] bg-primary/3 pointer-events-none" />
 
               <div className="relative p-4 md:p-5">
-                {/* Header row */}
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <div>
@@ -988,17 +988,9 @@ const Portfolio = () => {
                     >
                       {hideBalances ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                     </button>
-                    <Link
-                      to="#"
-                      onClick={(e) => { e.preventDefault(); setActiveTab("profile"); }}
-                      className="flex h-8 items-center gap-1.5 rounded-lg border border-border px-2.5 text-muted-foreground hover:text-foreground hover:bg-secondary/30 transition-colors text-xs font-medium"
-                    >
-                      My Profile
-                    </Link>
                   </div>
                 </div>
 
-                {/* Value display */}
                 <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
                   <div>
                     <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight tabular-nums">
