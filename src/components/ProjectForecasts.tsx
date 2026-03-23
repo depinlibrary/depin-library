@@ -81,6 +81,11 @@ const ProjectForecasts = ({ projectId, projectName }: ProjectForecastsProps) => 
   return (
     <div className="grid gap-3 sm:grid-cols-2">
       {forecasts.map((forecast: any) => {
+        const dimension = (dimensionsMap as Record<string, string>)[forecast.id];
+        const isPriceMarket = dimension === "token_price" || dimension === "market_cap";
+        const isSentimentDual = dimension === "community_sentiment" && !!forecast.project_b;
+        const yesLabel = isPriceMarket ? "Long" : isSentimentDual ? forecast.project_a?.name : "Yes";
+        const noLabel = isPriceMarket ? "Short" : isSentimentDual ? forecast.project_b?.name : "No";
         const totalVotes = forecast.total_votes_yes + forecast.total_votes_no;
         const yesPct = totalVotes > 0 ? (forecast.total_votes_yes / totalVotes) * 100 : 50;
         const noPct = 100 - yesPct;
