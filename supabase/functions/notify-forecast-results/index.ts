@@ -175,14 +175,16 @@ async function determinePriceOutcome(
     const outperformance = changeA - changeB;
 
     // If there's a target, check if outperformance met it
-    if (forecast.prediction_target != null) {
-      const targetMet = forecast.prediction_direction === "long"
-        ? outperformance >= forecast.prediction_target
-        : outperformance <= -forecast.prediction_target;
-      // Long wins if Project A outperformed B (positive outperformance)
-      // Short wins if Project B outperformed A (negative outperformance)
-      return targetMet ? "yes" : "no";
-    }
+      if (forecast.prediction_target != null) {
+        const targetMet = forecast.prediction_direction === "long"
+          ? outperformance >= forecast.prediction_target
+          : outperformance <= -forecast.prediction_target;
+        // If target met, the prediction direction wins: long→"yes", short→"no"
+        if (targetMet) {
+          return forecast.prediction_direction === "long" ? "yes" : "no";
+        }
+        return forecast.prediction_direction === "long" ? "no" : "yes";
+      }
 
     // No specific target: Long wins if A outperformed B
     return outperformance > 0 ? "yes" : "no";
@@ -197,9 +199,11 @@ async function determinePriceOutcome(
     if (forecast.prediction_target != null) {
       const target = Number(forecast.prediction_target);
       if (forecast.prediction_direction === "long") {
+        // Long target met → Long wins ("yes"), not met → Short wins ("no")
         return endVal >= target ? "yes" : "no";
       } else {
-        return endVal <= target ? "yes" : "no";
+        // Short target met → Short wins ("no"), not met → Long wins ("yes")
+        return endVal <= target ? "no" : "yes";
       }
     }
 
