@@ -1,6 +1,6 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Trash2, Briefcase, TrendingUp, TrendingDown, Minus, Pencil, Check, X, BarChart3, ChevronDown, ChevronUp, Eye, EyeOff, Download, Activity, Bell, Wallet, AlertTriangle, Home, LineChart, Compass, GitCompare, Sun, Moon, User, LogOut, Shield, Camera, Layout } from "lucide-react";
+import { Plus, Trash2, Briefcase, TrendingUp, TrendingDown, Minus, Pencil, Check, X, BarChart3, ChevronDown, ChevronUp, Eye, EyeOff, Download, Activity, Bell, Wallet, Home, LineChart, Compass, GitCompare, Sun, Moon, User, LogOut, Shield, Camera, Layout, Star } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, AreaChart, Area, XAxis, YAxis } from "recharts";
 import ProjectLogo from "@/components/ProjectLogo";
 import { useAuth } from "@/contexts/AuthContext";
@@ -21,9 +21,7 @@ import PriceAlertsManager from "@/components/PriceAlertsManager";
 import NotificationDropdown from "@/components/NotificationDropdown";
 import { useBookmarks, useToggleBookmark } from "@/hooks/useBookmarks";
 import { useUpsertPriceAlert } from "@/hooks/usePriceAlerts";
-import { Star } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { useEffect, useState as useStateAlias, useRef } from "react";
 
 function formatPrice(price: number | null): string {
   if (price === null || price === undefined) return "—";
