@@ -134,35 +134,57 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
             />
           </div>
         </div>
-      </div>
 
-      {/* Standalone vote buttons — hide resolved footer on forecast listing */}
-      {!isEnded && (
-        <div className="px-5 pb-5 pt-1 flex gap-2.5">
-          <button
-            onClick={() => isAuthenticated ? onVote(forecast.id, "yes") : toast.error("Sign in to vote")}
-            className={`flex-1 rounded-lg py-2.5 text-sm font-bold transition-all duration-200 ${
-              forecast.user_vote === "yes"
-                ? "bg-primary text-primary-foreground"
-                : "bg-primary/10 text-primary hover:bg-primary/20"
-            }`}
-          >
-            {isPriceMarket && <TrendingUp className="h-3.5 w-3.5 inline mr-1" />}
-            {yesLabel}
-          </button>
-          <button
-            onClick={() => isAuthenticated ? onVote(forecast.id, "no") : toast.error("Sign in to vote")}
-            className={`flex-1 rounded-lg py-2.5 text-sm font-bold transition-all duration-200 ${
-              forecast.user_vote === "no"
-                ? "bg-destructive text-destructive-foreground"
-                : "bg-destructive/10 text-destructive hover:bg-destructive/20"
-            }`}
-          >
-            {isPriceMarket && <ArrowDownRight className="h-3.5 w-3.5 inline mr-1" />}
-            {noLabel}
-          </button>
-        </div>
-      )}
+        {/* Your Prediction indicator for ended forecasts */}
+        {isEnded && forecast.user_vote && (
+          <div className="px-5 pb-4 pt-1">
+            {(() => {
+              const outcomeResult = finalResult;
+              const userCorrect = outcomeResult === forecast.user_vote;
+              const userVoteLabel = forecast.user_vote === "yes" ? yesLabel : noLabel;
+              const resultLabel = outcomeResult === "yes" ? yesLabel : noLabel;
+              return (
+                <div className={`flex items-center justify-between rounded-lg px-3 py-2 text-[11px] font-semibold ${
+                  userCorrect
+                    ? "bg-primary/10 text-primary border border-primary/20"
+                    : "bg-destructive/10 text-destructive border border-destructive/20"
+                }`}>
+                  <span>You voted {userVoteLabel}</span>
+                  <span>{userCorrect ? "Correct 🎯" : `Result: ${resultLabel}`}</span>
+                </div>
+              );
+            })()}
+          </div>
+        )}
+
+        {/* Vote buttons for active forecasts */}
+        {!isEnded && (
+          <div className="px-5 pb-5 pt-1 flex gap-2.5">
+            <button
+              onClick={() => isAuthenticated ? onVote(forecast.id, "yes") : toast.error("Sign in to vote")}
+              className={`flex-1 rounded-lg py-2.5 text-sm font-bold transition-all duration-200 ${
+                forecast.user_vote === "yes"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-primary/10 text-primary hover:bg-primary/20"
+              }`}
+            >
+              {isPriceMarket && <TrendingUp className="h-3.5 w-3.5 inline mr-1" />}
+              {yesLabel}
+            </button>
+            <button
+              onClick={() => isAuthenticated ? onVote(forecast.id, "no") : toast.error("Sign in to vote")}
+              className={`flex-1 rounded-lg py-2.5 text-sm font-bold transition-all duration-200 ${
+                forecast.user_vote === "no"
+                  ? "bg-destructive text-destructive-foreground"
+                  : "bg-destructive/10 text-destructive hover:bg-destructive/20"
+              }`}
+            >
+              {isPriceMarket && <ArrowDownRight className="h-3.5 w-3.5 inline mr-1" />}
+              {noLabel}
+            </button>
+          </div>
+        )}
+      </div>
     </motion.div>
   );
 };
