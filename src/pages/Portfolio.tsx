@@ -995,23 +995,14 @@ const Portfolio = () => {
             </motion.div>
           </div>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="mb-4"
-          >
+          {/* Mobile tab selector (visible only on small screens) */}
+          <div className="md:hidden mb-4">
             <div className="flex items-center gap-1 rounded-lg bg-secondary/40 p-0.5 w-fit overflow-x-auto scrollbar-none max-w-full">
-              {([
-                { key: "holdings" as const, label: "Holdings", icon: Wallet },
-                { key: "alerts" as const, label: "Alerts", icon: Bell },
-                { key: "forecasts" as const, label: "Forecasts", icon: Activity },
-                { key: "watchlist" as const, label: "Watchlist", icon: Star },
-              ]).map((tab) => (
+              {sidebarTabs.map((tab) => (
                 <button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key)}
-                  className={`relative flex items-center gap-1.5 rounded-md px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium transition-all whitespace-nowrap shrink-0 ${
+                  className={`relative flex items-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-all whitespace-nowrap shrink-0 ${
                     activeTab === tab.key
                       ? "bg-card text-foreground shadow-sm border border-border"
                       : "text-muted-foreground hover:text-foreground"
@@ -1022,7 +1013,7 @@ const Portfolio = () => {
                 </button>
               ))}
             </div>
-          </motion.div>
+          </div>
 
           {/* ── Holdings Tab ── */}
           <AnimatePresence mode="wait">
