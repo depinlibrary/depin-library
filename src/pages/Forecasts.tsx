@@ -619,7 +619,7 @@ const Forecasts = () => {
     enabled: !!user,
     staleTime: 30_000,
   });
-  const dailyRemaining = Math.max(0, 3 - dailyForecastCount);
+  const dailyRemaining = Math.max(0, 5 - dailyForecastCount);
 
 
   const timePresets = [
