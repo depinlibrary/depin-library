@@ -631,13 +631,17 @@ const Portfolio = () => {
     { to: "/compare", label: "Compare", icon: GitCompare },
   ];
 
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Fixed header with sidebar-matched logo area */}
+      {/* Fixed header */}
       <header className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/90 backdrop-blur-xl">
         <div className="flex h-14 items-center">
           <div className="hidden md:flex items-center w-[240px] shrink-0 px-4 border-r border-border/50 h-full">
-            <Link to="/" className="flex items-center gap-1.5">
+            <Link to="/" className="flex items-center gap-0">
               <img src={logoImg} alt="DePIN Library" className="h-10 w-10 object-contain" />
               <span className="text-base font-semibold tracking-tight text-foreground">
                 DePIN Library
@@ -645,31 +649,166 @@ const Portfolio = () => {
             </Link>
           </div>
           <div className="flex md:hidden items-center px-4">
-            <Link to="/" className="flex items-center gap-1.5">
+            <Link to="/" className="flex items-center gap-0">
               <img src={logoImg} alt="DePIN Library" className="h-9 w-9 object-contain" />
               <span className="text-sm font-semibold tracking-tight text-foreground">DePIN Library</span>
             </Link>
           </div>
-          <div className="flex-1 flex items-center justify-between px-4">
-            <div className="flex items-center gap-2">
-              <Briefcase className="h-4 w-4 text-primary" />
-              <span className="text-sm font-semibold text-foreground">Portfolio</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Link
-                to="/profile"
-                className="flex h-8 items-center gap-1.5 rounded-lg border border-border px-2.5 text-muted-foreground hover:text-foreground hover:bg-secondary/30 transition-colors text-xs font-medium"
+          <div className="flex-1 flex items-center justify-end px-4">
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={toggleTheme}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-border transition-all hover:bg-secondary/50"
+                aria-label="Toggle theme"
               >
-                My Profile
-              </Link>
+                {theme === "dark" ? <Sun className="h-3.5 w-3.5 text-foreground" /> : <Moon className="h-3.5 w-3.5 text-foreground" />}
+              </button>
+              {user && <NotificationDropdown />}
+              {user && (
+                <div
+                  className="relative"
+                  ref={profileDropdownRef}
+                  onMouseEnter={() => setProfileDropdownOpen(true)}
+                  onMouseLeave={() => setProfileDropdownOpen(false)}
+                >
+                  <button
+                    onClick={() => setProfileDropdownOpen((v) => !v)}
+                    className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/15 border border-primary/30 transition-all hover:bg-primary/25 hover:border-primary/50 overflow-hidden"
+                    aria-label="Profile menu"
+                  >
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt="Avatar" className="h-8 w-8 rounded-full object-cover" />
+                    ) : (
+                      <User className="h-3.5 w-3.5 text-primary" />
+                    )}
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) uploadAvatar(file);
+                      e.target.value = "";
+                    }}
+                  />
+                  <AnimatePresence>
+                    {profileDropdownOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 6, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 6, scale: 0.95 }}
+                        transition={{ duration: 0.18 }}
+                        className="absolute right-0 top-full pt-2 z-50 w-56"
+                      >
+                        <div className="rounded-xl border border-border bg-card shadow-xl shadow-background/30 overflow-hidden">
+                          <div className="px-4 py-3 border-b border-border/50 flex items-center gap-3">
+                            <div className="relative group/avatar shrink-0">
+                              <div className="h-10 w-10 rounded-full bg-primary/15 border border-primary/30 overflow-hidden flex items-center justify-center">
+                                {avatarUrl ? (
+                                  <img src={avatarUrl} alt="Avatar" className="h-10 w-10 rounded-full object-cover" />
+                                ) : (
+                                  <User className="h-4 w-4 text-primary" />
+                                )}
+                              </div>
+                              <button
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={uploading}
+                                className="absolute inset-0 flex items-center justify-center rounded-full bg-background/70 opacity-0 group-hover/avatar:opacity-100 transition-opacity"
+                              >
+                                <Camera className="h-3.5 w-3.5 text-foreground" />
+                              </button>
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              {editingName ? (
+                                <form
+                                  className="flex items-center gap-1"
+                                  onSubmit={async (e) => {
+                                    e.preventDefault();
+                                    await updateDisplayName(nameInput);
+                                    setEditingName(false);
+                                  }}
+                                >
+                                  <input
+                                    autoFocus
+                                    value={nameInput}
+                                    onChange={(e) => setNameInput(e.target.value.slice(0, 50))}
+                                    onKeyDown={(e) => { if (e.key === "Escape") setEditingName(false); }}
+                                    className="w-full bg-secondary/50 border border-border rounded px-1.5 py-0.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-border"
+                                    maxLength={50}
+                                  />
+                                  <button type="submit" className="shrink-0 p-0.5 rounded hover:bg-primary/15 transition-colors">
+                                    <Check className="h-3 w-3 text-primary" />
+                                  </button>
+                                </form>
+                              ) : (
+                                <div className="flex items-center gap-1 group/name">
+                                  <p className="text-xs font-semibold text-foreground truncate">
+                                    {displayName || user.email?.split("@")[0]}
+                                  </p>
+                                  <button
+                                    onClick={() => { setNameInput(displayName || ""); setEditingName(true); }}
+                                    className="shrink-0 p-0.5 rounded opacity-0 group-hover/name:opacity-100 hover:bg-secondary/50 transition-all"
+                                  >
+                                    <Pencil className="h-2.5 w-2.5 text-muted-foreground" />
+                                  </button>
+                                </div>
+                              )}
+                              <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{uploading ? "Uploading…" : user.email}</p>
+                            </div>
+                          </div>
+                          <div className="py-1.5 px-1.5">
+                            <Link
+                              to="/profile"
+                              onClick={() => setProfileDropdownOpen(false)}
+                              className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-muted-foreground hover:bg-secondary/50 hover:text-foreground transition-all"
+                            >
+                              <User className="h-3.5 w-3.5" />
+                              My Profile
+                            </Link>
+                            {isAdmin && (
+                              <Link
+                                to="/admin"
+                                onClick={() => setProfileDropdownOpen(false)}
+                                className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-muted-foreground hover:bg-secondary/50 hover:text-foreground transition-all"
+                              >
+                                <Shield className="h-3.5 w-3.5" />
+                                Admin Dashboard
+                              </Link>
+                            )}
+                            <Link
+                              to="/submit"
+                              onClick={() => setProfileDropdownOpen(false)}
+                              className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-muted-foreground hover:bg-secondary/50 hover:text-foreground transition-all"
+                            >
+                              <Plus className="h-3.5 w-3.5" />
+                              Submit Project
+                            </Link>
+                          </div>
+                          <div className="border-t border-border/50 py-1.5 px-1.5">
+                            <button
+                              onClick={() => { handleSignOut(); setProfileDropdownOpen(false); }}
+                              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-destructive hover:bg-destructive/10 transition-all"
+                            >
+                              <LogOut className="h-3.5 w-3.5" />
+                              Sign Out
+                            </button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </header>
 
       <div className="flex flex-1 pt-14">
-        {/* Sidebar */}
-        <aside className="hidden md:flex flex-col w-[240px] shrink-0 border-r border-border bg-card/30 sticky top-14 h-[calc(100vh-3.5rem)]">
+        {/* Sidebar — sticky, doesn't scroll with content */}
+        <aside className="hidden md:flex flex-col w-[240px] shrink-0 border-r border-border bg-card/30 fixed top-14 left-0 bottom-0 overflow-y-auto">
           {/* Portfolio tabs */}
           <div className="flex items-center px-4 h-12 border-b border-border/50">
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Portfolio</span>
@@ -714,8 +853,8 @@ const Portfolio = () => {
           </div>
         </aside>
 
-        {/* Main content */}
-        <main className="flex-1 overflow-y-auto">
+        {/* Main content — offset by sidebar width */}
+        <main className="flex-1 md:ml-[240px] overflow-y-auto">
           <div className="relative pb-20">
             <div className="absolute inset-0 bg-grid opacity-20" />
             <div className="gradient-radial-top absolute inset-0" />
