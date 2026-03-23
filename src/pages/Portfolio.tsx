@@ -695,8 +695,8 @@ const Portfolio = () => {
     { key: "alerts" as const, label: "Alerts", icon: Bell },
     { key: "forecasts" as const, label: "Forecasts", icon: Activity },
     { key: "watchlist" as const, label: "Watchlist", icon: Star },
-    { key: "activities" as const, label: "Activities", icon: BarChart3 },
-    { key: "profile" as const, label: "Profile", icon: User },
+    { key: "activities" as const, label: "Activities", icon: Clock },
+    { key: "profile" as const, label: "Settings", icon: Lock },
   ];
 
   const sidebarLinks = [
@@ -926,6 +926,32 @@ const Portfolio = () => {
               ))}
             </div>
           </div>
+
+          {/* Sidebar bottom: Admin + User profile + Sign out */}
+          <div className="border-t border-border/50 p-2 space-y-0.5">
+            {isAdmin && (
+              <Link
+                to="/admin"
+                className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary/40 hover:text-foreground transition-all"
+              >
+                <Shield className="h-4 w-4" />
+                Admin
+              </Link>
+            )}
+            <div className="flex items-center gap-2.5 px-3 py-2">
+              <UserAvatar avatarUrl={avatarUrl} displayName={displayName} size="sm" />
+              <span className="text-sm font-medium text-foreground truncate flex-1">
+                {displayName || user?.email?.split("@")[0] || "User"}
+              </span>
+            </div>
+            <button
+              onClick={handleSignOut}
+              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 transition-all"
+            >
+              <LogOut className="h-4 w-4" />
+              Sign Out
+            </button>
+          </div>
         </aside>
 
         {/* Main content — offset by sidebar width */}
@@ -935,6 +961,8 @@ const Portfolio = () => {
             <div className="gradient-radial-top absolute inset-0" />
 
             <div className="relative px-4 md:px-6 pt-6">
+          {activeTab === "dashboard" && (
+          <>
           {/* ── Hero Banner ── */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -943,11 +971,9 @@ const Portfolio = () => {
             className="mb-6"
           >
             <div className="group relative rounded-xl border border-border bg-card overflow-hidden">
-              {/* Decorative corner accent */}
               <div className="absolute top-0 right-0 w-24 h-24 rounded-bl-[60px] bg-primary/3 pointer-events-none" />
 
               <div className="relative p-4 md:p-5">
-                {/* Header row */}
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <div>
@@ -962,17 +988,9 @@ const Portfolio = () => {
                     >
                       {hideBalances ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                     </button>
-                    <Link
-                      to="#"
-                      onClick={(e) => { e.preventDefault(); setActiveTab("profile"); }}
-                      className="flex h-8 items-center gap-1.5 rounded-lg border border-border px-2.5 text-muted-foreground hover:text-foreground hover:bg-secondary/30 transition-colors text-xs font-medium"
-                    >
-                      My Profile
-                    </Link>
                   </div>
                 </div>
 
-                {/* Value display */}
                 <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
                   <div>
                     <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight tabular-nums">
@@ -1238,6 +1256,8 @@ const Portfolio = () => {
               )}
             </motion.div>
           </div>
+          </>
+          )}
 
           {/* Mobile tab selector (visible only on small screens) */}
           <div className="md:hidden mb-4">
