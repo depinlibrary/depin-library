@@ -945,10 +945,21 @@ const Forecasts = () => {
               )}
             </button>
 
+            {/* Daily limit indicator */}
+            {user && (
+              <span className={`shrink-0 text-[10px] font-medium ${dailyRemaining === 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                {dailyRemaining}/3 today
+              </span>
+            )}
+
             {/* Create Forecast */}
             <Button
               onClick={() => {
                 if (user) {
+                  if (dailyRemaining <= 0) {
+                    toast.error("You've reached your daily limit of 3 forecasts. Try again tomorrow.");
+                    return;
+                  }
                   setShowCreate(true);
                 } else {
                   toast("Please log in to create a forecast", {
