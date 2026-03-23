@@ -964,7 +964,8 @@ const Portfolio = () => {
                       {hideBalances ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                     </button>
                     <Link
-                      to="/profile"
+                      to="#"
+                      onClick={(e) => { e.preventDefault(); setActiveTab("profile"); }}
                       className="flex h-8 items-center gap-1.5 rounded-lg border border-border px-2.5 text-muted-foreground hover:text-foreground hover:bg-secondary/30 transition-colors text-xs font-medium"
                     >
                       My Profile
