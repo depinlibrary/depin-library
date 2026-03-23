@@ -422,7 +422,6 @@ export default function MyForecasts() {
                       )}
                     </div>
                   </motion.div>
-                  </motion.div>
                 );
               })}
             </AnimatePresence>
