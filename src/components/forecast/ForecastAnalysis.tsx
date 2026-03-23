@@ -334,7 +334,8 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
                 </div>
               </div>
 
-              {/* Progress toward target */}
+              {/* Progress toward target — creator only */}
+              {isCreator && (
               <div className="mt-4">
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Progress to Target</span>
@@ -355,6 +356,7 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
                   <span className="text-[9px] text-muted-foreground">{formatVal(predictionTarget)}</span>
                 </div>
               </div>
+              )}
             </div>
           );
         })()}
