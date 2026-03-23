@@ -1155,8 +1155,6 @@ export type Database = {
         }
         Returns: boolean
       }
-      show_limit: { Args: never; Returns: number }
-      show_trgm: { Args: { "": string }; Returns: string[] }
       update_project_sentiment: {
         Args: { p_project_id: string }
         Returns: undefined
