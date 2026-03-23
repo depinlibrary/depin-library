@@ -552,9 +552,11 @@ const BillboardHero = ({
                               {noLabel}
                             </span>
                           </div>
-                         <p className="text-[10px] text-muted-foreground text-center">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</p>
-                       </div>
-                     </Link>);
+                          <p className="text-[10px] text-muted-foreground text-center">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</p>
+                        </div>
+                          );
+                        })()}
+                      </Link>);
                  })}
                   </div>
                </motion.div>
