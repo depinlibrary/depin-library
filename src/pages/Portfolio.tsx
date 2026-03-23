@@ -1256,6 +1256,8 @@ const Portfolio = () => {
               )}
             </motion.div>
           </div>
+          </>
+          )}
 
           {/* Mobile tab selector (visible only on small screens) */}
           <div className="md:hidden mb-4">
