@@ -603,6 +603,24 @@ const Forecasts = () => {
     () => true
   );
 
+  // Query user's daily forecast count for rate limit display
+  const { data: dailyForecastCount = 0 } = useQuery({
+    queryKey: ["daily-forecast-count", user?.id],
+    queryFn: async () => {
+      if (!user) return 0;
+      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const { count } = await supabase
+        .from("forecasts")
+        .select("*", { count: "exact", head: true })
+        .eq("creator_user_id", user.id)
+        .gte("created_at", oneDayAgo);
+      return count ?? 0;
+    },
+    enabled: !!user,
+    staleTime: 30_000,
+  });
+  const dailyRemaining = Math.max(0, 3 - dailyForecastCount);
+
 
   const timePresets = [
     { value: "4h", label: "4 Hours", hours: 4 },
@@ -927,10 +945,21 @@ const Forecasts = () => {
               )}
             </button>
 
+            {/* Daily limit indicator */}
+            {user && (
+              <span className={`shrink-0 text-[10px] font-medium ${dailyRemaining === 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                {dailyRemaining}/3 today
+              </span>
+            )}
+
             {/* Create Forecast */}
             <Button
               onClick={() => {
                 if (user) {
+                  if (dailyRemaining <= 0) {
+                    toast.error("You've reached your daily limit of 3 forecasts. Try again tomorrow.");
+                    return;
+                  }
                   setShowCreate(true);
                 } else {
                   toast("Please log in to create a forecast", {
@@ -1132,7 +1161,7 @@ const Forecasts = () => {
               transition={{ duration: 0.3, ease: "easeInOut" }}
               className="hidden lg:block shrink-0 overflow-hidden"
             >
-              <div className="w-[420px] sticky top-24 z-40">
+              <div className="w-[420px] sticky top-[7rem] z-40">
                 <div className="rounded-2xl border border-border bg-card overflow-hidden">
                   {/* Panel header */}
                   <div className="flex items-center justify-between px-5 py-4 border-b border-border">
