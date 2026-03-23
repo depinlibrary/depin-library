@@ -1125,7 +1125,7 @@ const Forecasts = () => {
               transition={{ duration: 0.3, ease: "easeInOut" }}
               className="hidden lg:block shrink-0 overflow-hidden"
             >
-              <div className="w-[420px] sticky top-24">
+              <div className="w-[420px] sticky top-24 z-40">
                 <div className="rounded-2xl border border-border bg-card overflow-hidden">
                   {/* Panel header */}
                   <div className="flex items-center justify-between px-5 py-4 border-b border-border">
