@@ -1416,9 +1416,10 @@ const Portfolio = () => {
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
+            </div>
+          </div>
+        </main>
       </div>
-      <Footer />
     </div>
   );
 };
