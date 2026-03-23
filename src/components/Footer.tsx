@@ -37,7 +37,7 @@ const Footer = () => {
         <div className="grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-4">
           {/* Brand column */}
           <div className="flex flex-col gap-4 lg:col-span-1">
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-0">
               <img src={logoImg} alt="DePIN Library" className="h-10 w-10 object-contain" />
               <span className="text-sm font-bold text-foreground font-['Space_Grotesk'] tracking-tight">
                 DePIN Library

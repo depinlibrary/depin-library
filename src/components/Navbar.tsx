@@ -121,7 +121,7 @@ const Navbar = () => {
     >
       <div className="container mx-auto flex h-14 items-center px-4">
         {/* Logo — left */}
-        <Link to="/" className="flex items-center gap-1.5 shrink-0" onClick={() => setMobileOpen(false)}>
+        <Link to="/" className="flex items-center gap-0 shrink-0" onClick={() => setMobileOpen(false)}>
           <img src={logoImg} alt="DePIN Library" className="h-10 w-10 object-contain" />
           <span className="text-base font-semibold tracking-tight text-foreground">
             DePIN Library
