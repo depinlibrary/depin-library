@@ -26,6 +26,7 @@ interface TopForecast {
   total_votes_yes: number;
   total_votes_no: number;
   status: string;
+  end_date: string;
   project_a_logo_url?: string | null;
   project_a_logo_emoji?: string;
   project_a_name?: string;
