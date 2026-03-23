@@ -484,19 +484,25 @@ const ForecastDetail = () => {
                       <div className="flex items-center justify-end">
                         <Badge
                           variant="secondary"
-                          className={`text-[10px] font-semibold ${outcomeIsLong ? "bg-primary/10 text-primary border-primary/20" : "bg-destructive/10 text-destructive border-destructive/20"}`}
+                          className={`text-[10px] font-semibold ${outcomeIsLong ? "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20" : "bg-destructive/10 text-destructive border-destructive/20"}`}
                         >
-                          Result: {outcomeLabel} {isPriceMarket ? (outcomeIsLong ? "📈" : "📉") : `(${outcomeIsLong ? yesPct.toFixed(0) : noPct.toFixed(0)}%)`}
+                          Result: {outcomeLabel} {isPriceMarket ? (outcomeIsLong ? "(Long)" : "(Short)") : `(${outcomeIsLong ? yesPct.toFixed(0) : noPct.toFixed(0)}%)`}
                         </Badge>
                       </div>
                       {userVote && (
                         <div className={`flex items-center justify-between rounded-lg px-4 py-2.5 text-xs font-semibold ${
                           userCorrect
-                            ? "bg-primary/10 text-primary border border-primary/20"
+                            ? "bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20"
                             : "bg-destructive/10 text-destructive border border-destructive/20"
                         }`}>
                           <span>Your Prediction: {userVoteLabel}</span>
-                          <span>{userCorrect ? "Correct 🎯" : "Incorrect"}</span>
+                          <span className="flex items-center gap-1">
+                            {userCorrect ? (
+                              <><CheckCircle2 className="h-3.5 w-3.5" /> Correct</>
+                            ) : (
+                              <><XCircle className="h-3.5 w-3.5" /> Incorrect</>
+                            )}
+                          </span>
                         </div>
                       )}
                     </div>
