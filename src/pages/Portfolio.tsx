@@ -843,6 +843,7 @@ const Portfolio = () => {
                               <Plus className="h-3.5 w-3.5" />
                               Submit Project
                             </Link>
+                          </div>
                           <div className="border-t border-border/50 py-1.5 px-1.5">
                             <button
                               onClick={() => { handleSignOut(); setProfileDropdownOpen(false); }}
