@@ -261,15 +261,15 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
             <BarChart3 className="h-10 w-10 text-muted-foreground/30 mb-3" />
             <h2 className="text-lg font-bold text-foreground font-['Space_Grotesk'] mb-1">No forecasts yet</h2>
             <p className="text-sm text-muted-foreground mb-4">Create the first prediction for the community.</p>
-            {user ? (
-              <Button onClick={() => setShowCreate(true)} className="gap-1.5">
+            <Button onClick={() => {
+                if (user) {
+                  setShowCreate(true);
+                } else {
+                  window.location.href = "/auth?redirect=/forecasts";
+                }
+              }} className="gap-1.5">
                 <Plus className="h-3.5 w-3.5" /> Create Forecast
               </Button>
-            ) : (
-              <Link to="/auth" className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground">
-                <LogIn className="h-3.5 w-3.5" /> Sign in
-              </Link>
-            )}
           </motion.div>
         </div>
       </section>
@@ -890,16 +890,25 @@ const Forecasts = () => {
               )}
             </button>
 
-            {/* Sign in / Create */}
-            {user ? (
-              <Button onClick={() => setShowCreate(true)} size="sm" className="h-8 gap-1 shrink-0 text-xs px-3 rounded-full">
-                <Plus className="h-3.5 w-3.5" /> Create
-              </Button>
-            ) : (
-              <Link to="/auth" className="inline-flex items-center shrink-0 rounded-full bg-primary px-4 h-8 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors">
-                Sign in
-              </Link>
-            )}
+            {/* Create Forecast */}
+            <Button
+              onClick={() => {
+                if (user) {
+                  setShowCreate(true);
+                } else {
+                  toast("Please log in to create a forecast", {
+                    action: {
+                      label: "Log in",
+                      onClick: () => navigate("/auth?redirect=/forecasts"),
+                    },
+                  });
+                }
+              }}
+              size="sm"
+              className="h-8 gap-1 shrink-0 text-xs px-3 rounded-full"
+            >
+              <Plus className="h-3.5 w-3.5" /> Create Forecast
+            </Button>
           </div>
 
           {/* Expandable filter panel */}
@@ -1014,9 +1023,13 @@ const Forecasts = () => {
                 <Plus className="h-3.5 w-3.5" /> Create First Forecast
               </Button>
             ) : (
-              <Link to="/auth" className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground">
-                <LogIn className="h-3.5 w-3.5" /> Sign in to create
-              </Link>
+              <Button onClick={() => {
+                toast("Please log in to create a forecast", {
+                  action: { label: "Log in", onClick: () => navigate("/auth?redirect=/forecasts") },
+                });
+              }} className="gap-1.5">
+                <Plus className="h-3.5 w-3.5" /> Create First Forecast
+              </Button>
             )}
           </motion.div>
         ) : (
