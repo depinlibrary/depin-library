@@ -117,24 +117,28 @@
   }
 }
 
-/* Glow effects */
+/* Glow effects — 3D enhanced */
 .glow-primary {
-  box-shadow: 0 0 20px -5px hsl(var(--glow-primary) / 0.3),
-              0 0 60px -15px hsl(var(--glow-primary) / 0.15);
+  box-shadow: 0 0 20px -5px hsl(var(--glow-primary) / 0.35),
+              0 0 60px -15px hsl(var(--glow-primary) / 0.18),
+              0 4px 12px -4px hsl(var(--foreground) / 0.06);
 }
 
 .glow-primary-sm {
-  box-shadow: 0 0 10px -3px hsl(var(--glow-primary) / 0.25);
+  box-shadow: 0 0 12px -3px hsl(var(--glow-primary) / 0.3),
+              0 2px 6px -2px hsl(var(--foreground) / 0.05);
 }
 
 .glow-accent {
-  box-shadow: 0 0 20px -5px hsl(var(--glow-accent) / 0.3),
-              0 0 60px -15px hsl(var(--glow-accent) / 0.15);
+  box-shadow: 0 0 20px -5px hsl(var(--glow-accent) / 0.35),
+              0 0 60px -15px hsl(var(--glow-accent) / 0.18),
+              0 4px 12px -4px hsl(var(--foreground) / 0.06);
 }
 
 .text-glow {
-  text-shadow: 0 0 20px hsl(var(--glow-primary) / 0.5),
-               0 0 40px hsl(var(--glow-primary) / 0.2);
+  text-shadow: 0 0 24px hsl(var(--glow-primary) / 0.55),
+               0 0 48px hsl(var(--glow-primary) / 0.25),
+               0 2px 4px hsl(var(--foreground) / 0.15);
 }
 
 /* Grid background pattern */
