@@ -688,7 +688,7 @@ const ForecastDetail = () => {
           </div>
 
           {/* ═══════ RIGHT COLUMN (1/3): Creator + Vote + Analysis + Related ═══════ */}
-          <div className="space-y-4">
+          <div className="space-y-4 lg:overflow-y-auto lg:pr-2 scrollbar-hide">
             {/* Creator Card — compact with countdown */}
             <CreatorCardWithCountdown forecast={forecast} isEnded={isEnded} timeLeft={timeLeft} />
 
