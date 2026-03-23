@@ -603,6 +603,24 @@ const Forecasts = () => {
     () => true
   );
 
+  // Query user's daily forecast count for rate limit display
+  const { data: dailyForecastCount = 0 } = useQuery({
+    queryKey: ["daily-forecast-count", user?.id],
+    queryFn: async () => {
+      if (!user) return 0;
+      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const { count } = await supabase
+        .from("forecasts")
+        .select("*", { count: "exact", head: true })
+        .eq("creator_user_id", user.id)
+        .gte("created_at", oneDayAgo);
+      return count ?? 0;
+    },
+    enabled: !!user,
+    staleTime: 30_000,
+  });
+  const dailyRemaining = Math.max(0, 3 - dailyForecastCount);
+
 
   const timePresets = [
     { value: "4h", label: "4 Hours", hours: 4 },
