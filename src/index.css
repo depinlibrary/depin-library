@@ -213,15 +213,18 @@ body {
    Micro-interaction utilities
    ────────────────────────────────────────── */
 
-/* Interactive card hover lift */
+/* Interactive card hover lift — 3D */
 .card-hover {
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-              box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px -2px hsl(var(--foreground) / 0.08),
+              0 1px 3px -1px hsl(var(--foreground) / 0.06);
 }
 .card-hover:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px -8px hsl(var(--foreground) / 0.1),
-              0 4px 12px -4px hsl(var(--foreground) / 0.06);
+  transform: translateY(-4px) scale(1.005);
+  box-shadow: 0 20px 40px -12px hsl(var(--glow-primary) / 0.15),
+              0 8px 20px -8px hsl(var(--foreground) / 0.1),
+              0 2px 6px -2px hsl(var(--foreground) / 0.06);
 }
 
 /* Disable card hover lift inside profile page */
