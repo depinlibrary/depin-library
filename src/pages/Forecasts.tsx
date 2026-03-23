@@ -1027,9 +1027,13 @@ const Forecasts = () => {
                 <Plus className="h-3.5 w-3.5" /> Create First Forecast
               </Button>
             ) : (
-              <Link to="/auth" className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground">
-                <LogIn className="h-3.5 w-3.5" /> Sign in to create
-              </Link>
+              <Button onClick={() => {
+                toast("Please log in to create a forecast", {
+                  action: { label: "Log in", onClick: () => navigate("/auth?redirect=/forecasts") },
+                });
+              }} className="gap-1.5">
+                <Plus className="h-3.5 w-3.5" /> Create First Forecast
+              </Button>
             )}
           </motion.div>
         ) : (
