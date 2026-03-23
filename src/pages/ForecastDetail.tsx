@@ -321,15 +321,15 @@ const ForecastDetail = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
 
-      <main className="container mx-auto px-4 pt-24 pb-0 flex flex-col lg:h-screen lg:overflow-hidden">
+      <main className="container mx-auto px-4 pt-24 pb-0 flex flex-col">
         {/* Breadcrumb */}
         <Link to="/forecasts" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-5 shrink-0">
           <ArrowLeft className="h-3.5 w-3.5" /> Back to Forecasts
         </Link>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:flex-1 lg:min-h-0 pb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-16">
           {/* ═══════ LEFT COLUMN (2/3): Hero Card + Tabs ═══════ */}
-          <div className="lg:col-span-2 space-y-4 lg:overflow-y-auto lg:pr-2 scrollbar-hide">
+          <div className="lg:col-span-2 space-y-4 lg:overflow-y-auto lg:h-[calc(100vh-4rem)] lg:sticky lg:top-16 lg:pr-2 scrollbar-hide">
             {/* Hero Card — matches Forecasts page hero style */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -688,7 +688,7 @@ const ForecastDetail = () => {
           </div>
 
           {/* ═══════ RIGHT COLUMN (1/3): Creator + Vote + Analysis + Related ═══════ */}
-          <div className="space-y-4 lg:overflow-y-auto lg:pr-2 scrollbar-hide">
+          <div className="space-y-4 lg:overflow-y-auto lg:h-[calc(100vh-4rem)] lg:sticky lg:top-16 lg:pr-2 scrollbar-hide">
             {/* Creator Card — compact with countdown */}
             <CreatorCardWithCountdown forecast={forecast} isEnded={isEnded} timeLeft={timeLeft} />
 
