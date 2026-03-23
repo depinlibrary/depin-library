@@ -9,30 +9,22 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import NotificationDropdown from "@/components/NotificationDropdown";
 import logoImg from "@/assets/logo.png";
 
-const SignInButton = () => {
-  const [glowing, setGlowing] = useState(true);
-  useEffect(() => {
-    const timer = setTimeout(() => setGlowing(false), 10000);
-    return () => clearTimeout(timer);
-  }, []);
+const AuthButtons = () => {
   return (
-    <motion.div
-      whileHover={{ scale: 1.04 }}
-      whileTap={{ scale: 0.97 }}
-      animate={glowing ? { boxShadow: ["0 0 0px hsl(var(--primary) / 0)", "0 0 12px hsl(var(--primary) / 0.4)", "0 0 0px hsl(var(--primary) / 0)"] } : { boxShadow: "0 0 0px hsl(var(--primary) / 0)" }}
-      transition={glowing ? { duration: 2.5, repeat: Infinity, ease: "easeInOut" } : { duration: 0.5 }}
-      className="rounded-lg"
-    >
+    <div className="flex items-center gap-2">
       <Link
-        to="/auth"
-        className="group relative flex items-center gap-2 overflow-hidden rounded-lg bg-primary px-6 py-2 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:shadow-md hover:shadow-primary/30"
+        to="/auth?mode=login"
+        className="rounded-lg border border-border px-4 py-1.5 text-sm font-medium text-foreground transition-all hover:bg-secondary/50"
       >
-        <span className="absolute inset-0 bg-gradient-to-r from-transparent via-primary-foreground/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700" />
-        <User className="h-4 w-4" />
-        Sign In
-        <ArrowRight className="h-3.5 w-3.5 opacity-0 -ml-1 group-hover:opacity-100 group-hover:ml-0 transition-all duration-200" />
+        Login
       </Link>
-    </motion.div>
+      <Link
+        to="/auth?mode=signup"
+        className="rounded-lg bg-primary px-4 py-1.5 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/20 transition-all hover:shadow-md hover:shadow-primary/30"
+      >
+        Signup
+      </Link>
+    </div>
   );
 };
 
