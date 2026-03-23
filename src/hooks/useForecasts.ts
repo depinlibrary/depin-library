@@ -193,6 +193,18 @@ export function useCreateForecast() {
     }) => {
       if (!user) throw new Error("Must be logged in");
 
+      // Rate limit: max 3 forecasts per 24 hours
+      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const { count: recentCount } = await supabase
+        .from("forecasts")
+        .select("*", { count: "exact", head: true })
+        .eq("creator_user_id", user.id)
+        .gte("created_at", oneDayAgo);
+
+      if ((recentCount ?? 0) >= 3) {
+        throw new Error("You can only create 3 forecasts per day. Please try again later.");
+      }
+
       // Check for duplicate forecasts
       if (analysisDimensions.length > 0) {
         const { data: dupCheck, error: dupError } = await supabase.rpc("check_forecast_duplicate", {
