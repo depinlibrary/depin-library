@@ -76,6 +76,26 @@ export default function MyForecasts() {
     enabled: !!user,
   });
 
+  // Fetch dimensions for all user forecasts
+  const forecastIds = forecasts.map((f) => f.id);
+  const { data: dimensionsMap = {} } = useQuery({
+    queryKey: ["my-forecast-dimensions", forecastIds],
+    enabled: forecastIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("forecast_targets")
+        .select("forecast_id, dimension")
+        .in("forecast_id", forecastIds);
+      if (error) throw error;
+      const map: Record<string, string[]> = {};
+      (data || []).forEach((d: any) => {
+        if (!map[d.forecast_id]) map[d.forecast_id] = [];
+        map[d.forecast_id].push(d.dimension);
+      });
+      return map;
+    },
+  });
+
   const { data: deletionRequests = [] } = useQuery({
     queryKey: ["my-deletion-requests", user?.id],
     queryFn: async () => {

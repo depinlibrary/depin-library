@@ -890,16 +890,25 @@ const Forecasts = () => {
               )}
             </button>
 
-            {/* Sign in / Create */}
-            {user ? (
-              <Button onClick={() => setShowCreate(true)} size="sm" className="h-8 gap-1 shrink-0 text-xs px-3 rounded-full">
-                <Plus className="h-3.5 w-3.5" /> Create
-              </Button>
-            ) : (
-              <Link to="/auth" className="inline-flex items-center shrink-0 rounded-full bg-primary px-4 h-8 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors">
-                Sign in
-              </Link>
-            )}
+            {/* Create Forecast */}
+            <Button
+              onClick={() => {
+                if (user) {
+                  setShowCreate(true);
+                } else {
+                  toast("Please log in to create a forecast", {
+                    action: {
+                      label: "Log in",
+                      onClick: () => navigate("/auth?redirect=/forecasts"),
+                    },
+                  });
+                }
+              }}
+              size="sm"
+              className="h-8 gap-1 shrink-0 text-xs px-3 rounded-full"
+            >
+              <Plus className="h-3.5 w-3.5" /> Create Forecast
+            </Button>
           </div>
 
           {/* Expandable filter panel */}
