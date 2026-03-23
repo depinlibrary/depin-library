@@ -64,7 +64,24 @@ const Overview = () => {
     project_b_name: f.project_b_name
   }));
   const endingSoon = endingSoonData?.forecasts || [];
+  const endingSoonIds = endingSoon.map((f) => f.id);
   const { data: trendingProjects = [] } = useTrendingProjects(5);
+
+  // Fetch dimensions for ending soon forecasts
+  const { data: forecastDimensionsMap = {} } = useQuery({
+    queryKey: ["forecast-dimensions-overview", endingSoonIds],
+    enabled: endingSoonIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("forecast_targets")
+        .select("forecast_id, dimension")
+        .in("forecast_id", endingSoonIds);
+      if (error) throw error;
+      const map: Record<string, string> = {};
+      (data || []).forEach((d: any) => { map[d.forecast_id] = d.dimension; });
+      return map;
+    },
+  });
   const { data: spotlightEntries = [] } = useSpotlightProjects();
 
   const spotlightProjects = spotlightEntries.
@@ -245,6 +262,11 @@ const Overview = () => {
             </motion.div>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {endingSoon.map((forecast, i) => {
+              const dimension = (forecastDimensionsMap as Record<string, string>)[forecast.id];
+              const isPriceMarket = dimension === "token_price" || dimension === "market_cap";
+              const isSentimentDual = dimension === "community_sentiment" && !!forecast.project_b_name;
+              const yesLabel = isPriceMarket ? "Long" : isSentimentDual ? (forecast.project_a_name || "Yes") : "Yes";
+              const noLabel = isPriceMarket ? "Short" : isSentimentDual ? (forecast.project_b_name || "No") : "No";
               const totalVotes = forecast.total_votes_yes + forecast.total_votes_no;
               const yesPct = totalVotes > 0 ? forecast.total_votes_yes / totalVotes * 100 : 50;
               const noPct = 100 - yesPct;
@@ -308,10 +330,10 @@ const Overview = () => {
                     <div className="px-5 pb-5 pt-1 space-y-2">
                       <div className="flex gap-2.5">
                         <span className="flex-1 rounded-lg py-2.5 text-sm font-bold text-center bg-primary/10 text-primary">
-                          Yes
+                          {yesLabel}
                         </span>
                         <span className="flex-1 rounded-lg py-2.5 text-sm font-bold text-center bg-destructive/10 text-destructive">
-                          No
+                          {noLabel}
                         </span>
                       </div>
                       <p className="text-[10px] text-muted-foreground text-center">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</p>

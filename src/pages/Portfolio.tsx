@@ -835,23 +835,6 @@ const Portfolio = () => {
                             </div>
                           </div>
                           <div className="py-1.5 px-1.5">
-                            <button
-                              onClick={() => { setActiveTab("profile"); setProfileDropdownOpen(false); }}
-                              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-muted-foreground hover:bg-secondary/50 hover:text-foreground transition-all"
-                            >
-                              <User className="h-3.5 w-3.5" />
-                              My Profile
-                            </button>
-                            {isAdmin && (
-                              <Link
-                                to="/admin"
-                                onClick={() => setProfileDropdownOpen(false)}
-                                className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-muted-foreground hover:bg-secondary/50 hover:text-foreground transition-all"
-                              >
-                                <Shield className="h-3.5 w-3.5" />
-                                Admin Dashboard
-                              </Link>
-                            )}
                             <Link
                               to="/submit"
                               onClick={() => setProfileDropdownOpen(false)}
@@ -938,18 +921,15 @@ const Portfolio = () => {
                 Admin
               </Link>
             )}
-            <div className="flex items-center gap-2.5 px-3 py-2">
-              <UserAvatar avatarUrl={avatarUrl} displayName={displayName} size="sm" />
-              <span className="text-sm font-medium text-foreground truncate flex-1">
-                {displayName || user?.email?.split("@")[0] || "User"}
-              </span>
-            </div>
             <button
               onClick={handleSignOut}
-              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 transition-all"
+              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-secondary/40 transition-all"
             >
-              <LogOut className="h-4 w-4" />
-              Sign Out
+              <UserAvatar avatarUrl={avatarUrl} displayName={displayName} size="sm" />
+              <span className="text-foreground truncate flex-1 text-left">
+                {displayName || user?.email?.split("@")[0] || "User"}
+              </span>
+              <LogOut className="h-4 w-4 text-destructive shrink-0" />
             </button>
           </div>
         </aside>
@@ -1636,7 +1616,17 @@ const Portfolio = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
+                className="space-y-4"
               >
+                <div className="rounded-xl border border-border bg-card p-4 flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
+                    <Bell className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-semibold text-foreground">Price Alerts</h2>
+                    <p className="text-xs text-muted-foreground">Get notified when token prices hit your thresholds</p>
+                  </div>
+                </div>
                 <PriceAlertsManager
                   projects={projects}
                   holdingProjectIds={holdings.map((h: any) => h.project_id)}
@@ -1652,7 +1642,17 @@ const Portfolio = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
+                className="space-y-4"
               >
+                <div className="rounded-xl border border-border bg-card p-4 flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
+                    <Activity className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-semibold text-foreground">My Forecasts</h2>
+                    <p className="text-xs text-muted-foreground">Manage and track your community predictions</p>
+                  </div>
+                </div>
                 <MyForecasts />
               </motion.div>
             )}
@@ -1690,7 +1690,15 @@ const Portfolio = () => {
                 transition={{ duration: 0.2 }}
                 className="space-y-6"
               >
-                {/* Stats Cards */}
+                <div className="rounded-xl border border-border bg-card p-4 flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
+                    <Clock className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-semibold text-foreground">Activities</h2>
+                    <p className="text-xs text-muted-foreground">Your voting history and performance stats</p>
+                  </div>
+                </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {statsLoading ? (
                     Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)
@@ -1781,7 +1789,7 @@ const Portfolio = () => {
               </motion.div>
             )}
 
-            {/* ── Profile Tab ── */}
+            {/* ── Settings Tab ── */}
             {activeTab === "profile" && (
               <motion.div
                 key="profile"
@@ -1789,8 +1797,17 @@ const Portfolio = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
-                className="space-y-6"
+                className="space-y-6 [&_.rounded-lg]:hover:bg-transparent"
               >
+                <div className="rounded-xl border border-border bg-card p-4 flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
+                    <Lock className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-semibold text-foreground">Settings</h2>
+                    <p className="text-xs text-muted-foreground">Manage your profile, notifications, and account</p>
+                  </div>
+                </div>
                 {/* Profile Header */}
                 <Card className="overflow-hidden border-border/50">
                   <div className="h-24 bg-gradient-to-r from-primary/20 via-accent/10 to-primary/5" />

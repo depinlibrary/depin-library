@@ -274,7 +274,7 @@ const ForecastDetail = () => {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Navbar />
-        <div className="container mx-auto px-4 pt-24 pb-16 max-w-7xl">
+        <div className="container mx-auto px-4 pt-24 pb-16">
           <Skeleton className="h-5 w-32 mb-6" />
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="space-y-4">
@@ -321,7 +321,7 @@ const ForecastDetail = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
 
-      <main className="container mx-auto px-4 pt-24 pb-16 max-w-7xl">
+      <main className="container mx-auto px-4 pt-24 pb-16">
         {/* Breadcrumb */}
         <Link to="/forecasts" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-5">
           <ArrowLeft className="h-3.5 w-3.5" /> Back to Forecasts

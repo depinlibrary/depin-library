@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bot, ArrowRightLeft, Sparkles, Database, AlertTriangle, Shield, TrendingUp, Zap, Loader2, Flame, LogIn, Plus, Clock, MessageSquare, Sun, Moon, User, Bell, Camera, Pencil, Check, LogOut, Briefcase } from "lucide-react";
+import logoImg from "@/assets/logo.png";
 import { useNavigate, Link } from "react-router-dom";
 import SentimentBadge from "@/components/SentimentBadge";
 import NotificationDropdown from "@/components/NotificationDropdown";
@@ -217,24 +218,18 @@ const CompareProjects = () => {
         <div className="flex h-14 items-center">
           {/* Logo area — matches sidebar width */}
           <div className="hidden md:flex items-center w-[260px] shrink-0 px-4 border-r border-border/50 h-full">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10">
-                <span className="text-xs">⬡</span>
-              </div>
+            <Link to="/" className="flex items-center gap-0">
+              <img src={logoImg} alt="DePIN Library" className="h-10 w-10 object-contain" />
               <span className="text-base font-semibold tracking-tight text-foreground">
-                DePIN <span className="text-primary">Library</span>
+                DePIN Library
               </span>
             </Link>
           </div>
           {/* Mobile logo */}
           <div className="flex md:hidden items-center px-4">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10">
-                <span className="text-xs">⬡</span>
-              </div>
-              <span className="text-base font-semibold tracking-tight text-foreground">
-                DePIN <span className="text-primary">Library</span>
-              </span>
+            <Link to="/" className="flex items-center gap-0">
+              <img src={logoImg} alt="DePIN Library" className="h-9 w-9 object-contain" />
+              <span className="text-sm font-semibold tracking-tight text-foreground">DePIN Library</span>
             </Link>
           </div>
           {/* Right side — theme toggle, notifications, profile */}
@@ -347,24 +342,6 @@ const CompareProjects = () => {
                           </div>
                           <div className="py-1.5 px-1.5">
                             <Link
-                              to="/profile"
-                              onClick={() => setProfileDropdownOpen(false)}
-                              className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-muted-foreground hover:bg-secondary/50 hover:text-foreground transition-all"
-                            >
-                              <User className="h-3.5 w-3.5" />
-                              My Profile
-                            </Link>
-                            {isAdmin && (
-                              <Link
-                                to="/admin"
-                                onClick={() => setProfileDropdownOpen(false)}
-                                className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-muted-foreground hover:bg-secondary/50 hover:text-foreground transition-all"
-                              >
-                                <Shield className="h-3.5 w-3.5" />
-                                Admin Dashboard
-                              </Link>
-                            )}
-                            <Link
                               to="/portfolio"
                               onClick={() => setProfileDropdownOpen(false)}
                               className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-muted-foreground hover:bg-secondary/50 hover:text-foreground transition-all"
@@ -412,76 +389,78 @@ const CompareProjects = () => {
       </header>
 
       <div className="flex flex-1 pt-14">
-        {/* ── Sidebar — always visible on md+ ── */}
-        <aside className="hidden md:flex flex-col w-[260px] shrink-0 border-r border-border bg-card/30 sticky top-14 h-[calc(100vh-3.5rem)]">
-          {/* Sidebar header */}
-          <div className="flex items-center px-4 h-12 border-b border-border/50">
-            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Comparison History</span>
-          </div>
+        {/* ── Sidebar — fixed, only visible when logged in ── */}
+        {user && (
+          <aside className="hidden md:flex flex-col w-[260px] shrink-0 border-r border-border bg-card/30 fixed top-14 left-0 bottom-0 overflow-hidden">
+            {/* Sidebar header */}
+            <div className="flex items-center px-4 h-12 border-b border-border/50">
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Comparison History</span>
+            </div>
 
-          {/* History list */}
-          <div className="flex-1 overflow-y-auto">
-            {groupedHistory.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 text-center px-4">
-                <MessageSquare className="h-6 w-6 text-muted-foreground/20 mb-2" />
-                <p className="text-xs text-muted-foreground">No comparisons yet</p>
-                <p className="text-[10px] text-muted-foreground/60 mt-1">Select two projects to get started</p>
-              </div>
-            ) : (
-              groupedHistory.map((group) => (
-                <div key={group.label}>
-                  <div className="px-4 pt-4 pb-1.5">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">{group.label}</p>
-                  </div>
-                  <div className="px-2 space-y-0.5">
-                    {group.items.map((c: any) => (
-                      <button
-                        key={c.id}
-                        onClick={() => handleHistoryClick(c)}
-                        className={`w-full text-left rounded-lg px-3 py-2.5 transition-all ${
-                          activeHistoryId === c.id
-                            ? "bg-secondary border border-border"
-                            : "hover:bg-secondary/30 border border-transparent"
-                        }`}
-                      >
-                         <div className="flex items-center gap-2">
-                          <div className="flex items-center gap-1 shrink-0">
-                            <div className="h-6 w-6 rounded-md overflow-hidden bg-secondary flex items-center justify-center">
-                              {c.projectA.logo_url ? (
-                                <img src={c.projectA.logo_url} alt="" className="h-6 w-6 object-contain" />
-                              ) : (
-                                <span className="text-xs">{c.projectA.logo_emoji}</span>
-                              )}
-                            </div>
-                            <span className="text-[9px] text-muted-foreground/50 font-medium">vs</span>
-                            <div className="h-6 w-6 rounded-md overflow-hidden bg-secondary flex items-center justify-center">
-                              {c.projectB.logo_url ? (
-                                <img src={c.projectB.logo_url} alt="" className="h-6 w-6 object-contain" />
-                              ) : (
-                                <span className="text-xs">{c.projectB.logo_emoji}</span>
-                              )}
-                            </div>
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-xs font-medium text-foreground truncate leading-tight">
-                              {c.projectA.name} vs {c.projectB.name}
-                            </p>
-                            <p className="text-[10px] text-muted-foreground/50 mt-0.5">
-                              {formatDistanceToNow(new Date(c.created_at), { addSuffix: true })}
-                            </p>
-                          </div>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
+            {/* History list */}
+            <div className="flex-1 overflow-y-auto">
+              {groupedHistory.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 text-center px-4">
+                  <MessageSquare className="h-6 w-6 text-muted-foreground/20 mb-2" />
+                  <p className="text-xs text-muted-foreground">No comparisons yet</p>
+                  <p className="text-[10px] text-muted-foreground/60 mt-1">Select two projects to get started</p>
                 </div>
-              ))
-            )}
-          </div>
-        </aside>
+              ) : (
+                groupedHistory.map((group) => (
+                  <div key={group.label}>
+                    <div className="px-4 pt-4 pb-1.5">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">{group.label}</p>
+                    </div>
+                    <div className="px-2 space-y-0.5">
+                      {group.items.map((c: any) => (
+                        <button
+                          key={c.id}
+                          onClick={() => handleHistoryClick(c)}
+                          className={`w-full text-left rounded-lg px-3 py-2.5 transition-all ${
+                            activeHistoryId === c.id
+                              ? "bg-secondary border border-border"
+                              : "hover:bg-secondary/30 border border-transparent"
+                          }`}
+                        >
+                           <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1 shrink-0">
+                              <div className="h-6 w-6 rounded-md overflow-hidden bg-secondary flex items-center justify-center">
+                                {c.projectA.logo_url ? (
+                                  <img src={c.projectA.logo_url} alt="" className="h-6 w-6 object-contain" />
+                                ) : (
+                                  <span className="text-xs">{c.projectA.logo_emoji}</span>
+                                )}
+                              </div>
+                              <span className="text-[9px] text-muted-foreground/50 font-medium">vs</span>
+                              <div className="h-6 w-6 rounded-md overflow-hidden bg-secondary flex items-center justify-center">
+                                {c.projectB.logo_url ? (
+                                  <img src={c.projectB.logo_url} alt="" className="h-6 w-6 object-contain" />
+                                ) : (
+                                  <span className="text-xs">{c.projectB.logo_emoji}</span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs font-medium text-foreground truncate leading-tight">
+                                {c.projectA.name} vs {c.projectB.name}
+                              </p>
+                              <p className="text-[10px] text-muted-foreground/50 mt-0.5">
+                                {formatDistanceToNow(new Date(c.created_at), { addSuffix: true })}
+                              </p>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </aside>
+        )}
 
         {/* ── Main Content ── */}
-        <main className="flex-1 overflow-y-auto">
+        <main className={`flex-1 overflow-y-auto ${user ? 'md:ml-[260px]' : ''}`}>
           <div className="absolute inset-0 bg-grid opacity-15 pointer-events-none" />
           <div className="gradient-radial-top fixed inset-0 pointer-events-none" />
 

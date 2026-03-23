@@ -24,7 +24,6 @@ const ProjectForecasts = ({ projectId, projectName }: ProjectForecastsProps) => 
   const { data: forecasts = [], isLoading } = useQuery({
     queryKey: ["project-forecasts", projectId],
     queryFn: async () => {
-      // Get forecasts where this project is project_a or project_b
       const { data, error } = await supabase
         .from("forecasts")
         .select(`
@@ -40,6 +39,22 @@ const ProjectForecasts = ({ projectId, projectName }: ProjectForecastsProps) => 
       return data || [];
     },
     enabled: !!projectId,
+  });
+
+  const forecastIds = forecasts.map((f: any) => f.id);
+  const { data: dimensionsMap = {} } = useQuery({
+    queryKey: ["project-forecast-dimensions", projectId, forecastIds],
+    enabled: forecastIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("forecast_targets")
+        .select("forecast_id, dimension")
+        .in("forecast_id", forecastIds);
+      if (error) throw error;
+      const map: Record<string, string> = {};
+      (data || []).forEach((d: any) => { map[d.forecast_id] = d.dimension; });
+      return map;
+    },
   });
 
   if (isLoading) {
@@ -66,6 +81,11 @@ const ProjectForecasts = ({ projectId, projectName }: ProjectForecastsProps) => 
   return (
     <div className="grid gap-3 sm:grid-cols-2">
       {forecasts.map((forecast: any) => {
+        const dimension = (dimensionsMap as Record<string, string>)[forecast.id];
+        const isPriceMarket = dimension === "token_price" || dimension === "market_cap";
+        const isSentimentDual = dimension === "community_sentiment" && !!forecast.project_b;
+        const yesLabel = isPriceMarket ? "Long" : isSentimentDual ? forecast.project_a?.name : "Yes";
+        const noLabel = isPriceMarket ? "Short" : isSentimentDual ? forecast.project_b?.name : "No";
         const totalVotes = forecast.total_votes_yes + forecast.total_votes_no;
         const yesPct = totalVotes > 0 ? (forecast.total_votes_yes / totalVotes) * 100 : 50;
         const noPct = 100 - yesPct;
@@ -124,8 +144,8 @@ const ProjectForecasts = ({ projectId, projectName }: ProjectForecastsProps) => 
             {!isEnded ? (
               <div className="px-5 pb-5 pt-1 space-y-2">
                 <div className="flex gap-2.5">
-                  <span className="flex-1 rounded-lg py-2.5 text-sm font-bold text-center bg-primary/10 text-primary">Yes</span>
-                  <span className="flex-1 rounded-lg py-2.5 text-sm font-bold text-center bg-destructive/10 text-destructive">No</span>
+                  <span className="flex-1 rounded-lg py-2.5 text-sm font-bold text-center bg-primary/10 text-primary">{yesLabel}</span>
+                  <span className="flex-1 rounded-lg py-2.5 text-sm font-bold text-center bg-destructive/10 text-destructive">{noLabel}</span>
                 </div>
                 <p className="text-[10px] text-muted-foreground text-center">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</p>
               </div>
