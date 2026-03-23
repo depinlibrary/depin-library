@@ -197,12 +197,13 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
   );
 };
 // ---- Hero Section with Auto-Sliding Carousel + Sentiment Chart ----
-const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setShowCreate }: {
+const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setShowCreate, heroDimensionsMap }: {
   forecasts: Forecast[];
   topLiveForecasts: Forecast[];
   trendingTopics: any[];
   user: any;
   setShowCreate: (v: boolean) => void;
+  heroDimensionsMap: Record<string, string[]>;
 }) => {
   const [activeSlide, setActiveSlide] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
