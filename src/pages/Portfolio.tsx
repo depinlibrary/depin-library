@@ -1048,7 +1048,7 @@ const Portfolio = () => {
           <AnimatePresence mode="wait">
             {activeTab === "dashboard" && (
               <motion.div
-                key="holdings"
+                key="dashboard"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
