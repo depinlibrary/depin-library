@@ -619,7 +619,7 @@ const Forecasts = () => {
     enabled: !!user,
     staleTime: 30_000,
   });
-  const dailyRemaining = Math.max(0, 3 - dailyForecastCount);
+  const dailyRemaining = Math.max(0, 5 - dailyForecastCount);
 
 
   const timePresets = [
@@ -945,19 +945,13 @@ const Forecasts = () => {
               )}
             </button>
 
-            {/* Daily limit indicator */}
-            {user && (
-              <span className={`shrink-0 text-[10px] font-medium ${dailyRemaining === 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
-                {dailyRemaining}/3 today
-              </span>
-            )}
 
             {/* Create Forecast */}
             <Button
               onClick={() => {
                 if (user) {
                   if (dailyRemaining <= 0) {
-                    toast.error("You've reached your daily limit of 3 forecasts. Try again tomorrow.");
+                    toast.error("You've reached your daily limit of 5 forecasts. Try again tomorrow.");
                     return;
                   }
                   setShowCreate(true);
@@ -1161,11 +1155,18 @@ const Forecasts = () => {
               transition={{ duration: 0.3, ease: "easeInOut" }}
               className="hidden lg:block shrink-0 overflow-hidden"
             >
-              <div className="w-[420px] sticky top-[7rem] z-40">
+              <div className="w-[420px] sticky top-[7rem] z-40 -mt-4">
                 <div className="rounded-2xl border border-border bg-card overflow-hidden">
                   {/* Panel header */}
                   <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-                    <h2 className="text-base font-bold text-foreground font-['Space_Grotesk']">Create Forecast</h2>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-base font-bold text-foreground font-['Space_Grotesk']">Create Forecast</h2>
+                      {user && (
+                        <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${dailyRemaining === 0 ? 'bg-destructive/10 text-destructive' : 'bg-secondary text-muted-foreground'}`}>
+                          {dailyRemaining}/5 today
+                        </span>
+                      )}
+                    </div>
                     <div className="flex items-center gap-1.5">
                       {(title || description) && (
                         <Button variant="ghost" size="sm" onClick={() => { setTitle(""); setDescription(""); }} className="h-7 gap-1.5 text-xs text-muted-foreground hover:text-foreground">

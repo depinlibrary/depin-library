@@ -201,8 +201,8 @@ export function useCreateForecast() {
         .eq("creator_user_id", user.id)
         .gte("created_at", oneDayAgo);
 
-      if ((recentCount ?? 0) >= 3) {
-        throw new Error("You can only create 3 forecasts per day. Please try again later.");
+      if ((recentCount ?? 0) >= 5) {
+        throw new Error("You can only create 5 forecasts per day. Please try again later.");
       }
 
       // Check for duplicate forecasts
