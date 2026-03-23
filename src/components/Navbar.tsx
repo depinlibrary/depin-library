@@ -600,7 +600,7 @@ const Navbar = () => {
               </div>
             </>
           ) : (
-            <SignInButton />
+            <AuthButtons />
           )}
         </div>
 
