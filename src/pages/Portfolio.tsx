@@ -859,7 +859,7 @@ const Portfolio = () => {
             <div className="absolute inset-0 bg-grid opacity-20" />
             <div className="gradient-radial-top absolute inset-0" />
 
-            <div className="relative mx-auto max-w-6xl px-4 pt-6">
+            <div className="relative px-4 md:px-6 pt-6">
           {/* ── Hero Banner ── */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
