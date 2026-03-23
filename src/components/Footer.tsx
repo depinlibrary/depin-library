@@ -38,9 +38,7 @@ const Footer = () => {
           {/* Brand column */}
           <div className="flex flex-col gap-4 lg:col-span-1">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                <span className="text-base">⬡</span>
-              </div>
+              <img src={logoImg} alt="DePIN Library" className="h-8 w-8 rounded-lg object-contain" />
               <span className="text-sm font-bold text-foreground font-['Space_Grotesk'] tracking-tight">
                 DePIN Library
               </span>
