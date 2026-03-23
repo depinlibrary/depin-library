@@ -753,6 +753,27 @@ const Forecasts = () => {
   const heroAllForecasts = useMemo(() => heroDataAll?.forecasts || [], [heroDataAll]);
   const heroTopLiveForecasts = useMemo(() => heroDataTopLive?.forecasts || [], [heroDataTopLive]);
 
+  // Fetch dimensions for hero forecasts
+  const heroForecastIds = useMemo(() => heroAllForecasts.map(f => f.id), [heroAllForecasts]);
+  const { data: heroDimensionsMap = {} } = useQuery({
+    queryKey: ["hero-forecast-dimensions", heroForecastIds],
+    queryFn: async () => {
+      if (heroForecastIds.length === 0) return {};
+      const { data } = await supabase
+        .from("forecast_targets")
+        .select("forecast_id, dimension")
+        .in("forecast_id", heroForecastIds);
+      const map: Record<string, string[]> = {};
+      (data || []).forEach((t: any) => {
+        if (!map[t.forecast_id]) map[t.forecast_id] = [];
+        map[t.forecast_id].push(t.dimension);
+      });
+      return map;
+    },
+    enabled: heroForecastIds.length > 0,
+    staleTime: 60_000,
+  });
+
   // Stats
   const stats = useMemo(() => {
     const totalVotes = forecasts.reduce((sum, f) => sum + f.total_votes_yes + f.total_votes_no, 0);
