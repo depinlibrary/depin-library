@@ -121,10 +121,10 @@ const Navbar = () => {
     >
       <div className="container mx-auto flex h-14 items-center px-4">
         {/* Logo — left */}
-        <Link to="/" className="flex items-center gap-2 shrink-0" onClick={() => setMobileOpen(false)}>
-          <img src={logoImg} alt="DePIN Library" className="h-7 w-7 rounded-lg object-contain" />
+        <Link to="/" className="flex items-center gap-2.5 shrink-0" onClick={() => setMobileOpen(false)}>
+          <img src={logoImg} alt="DePIN Library" className="h-9 w-9 object-contain" />
           <span className="text-base font-semibold tracking-tight text-foreground">
-            DePIN <span className="text-primary">Library</span>
+            DePIN Library
           </span>
         </Link>
 
