@@ -1288,9 +1288,9 @@ const Forecasts = () => {
         </AnimatePresence>
 
         {/* Mobile fallback: Dialog on smaller screens */}
-        {showCreate && (
+        {showCreate && !isLgScreen && (
           <Dialog open={showCreate} onOpenChange={setShowCreate}>
-            <DialogContent className="sm:max-w-lg lg:hidden">
+            <DialogContent className="sm:max-w-lg">
               <DialogHeader>
                 <DialogTitle className="font-['Space_Grotesk']">Create Forecast</DialogTitle>
               </DialogHeader>
