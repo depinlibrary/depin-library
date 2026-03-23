@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Clock, CalendarDays, Timer, Users, ExternalLink, Copy, ArrowUpRight, ArrowDownRight, ThumbsUp, ThumbsDown, Gauge, Target, Zap } from "lucide-react";
+import { ArrowLeft, Clock, CalendarDays, Timer, Users, ExternalLink, Copy, ArrowUpRight, ArrowDownRight, ThumbsUp, ThumbsDown, Gauge, Target, Zap, CheckCircle2, XCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -484,19 +484,25 @@ const ForecastDetail = () => {
                       <div className="flex items-center justify-end">
                         <Badge
                           variant="secondary"
-                          className={`text-[10px] font-semibold ${outcomeIsLong ? "bg-primary/10 text-primary border-primary/20" : "bg-destructive/10 text-destructive border-destructive/20"}`}
+                          className={`text-[10px] font-semibold ${outcomeIsLong ? "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20" : "bg-destructive/10 text-destructive border-destructive/20"}`}
                         >
-                          Result: {outcomeLabel} {isPriceMarket ? (outcomeIsLong ? "📈" : "📉") : `(${outcomeIsLong ? yesPct.toFixed(0) : noPct.toFixed(0)}%)`}
+                          Result: {outcomeLabel} {isPriceMarket ? (outcomeIsLong ? "(Long)" : "(Short)") : `(${outcomeIsLong ? yesPct.toFixed(0) : noPct.toFixed(0)}%)`}
                         </Badge>
                       </div>
                       {userVote && (
                         <div className={`flex items-center justify-between rounded-lg px-4 py-2.5 text-xs font-semibold ${
                           userCorrect
-                            ? "bg-primary/10 text-primary border border-primary/20"
+                            ? "bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20"
                             : "bg-destructive/10 text-destructive border border-destructive/20"
                         }`}>
                           <span>Your Prediction: {userVoteLabel}</span>
-                          <span>{userCorrect ? "Correct 🎯" : "Incorrect"}</span>
+                          <span className="flex items-center gap-1">
+                            {userCorrect ? (
+                              <><CheckCircle2 className="h-3.5 w-3.5" /> Correct</>
+                            ) : (
+                              <><XCircle className="h-3.5 w-3.5" /> Incorrect</>
+                            )}
+                          </span>
                         </div>
                       )}
                     </div>
@@ -758,7 +764,7 @@ const ForecastDetail = () => {
             )}
 
             {/* Forecast Analysis */}
-            <ForecastAnalysis forecastId={forecast.id} isEnded={isEnded} totalVotesYes={forecast.total_votes_yes} totalVotesNo={forecast.total_votes_no} predictionTarget={forecast.prediction_target} predictionDirection={forecast.prediction_direction} startPrice={forecast.start_price} forecastDimension={forecastDimension} projectAId={forecast.project_a_id} projectBId={forecast.project_b_id} projectAName={forecast.project_a?.name} projectBName={forecast.project_b?.name} />
+            <ForecastAnalysis forecastId={forecast.id} isEnded={isEnded} totalVotesYes={forecast.total_votes_yes} totalVotesNo={forecast.total_votes_no} predictionTarget={forecast.prediction_target} predictionDirection={forecast.prediction_direction} startPrice={forecast.start_price} forecastDimension={forecastDimension} projectAId={forecast.project_a_id} projectBId={forecast.project_b_id} projectAName={forecast.project_a?.name} projectBName={forecast.project_b?.name} isCreator={!!user && user.id === forecast.creator_user_id} />
 
             {/* Vote Trend — for token_price/market_cap, show in right column below analysis */}
             {(forecastDimension === "token_price" || forecastDimension === "market_cap") && (

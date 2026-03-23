@@ -52,9 +52,10 @@ interface Props {
   projectBId?: string | null;
   projectAName?: string;
   projectBName?: string;
+  isCreator?: boolean;
 }
 
-export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 0, totalVotesNo = 0, predictionTarget, predictionDirection, startPrice, forecastDimension, projectAId, projectBId, projectAName, projectBName }: Props) {
+export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 0, totalVotesNo = 0, predictionTarget, predictionDirection, startPrice, forecastDimension, projectAId, projectBId, projectAName, projectBName, isCreator = false }: Props) {
   const { data: targets = [] } = useQuery({
     queryKey: ["forecast-targets", forecastId],
     queryFn: async () => {
@@ -258,7 +259,8 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
                 </div>
               )}
 
-              {/* Progress toward target */}
+              {/* Progress toward target — creator only */}
+              {isCreator && (
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Progress to Target</span>
@@ -279,6 +281,7 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
                   <span className="text-[9px] text-muted-foreground">{targetPct.toFixed(1)}%</span>
                 </div>
               </div>
+              )}
             </div>
           );
         })()}
@@ -331,7 +334,8 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
                 </div>
               </div>
 
-              {/* Progress toward target */}
+              {/* Progress toward target — creator only */}
+              {isCreator && (
               <div className="mt-4">
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Progress to Target</span>
@@ -352,6 +356,7 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
                   <span className="text-[9px] text-muted-foreground">{formatVal(predictionTarget)}</span>
                 </div>
               </div>
+              )}
             </div>
           );
         })()}
