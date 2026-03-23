@@ -777,6 +777,7 @@ const ForecastDetail = () => {
             {relatedForecasts.length > 0 && (
               <RelatedForecastsList forecasts={relatedForecasts} />
             )}
+            </div>
           </div>
         </div>
       </main>
