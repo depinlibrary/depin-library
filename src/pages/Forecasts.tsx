@@ -945,12 +945,6 @@ const Forecasts = () => {
               )}
             </button>
 
-            {/* Daily limit indicator */}
-            {user && (
-              <span className={`shrink-0 text-[10px] font-medium ${dailyRemaining === 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
-                {dailyRemaining}/3 today
-              </span>
-            )}
 
             {/* Create Forecast */}
             <Button
