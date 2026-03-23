@@ -321,15 +321,15 @@ const ForecastDetail = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
 
-      <main className="container mx-auto px-4 pt-24 pb-0 flex flex-col">
-        {/* Breadcrumb */}
-        <Link to="/forecasts" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-5 shrink-0">
-          <ArrowLeft className="h-3.5 w-3.5" /> Back to Forecasts
-        </Link>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-16">
+      <main className="container mx-auto px-4 pt-20">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* ═══════ LEFT COLUMN (2/3): Hero Card + Tabs ═══════ */}
-          <div className="lg:col-span-2 space-y-4 lg:overflow-y-auto lg:h-[calc(100vh-4rem)] lg:sticky lg:top-16 lg:pr-2 scrollbar-hide">
+          <div className="lg:col-span-2 lg:overflow-y-auto lg:h-[calc(100vh-4rem)] lg:sticky lg:top-16 lg:pt-4 lg:pb-16 scrollbar-hide">
+            {/* Breadcrumb */}
+            <Link to="/forecasts" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-5">
+              <ArrowLeft className="h-3.5 w-3.5" /> Back to Forecasts
+            </Link>
+            <div className="space-y-4">
             {/* Hero Card — matches Forecasts page hero style */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
