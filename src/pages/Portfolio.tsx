@@ -1789,7 +1789,7 @@ const Portfolio = () => {
               </motion.div>
             )}
 
-            {/* ── Profile Tab ── */}
+            {/* ── Settings Tab ── */}
             {activeTab === "profile" && (
               <motion.div
                 key="profile"
@@ -1797,8 +1797,17 @@ const Portfolio = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
-                className="space-y-6"
+                className="space-y-6 [&_.rounded-lg]:hover:bg-transparent"
               >
+                <div className="rounded-xl border border-border bg-card p-4 flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
+                    <Lock className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-semibold text-foreground">Settings</h2>
+                    <p className="text-xs text-muted-foreground">Manage your profile, notifications, and account</p>
+                  </div>
+                </div>
                 {/* Profile Header */}
                 <Card className="overflow-hidden border-border/50">
                   <div className="h-24 bg-gradient-to-r from-primary/20 via-accent/10 to-primary/5" />
