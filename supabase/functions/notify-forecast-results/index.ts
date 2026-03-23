@@ -199,9 +199,11 @@ async function determinePriceOutcome(
     if (forecast.prediction_target != null) {
       const target = Number(forecast.prediction_target);
       if (forecast.prediction_direction === "long") {
+        // Long target met → Long wins ("yes"), not met → Short wins ("no")
         return endVal >= target ? "yes" : "no";
       } else {
-        return endVal <= target ? "yes" : "no";
+        // Short target met → Short wins ("no"), not met → Long wins ("yes")
+        return endVal <= target ? "no" : "yes";
       }
     }
 
