@@ -1690,7 +1690,15 @@ const Portfolio = () => {
                 transition={{ duration: 0.2 }}
                 className="space-y-6"
               >
-                {/* Stats Cards */}
+                <div className="rounded-xl border border-border bg-card p-4 flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
+                    <Clock className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-semibold text-foreground">Activities</h2>
+                    <p className="text-xs text-muted-foreground">Your voting history and performance stats</p>
+                  </div>
+                </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {statsLoading ? (
                     Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)
