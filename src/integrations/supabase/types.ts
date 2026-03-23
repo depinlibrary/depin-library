@@ -376,6 +376,7 @@ export type Database = {
           end_date: string
           end_notifications_sent: boolean
           id: string
+          outcome: string | null
           prediction_direction: string | null
           prediction_target: number | null
           project_a_id: string
@@ -393,6 +394,7 @@ export type Database = {
           end_date: string
           end_notifications_sent?: boolean
           id?: string
+          outcome?: string | null
           prediction_direction?: string | null
           prediction_target?: number | null
           project_a_id: string
@@ -410,6 +412,7 @@ export type Database = {
           end_date?: string
           end_notifications_sent?: boolean
           id?: string
+          outcome?: string | null
           prediction_direction?: string | null
           prediction_target?: number | null
           project_a_id?: string
