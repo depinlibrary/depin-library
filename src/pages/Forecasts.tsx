@@ -595,7 +595,14 @@ const Forecasts = () => {
   const [timePreset, setTimePreset] = useState<string>("");
   const [predictionDirection, setPredictionDirection] = useState<"long" | "short" | "">("");
   const [predictionTarget, setPredictionTarget] = useState<string>("");
-  
+
+  // Track if viewport is lg+ (1024px) to conditionally render Dialog vs inline panel
+  const isLgScreen = useSyncExternalStore(
+    (cb) => { const mql = window.matchMedia("(min-width: 1024px)"); mql.addEventListener("change", cb); return () => mql.removeEventListener("change", cb); },
+    () => window.matchMedia("(min-width: 1024px)").matches,
+    () => true
+  );
+
 
   const timePresets = [
     { value: "4h", label: "4 Hours", hours: 4 },
