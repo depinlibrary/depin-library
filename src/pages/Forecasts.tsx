@@ -1153,7 +1153,8 @@ const Forecasts = () => {
               animate={{ width: 420, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="hidden lg:block shrink-0 overflow-hidden"
+              className="hidden lg:block shrink-0"
+              style={{ overflow: "clip" }}
             >
               <div className="w-[420px] sticky top-[7rem] z-40">
                 <div className="rounded-2xl border border-border bg-card overflow-hidden">
