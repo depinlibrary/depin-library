@@ -951,7 +951,7 @@ const Forecasts = () => {
               onClick={() => {
                 if (user) {
                   if (dailyRemaining <= 0) {
-                    toast.error("You've reached your daily limit of 3 forecasts. Try again tomorrow.");
+                    toast.error("You've reached your daily limit of 5 forecasts. Try again tomorrow.");
                     return;
                   }
                   setShowCreate(true);
