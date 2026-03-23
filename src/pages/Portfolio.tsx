@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Link, Navigate } from "react-router-dom";
+import logoImg from "@/assets/logo.png";
 import MyForecasts from "@/components/MyForecasts";
 import PriceAlertsManager from "@/components/PriceAlertsManager";
 import { useBookmarks, useToggleBookmark } from "@/hooks/useBookmarks";
