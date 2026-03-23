@@ -1046,7 +1046,7 @@ const Portfolio = () => {
 
           {/* ── Holdings Tab ── */}
           <AnimatePresence mode="wait">
-            {activeTab === "holdings" && (
+            {activeTab === "dashboard" && (
               <motion.div
                 key="holdings"
                 initial={{ opacity: 0, y: 10 }}
