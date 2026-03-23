@@ -370,7 +370,67 @@ const Portfolio = () => {
   const [sortBy, setSortBy] = useState<"value" | "change" | "name">("value");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [perfRange, setPerfRange] = useState<"1D" | "7D" | "30D" | "90D">("7D");
-  const [activeTab, setActiveTab] = useState<"dashboard" | "forecasts" | "alerts" | "watchlist">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "forecasts" | "alerts" | "watchlist" | "profile" | "activities">("dashboard");
+
+  // Profile & Activities hooks
+  const { data: forecastStats, isLoading: statsLoading } = useUserForecastStats(user?.id);
+  const { data: bookmarks } = useBookmarks();
+  const { data: notifPrefs, isLoading: prefsLoading } = useNotificationPreferences();
+  const updatePrefs = useUpdateNotificationPreferences();
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmText, setConfirmText] = useState("");
+  const profileFileInputRef = useRef<HTMLInputElement>(null);
+
+  const toggleNotifPref = (key: string, current: boolean) => {
+    updatePrefs.mutate({ [key]: !current }, {
+      onSuccess: () => toast.success("Preference updated"),
+      onError: () => toast.error("Failed to update preference"),
+    });
+  };
+
+  const handleChangePassword = async () => {
+    if (newPassword.length < 6) { toast.error("Password must be at least 6 characters"); return; }
+    if (newPassword !== confirmPassword) { toast.error("Passwords do not match"); return; }
+    setChangingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      toast.success("Password updated successfully");
+      setNewPassword(""); setConfirmPassword("");
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to update password");
+    } finally { setChangingPassword(false); }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (confirmText !== "DELETE") return;
+    setDeleting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await supabase.functions.invoke("delete-account", {
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (res.error) throw res.error;
+      await signOut();
+      toast.success("Your account has been deleted");
+    } catch (err) {
+      console.error("Delete account error:", err);
+      toast.error("Failed to delete account. Please try again.");
+    } finally { setDeleting(false); }
+  };
+
+  const notifOptions = [
+    { key: "forecast_vote", label: "Forecast votes", desc: "When someone votes on your forecast", icon: TrendingUp },
+    { key: "forecast_result", label: "Forecast results", desc: "When a forecast you voted on ends", icon: Crosshair },
+    { key: "forecast_new_comment", label: "New comments", desc: "Comments on your forecasts", icon: Bell },
+    { key: "forecast_comment_reply", label: "Comment replies", desc: "Replies to your comments", icon: Mail },
+    { key: "forecast_comment_like", label: "Comment likes", desc: "When someone likes your comment", icon: Award },
+    { key: "review_like", label: "Review likes", desc: "When someone likes your review", icon: Award },
+    { key: "price_alert", label: "Price alerts", desc: "Token price threshold alerts", icon: BarChart3 },
+  ];
 
   useEffect(() => {
     if (!user) { setIsAdmin(false); return; }
