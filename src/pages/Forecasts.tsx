@@ -159,32 +159,39 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
               </span>
             </div>
           );
-        })() : !isEnded ? (
-          <div className="flex gap-2.5">
-            <button
-              onClick={() => isAuthenticated ? onVote(forecast.id, "yes") : toast.error("Sign in to vote")}
-              className={`flex-1 rounded-lg py-2.5 text-sm font-bold transition-all duration-200 ${
-                forecast.user_vote === "yes"
+        })() : null}
+
+        {/* Vote buttons — always shown, disabled when ended */}
+        <div className="flex gap-2.5 mt-2">
+          <button
+            onClick={() => !isEnded ? (isAuthenticated ? onVote(forecast.id, "yes") : toast.error("Sign in to vote")) : undefined}
+            disabled={isEnded}
+            className={`flex-1 rounded-lg py-2.5 text-sm font-bold transition-all duration-200 ${
+              isEnded
+                ? "bg-secondary text-muted-foreground cursor-not-allowed opacity-60"
+                : forecast.user_vote === "yes"
                   ? "bg-primary text-primary-foreground"
                   : "bg-primary/10 text-primary hover:bg-primary/20"
-              }`}
-            >
-              {isPriceMarket && <TrendingUp className="h-3.5 w-3.5 inline mr-1" />}
-              {yesLabel}
-            </button>
-            <button
-              onClick={() => isAuthenticated ? onVote(forecast.id, "no") : toast.error("Sign in to vote")}
-              className={`flex-1 rounded-lg py-2.5 text-sm font-bold transition-all duration-200 ${
-                forecast.user_vote === "no"
+            }`}
+          >
+            {isPriceMarket && <TrendingUp className="h-3.5 w-3.5 inline mr-1" />}
+            {yesLabel}
+          </button>
+          <button
+            onClick={() => !isEnded ? (isAuthenticated ? onVote(forecast.id, "no") : toast.error("Sign in to vote")) : undefined}
+            disabled={isEnded}
+            className={`flex-1 rounded-lg py-2.5 text-sm font-bold transition-all duration-200 ${
+              isEnded
+                ? "bg-secondary text-muted-foreground cursor-not-allowed opacity-60"
+                : forecast.user_vote === "no"
                   ? "bg-destructive text-destructive-foreground"
                   : "bg-destructive/10 text-destructive hover:bg-destructive/20"
-              }`}
-            >
-              {isPriceMarket && <ArrowDownRight className="h-3.5 w-3.5 inline mr-1" />}
-              {noLabel}
-            </button>
-          </div>
-        ) : null}
+            }`}
+          >
+            {isPriceMarket && <ArrowDownRight className="h-3.5 w-3.5 inline mr-1" />}
+            {noLabel}
+          </button>
+        </div>
       </div>
     </motion.div>
   );
