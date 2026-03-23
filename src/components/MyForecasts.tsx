@@ -257,128 +257,79 @@ export default function MyForecasts() {
                 return (
                   <motion.div
                     key={f.id}
-                    initial={{ opacity: 0, y: 10 }}
+                    initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
-                    transition={{ delay: i * 0.04 }}
-                    className="rounded-lg border border-border overflow-hidden transition-colors hover:bg-secondary/20 h-full flex flex-col"
+                    transition={{ delay: i * 0.05, duration: 0.4 }}
+                    className="group relative rounded-xl border border-border bg-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20 h-full flex flex-col"
                   >
-                    <div className="p-4 flex-1 flex flex-col">
-                      {/* Header: Projects + time badge */}
-                      <div className="flex items-center gap-2 mb-2.5">
-                        <div className="flex items-center -space-x-1.5">
-                          {projA?.logo_url ? (
-                            <img
-                              src={projA.logo_url}
-                              alt={projA.name}
-                              className="w-6 h-6 rounded-[7px] overflow-hidden object-contain border-2 border-card bg-secondary relative z-10"
-                            />
-                          ) : (
-                            <span className="w-6 h-6 rounded-[7px] overflow-hidden flex items-center justify-center text-xs border-2 border-card bg-secondary relative z-10">
-                              {projA?.logo_emoji || "⬡"}
-                            </span>
-                          )}
-                          {projB && (
-                            projB.logo_url ? (
-                              <img
-                                src={projB.logo_url}
-                                alt={projB.name}
-                                className="w-6 h-6 rounded-[7px] overflow-hidden object-contain border-2 border-card bg-secondary relative z-0"
-                              />
+                    <div className="p-5 flex-1 flex flex-col">
+                      {/* Header row: logos + time */}
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2.5">
+                          <div className="flex items-center -space-x-2">
+                            {projA?.logo_url ? (
+                              <img src={projA.logo_url} alt={projA.name} className="w-9 h-9 rounded-lg object-contain border border-card bg-secondary relative z-10" />
                             ) : (
-                              <span className="w-6 h-6 rounded-[7px] overflow-hidden flex items-center justify-center text-xs border-2 border-card bg-secondary relative z-0">
-                                {projB.logo_emoji || "⬡"}
-                              </span>
-                            )
-                          )}
+                              <span className="w-9 h-9 rounded-lg flex items-center justify-center text-sm border border-card bg-secondary relative z-10">{projA?.logo_emoji || "⬡"}</span>
+                            )}
+                            {projB && (
+                              projB.logo_url ? (
+                                <img src={projB.logo_url} alt={projB.name} className="w-9 h-9 rounded-lg object-contain border border-card bg-secondary relative z-0" />
+                              ) : (
+                                <span className="w-9 h-9 rounded-lg flex items-center justify-center text-sm border border-card bg-secondary relative z-0">{projB?.logo_emoji || "⬡"}</span>
+                              )
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            {projA && (
+                              <Link to={`/project/${projA.slug}`} className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">{projA.name}</Link>
+                            )}
+                            {projB && (
+                              <>
+                                <span className="text-muted-foreground/40 text-[10px]">vs</span>
+                                <Link to={`/project/${projB.slug}`} className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">{projB.name}</Link>
+                              </>
+                            )}
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                          {projA && (
-                            <Link
-                              to={`/project/${projA.slug}`}
-                              className="text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors truncate"
-                            >
-                              {projA.name}
-                            </Link>
-                          )}
-                          {projB && (
-                            <>
-                              <span className="text-muted-foreground/40 text-[10px]">vs</span>
-                              <Link
-                                to={`/project/${projB.slug}`}
-                                className="text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors truncate"
-                              >
-                                {projB.name}
-                              </Link>
-                            </>
-                          )}
-                        </div>
-                        <span className={`shrink-0 rounded-md px-2 py-0.5 text-[10px] font-semibold tracking-wide ${
-                          isEnded
-                            ? "bg-muted text-muted-foreground"
-                            : "bg-primary/10 text-primary"
-                        }`}>
+                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${isEnded ? 'bg-destructive/10 text-destructive' : 'bg-green-500/10 text-green-600 dark:text-green-400'}`}>
                           {timeLeft}
                         </span>
                       </div>
 
                       {/* Title */}
-                      <Link to={`/forecasts/${f.id}`} className="block">
-                        <h3 className="text-[13px] font-semibold text-foreground leading-snug mb-2 line-clamp-2 hover:text-primary transition-colors">
+                      <Link to={`/forecasts/${f.id}`} className="block mb-auto">
+                        <h3 className="text-sm font-semibold text-foreground leading-snug line-clamp-2 group-hover:underline transition-all duration-200">
                           {f.title}
                         </h3>
                       </Link>
 
-                      {f.description ? (
-                        <p className="text-xs text-muted-foreground mb-3 line-clamp-2 leading-relaxed min-h-[2.5rem]">{f.description}</p>
-                      ) : (
-                        <div className="mb-3 min-h-[2.5rem]" />
-                      )}
-
-                      {/* Vote bar */}
-                      <div className="mb-2 mt-auto">
-                        <div className="flex items-end justify-between mb-1.5">
-                          <div className="flex items-baseline gap-1">
-                            <span className="text-base font-bold text-foreground">{yesPct.toFixed(0)}%</span>
-                            <span className="text-[10px] font-medium text-primary/70 uppercase tracking-wider">Yes</span>
-                          </div>
-                          <div className="flex items-baseline gap-1">
-                            <span className="text-[10px] font-medium text-destructive/70 uppercase tracking-wider">No</span>
-                            <span className="text-base font-bold text-foreground">{noPct.toFixed(0)}%</span>
-                          </div>
+                      {/* Percentage + bar */}
+                      <div className="mt-5 space-y-2.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xl font-bold text-foreground">{yesPct.toFixed(0)}% chance</span>
+                          <span className="text-xs text-muted-foreground">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</span>
                         </div>
-                        <div className="h-1.5 rounded-full bg-secondary overflow-hidden flex">
+                        <div className="h-2 rounded-full bg-secondary overflow-hidden">
                           <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${yesPct}%` }}
                             transition={{ duration: 0.8, ease: "easeOut" }}
-                            className="h-full rounded-l-full"
-                            style={{ background: "hsl(var(--primary))" }}
+                            className="h-full rounded-full bg-primary"
                           />
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${noPct}%` }}
-                            transition={{ duration: 0.8, ease: "easeOut" }}
-                            className="h-full rounded-r-full bg-destructive/60"
-                          />
-                        </div>
-                        <div className="flex items-center justify-center gap-1.5 mt-1.5">
-                          <Users className="h-3 w-3 text-muted-foreground/50" />
-                          <span className="text-[10px] text-muted-foreground">
-                            {totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}
-                          </span>
                         </div>
                       </div>
 
                       {/* Status indicators */}
                       {canEdit && editTimeStr && (
-                        <div className="flex items-center gap-1 text-[10px] text-amber-500 mt-1">
+                        <div className="flex items-center gap-1 text-[10px] text-amber-500 mt-2">
                           <Clock className="h-3 w-3" />
                           {editTimeStr}
                         </div>
                       )}
                       {deletionReq && (
-                        <div className={`flex items-center gap-1 text-[10px] mt-1 ${
+                        <div className={`flex items-center gap-1 text-[10px] mt-2 ${
                           deletionReq.status === "pending" ? "text-amber-500" :
                           deletionReq.status === "approved" ? "text-green-500" :
                           "text-destructive"
@@ -390,55 +341,82 @@ export default function MyForecasts() {
                       )}
                     </div>
 
-                    {/* Footer */}
-                    {isEnded ? (
-                      <div className={`flex items-center justify-between border-t border-border px-3.5 py-2 ${
-                        finalResult === "yes" ? "bg-primary/5" : "bg-destructive/5"
-                      }`}>
-                        <div className="flex items-center gap-1.5">
-                          <Trophy className={`h-3 w-3 ${finalResult === "yes" ? "text-primary" : "text-destructive"}`} />
-                          <span className={`text-[11px] font-semibold ${finalResult === "yes" ? "text-primary" : "text-destructive"}`}>
-                            Result: {finalResult === "yes" ? "Yes" : "No"} ({finalResult === "yes" ? yesPct.toFixed(0) : noPct.toFixed(0)}%)
+                    {/* Bottom section */}
+                    <div className="px-5 pb-5">
+                      {/* Ended result banner */}
+                      {isEnded && (
+                        <div className={`flex items-center justify-between rounded-lg px-3 py-2.5 text-[11px] font-semibold mb-2 ${
+                          finalResult === "yes"
+                            ? "bg-primary/10 text-primary border border-primary/20"
+                            : "bg-destructive/10 text-destructive border border-destructive/20"
+                        }`}>
+                          <span className="flex items-center gap-1">
+                            <Trophy className="h-3 w-3" />
+                            Result: {finalResult === "yes" ? yesLabel : noLabel} ({finalResult === "yes" ? yesPct.toFixed(0) : noPct.toFixed(0)}%)
                           </span>
                         </div>
+                      )}
+
+                      {/* Vote buttons — always shown, disabled when ended */}
+                      <div className="flex gap-2.5">
+                        <span className={`flex-1 rounded-lg py-2.5 text-sm font-bold text-center transition-all duration-200 ${
+                          isEnded
+                            ? "bg-secondary text-muted-foreground cursor-not-allowed opacity-60"
+                            : "bg-primary/10 text-primary"
+                        }`}>
+                          {isPriceMarket && <TrendingUp className="h-3.5 w-3.5 inline mr-1" />}
+                          {yesLabel}
+                        </span>
+                        <span className={`flex-1 rounded-lg py-2.5 text-sm font-bold text-center transition-all duration-200 ${
+                          isEnded
+                            ? "bg-secondary text-muted-foreground cursor-not-allowed opacity-60"
+                            : "bg-destructive/10 text-destructive"
+                        }`}>
+                          {isPriceMarket && <ArrowDownRight className="h-3.5 w-3.5 inline mr-1" />}
+                          {noLabel}
+                        </span>
                       </div>
-                    ) : (
-                      <div className="flex border-t border-border">
-                        {canEdit ? (
-                          <button
-                            onClick={() => {
-                              setEditForecast(f);
-                              setEditTitle(f.title);
-                              setEditDescription(f.description);
-                            }}
-                            className="flex-1 flex items-center justify-center gap-1.5 py-2 text-[11px] font-medium text-muted-foreground hover:bg-secondary/30 hover:text-foreground transition-all"
+
+                      {/* Edit/Delete actions */}
+                      {!isEnded && (
+                        <div className="flex mt-2 border-t border-border pt-2">
+                          {canEdit ? (
+                            <button
+                              onClick={() => {
+                                setEditForecast(f);
+                                setEditTitle(f.title);
+                                setEditDescription(f.description);
+                              }}
+                              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[11px] font-medium text-muted-foreground hover:text-foreground transition-all"
+                            >
+                              <Pencil className="h-3 w-3" /> Edit
+                            </button>
+                          ) : !deletionReq ? (
+                            <button
+                              onClick={() => {
+                                setDeleteRequestForecast(f);
+                                setDeleteReason("");
+                              }}
+                              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[11px] font-medium text-muted-foreground hover:text-destructive transition-all"
+                            >
+                              <Trash2 className="h-3 w-3" /> Request Deletion
+                            </button>
+                          ) : (
+                            <div className="flex-1 flex items-center justify-center py-1.5 text-[10px] text-muted-foreground">
+                              Pending review
+                            </div>
+                          )}
+                          <div className="w-px bg-border" />
+                          <Link
+                            to={`/forecasts/${f.id}`}
+                            className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[11px] font-medium text-muted-foreground hover:text-foreground transition-all"
                           >
-                            <Pencil className="h-3 w-3" /> Edit
-                          </button>
-                        ) : !deletionReq ? (
-                          <button
-                            onClick={() => {
-                              setDeleteRequestForecast(f);
-                              setDeleteReason("");
-                            }}
-                            className="flex-1 flex items-center justify-center gap-1.5 py-2 text-[11px] font-medium text-muted-foreground hover:bg-destructive/5 hover:text-destructive transition-all"
-                          >
-                            <Trash2 className="h-3 w-3" /> Request Deletion
-                          </button>
-                        ) : (
-                          <div className="flex-1 flex items-center justify-center py-2 text-[10px] text-muted-foreground">
-                            Pending review
-                          </div>
-                        )}
-                        <div className="w-px bg-border" />
-                        <Link
-                          to={`/forecasts/${f.id}`}
-                          className="flex-1 flex items-center justify-center gap-1.5 py-2 text-[11px] font-medium text-muted-foreground hover:bg-secondary/30 hover:text-foreground transition-all"
-                        >
-                          View Details
-                        </Link>
-                      </div>
-                    )}
+                            View Details
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
                   </motion.div>
                 );
               })}
