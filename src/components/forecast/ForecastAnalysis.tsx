@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
+import { useEffect, useRef } from "react";
 import { TrendingUp, TrendingDown, Minus, BarChart3, Activity, DollarSign, Server, Users } from "lucide-react";
 
 const sourceBadges: Record<string, { label: string; color: string }> = {
@@ -81,7 +82,13 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
     enabled: targets.length > 0,
   });
 
-  // Fetch live market data only for active forecasts
+  // Check if end snapshots are missing for an ended forecast
+  const hasEndSnapshots = isEnded && snapshots.length > 0 &&
+    snapshots.some((s: any) => s.snapshot_type === "end" && s.value != null);
+  const needsFallback = isEnded && snapshots.length > 0 && !hasEndSnapshots;
+
+  // Always fetch live market data — used as live tracker for active forecasts
+  // AND as fallback for ended forecasts with missing end snapshots
   const { data: liveMarketData } = useQuery({
     queryKey: ["forecast-live-market", projectAId],
     queryFn: async () => {
@@ -94,11 +101,11 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
       if (error) throw error;
       return data;
     },
-    enabled: !!projectAId && !isEnded,
-    refetchInterval: 60000,
+    enabled: !!projectAId,
+    refetchInterval: isEnded ? false : 60000,
   });
 
-  // Fetch live market data for Project B (two-project comparisons)
+  // Always fetch live market data for Project B
   const { data: liveMarketDataB } = useQuery({
     queryKey: ["forecast-live-market-b", projectBId],
     queryFn: async () => {
@@ -111,9 +118,18 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
       if (error) throw error;
       return data;
     },
-    enabled: !!projectBId && !isEnded,
-    refetchInterval: 60000,
+    enabled: !!projectBId,
+    refetchInterval: isEnded ? false : 60000,
   });
+
+  // Auto-trigger backfill when visiting an ended forecast with missing end snapshots
+  const backfillTriggered = useRef(false);
+  useEffect(() => {
+    if (needsFallback && !backfillTriggered.current) {
+      backfillTriggered.current = true;
+      supabase.functions.invoke("backfill-forecast-snapshots").catch(() => {});
+    }
+  }, [needsFallback]);
 
   if (targets.length === 0) return null;
 
@@ -126,8 +142,8 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
     const s = snapshots.find((s: any) => s.dimension === dim && s.snapshot_type === type);
     if (s?.value != null) return s.value;
 
-    // Fallback: use live market data only for active forecasts
-    if (!isEnded) {
+    // Fallback: use live market data for active forecasts OR ended forecasts missing snapshots
+    if (!isEnded || needsFallback) {
       if (dim === "token_price" && liveMarketData?.price_usd != null) return Number(liveMarketData.price_usd);
       if (dim === "market_cap" && liveMarketData?.market_cap_usd != null) return Number(liveMarketData.market_cap_usd);
     }
@@ -190,13 +206,14 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
           const startB = startSnapB?.value != null ? startSnapB.value : null;
 
           // Current/end values
-          const liveA = !isEnded && liveMarketData ? (forecastDimension === "token_price" ? Number(liveMarketData.price_usd) : Number(liveMarketData.market_cap_usd)) : null;
-          const liveB = !isEnded && liveMarketDataB ? (forecastDimension === "token_price" ? Number(liveMarketDataB.price_usd) : Number(liveMarketDataB.market_cap_usd)) : null;
+          const liveA = liveMarketData ? (forecastDimension === "token_price" ? Number(liveMarketData.price_usd) : Number(liveMarketData.market_cap_usd)) : null;
+          const liveB = liveMarketDataB ? (forecastDimension === "token_price" ? Number(liveMarketDataB.price_usd) : Number(liveMarketDataB.market_cap_usd)) : null;
           const endSnapA = getSnapshot(dimKey, "end");
           const endSnapB = snapshots.find((s: any) => s.dimension === `${dimKey}_b` && s.snapshot_type === "end")?.value ?? null;
 
-          const currentA = isEnded ? endSnapA : (liveA ?? endSnapA);
-          const currentB = isEnded ? endSnapB : (liveB ?? endSnapB);
+          // For ended forecasts: prefer end snapshots, fall back to live data if snapshots missing
+          const currentA = isEnded ? (endSnapA ?? liveA) : (liveA ?? endSnapA);
+          const currentB = isEnded ? (endSnapB ?? liveB) : (liveB ?? endSnapB);
 
           // Calculate performance
           const changeA = startA && currentA != null ? ((currentA - startA) / startA) * 100 : null;
@@ -451,8 +468,8 @@ export default function ForecastAnalysis({ forecastId, isEnded, totalVotesYes = 
           const startVal = getSnapshot(target.dimension, "start");
           const endSnapVal = getSnapshot(target.dimension, "end");
           const liveVal = getCurrentValue(target.dimension);
-          // Active: show live price; Ended: show end snapshot only
-          const displayVal = isEnded ? endSnapVal : (liveVal ?? endSnapVal);
+          // Active: show live price; Ended: prefer end snapshot, fall back to live if missing
+          const displayVal = isEnded ? (endSnapVal ?? liveVal) : (liveVal ?? endSnapVal);
 
           const change = startVal != null && displayVal != null && startVal !== 0
             ? ((displayVal - startVal) / startVal) * 100
