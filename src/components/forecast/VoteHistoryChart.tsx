@@ -5,9 +5,11 @@ import type { VoteHistoryEntry } from "@/hooks/useForecastDetail";
 
 interface VoteHistoryChartProps {
   voteHistory: VoteHistoryEntry[];
+  yesLabel?: string;
+  noLabel?: string;
 }
 
-export default function VoteHistoryChart({ voteHistory }: VoteHistoryChartProps) {
+export default function VoteHistoryChart({ voteHistory, yesLabel = "Yes", noLabel = "No" }: VoteHistoryChartProps) {
   const chartData = useMemo(() => {
     return voteHistory.map((entry) => {
       const total = entry.yes_count + entry.no_count;
