@@ -538,7 +538,7 @@ const ForecastDetail = () => {
 
             {/* Vote History Chart — for community sentiment, show here in left column */}
             {forecastDimension !== "token_price" && forecastDimension !== "market_cap" && (
-              <VoteHistoryChart voteHistory={voteHistory} />
+              <VoteHistoryChart voteHistory={voteHistory} yesLabel={yesLabel} noLabel={noLabel} />
             )}
 
             {/* Price / Market Cap Chart for token_price or market_cap forecasts */}
@@ -775,7 +775,7 @@ const ForecastDetail = () => {
 
             {/* Vote Trend — for token_price/market_cap, show in right column below analysis */}
             {(forecastDimension === "token_price" || forecastDimension === "market_cap") && (
-              <VoteHistoryChart voteHistory={voteHistory} />
+              <VoteHistoryChart voteHistory={voteHistory} yesLabel={yesLabel} noLabel={noLabel} />
             )}
 
             {/* Related Forecasts — column layout */}
