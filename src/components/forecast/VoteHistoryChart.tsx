@@ -48,9 +48,6 @@ export default function VoteHistoryChart({ voteHistory, yesLabel = "Yes", noLabe
           }`}>
             {pctChange > 0 ? "↑" : pctChange < 0 ? "↓" : "→"} {Math.abs(pctChange).toFixed(1)}%
           </span>
-          <span className="text-[11px] text-muted-foreground">
-            <span className="font-semibold text-foreground">{latest.weighted_yes.toFixed(1)}%</span> {yesLabel}
-          </span>
         </div>
       </div>
       <div className="p-6">
@@ -58,11 +55,13 @@ export default function VoteHistoryChart({ voteHistory, yesLabel = "Yes", noLabe
         <div className="flex items-center gap-4 mb-4">
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-primary" />
-            <span className="text-[10px] font-medium text-muted-foreground">Weighted {yesLabel} %</span>
+            <span className="text-[10px] font-medium text-muted-foreground">{yesLabel}</span>
+            <span className="text-[10px] font-semibold text-primary">{latest.weighted_yes.toFixed(1)}%</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-primary/30" />
-            <span className="text-[10px] font-medium text-muted-foreground">Unweighted %</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-destructive" />
+            <span className="text-[10px] font-medium text-muted-foreground">{noLabel}</span>
+            <span className="text-[10px] font-semibold text-destructive">{latest.weighted_no.toFixed(1)}%</span>
           </div>
           <div className="ml-auto flex items-center gap-2 text-[10px] text-muted-foreground/60">
             <span>{chartData.length} data points</span>
@@ -74,14 +73,19 @@ export default function VoteHistoryChart({ voteHistory, yesLabel = "Yes", noLabe
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
               <defs>
-                <linearGradient id="weightedGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                  <stop offset="50%" stopColor="hsl(var(--primary))" stopOpacity={0.08} />
+                <linearGradient id="weightedYesGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.25} />
+                  <stop offset="50%" stopColor="hsl(var(--primary))" stopOpacity={0.06} />
                   <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.01} />
+                </linearGradient>
+                <linearGradient id="weightedNoGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="hsl(var(--destructive))" stopOpacity={0.15} />
+                  <stop offset="50%" stopColor="hsl(var(--destructive))" stopOpacity={0.04} />
+                  <stop offset="100%" stopColor="hsl(var(--destructive))" stopOpacity={0.01} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} vertical={false} />
-              <ReferenceLine y={50} stroke="hsl(var(--muted-foreground))" strokeDasharray="6 4" opacity={0.3} />
+              <ReferenceLine y={50} stroke="hsl(var(--muted-foreground))" strokeDasharray="6 4" opacity={0.25} />
               <XAxis
                 dataKey="date"
                 tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
@@ -109,30 +113,34 @@ export default function VoteHistoryChart({ voteHistory, yesLabel = "Yes", noLabe
                 labelStyle={{ fontWeight: 700, marginBottom: 6, color: "hsl(var(--foreground))", fontSize: "11px" }}
                 formatter={(value: number, name: string) => [
                   `${value.toFixed(1)}%`,
-                  name === "weighted_yes" ? `Weighted ${yesLabel}` : name === "yes_pct" ? `Unweighted ${yesLabel}` : name,
+                  name === "weighted_yes" ? yesLabel : name === "weighted_no" ? noLabel : name,
                 ]}
                 itemStyle={{ padding: "2px 0" }}
               />
-              {/* Unweighted line — subtle background reference */}
+              {/* No line — destructive color */}
               <Area
                 type="monotone"
-                dataKey="yes_pct"
-                name="yes_pct"
-                stroke="hsl(var(--primary))"
-                fill="none"
-                strokeWidth={1}
-                strokeDasharray="4 3"
-                strokeOpacity={0.35}
+                dataKey="weighted_no"
+                name="weighted_no"
+                stroke="hsl(var(--destructive))"
+                fill="url(#weightedNoGrad)"
+                strokeWidth={1.5}
+                strokeDasharray="4 2"
                 dot={false}
-                activeDot={false}
+                activeDot={{
+                  r: 4,
+                  strokeWidth: 2,
+                  stroke: "hsl(var(--card))",
+                  fill: "hsl(var(--destructive))",
+                }}
               />
-              {/* Weighted probability — primary line */}
+              {/* Yes line — primary color */}
               <Area
                 type="monotone"
                 dataKey="weighted_yes"
                 name="weighted_yes"
                 stroke="hsl(var(--primary))"
-                fill="url(#weightedGrad)"
+                fill="url(#weightedYesGrad)"
                 strokeWidth={2.5}
                 dot={false}
                 activeDot={{
