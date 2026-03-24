@@ -212,11 +212,17 @@ Deno.serve(async (req) => {
           let targetHit = false;
           let notifMessage = "";
 
+          // Track the actual prices used for calculation so we store consistent snapshots
+          let endPriceA = currentA;
+          let endPriceB: number | null = null;
+
           if (forecast.project_b_id) {
             const mDataB = priceMap[forecast.project_b_id];
             if (!mDataB) continue;
             const currentB = dim === "token_price" ? mDataB.price : mDataB.mcap;
             if (currentB == null) continue;
+
+            endPriceB = currentB;
 
             const startSnaps = snapshotMap[forecast.id] || {};
             const startA = startSnaps[dim] ?? (forecast.start_price ? Number(forecast.start_price) : null);
@@ -248,18 +254,23 @@ Deno.serve(async (req) => {
           }
 
           if (targetHit) {
-            await captureEndSnapshots(supabase, {
+            // Use the SAME prices that triggered the resolution for snapshots
+            // This prevents drift between calculation and snapshot storage
+            await captureEndSnapshotsWithPrices(supabase, {
               id: forecast.id,
               project_a_id: forecast.project_a_id,
               project_b_id: forecast.project_b_id,
-            }, now.toISOString());
+            }, dim, endPriceA, endPriceB, now.toISOString());
 
+            // Set status, outcome, AND end_notifications_sent atomically
+            // to prevent notify-forecast-results from re-processing
             await supabase
               .from("forecasts")
               .update({
                 status: "resolved",
                 end_date: now.toISOString(),
                 outcome: resolvedOutcome,
+                end_notifications_sent: true,
               })
               .eq("id", forecast.id);
 
@@ -293,11 +304,6 @@ Deno.serve(async (req) => {
                   });
                 }
               }
-
-              await supabase
-                .from("forecasts")
-                .update({ end_notifications_sent: true })
-                .eq("id", forecast.id);
             }
           }
         }
@@ -319,18 +325,18 @@ Deno.serve(async (req) => {
   }
 });
 
-async function captureEndSnapshots(
+/**
+ * Captures end snapshots using the EXACT prices that triggered the auto-resolve,
+ * preventing drift between the calculation and stored values.
+ */
+async function captureEndSnapshotsWithPrices(
   supabase: any,
   forecast: { id: string; project_a_id: string; project_b_id: string | null },
+  dimension: string,
+  priceA: number,
+  priceB: number | null,
   capturedAt: string
 ): Promise<number> {
-  const { data: targets } = await supabase
-    .from("forecast_targets")
-    .select("dimension")
-    .eq("forecast_id", forecast.id);
-
-  if (!targets || targets.length === 0) return 0;
-
   const { data: existingSnaps } = await supabase
     .from("forecast_metric_snapshots")
     .select("dimension")
@@ -338,70 +344,30 @@ async function captureEndSnapshots(
     .eq("snapshot_type", "end");
 
   const existingDims = new Set((existingSnaps || []).map((s: any) => s.dimension));
-
-  const { data: marketA } = await supabase
-    .from("token_market_data")
-    .select("price_usd, market_cap_usd")
-    .eq("project_id", forecast.project_a_id)
-    .maybeSingle();
-
-  let marketB: any = null;
-  if (forecast.project_b_id) {
-    const { data: mb } = await supabase
-      .from("token_market_data")
-      .select("price_usd, market_cap_usd")
-      .eq("project_id", forecast.project_b_id)
-      .maybeSingle();
-    marketB = mb;
-  }
-
   const snapshots: any[] = [];
 
-  for (const t of targets) {
-    const dim = t.dimension;
-    if (existingDims.has(dim)) continue;
-
-    let value: number | null = null;
-    let source = "pending";
-
-    if (dim === "token_price" && marketA?.price_usd != null) {
-      value = Number(marketA.price_usd);
-      source = "coingecko";
-    } else if (dim === "market_cap" && marketA?.market_cap_usd != null) {
-      value = Number(marketA.market_cap_usd);
-      source = "coingecko";
-    }
-
+  if (!existingDims.has(dimension)) {
     snapshots.push({
       forecast_id: forecast.id,
-      dimension: dim,
+      dimension,
       snapshot_type: "end",
-      value,
-      source,
+      value: priceA,
+      source: "coingecko",
       captured_at: capturedAt,
     });
+  }
 
-    if (forecast.project_b_id && (dim === "token_price" || dim === "market_cap")) {
-      const bDim = `${dim}_b`;
-      if (!existingDims.has(bDim)) {
-        let valueB: number | null = null;
-        let sourceB = "pending";
-        if (dim === "token_price" && marketB?.price_usd != null) {
-          valueB = Number(marketB.price_usd);
-          sourceB = "coingecko";
-        } else if (dim === "market_cap" && marketB?.market_cap_usd != null) {
-          valueB = Number(marketB.market_cap_usd);
-          sourceB = "coingecko";
-        }
-        snapshots.push({
-          forecast_id: forecast.id,
-          dimension: bDim,
-          snapshot_type: "end",
-          value: valueB,
-          source: sourceB,
-          captured_at: capturedAt,
-        });
-      }
+  if (forecast.project_b_id && priceB != null) {
+    const bDim = `${dimension}_b`;
+    if (!existingDims.has(bDim)) {
+      snapshots.push({
+        forecast_id: forecast.id,
+        dimension: bDim,
+        snapshot_type: "end",
+        value: priceB,
+        source: "coingecko",
+        captured_at: capturedAt,
+      });
     }
   }
 
