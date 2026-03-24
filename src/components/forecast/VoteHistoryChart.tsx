@@ -49,7 +49,7 @@ export default function VoteHistoryChart({ voteHistory, yesLabel = "Yes", noLabe
             {pctChange > 0 ? "↑" : pctChange < 0 ? "↓" : "→"} {Math.abs(pctChange).toFixed(1)}%
           </span>
           <span className="text-[11px] text-muted-foreground">
-            <span className="font-semibold text-foreground">{latest.weighted_yes.toFixed(1)}%</span> Yes
+            <span className="font-semibold text-foreground">{latest.weighted_yes.toFixed(1)}%</span> {yesLabel}
           </span>
         </div>
       </div>
@@ -58,7 +58,7 @@ export default function VoteHistoryChart({ voteHistory, yesLabel = "Yes", noLabe
         <div className="flex items-center gap-4 mb-4">
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-primary" />
-            <span className="text-[10px] font-medium text-muted-foreground">Weighted Yes %</span>
+            <span className="text-[10px] font-medium text-muted-foreground">Weighted {yesLabel} %</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-primary/30" />
@@ -109,7 +109,7 @@ export default function VoteHistoryChart({ voteHistory, yesLabel = "Yes", noLabe
                 labelStyle={{ fontWeight: 700, marginBottom: 6, color: "hsl(var(--foreground))", fontSize: "11px" }}
                 formatter={(value: number, name: string) => [
                   `${value.toFixed(1)}%`,
-                  name === "weighted_yes" ? "Weighted Yes" : name === "yes_pct" ? "Unweighted Yes" : name,
+                  name === "weighted_yes" ? `Weighted ${yesLabel}` : name === "yes_pct" ? `Unweighted ${yesLabel}` : name,
                 ]}
                 itemStyle={{ padding: "2px 0" }}
               />
