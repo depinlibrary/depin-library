@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { getWeightedChance } from "@/lib/forecastUtils";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Clock, CalendarDays, Timer, Users, ExternalLink, Copy, ArrowUpRight, ArrowDownRight, ThumbsUp, ThumbsDown, Gauge, Target, Zap, CheckCircle2, XCircle } from "lucide-react";
 import { motion } from "framer-motion";
@@ -307,8 +308,7 @@ const ForecastDetail = () => {
   }
 
   const totalVotes = forecast.total_votes_yes + forecast.total_votes_no;
-  const yesPct = totalVotes > 0 ? (forecast.total_votes_yes / totalVotes) * 100 : 50;
-  const noPct = 100 - yesPct;
+  const { yesPct, noPct } = getWeightedChance(forecast);
   const isEnded = new Date(forecast.end_date) <= new Date();
   const timeLeft = getTimeRemaining(forecast.end_date);
   const confInfo = confidenceLabels[confidence] || confidenceLabels[3];
