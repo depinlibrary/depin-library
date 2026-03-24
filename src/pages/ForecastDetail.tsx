@@ -425,10 +425,13 @@ const ForecastDetail = () => {
                         </motion.div>
                       </div>
                       <p className="text-[11px] text-muted-foreground leading-snug">
-                        Auto-resolved early — {forecastDimension === "market_cap" ? "market cap" : "token price"}{" "}
-                        reached the {forecast.prediction_direction === "long" ? "long" : "short"} target of{" "}
+                        Auto-resolved early — {forecast.project_b_id
+                          ? `outperformance reached the ${forecast.prediction_direction === "long" ? "long" : "short"} target of`
+                          : `${forecastDimension === "market_cap" ? "market cap" : "token price"} reached the ${forecast.prediction_direction === "long" ? "long" : "short"} target of`}{" "}
                         <span className="font-semibold text-foreground">
-                          ${Number(forecast.prediction_target).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}
+                          {forecast.project_b_id
+                            ? `${forecast.prediction_direction === "long" ? "+" : "-"}${Number(forecast.prediction_target).toFixed(1)}%`
+                            : `$${Number(forecast.prediction_target).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}`}
                         </span>
                       </p>
                     </div>
