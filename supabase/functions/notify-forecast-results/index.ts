@@ -17,10 +17,12 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const now = new Date().toISOString();
+    // Only process forecasts that haven't been notified AND are still active/ended (not already resolved by auto-resolve)
     const { data: endedForecasts, error: fetchError } = await supabase
       .from("forecasts")
       .select("id, title, total_votes_yes, total_votes_no, end_date, project_a_id, project_b_id, status, prediction_direction, prediction_target, start_price, outcome")
       .eq("end_notifications_sent", false)
+      .in("status", ["active", "ended"])
       .lt("end_date", now);
 
     if (fetchError) {
