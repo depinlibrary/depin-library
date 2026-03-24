@@ -18,13 +18,11 @@ Deno.serve(async (req) => {
   );
 
   try {
-    // Check if this is a single-project fetch
     let body: { project_id?: string } = {};
     if (req.method === "POST") {
-      try { body = await req.json(); } catch { /* empty body ok */ }
+      try { body = await req.json(); } catch { }
     }
 
-    // 1. Check rate limit state
     const { data: rls } = await supabase
       .from("rate_limit_state")
       .select("*")
@@ -39,7 +37,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    // 2. Get projects with coingecko_id
     let query = supabase.from("projects").select("id, coingecko_id").not("coingecko_id", "is", null);
     if (body.project_id) {
       query = query.eq("id", body.project_id);
@@ -55,7 +52,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    // 3. Check if we need to update (skip if last update < 10 min ago, unless single project)
     if (!body.project_id) {
       const { data: recentData } = await supabase
         .from("token_market_data")
@@ -76,7 +72,6 @@ Deno.serve(async (req) => {
       }
     }
 
-    // 4. Batch fetch using /coins/markets for sparkline support
     const ids = validProjects.map((p: any) => p.coingecko_id).join(",");
     const cgUrl = `${COINGECKO_API}/coins/markets?vs_currency=usd&ids=${ids}&sparkline=true&price_change_percentage=24h`;
 
@@ -85,7 +80,6 @@ Deno.serve(async (req) => {
       signal: AbortSignal.timeout(15000),
     });
 
-    // 5. Handle rate limit / errors
     if (cgRes.status === 429 || cgRes.status === 403) {
       const backoff = rls?.backoff_minutes || 15;
       const nextBackoff = Math.min(backoff * 2, 60);
@@ -111,13 +105,11 @@ Deno.serve(async (req) => {
 
     const cgData = await cgRes.json();
 
-    // Build lookup by coingecko id
     const cgMap: Record<string, any> = {};
     for (const coin of cgData) {
       cgMap[coin.id] = coin;
     }
 
-    // 6. Upsert market data with sparkline
     let updated = 0;
     for (const project of validProjects) {
       const coin = cgMap[project.coingecko_id];
@@ -140,7 +132,6 @@ Deno.serve(async (req) => {
       if (!upsertError) updated++;
     }
 
-    // 7. Reset rate limit state on success
     if (rls) {
       await supabase.from("rate_limit_state").update({
         is_rate_limited: false,
@@ -150,10 +141,8 @@ Deno.serve(async (req) => {
       }).eq("id", rls.id);
     }
 
-    // 8. Auto-resolve token_price / market_cap forecasts that hit their target
     let autoResolved = 0;
     try {
-      // Get active forecasts with prediction targets
       const { data: activeForecasts } = await supabase
         .from("forecasts")
         .select("id, project_a_id, project_b_id, prediction_target, prediction_direction, start_price, title, total_votes_yes, total_votes_no, end_notifications_sent")
@@ -163,7 +152,6 @@ Deno.serve(async (req) => {
         .not("prediction_direction", "is", null);
 
       if (activeForecasts && activeForecasts.length > 0) {
-        // Get forecast dimensions to confirm they are token_price or market_cap
         const forecastIds = activeForecasts.map((f: any) => f.id);
         const { data: targets } = await supabase
           .from("forecast_targets")
@@ -176,7 +164,6 @@ Deno.serve(async (req) => {
           dimensionMap[t.forecast_id].push(t.dimension);
         });
 
-        // Get current prices for all relevant projects (A and B)
         const allProjectIds = new Set<string>();
         activeForecasts.forEach((f: any) => {
           allProjectIds.add(f.project_a_id);
@@ -192,7 +179,6 @@ Deno.serve(async (req) => {
           priceMap[m.project_id] = { price: m.price_usd, mcap: m.market_cap_usd };
         });
 
-        // Get start snapshots for dual-project forecasts (need start prices for both)
         const dualForecastIds = activeForecasts.filter((f: any) => f.project_b_id).map((f: any) => f.id);
         let snapshotMap: Record<string, Record<string, number | null>> = {};
         if (dualForecastIds.length > 0) {
@@ -221,12 +207,12 @@ Deno.serve(async (req) => {
           if (currentA == null || forecast.prediction_target == null) continue;
 
           const target = Number(forecast.prediction_target);
-          const direction = forecast.prediction_direction; // "long" or "short"
+          const direction = forecast.prediction_direction;
+          const resolvedOutcome = direction === "long" ? "yes" : "no";
           let targetHit = false;
           let notifMessage = "";
 
           if (forecast.project_b_id) {
-            // --- Dual-project: target is outperformance % ---
             const mDataB = priceMap[forecast.project_b_id];
             if (!mDataB) continue;
             const currentB = dim === "token_price" ? mDataB.price : mDataB.mcap;
@@ -249,7 +235,6 @@ Deno.serve(async (req) => {
 
             notifMessage = `hit its ${direction} outperformance target of ${target}% (current: ${outperformance.toFixed(1)}%)`;
           } else {
-            // --- Single-project: target is absolute price ---
             if (direction === "long" && currentA >= target) {
               targetHit = true;
             } else if (direction === "short" && currentA <= target) {
@@ -263,18 +248,23 @@ Deno.serve(async (req) => {
           }
 
           if (targetHit) {
-            // Force-close the forecast
+            await captureEndSnapshots(supabase, {
+              id: forecast.id,
+              project_a_id: forecast.project_a_id,
+              project_b_id: forecast.project_b_id,
+            }, now.toISOString());
+
             await supabase
               .from("forecasts")
               .update({
                 status: "resolved",
                 end_date: now.toISOString(),
+                outcome: resolvedOutcome,
               })
               .eq("id", forecast.id);
 
             autoResolved++;
 
-            // Send notifications to voters if not already sent
             if (!forecast.end_notifications_sent) {
               const { data: votes } = await supabase
                 .from("forecast_votes")
@@ -291,7 +281,7 @@ Deno.serve(async (req) => {
 
                 if (prefs?.forecast_result !== false) {
                   const userVote = (votes || []).find((v: any) => v.user_id === userId)?.vote;
-                  const userWon = userVote === direction;
+                  const userWon = userVote === resolvedOutcome;
 
                   await supabase.from("notifications").insert({
                     user_id: userId,
@@ -299,7 +289,7 @@ Deno.serve(async (req) => {
                     title: "Forecast target hit!",
                     message: `"${forecast.title.slice(0, 50)}${forecast.title.length > 50 ? "..." : ""}" ${notifMessage}. ${userWon ? "Your prediction was correct! 🎯" : ""}`,
                     link: `/forecasts/${forecast.id}`,
-                    metadata: { forecastId: forecast.id, result: direction, userVote, targetHit: true },
+                    metadata: { forecastId: forecast.id, result: resolvedOutcome, userVote, targetHit: true },
                   });
                 }
               }
@@ -314,7 +304,6 @@ Deno.serve(async (req) => {
       }
     } catch (autoErr) {
       console.error("Auto-resolve check error:", autoErr);
-      // Non-fatal: don't fail the whole price update
     }
 
     return new Response(
@@ -329,3 +318,103 @@ Deno.serve(async (req) => {
     );
   }
 });
+
+async function captureEndSnapshots(
+  supabase: any,
+  forecast: { id: string; project_a_id: string; project_b_id: string | null },
+  capturedAt: string
+): Promise<number> {
+  const { data: targets } = await supabase
+    .from("forecast_targets")
+    .select("dimension")
+    .eq("forecast_id", forecast.id);
+
+  if (!targets || targets.length === 0) return 0;
+
+  const { data: existingSnaps } = await supabase
+    .from("forecast_metric_snapshots")
+    .select("dimension")
+    .eq("forecast_id", forecast.id)
+    .eq("snapshot_type", "end");
+
+  const existingDims = new Set((existingSnaps || []).map((s: any) => s.dimension));
+
+  const { data: marketA } = await supabase
+    .from("token_market_data")
+    .select("price_usd, market_cap_usd")
+    .eq("project_id", forecast.project_a_id)
+    .maybeSingle();
+
+  let marketB: any = null;
+  if (forecast.project_b_id) {
+    const { data: mb } = await supabase
+      .from("token_market_data")
+      .select("price_usd, market_cap_usd")
+      .eq("project_id", forecast.project_b_id)
+      .maybeSingle();
+    marketB = mb;
+  }
+
+  const snapshots: any[] = [];
+
+  for (const t of targets) {
+    const dim = t.dimension;
+    if (existingDims.has(dim)) continue;
+
+    let value: number | null = null;
+    let source = "pending";
+
+    if (dim === "token_price" && marketA?.price_usd != null) {
+      value = Number(marketA.price_usd);
+      source = "coingecko";
+    } else if (dim === "market_cap" && marketA?.market_cap_usd != null) {
+      value = Number(marketA.market_cap_usd);
+      source = "coingecko";
+    }
+
+    snapshots.push({
+      forecast_id: forecast.id,
+      dimension: dim,
+      snapshot_type: "end",
+      value,
+      source,
+      captured_at: capturedAt,
+    });
+
+    if (forecast.project_b_id && (dim === "token_price" || dim === "market_cap")) {
+      const bDim = `${dim}_b`;
+      if (!existingDims.has(bDim)) {
+        let valueB: number | null = null;
+        let sourceB = "pending";
+        if (dim === "token_price" && marketB?.price_usd != null) {
+          valueB = Number(marketB.price_usd);
+          sourceB = "coingecko";
+        } else if (dim === "market_cap" && marketB?.market_cap_usd != null) {
+          valueB = Number(marketB.market_cap_usd);
+          sourceB = "coingecko";
+        }
+        snapshots.push({
+          forecast_id: forecast.id,
+          dimension: bDim,
+          snapshot_type: "end",
+          value: valueB,
+          source: sourceB,
+          captured_at: capturedAt,
+        });
+      }
+    }
+  }
+
+  if (snapshots.length === 0) return 0;
+
+  const { error } = await supabase
+    .from("forecast_metric_snapshots")
+    .upsert(snapshots, { onConflict: "forecast_id,dimension,snapshot_type" });
+
+  if (error) {
+    console.error(`Error inserting auto-resolve end snapshots for ${forecast.id}:`, error);
+    return 0;
+  }
+
+  return snapshots.length;
+}
