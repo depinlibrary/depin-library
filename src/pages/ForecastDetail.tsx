@@ -107,7 +107,7 @@ function CreatorCardWithCountdown({ forecast, isEnded, timeLeft }: { forecast: a
               <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-medium mb-0.5">
                 Time Left
               </p>
-              <p className="text-xs font-bold font-['Space_Grotesk'] tabular-nums text-foreground">
+              <p className="text-xs font-bold font-['Space_Grotesk'] tabular-nums text-primary">
                 {countdown}
               </p>
             </div>
@@ -324,7 +324,7 @@ const ForecastDetail = () => {
       <main className="container mx-auto px-4 pt-20">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* ═══════ LEFT COLUMN (2/3): Hero Card + Tabs ═══════ */}
-          <div className="lg:col-span-2 lg:overflow-y-auto lg:h-[calc(100vh-4rem)] lg:sticky lg:top-16 lg:pt-4 lg:pb-16 scrollbar-hide">
+          <div className="lg:col-span-2 lg:pt-4 lg:pb-16">
             {/* Breadcrumb */}
             <Link to="/forecasts" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-5">
               <ArrowLeft className="h-3.5 w-3.5" /> Back to Forecasts
@@ -692,7 +692,7 @@ const ForecastDetail = () => {
           </div>
 
           {/* ═══════ RIGHT COLUMN (1/3): Creator + Vote + Analysis + Related ═══════ */}
-          <div className="lg:overflow-y-auto lg:h-[calc(100vh-4rem)] lg:sticky lg:top-16 lg:pt-4 lg:pb-16 scrollbar-hide">
+          <div className="lg:pt-4 lg:pb-16">
             <div className="space-y-4">
             {/* Creator Card — compact with countdown */}
             <CreatorCardWithCountdown forecast={forecast} isEnded={isEnded} timeLeft={timeLeft} />
