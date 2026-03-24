@@ -87,7 +87,7 @@ const ProjectForecasts = ({ projectId, projectName }: ProjectForecastsProps) => 
         const yesLabel = isPriceMarket ? "Long" : isSentimentDual ? forecast.project_a?.name : "Yes";
         const noLabel = isPriceMarket ? "Short" : isSentimentDual ? forecast.project_b?.name : "No";
         const totalVotes = forecast.total_votes_yes + forecast.total_votes_no;
-        const yesPct = totalVotes > 0 ? (forecast.total_votes_yes / totalVotes) * 100 : 50;
+        const yesPct = (() => { const wy = Number((forecast as any).weighted_votes_yes) || 0; const wn = Number((forecast as any).weighted_votes_no) || 0; const wt = wy + wn; return wt > 0 ? (wy / wt) * 100 : totalVotes > 0 ? (forecast.total_votes_yes / totalVotes) * 100 : 50; })();
         const noPct = 100 - yesPct;
         const isEnded = forecast.status === "ended" || new Date(forecast.end_date) <= new Date();
         const timeLeft = getTimeLeft(forecast.end_date);

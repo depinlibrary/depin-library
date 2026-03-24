@@ -386,6 +386,8 @@ export type Database = {
           title: string
           total_votes_no: number
           total_votes_yes: number
+          weighted_votes_no: number
+          weighted_votes_yes: number
         }
         Insert: {
           created_at?: string
@@ -404,6 +406,8 @@ export type Database = {
           title: string
           total_votes_no?: number
           total_votes_yes?: number
+          weighted_votes_no?: number
+          weighted_votes_yes?: number
         }
         Update: {
           created_at?: string
@@ -422,6 +426,8 @@ export type Database = {
           title?: string
           total_votes_no?: number
           total_votes_yes?: number
+          weighted_votes_no?: number
+          weighted_votes_yes?: number
         }
         Relationships: [
           {

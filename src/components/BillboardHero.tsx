@@ -483,7 +483,7 @@ const BillboardHero = ({
                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                    {topForecasts.slice(0, 4).map((f) => {
                   const totalVotes = f.total_votes_yes + f.total_votes_no;
-                  const yesPercent = totalVotes > 0 ? f.total_votes_yes / totalVotes * 100 : 50;
+                  const yesPercent = totalVotes > 0 ? (() => { const wy = Number((f as any).weighted_votes_yes) || 0; const wn = Number((f as any).weighted_votes_no) || 0; const wt = wy + wn; return wt > 0 ? (wy / wt) * 100 : (f.total_votes_yes / totalVotes) * 100; })() : 50;
                   const noPercent = 100 - yesPercent;
                    const isEnded = f.status === "ended" || new Date(f.end_date) <= new Date();
                    return (

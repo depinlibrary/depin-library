@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { getWeightedChance } from "@/lib/forecastUtils";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Clock, CalendarDays, Timer, Users, ExternalLink, Copy, ArrowUpRight, ArrowDownRight, ThumbsUp, ThumbsDown, Gauge, Target, Zap, CheckCircle2, XCircle } from "lucide-react";
 import { motion } from "framer-motion";
@@ -203,7 +204,8 @@ const ForecastDetail = () => {
   useEffect(() => {
     if (!forecast) return;
     const totalVotes = forecast.total_votes_yes + forecast.total_votes_no;
-    const yesPct = totalVotes > 0 ? ((forecast.total_votes_yes / totalVotes) * 100).toFixed(0) : "50";
+    const { yesPct: yesPctNum } = getWeightedChance(forecast);
+    const yesPct = yesPctNum.toFixed(0);
     const projectNames = [forecast.project_a?.name, forecast.project_b?.name].filter(Boolean).join(" vs ");
     const title = `${forecast.title} — DePIN Forecast`;
     const description = `${yesPct}% Yes · ${totalVotes} votes · ${projectNames} — ${forecast.description?.slice(0, 120) || "Community prediction on DePIN projects"}`;
@@ -257,7 +259,8 @@ const ForecastDetail = () => {
   const handleShareX = () => {
     if (!forecast) return;
     const totalVotes = forecast.total_votes_yes + forecast.total_votes_no;
-    const yesPct = totalVotes > 0 ? ((forecast.total_votes_yes / totalVotes) * 100).toFixed(0) : "50";
+    const { yesPct: yesPctNum } = getWeightedChance(forecast);
+    const yesPct = yesPctNum.toFixed(0);
     const ogUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/og-forecast?id=${forecast.id}&site=${encodeURIComponent(window.location.origin)}`;
     const text = `${forecast.title} — ${yesPct}% Yes | ${totalVotes} votes`;
     window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(ogUrl)}`, "_blank", "noopener,noreferrer,width=550,height=420");
@@ -307,8 +310,7 @@ const ForecastDetail = () => {
   }
 
   const totalVotes = forecast.total_votes_yes + forecast.total_votes_no;
-  const yesPct = totalVotes > 0 ? (forecast.total_votes_yes / totalVotes) * 100 : 50;
-  const noPct = 100 - yesPct;
+  const { yesPct, noPct } = getWeightedChance(forecast);
   const isEnded = new Date(forecast.end_date) <= new Date();
   const timeLeft = getTimeRemaining(forecast.end_date);
   const confInfo = confidenceLabels[confidence] || confidenceLabels[3];

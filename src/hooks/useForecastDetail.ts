@@ -18,6 +18,7 @@ export type VoteHistoryEntry = {
   date: string;
   yes_count: number;
   no_count: number;
+  weighted_yes_pct: number;
 };
 
 export function useForecastDetail(forecastId: string | undefined) {
@@ -228,7 +229,7 @@ export function useForecastVoteHistory(forecastId: string | undefined) {
     queryFn: async (): Promise<VoteHistoryEntry[]> => {
       const { data: votes, error } = await supabase
         .from("forecast_votes")
-        .select("vote, created_at")
+        .select("vote, created_at, confidence_level")
         .eq("forecast_id", forecastId!)
         .order("created_at", { ascending: true });
       if (error) throw error;
@@ -236,13 +237,21 @@ export function useForecastVoteHistory(forecastId: string | undefined) {
 
       // Build cumulative data points per individual vote for granular trend
       let cumYes = 0, cumNo = 0;
+      let cumWeightedYes = 0, cumWeightedNo = 0;
       const points: VoteHistoryEntry[] = votes.map((v: any) => {
-        if (v.vote === "yes") cumYes++;
-        else cumNo++;
+        const conf = v.confidence_level ?? 3;
+        if (v.vote === "yes") { cumYes++; cumWeightedYes += conf; }
+        else { cumNo++; cumWeightedNo += conf; }
         const d = new Date(v.created_at);
         const label = d.toLocaleDateString("en-US", { month: "short", day: "numeric" }) +
           " " + d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
-        return { date: label, yes_count: cumYes, no_count: cumNo };
+        const totalW = cumWeightedYes + cumWeightedNo;
+        return {
+          date: label,
+          yes_count: cumYes,
+          no_count: cumNo,
+          weighted_yes_pct: totalW > 0 ? Math.round((cumWeightedYes / totalW) * 1000) / 10 : 50,
+        };
       });
 
       return points;

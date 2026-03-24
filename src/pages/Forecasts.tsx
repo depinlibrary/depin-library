@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useRef, useSyncExternalStore } from "react";
+import { getWeightedChance } from "@/lib/forecastUtils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Timer, ThumbsUp, ThumbsDown, Plus, TrendingUp, Clock, Flame, ChevronLeft, ChevronRight, LogIn, Users, BarChart3, Zap, X, Filter, Trophy, CheckCircle, CheckCircle2, Circle, RotateCcw, DollarSign, Server, Activity, ArrowUpRight, ArrowDownRight, Bookmark, Copy, ChevronRight as ChevronRightIcon, Radio, Search, XCircle } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
@@ -62,8 +63,7 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
   dimensions?: string[];
 }) => {
   const totalVotes = forecast.total_votes_yes + forecast.total_votes_no;
-  const yesPct = totalVotes > 0 ? (forecast.total_votes_yes / totalVotes) * 100 : 50;
-  const noPct = 100 - yesPct;
+  const { yesPct, noPct } = getWeightedChance(forecast);
   const isEnded = new Date(forecast.end_date) <= new Date();
   const timeLeft = getTimeRemaining(forecast.end_date);
   const finalResult = isEnded ? (forecast.outcome || (yesPct >= 50 ? "yes" : "no")) : null;
@@ -279,7 +279,7 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
 
   const current = heroForecasts[activeSlide];
   const cTotal = current.total_votes_yes + current.total_votes_no;
-  const cYesPct = cTotal > 0 ? (current.total_votes_yes / cTotal) * 100 : 50;
+  const { yesPct: cYesPct } = getWeightedChance(current);
   const cIsEnded = new Date(current.end_date) <= new Date();
   const cTimeLeft = getTimeRemaining(current.end_date);
 
@@ -502,7 +502,7 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
               <div className="flex-1 overflow-y-auto">
                 {topLiveForecasts.slice(0, 4).map((f, i) => {
                   const fTotal = f.total_votes_yes + f.total_votes_no;
-                  const fYesPct = fTotal > 0 ? (f.total_votes_yes / fTotal) * 100 : 50;
+                  const { yesPct: fYesPct } = getWeightedChance(f);
                   const fIsEnded = new Date(f.end_date) <= new Date();
                   return (
                     <Link key={f.id} to={`/forecasts/${f.id}`} className="flex items-start gap-3 px-5 py-3 hover:bg-secondary/30 transition-colors">
