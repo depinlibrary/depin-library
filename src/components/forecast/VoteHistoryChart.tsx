@@ -8,7 +8,6 @@ interface VoteHistoryChartProps {
 }
 
 export default function VoteHistoryChart({ voteHistory }: VoteHistoryChartProps) {
-  // Calculate percentage data for a more dynamic chart
   const chartData = useMemo(() => {
     return voteHistory.map((entry) => {
       const total = entry.yes_count + entry.no_count;
@@ -17,6 +16,8 @@ export default function VoteHistoryChart({ voteHistory }: VoteHistoryChartProps)
         ...entry,
         yes_pct: yesPct,
         no_pct: 100 - yesPct,
+        weighted_yes: entry.weighted_yes_pct,
+        weighted_no: Math.round((100 - entry.weighted_yes_pct) * 10) / 10,
         total,
       };
     });
@@ -26,7 +27,7 @@ export default function VoteHistoryChart({ voteHistory }: VoteHistoryChartProps)
 
   const latest = chartData[chartData.length - 1];
   const first = chartData[0];
-  const pctChange = latest.yes_pct - first.yes_pct;
+  const pctChange = latest.weighted_yes - first.weighted_yes;
 
   return (
     <motion.div
@@ -37,7 +38,7 @@ export default function VoteHistoryChart({ voteHistory }: VoteHistoryChartProps)
     >
       <div className="px-6 py-4 border-b border-border flex items-center justify-between">
         <h2 className="text-sm font-semibold text-foreground">
-          Vote Trend
+          Probability Trend
         </h2>
         <div className="flex items-center gap-3">
           <span className={`text-[11px] font-semibold flex items-center gap-1 ${
@@ -46,7 +47,7 @@ export default function VoteHistoryChart({ voteHistory }: VoteHistoryChartProps)
             {pctChange > 0 ? "↑" : pctChange < 0 ? "↓" : "→"} {Math.abs(pctChange).toFixed(1)}%
           </span>
           <span className="text-[11px] text-muted-foreground">
-            <span className="font-semibold text-foreground">{latest.yes_pct.toFixed(0)}%</span> Yes
+            <span className="font-semibold text-foreground">{latest.weighted_yes.toFixed(1)}%</span> Yes
           </span>
         </div>
       </div>
@@ -55,11 +56,11 @@ export default function VoteHistoryChart({ voteHistory }: VoteHistoryChartProps)
         <div className="flex items-center gap-4 mb-4">
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-primary" />
-            <span className="text-[10px] font-medium text-muted-foreground">Yes %</span>
+            <span className="text-[10px] font-medium text-muted-foreground">Weighted Yes %</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-destructive/70" />
-            <span className="text-[10px] font-medium text-muted-foreground">No %</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-primary/30" />
+            <span className="text-[10px] font-medium text-muted-foreground">Unweighted %</span>
           </div>
           <div className="ml-auto flex items-center gap-2 text-[10px] text-muted-foreground/60">
             <span>{chartData.length} data points</span>
@@ -71,14 +72,10 @@ export default function VoteHistoryChart({ voteHistory }: VoteHistoryChartProps)
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
               <defs>
-                <linearGradient id="yesGradTrend" x1="0" y1="0" x2="0" y2="1">
+                <linearGradient id="weightedGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
                   <stop offset="50%" stopColor="hsl(var(--primary))" stopOpacity={0.08} />
                   <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.01} />
-                </linearGradient>
-                <linearGradient id="noGradTrend" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(var(--destructive))" stopOpacity={0.15} />
-                  <stop offset="100%" stopColor="hsl(var(--destructive))" stopOpacity={0.01} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} vertical={false} />
@@ -110,16 +107,30 @@ export default function VoteHistoryChart({ voteHistory }: VoteHistoryChartProps)
                 labelStyle={{ fontWeight: 700, marginBottom: 6, color: "hsl(var(--foreground))", fontSize: "11px" }}
                 formatter={(value: number, name: string) => [
                   `${value.toFixed(1)}%`,
-                  name === "yes_pct" ? "Yes" : "No",
+                  name === "weighted_yes" ? "Weighted Yes" : name === "yes_pct" ? "Unweighted Yes" : name,
                 ]}
                 itemStyle={{ padding: "2px 0" }}
               />
+              {/* Unweighted line — subtle background reference */}
               <Area
                 type="monotone"
                 dataKey="yes_pct"
                 name="yes_pct"
                 stroke="hsl(var(--primary))"
-                fill="url(#yesGradTrend)"
+                fill="none"
+                strokeWidth={1}
+                strokeDasharray="4 3"
+                strokeOpacity={0.35}
+                dot={false}
+                activeDot={false}
+              />
+              {/* Weighted probability — primary line */}
+              <Area
+                type="monotone"
+                dataKey="weighted_yes"
+                name="weighted_yes"
+                stroke="hsl(var(--primary))"
+                fill="url(#weightedGrad)"
                 strokeWidth={2.5}
                 dot={false}
                 activeDot={{
@@ -127,22 +138,6 @@ export default function VoteHistoryChart({ voteHistory }: VoteHistoryChartProps)
                   strokeWidth: 2,
                   stroke: "hsl(var(--card))",
                   fill: "hsl(var(--primary))",
-                }}
-              />
-              <Area
-                type="monotone"
-                dataKey="no_pct"
-                name="no_pct"
-                stroke="hsl(var(--destructive))"
-                fill="url(#noGradTrend)"
-                strokeWidth={1.5}
-                strokeDasharray="4 3"
-                dot={false}
-                activeDot={{
-                  r: 4,
-                  strokeWidth: 2,
-                  stroke: "hsl(var(--card))",
-                  fill: "hsl(var(--destructive))",
                 }}
               />
             </AreaChart>
