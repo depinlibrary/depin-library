@@ -63,7 +63,7 @@ Deno.serve(async (req) => {
       if (recentData?.last_updated) {
         const lastUpdated = new Date(recentData.last_updated);
         const diffMin = (now.getTime() - lastUpdated.getTime()) / 60000;
-        if (diffMin < 10) {
+        if (diffMin < 1) {
           return new Response(
             JSON.stringify({ status: "ok", message: "Data is fresh", minutes_ago: Math.round(diffMin) }),
             { headers: { ...corsHeaders, "Content-Type": "application/json" } }
