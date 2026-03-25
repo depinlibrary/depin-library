@@ -26,11 +26,11 @@ export function useTokenMarketData(projectId?: string) {
       return data as TokenMarketData | null;
     },
     enabled: !!projectId,
-    refetchInterval: 10 * 60 * 1000, // refetch every 10 min
+    refetchInterval: 1 * 60 * 1000, // refetch every 1 min
   });
 }
 
-export function useAllTokenMarketData(refetchInterval: number = 10 * 60 * 1000) {
+export function useAllTokenMarketData(refetchInterval: number = 1 * 60 * 1000) {
   return useQuery({
     queryKey: ["all-token-market-data"],
     queryFn: async (): Promise<Record<string, TokenMarketData>> => {
