@@ -1,7 +1,42 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { createNotification } from "@/hooks/useNotifications";
+
+/** Subscribe to realtime changes on the forecasts table and invalidate queries */
+export function useRealtimeForecasts() {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("realtime-forecasts")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "forecasts" },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["forecasts"] });
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "forecast_votes" },
+        (payload: any) => {
+          const forecastId = payload.new?.forecast_id || payload.old?.forecast_id;
+          queryClient.invalidateQueries({ queryKey: ["forecasts"] });
+          if (forecastId) {
+            queryClient.invalidateQueries({ queryKey: ["forecast-detail", forecastId] });
+            queryClient.invalidateQueries({ queryKey: ["forecast-vote-history", forecastId] });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+}
 export type Forecast = {
   id: string;
   title: string;

@@ -1,5 +1,32 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+
+/** Subscribe to realtime token_market_data changes */
+export function useRealtimeTokenMarketData() {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("realtime-token-market-data")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "token_market_data" },
+        (payload: any) => {
+          const projectId = payload.new?.project_id || payload.old?.project_id;
+          if (projectId) {
+            queryClient.invalidateQueries({ queryKey: ["token-market-data", projectId] });
+          }
+          queryClient.invalidateQueries({ queryKey: ["all-token-market-data"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+}
 
 export type TokenMarketData = {
   id: string;

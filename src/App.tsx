@@ -8,6 +8,8 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import PageTransition from "@/components/PageTransition";
+import { useRealtimeForecasts } from "@/hooks/useForecasts";
+import { useRealtimeTokenMarketData } from "@/hooks/useTokenMarketData";
 import Overview from "./pages/Overview";
 import Explore from "./pages/Explore";
 import ProjectDetail from "./pages/ProjectDetail";
@@ -23,6 +25,13 @@ import Notifications from "./pages/Notifications";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import ScrollToTop from "./components/ScrollToTop";
+
+/** Activates global realtime subscriptions */
+function RealtimeProvider({ children }: { children: React.ReactNode }) {
+  useRealtimeForecasts();
+  useRealtimeTokenMarketData();
+  return <>{children}</>;
+}
 
 const queryClient = new QueryClient();
 
@@ -61,7 +70,9 @@ const App = () => (
       <BrowserRouter>
         <ScrollToTop />
         <AuthProvider>
-          <AnimatedRoutes />
+          <RealtimeProvider>
+            <AnimatedRoutes />
+          </RealtimeProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
