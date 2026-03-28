@@ -335,7 +335,7 @@ const ForecastDetail = () => {
       <Navbar />
 
       <main className="container mx-auto px-4 pt-20">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
           {/* ═══════ LEFT COLUMN (2/3): Hero Card + Tabs ═══════ */}
           <div className="lg:col-span-2 lg:pt-4 lg:pb-16">
             {/* Breadcrumb */}
@@ -901,7 +901,7 @@ const ForecastDetail = () => {
           </div>
 
           {/* ═══════ RIGHT COLUMN (1/3): Creator + Vote + Analysis + Related ═══════ */}
-          <div className="lg:pb-16" style={{ paddingTop: 0 }}>
+          <div className="lg:pt-4 lg:pb-16 lg:sticky lg:top-20">
             <div className="space-y-4">
             {/* Creator Card — compact with countdown */}
             <CreatorCardWithCountdown forecast={forecast} isEnded={isEnded} timeLeft={timeLeft} />
