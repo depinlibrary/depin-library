@@ -264,7 +264,7 @@ const Overview = () => {
                 All forecasts <ArrowRight className="h-3 w-3" />
               </Link>
             </motion.div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {endingSoon.map((forecast, i) => {
               const dimension = (forecastDimensionsMap as Record<string, string>)[forecast.id];
               const isPriceMarket = dimension === "token_price" || dimension === "market_cap";
