@@ -234,65 +234,58 @@ export default function MyForecasts() {
         transition={{ delay: i * 0.05, duration: 0.4 }}
         className="group relative rounded-xl border border-border bg-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20 h-full flex flex-col"
       >
-        <div className="p-5 flex-1 flex flex-col">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2.5">
-              <div className="flex items-center -space-x-2">
+        <div className="p-4 flex-1 flex flex-col">
+          {/* Header: logos + time */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center -space-x-1.5">
                 {projA?.logo_url ? (
-                  <img src={projA.logo_url} alt={projA.name} className="w-9 h-9 rounded-lg object-contain border border-card bg-secondary relative z-10" />
+                  <img src={projA.logo_url} alt={projA.name} className="w-7 h-7 rounded-lg object-contain border border-card bg-secondary relative z-10" />
                 ) : (
-                  <span className="w-9 h-9 rounded-lg flex items-center justify-center text-sm border border-card bg-secondary relative z-10">{projA?.logo_emoji || "⬡"}</span>
+                  <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs border border-card bg-secondary relative z-10">{projA?.logo_emoji || "⬡"}</span>
                 )}
                 {projB && (
                   projB.logo_url ? (
-                    <img src={projB.logo_url} alt={projB.name} className="w-9 h-9 rounded-lg object-contain border border-card bg-secondary relative z-0" />
+                    <img src={projB.logo_url} alt={projB.name} className="w-7 h-7 rounded-lg object-contain border border-card bg-secondary relative z-0" />
                   ) : (
-                    <span className="w-9 h-9 rounded-lg flex items-center justify-center text-sm border border-card bg-secondary relative z-0">{projB?.logo_emoji || "⬡"}</span>
+                    <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs border border-card bg-secondary relative z-0">{projB?.logo_emoji || "⬡"}</span>
                   )
                 )}
               </div>
-              <div className="flex items-center gap-1.5">
-                {projA && <Link to={`/project/${projA.slug}`} className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">{projA.name}</Link>}
+              <div className="flex items-center gap-1">
+                {projA && <span className="text-[11px] font-medium text-muted-foreground">{projA.name}</span>}
                 {projB && (
                   <>
-                    <span className="text-muted-foreground/40 text-[10px]">vs</span>
-                    <Link to={`/project/${projB.slug}`} className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">{projB.name}</Link>
+                    <span className="text-muted-foreground/40 text-[9px]">vs</span>
+                    <span className="text-[11px] font-medium text-muted-foreground">{projB.name}</span>
                   </>
                 )}
               </div>
             </div>
-            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${isEnded ? 'bg-destructive/10 text-destructive' : 'bg-green-500/10 text-green-600 dark:text-green-400'}`}>
+            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${isEnded ? 'bg-destructive/10 text-destructive' : 'bg-green-500/10 text-green-600 dark:text-green-400'}`}>
               {timeLeft}
             </span>
           </div>
 
           {/* Title */}
           <Link to={`/forecasts/${f.id}`} className="block mb-auto">
-            <h3 className="text-sm font-semibold text-foreground leading-snug line-clamp-2 group-hover:underline transition-all duration-200">
+            <h3 className="text-[13px] font-semibold text-foreground leading-snug line-clamp-2 group-hover:underline transition-all duration-200">
               {f.title}
             </h3>
           </Link>
 
-          {/* Percentage + bar */}
-          <div className="mt-5 space-y-2.5">
-            <div className="flex items-center justify-between">
-              <span className="text-xl font-bold text-foreground">{yesPct.toFixed(0)}% chance</span>
-              <span className="text-xs text-muted-foreground">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</span>
-            </div>
-            <div className="h-2 rounded-full bg-secondary overflow-hidden">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${yesPct}%` }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-                className="h-full rounded-full bg-primary"
-              />
-            </div>
+          {/* Percentage + votes */}
+          <div className="mt-4 flex items-end justify-between">
+            <span className="text-lg font-bold text-foreground tabular-nums">{yesPct.toFixed(0)}%<span className="text-xs font-normal text-muted-foreground ml-1">chance</span></span>
+            <span className="text-[10px] text-muted-foreground">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</span>
           </div>
+        </div>
 
+        {/* Bottom section */}
+        <div className="px-4 pb-4">
           {/* Voted view: user vote result indicator */}
           {isVotedView && userVote && (
-            <div className={`mt-3 flex items-center justify-between rounded-lg px-2.5 py-2 text-[10px] font-semibold ${
+            <div className={`flex items-center justify-between rounded-lg px-2.5 py-2 text-[10px] font-semibold mb-2 ${
               !isEnded
                 ? "bg-secondary text-muted-foreground border border-border"
                 : userCorrect
@@ -313,7 +306,31 @@ export default function MyForecasts() {
             </div>
           )}
 
-          {/* Created view: status indicators */}
+          {/* Ended result banner — created view */}
+          {isEnded && !isVotedView && (
+            <div className={`flex items-center justify-between rounded-lg px-2.5 py-2 text-[10px] font-semibold mb-2 ${
+              finalResult === "yes"
+                ? "bg-primary/10 text-primary border border-primary/20"
+                : "bg-destructive/10 text-destructive border border-destructive/20"
+            }`}>
+              <span className="flex items-center gap-1">
+                <Trophy className="h-3 w-3" />
+                Result: {finalResult === "yes" ? yesLabel : noLabel} ({finalResult === "yes" ? yesPct.toFixed(0) : noPct.toFixed(0)}%)
+              </span>
+            </div>
+          )}
+
+          {/* Vote buttons */}
+          <div className="flex gap-2">
+            <span className={`flex-1 rounded-lg py-2 text-xs font-bold text-center ${
+              isEnded ? "bg-secondary text-muted-foreground opacity-60" : "bg-primary/10 text-primary"
+            }`}>{yesLabel}</span>
+            <span className={`flex-1 rounded-lg py-2 text-xs font-bold text-center ${
+              isEnded ? "bg-secondary text-muted-foreground opacity-60" : "bg-destructive/10 text-destructive"
+            }`}>{noLabel}</span>
+          </div>
+
+          {/* Edit/Delete actions — only for created view */}
           {!isVotedView && canEdit && editTimeStr && (
             <div className="flex items-center gap-1 text-[10px] text-amber-500 mt-2">
               <Clock className="h-3 w-3" />
@@ -331,45 +348,6 @@ export default function MyForecasts() {
               {deletionReq.status === "denied" && <><XCircle className="h-3 w-3" /> Denied{deletionReq.admin_response ? `: ${deletionReq.admin_response}` : ""}</>}
             </div>
           )}
-        </div>
-
-        {/* Bottom section */}
-        <div className="px-5 pb-5">
-          {/* Ended result banner */}
-          {isEnded && !isVotedView && (
-            <div className={`flex items-center justify-between rounded-lg px-3 py-2.5 text-[11px] font-semibold mb-2 ${
-              finalResult === "yes"
-                ? "bg-primary/10 text-primary border border-primary/20"
-                : "bg-destructive/10 text-destructive border border-destructive/20"
-            }`}>
-              <span className="flex items-center gap-1">
-                <Trophy className="h-3 w-3" />
-                Result: {finalResult === "yes" ? yesLabel : noLabel} ({finalResult === "yes" ? yesPct.toFixed(0) : noPct.toFixed(0)}%)
-              </span>
-            </div>
-          )}
-
-          {/* Vote buttons */}
-          <div className="flex gap-2.5">
-            <span className={`flex-1 rounded-lg py-2.5 text-sm font-bold text-center transition-all duration-200 ${
-              isEnded
-                ? "bg-secondary text-muted-foreground cursor-not-allowed opacity-60"
-                : "bg-primary/10 text-primary"
-            }`}>
-              {isPriceMarket && <TrendingUp className="h-3.5 w-3.5 inline mr-1" />}
-              {yesLabel}
-            </span>
-            <span className={`flex-1 rounded-lg py-2.5 text-sm font-bold text-center transition-all duration-200 ${
-              isEnded
-                ? "bg-secondary text-muted-foreground cursor-not-allowed opacity-60"
-                : "bg-destructive/10 text-destructive"
-            }`}>
-              {isPriceMarket && <ArrowDownRight className="h-3.5 w-3.5 inline mr-1" />}
-              {noLabel}
-            </span>
-          </div>
-
-          {/* Edit/Delete actions — only for created view */}
           {!isVotedView && !isEnded && (
             <div className="flex mt-2 border-t border-border pt-2">
               {canEdit ? (

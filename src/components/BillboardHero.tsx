@@ -471,7 +471,7 @@ const BillboardHero = ({
                 </div>
               </motion.div>
 
-             {/* ── Top Forecasts — Enhanced (spans full width) ── */}
+             {/* ── Top Forecasts — Matching ForecastCard design ── */}
              {topForecasts.length > 0 &&
             <motion.div variants={fadeUp} className="col-span-1 sm:col-span-2 lg:col-span-4 rounded-lg border border-border bg-card/40 backdrop-blur-md p-4 sm:p-5">
                  <div className="flex items-center gap-2 mb-4">
@@ -484,78 +484,81 @@ const BillboardHero = ({
                    {topForecasts.slice(0, 4).map((f) => {
                   const totalVotes = f.total_votes_yes + f.total_votes_no;
                   const yesPercent = totalVotes > 0 ? (() => { const wy = Number((f as any).weighted_votes_yes) || 0; const wn = Number((f as any).weighted_votes_no) || 0; const wt = wy + wn; return wt > 0 ? (wy / wt) * 100 : (f.total_votes_yes / totalVotes) * 100; })() : 50;
-                  const noPercent = 100 - yesPercent;
                    const isEnded = f.status === "ended" || new Date(f.end_date) <= new Date();
+                   const isPriceMarket = f.dimension === "token_price" || f.dimension === "market_cap";
+                   const isSentimentDual = f.dimension === "community_sentiment" && !!f.project_b_name;
+                   const yesLabel = isPriceMarket ? "Long" : isSentimentDual ? (f.project_a_name || "Yes") : "Yes";
+                   const noLabel = isPriceMarket ? "Short" : isSentimentDual ? (f.project_b_name || "No") : "No";
+                   const timeLeft = (() => {
+                     const diff = new Date(f.end_date).getTime() - Date.now();
+                     if (diff <= 0) return "Ended";
+                     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                     if (days > 30) return `${Math.floor(days / 30)}mo left`;
+                     if (days > 0) return `${days}d left`;
+                     const hours = Math.floor(diff / (1000 * 60 * 60));
+                     return `${hours}h left`;
+                   })();
                    return (
                      <Link
                        key={f.id}
                        to={`/forecasts/${f.id}`}
                        className="group relative flex flex-col rounded-xl border border-border/50 bg-secondary/20 overflow-hidden transition-all hover:bg-secondary/40 hover:border-primary/20 hover:shadow-md hover:shadow-primary/5 h-full">
-                       
                        <div className="p-4 flex-1 flex flex-col">
-                         {/* Header: logos + status */}
+                         {/* Header: logos + time */}
                          <div className="flex items-center justify-between mb-3">
-                           <div className="flex items-center gap-1.5">
-                             <ProjectLogo logoUrl={f.project_a_logo_url || null} logoEmoji={f.project_a_logo_emoji || "⬡"} name={f.project_a_name || "Project"} size="sm" />
-                             {f.project_b_name && (
-                               <>
-                                 <span className="text-[9px] font-bold text-muted-foreground uppercase">vs</span>
-                                 <ProjectLogo logoUrl={f.project_b_logo_url || null} logoEmoji={f.project_b_logo_emoji || "⬡"} name={f.project_b_name} size="sm" />
-                               </>
-                             )}
+                           <div className="flex items-center gap-2">
+                             <div className="flex items-center -space-x-1.5">
+                               {f.project_a_logo_url ? (
+                                 <img src={f.project_a_logo_url} alt={f.project_a_name} className="w-7 h-7 rounded-lg object-contain border border-card bg-secondary relative z-10" />
+                               ) : (
+                                 <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs border border-card bg-secondary relative z-10">{f.project_a_logo_emoji || "⬡"}</span>
+                               )}
+                               {f.project_b_name && (
+                                 f.project_b_logo_url ? (
+                                   <img src={f.project_b_logo_url} alt={f.project_b_name} className="w-7 h-7 rounded-lg object-contain border border-card bg-secondary relative z-0" />
+                                 ) : (
+                                   <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs border border-card bg-secondary relative z-0">{f.project_b_logo_emoji || "⬡"}</span>
+                                 )
+                               )}
+                             </div>
+                             <div className="flex items-center gap-1">
+                               <span className="text-[11px] font-medium text-muted-foreground">{f.project_a_name}</span>
+                               {f.project_b_name && (
+                                 <>
+                                   <span className="text-muted-foreground/40 text-[9px]">vs</span>
+                                   <span className="text-[11px] font-medium text-muted-foreground">{f.project_b_name}</span>
+                                 </>
+                               )}
+                             </div>
                            </div>
-                           <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${isEnded ? 'bg-destructive/10 text-destructive' : 'bg-green-500/10 text-green-600 dark:text-green-400'}`}>
-                             {isEnded ? "Ended" : "Live"}
+                           <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${isEnded ? 'bg-destructive/10 text-destructive' : 'bg-green-500/10 text-green-600 dark:text-green-400'}`}>
+                             {timeLeft}
                            </span>
                          </div>
 
                          {/* Title */}
-                         <p className="text-sm font-semibold text-foreground line-clamp-2 leading-snug group-hover:underline transition-all mb-auto">{f.title}</p>
+                         <h3 className="text-[13px] font-semibold text-foreground leading-snug line-clamp-2 group-hover:underline transition-all duration-200 mb-auto">
+                           {f.title}
+                         </h3>
 
-                         {/* Percentage + bar */}
-                         <div className="mt-4 space-y-2">
-                           <div className="flex items-center justify-between">
-                             <span className="text-lg font-bold text-foreground">{yesPercent.toFixed(0)}% chance</span>
-                           </div>
-                           <div className="h-2 rounded-full bg-secondary overflow-hidden">
-                             <motion.div
-                               className="h-full rounded-full bg-primary"
-                               initial={{ width: 0 }}
-                               whileInView={{ width: `${yesPercent}%` }}
-                               viewport={{ once: true }}
-                               transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }} />
-                           </div>
+                         {/* Percentage + votes */}
+                         <div className="mt-4 flex items-end justify-between">
+                           <span className="text-lg font-bold text-foreground tabular-nums">{yesPercent.toFixed(0)}%<span className="text-xs font-normal text-muted-foreground ml-1">chance</span></span>
+                           <span className="text-[10px] text-muted-foreground">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</span>
                          </div>
                        </div>
 
-                        {/* Vote buttons — always shown, disabled when ended */}
-                        {(() => {
-                          const isPriceMarket = f.dimension === "token_price" || f.dimension === "market_cap";
-                          const isSentimentDual = f.dimension === "community_sentiment" && !!f.project_b_name;
-                          const yesLabel = isPriceMarket ? "Long" : isSentimentDual ? (f.project_a_name || "Yes") : "Yes";
-                          const noLabel = isPriceMarket ? "Short" : isSentimentDual ? (f.project_b_name || "No") : "No";
-                          return (
-                        <div className="px-4 pb-4 pt-1 space-y-2">
-                          <div className="flex gap-2">
-                            <span className={`flex-1 rounded-lg py-2 text-xs font-bold text-center ${
-                              isEnded
-                                ? "bg-secondary text-muted-foreground opacity-60"
-                                : "bg-primary/10 text-primary"
-                            }`}>
-                              {yesLabel}
-                            </span>
-                            <span className={`flex-1 rounded-lg py-2 text-xs font-bold text-center ${
-                              isEnded
-                                ? "bg-secondary text-muted-foreground opacity-60"
-                                : "bg-destructive/10 text-destructive"
-                            }`}>
-                              {noLabel}
-                            </span>
-                          </div>
-                          <p className="text-[10px] text-muted-foreground text-center">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</p>
-                        </div>
-                          );
-                        })()}
+                       {/* Vote buttons */}
+                       <div className="px-4 pb-4">
+                         <div className="flex gap-2">
+                           <span className={`flex-1 rounded-lg py-2 text-xs font-bold text-center ${
+                             isEnded ? "bg-secondary text-muted-foreground opacity-60" : "bg-primary/10 text-primary"
+                           }`}>{yesLabel}</span>
+                           <span className={`flex-1 rounded-lg py-2 text-xs font-bold text-center ${
+                             isEnded ? "bg-secondary text-muted-foreground opacity-60" : "bg-destructive/10 text-destructive"
+                           }`}>{noLabel}</span>
+                         </div>
+                       </div>
                       </Link>);
                  })}
                   </div>
