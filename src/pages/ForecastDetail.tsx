@@ -150,6 +150,7 @@ const ForecastDetail = () => {
   const addComment = useAddForecastComment();
   const deleteComment = useDeleteForecastComment();
   const editComment = useEditForecastComment();
+  const [heroChartTab, setHeroChartTab] = useState<"probability" | "price">("probability");
   const [commentText, setCommentText] = useState("");
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState("");
