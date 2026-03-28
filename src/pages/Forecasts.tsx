@@ -18,6 +18,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import ActivityFeed from "@/components/forecast/ActivityFeed";
 
 const dimensionIconMap: Record<string, typeof DollarSign> = {
   token_price: DollarSign,
@@ -860,6 +861,9 @@ const Forecasts = () => {
         setShowCreate={setShowCreate}
         heroDimensionsMap={heroDimensionsMap as Record<string, string[]>}
       />
+
+      {/* Activity Feed — Polymarket-style news ticker */}
+      <ActivityFeed />
 
       {/* Controls — Polymarket-style single row */}
       <section className="sticky top-16 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
