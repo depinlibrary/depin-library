@@ -1,7 +1,9 @@
 import { useState, useEffect, useMemo } from "react";
 import { getWeightedChance } from "@/lib/forecastUtils";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Clock, CalendarDays, Timer, Users, ExternalLink, Copy, ArrowUpRight, ArrowDownRight, ThumbsUp, ThumbsDown, Gauge, Target, Zap, CheckCircle2, XCircle } from "lucide-react";
+import { ArrowLeft, Clock, CalendarDays, Timer, Users, ExternalLink, Copy, ArrowUpRight, ArrowDownRight, ThumbsUp, ThumbsDown, Gauge, Target, Zap, CheckCircle2, XCircle, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from "recharts";
+import { useTokenMarketData } from "@/hooks/useTokenMarketData";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -10,8 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import VoteHistoryChart from "@/components/forecast/VoteHistoryChart";
-import PriceChart from "@/components/forecast/PriceChart";
+
 import DiscussionSection from "@/components/forecast/DiscussionSection";
 import RelatedForecastsList from "@/components/forecast/RelatedForecasts";
 import ForecastAnalysis from "@/components/forecast/ForecastAnalysis";
@@ -46,6 +47,13 @@ function getTimeRemaining(endDate: string): string {
   if (hours > 0) return `${hours}h left`;
   const mins = Math.floor(diff / (1000 * 60));
   return `${mins}m left`;
+}
+
+function formatTokenPrice(price: number | null): string {
+  if (price === null || price === undefined) return "—";
+  if (price >= 1) return `$${price.toFixed(2)}`;
+  if (price >= 0.01) return `$${price.toFixed(4)}`;
+  return `$${price.toFixed(6)}`;
 }
 
 const confidenceLabels: Record<number, { label: string; color: string }> = {
@@ -135,6 +143,8 @@ const ForecastDetail = () => {
   const { data: forecast, isLoading } = useForecastDetail(id);
   const { data: comments = [], isLoading: commentsLoading } = useForecastComments(id);
   const { data: voteHistory = [] } = useForecastVoteHistory(id);
+  const marketDataA = useTokenMarketData(forecast?.project_a_id);
+  const marketDataB = useTokenMarketData(forecast?.project_b_id || undefined);
   const { data: relatedForecasts = [] } = useRelatedForecasts(id, forecast?.project_a_id, forecast?.project_b_id);
   const voteForecast = useVoteForecast();
   const addComment = useAddForecastComment();
@@ -332,225 +342,315 @@ const ForecastDetail = () => {
               <ArrowLeft className="h-3.5 w-3.5" /> Back to Forecasts
             </Link>
             <div className="space-y-4">
-            {/* Hero Card — matches Forecasts page hero style */}
+            {/* Hero Card — split layout like Forecasts page hero */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="rounded-2xl border border-border bg-card overflow-hidden"
             >
-              <div className="p-6 sm:p-8">
-                {/* Header with project logos + live/ended indicator */}
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center -space-x-2">
-                      {forecast.project_a?.logo_url ? (
-                        <img src={forecast.project_a.logo_url} alt={forecast.project_a.name} className="w-10 h-10 rounded-xl object-contain border-2 border-card bg-secondary relative z-10" />
-                      ) : (
-                        <span className="w-10 h-10 rounded-xl flex items-center justify-center text-lg border-2 border-card bg-secondary relative z-10">{forecast.project_a?.logo_emoji || "⬡"}</span>
-                      )}
-                      {forecast.project_b && (
-                        forecast.project_b.logo_url ? (
-                          <img src={forecast.project_b.logo_url} alt={forecast.project_b.name} className="w-10 h-10 rounded-xl object-contain border-2 border-card bg-secondary" />
+              <div className="flex flex-col lg:flex-row">
+                {/* LEFT: Outcome rows + stats */}
+                <div className="flex-1 p-6 sm:p-8 flex flex-col min-w-0">
+                  {/* Header with project logos + live/ended indicator */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center -space-x-2">
+                        {forecast.project_a?.logo_url ? (
+                          <img src={forecast.project_a.logo_url} alt={forecast.project_a.name} className="w-11 h-11 rounded-xl object-contain border-2 border-card bg-secondary relative z-10" />
                         ) : (
-                          <span className="w-10 h-10 rounded-xl flex items-center justify-center text-lg border-2 border-card bg-secondary">{forecast.project_b?.logo_emoji || "⬡"}</span>
-                        )
-                      )}
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-[11px] font-medium text-muted-foreground">
-                        <Link to={`/project/${forecast.project_a?.slug}`} className="hover:text-foreground transition-colors">
-                          {forecast.project_a?.name}
-                        </Link>
-                        {forecast.project_b && (
-                          <>
-                            {" · "}
-                            <Link to={`/project/${forecast.project_b?.slug}`} className="hover:text-foreground transition-colors">
-                              {forecast.project_b?.name}
-                            </Link>
-                          </>
+                          <span className="w-11 h-11 rounded-xl flex items-center justify-center text-lg border-2 border-card bg-secondary relative z-10">{forecast.project_a?.logo_emoji || "⬡"}</span>
                         )}
-                      </span>
-                      <span className="flex items-center gap-1.5">
-                        <span className="relative flex h-2 w-2">
-                          {!isEnded && (
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-green-500" />
+                        {forecast.project_b && (
+                          forecast.project_b.logo_url ? (
+                            <img src={forecast.project_b.logo_url} alt={forecast.project_b.name} className="w-11 h-11 rounded-xl object-contain border-2 border-card bg-secondary" />
+                          ) : (
+                            <span className="w-11 h-11 rounded-xl flex items-center justify-center text-lg border-2 border-card bg-secondary">{forecast.project_b?.logo_emoji || "⬡"}</span>
+                          )
+                        )}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-xs font-medium text-muted-foreground">
+                          <Link to={`/project/${forecast.project_a?.slug}`} className="hover:text-foreground transition-colors">
+                            {forecast.project_a?.name}
+                          </Link>
+                          {forecast.project_b && (
+                            <>
+                              {" · "}
+                              <Link to={`/project/${forecast.project_b?.slug}`} className="hover:text-foreground transition-colors">
+                                {forecast.project_b?.name}
+                              </Link>
+                            </>
                           )}
-                          <span className={`relative inline-flex rounded-full h-2 w-2 ${isEnded ? 'bg-destructive animate-pulse' : 'bg-green-500'}`} />
                         </span>
-                        <span className={`text-[10px] font-semibold ${isEnded ? 'text-destructive' : 'text-green-500'}`}>
-                          {isEnded ? 'Ended' : `Live · ${timeLeft}`}
+                        <span className="flex items-center gap-1.5 mt-0.5">
+                          <span className="relative flex h-2 w-2">
+                            {!isEnded && (
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-green-500" />
+                            )}
+                            <span className={`relative inline-flex rounded-full h-2 w-2 ${isEnded ? 'bg-destructive animate-pulse' : 'bg-green-500'}`} />
+                          </span>
+                          <span className={`text-[10px] font-semibold ${isEnded ? 'text-destructive' : 'text-green-500'}`}>
+                            {isEnded ? 'Ended' : `Live · ${timeLeft}`}
+                          </span>
                         </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <button onClick={handleShareX} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" title="Share on X">
+                        <ExternalLink className="h-4 w-4" />
+                      </button>
+                      <button onClick={handleCopyLink} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" title="Copy link">
+                        <Copy className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Title */}
+                  <h1 className="text-xl sm:text-2xl font-bold text-foreground leading-tight mb-4 font-['Space_Grotesk'] tracking-tight">
+                    {forecast.title}
+                  </h1>
+
+                  {/* Target Hit Banner */}
+                  {forecast.status === "resolved" && isPriceMarket && forecast.prediction_target != null && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                      className="mb-4 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3 flex items-center gap-3 relative overflow-hidden"
+                    >
+                      <div className="absolute inset-0 opacity-[0.07] pointer-events-none" style={{
+                        background: 'linear-gradient(105deg, transparent 40%, hsl(var(--primary)) 50%, transparent 60%)',
+                        backgroundSize: '200% 100%',
+                        animation: 'shimmer 3s ease-in-out infinite',
+                      }} />
+                      <motion.div
+                        className="flex items-center justify-center h-8 w-8 rounded-full bg-primary/15 shrink-0"
+                        animate={{ scale: [1, 1.1, 1] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                      >
+                        <Target className="h-4 w-4 text-primary" />
+                      </motion.div>
+                      <div className="flex-1 min-w-0 relative">
+                        <div className="flex items-center gap-1.5 mb-0.5">
+                          <span className="text-xs font-bold text-primary">Target Hit</span>
+                          <motion.div animate={{ rotate: [0, 15, -15, 0] }} transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}>
+                            <Zap className="h-3 w-3 text-primary" />
+                          </motion.div>
+                        </div>
+                        <p className="text-[11px] text-muted-foreground leading-snug">
+                          Auto-resolved early — {forecast.project_b_id
+                            ? `outperformance reached the ${forecast.prediction_direction === "long" ? "long" : "short"} target of`
+                            : `${forecastDimension === "market_cap" ? "market cap" : "token price"} reached the ${forecast.prediction_direction === "long" ? "long" : "short"} target of`}{" "}
+                          <span className="font-semibold text-foreground">
+                            {forecast.project_b_id
+                              ? `${forecast.prediction_direction === "long" ? "+" : "-"}${Number(forecast.prediction_target).toFixed(1)}%`
+                              : `$${Number(forecast.prediction_target).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}`}
+                          </span>
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Polymarket-style outcome rows — clean, no dividers */}
+                  <div className="flex-1 flex flex-col justify-center space-y-1">
+                    <div className="flex items-center justify-between py-3 px-1 rounded-lg hover:bg-secondary/30 transition-colors">
+                      <div className="flex items-center gap-2">
+                        <ArrowUpRight className="h-4 w-4 text-primary" />
+                        <span className="text-sm font-medium text-foreground">{yesLabel}</span>
+                        <span className="text-[10px] text-muted-foreground">{forecast.total_votes_yes} votes</span>
+                        {forecast.avg_confidence_yes != null && (
+                          <span className="text-[10px] text-primary/60 flex items-center gap-0.5">
+                            <Gauge className="h-3 w-3" /> {forecast.avg_confidence_yes.toFixed(1)}/5
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-2xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{yesPct.toFixed(0)}%</span>
+                    </div>
+                    <div className="flex items-center justify-between py-3 px-1 rounded-lg hover:bg-secondary/30 transition-colors">
+                      <div className="flex items-center gap-2">
+                        <ArrowDownRight className="h-4 w-4 text-destructive" />
+                        <span className="text-sm font-medium text-foreground">{noLabel}</span>
+                        <span className="text-[10px] text-muted-foreground">{forecast.total_votes_no} votes</span>
+                        {forecast.avg_confidence_no != null && (
+                          <span className="text-[10px] text-destructive/60 flex items-center gap-0.5">
+                            <Gauge className="h-3 w-3" /> {forecast.avg_confidence_no.toFixed(1)}/5
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-2xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{noPct.toFixed(0)}%</span>
+                    </div>
+                  </div>
+
+                  {/* Final result badge + Your Prediction if ended */}
+                  {isEnded && (() => {
+                    const outcomeResult = forecast.outcome
+                      ? forecast.outcome
+                      : (yesPct >= 50 ? "yes" : "no");
+                    const outcomeLabel = outcomeResult === "yes" ? yesLabel : noLabel;
+                    const outcomeIsLong = outcomeResult === "yes";
+                    const userVote = forecast.user_vote;
+                    const userCorrect = userVote ? userVote === outcomeResult : null;
+                    const userVoteLabel = userVote === "yes" ? yesLabel : noLabel;
+
+                    return (
+                      <div className="space-y-2 mt-2">
+                        <div className="flex items-center justify-end">
+                          <Badge
+                            variant="secondary"
+                            className={`text-[10px] font-semibold ${outcomeIsLong ? "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20" : "bg-destructive/10 text-destructive border-destructive/20"}`}
+                          >
+                            Result: {outcomeLabel} {!isPriceMarket ? `(${outcomeIsLong ? yesPct.toFixed(0) : noPct.toFixed(0)}%)` : ""}
+                          </Badge>
+                        </div>
+                        {userVote && (
+                          <div className={`flex items-center justify-between rounded-lg px-4 py-2.5 text-xs font-semibold ${
+                            userCorrect
+                              ? "bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20"
+                              : "bg-destructive/10 text-destructive border border-destructive/20"
+                          }`}>
+                            <span>Your Prediction: {userVoteLabel}</span>
+                            <span className="flex items-center gap-1">
+                              {userCorrect ? (
+                                <><CheckCircle2 className="h-3.5 w-3.5" /> Correct</>
+                              ) : (
+                                <><XCircle className="h-3.5 w-3.5" /> Incorrect</>
+                              )}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+
+                  {/* Footer stats */}
+                  <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1"><Users className="h-3.5 w-3.5" /> {totalVotes.toLocaleString()} votes</span>
+                      <span className="flex items-center gap-1">{comments.length} comments</span>
+                    </div>
+                    {/* Token price badges */}
+                    {(() => {
+                      const priceA = marketDataA.data;
+                      const priceB = marketDataB.data;
+                      if (!priceA?.price_usd) return null;
+                      return (
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-1.5 text-xs">
+                            <span className="text-muted-foreground">{forecast.project_a?.name}:</span>
+                            <span className="font-semibold text-foreground">{formatTokenPrice(priceA.price_usd)}</span>
+                            {priceA.price_change_24h != null && (
+                              <span className={`flex items-center gap-0.5 font-medium ${priceA.price_change_24h > 0 ? "text-green-500" : priceA.price_change_24h < 0 ? "text-destructive" : "text-muted-foreground"}`}>
+                                {priceA.price_change_24h > 0 ? <TrendingUp className="h-3 w-3" /> : priceA.price_change_24h < 0 ? <TrendingDown className="h-3 w-3" /> : <Minus className="h-3 w-3" />}
+                                {Math.abs(priceA.price_change_24h).toFixed(1)}%
+                              </span>
+                            )}
+                          </div>
+                          {priceB?.price_usd && (
+                            <div className="flex items-center gap-1.5 text-xs">
+                              <span className="text-muted-foreground">{forecast.project_b?.name}:</span>
+                              <span className="font-semibold text-foreground">{formatTokenPrice(priceB.price_usd)}</span>
+                              {priceB.price_change_24h != null && (
+                                <span className={`flex items-center gap-0.5 font-medium ${priceB.price_change_24h > 0 ? "text-green-500" : priceB.price_change_24h < 0 ? "text-destructive" : "text-muted-foreground"}`}>
+                                  {priceB.price_change_24h > 0 ? <TrendingUp className="h-3 w-3" /> : priceB.price_change_24h < 0 ? <TrendingDown className="h-3 w-3" /> : <Minus className="h-3 w-3" />}
+                                  {Math.abs(priceB.price_change_24h).toFixed(1)}%
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+
+                {/* RIGHT: Probability trend chart */}
+                <div className="lg:w-[55%] border-t lg:border-t-0 lg:border-l border-border p-6 sm:p-8 flex flex-col">
+                  {/* Chart legend */}
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-semibold text-muted-foreground">Probability Trend</span>
+                    <div className="flex items-center gap-4">
+                      <span className="flex items-center gap-1.5 text-[11px]">
+                        <span className="w-2 h-2 rounded-full bg-primary" />
+                        <span className="font-medium text-muted-foreground">{yesLabel}</span>
+                        <span className="font-semibold text-primary font-['Space_Grotesk']">{yesPct.toFixed(1)}%</span>
+                      </span>
+                      <span className="flex items-center gap-1.5 text-[11px]">
+                        <span className="w-2 h-2 rounded-full bg-destructive" />
+                        <span className="font-medium text-muted-foreground">{noLabel}</span>
+                        <span className="font-semibold text-destructive font-['Space_Grotesk']">{noPct.toFixed(1)}%</span>
                       </span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <button onClick={handleShareX} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" title="Share on X">
-                      <ExternalLink className="h-4 w-4" />
-                    </button>
-                    <button onClick={handleCopyLink} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" title="Copy link">
-                      <Copy className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
 
-                {/* Title */}
-                <h1 className="text-xl sm:text-2xl font-bold text-foreground leading-tight mb-3 font-['Space_Grotesk'] tracking-tight">
-                  {forecast.title}
-                </h1>
-
-                {/* Target Hit Banner — only for auto-resolved price/mcap forecasts */}
-                {forecast.status === "resolved" && isPriceMarket && forecast.prediction_target != null && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ type: "spring", stiffness: 200, damping: 15 }}
-                    className="mb-4 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3 flex items-center gap-3 glow-primary-sm relative overflow-hidden"
-                  >
-                    {/* Shimmer overlay */}
-                    <div className="absolute inset-0 opacity-[0.07] pointer-events-none" style={{
-                      background: 'linear-gradient(105deg, transparent 40%, hsl(var(--primary)) 50%, transparent 60%)',
-                      backgroundSize: '200% 100%',
-                      animation: 'shimmer 3s ease-in-out infinite',
-                    }} />
-                    <motion.div
-                      className="flex items-center justify-center h-8 w-8 rounded-full bg-primary/15 shrink-0"
-                      animate={{ scale: [1, 1.1, 1] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                    >
-                      <Target className="h-4 w-4 text-primary" />
-                    </motion.div>
-                    <div className="flex-1 min-w-0 relative">
-                      <div className="flex items-center gap-1.5 mb-0.5">
-                        <span className="text-xs font-bold text-primary">Target Hit</span>
-                        <motion.div animate={{ rotate: [0, 15, -15, 0] }} transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}>
-                          <Zap className="h-3 w-3 text-primary" />
-                        </motion.div>
+                  {/* Chart */}
+                  <div className="flex-1 min-h-[200px]">
+                    {voteHistory.length >= 2 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={voteHistory.map(v => ({
+                          ...v,
+                          yes_pct: v.weighted_yes_pct,
+                          no_pct: 100 - v.weighted_yes_pct,
+                        }))} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                          <defs>
+                            <linearGradient id="detailYesGrad" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
+                              <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.01} />
+                            </linearGradient>
+                            <linearGradient id="detailNoGrad" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="hsl(var(--destructive))" stopOpacity={0.15} />
+                              <stop offset="95%" stopColor="hsl(var(--destructive))" stopOpacity={0.01} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} vertical={false} />
+                          <ReferenceLine y={50} stroke="hsl(var(--muted-foreground))" strokeDasharray="6 4" opacity={0.25} />
+                          <XAxis dataKey="date" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+                          <YAxis domain={[0, 100]} tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} tickFormatter={(v: number) => `${v}%`} />
+                          <Tooltip
+                            contentStyle={{
+                              backgroundColor: "hsl(var(--card))",
+                              border: "1px solid hsl(var(--border))",
+                              borderRadius: "10px",
+                              fontSize: "11px",
+                              padding: "6px 10px",
+                            }}
+                            formatter={(value: number, name: string) => [`${value}%`, name === "yes_pct" ? yesLabel : noLabel]}
+                            labelStyle={{ fontWeight: 600, marginBottom: 2, color: "hsl(var(--foreground))" }}
+                          />
+                          <Area type="monotone" dataKey="yes_pct" name="yes_pct" stroke="hsl(var(--primary))" fill="url(#detailYesGrad)" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: "hsl(var(--primary))", stroke: "hsl(var(--card))", strokeWidth: 2 }} />
+                          <Area type="monotone" dataKey="no_pct" name="no_pct" stroke="hsl(var(--destructive))" fill="url(#detailNoGrad)" strokeWidth={1.5} strokeDasharray="4 2" dot={false} activeDot={{ r: 3, fill: "hsl(var(--destructive))", stroke: "hsl(var(--card))", strokeWidth: 2 }} />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-xs text-muted-foreground">
+                        Not enough votes for a trend chart yet
                       </div>
-                      <p className="text-[11px] text-muted-foreground leading-snug">
-                        Auto-resolved early — {forecast.project_b_id
-                          ? `outperformance reached the ${forecast.prediction_direction === "long" ? "long" : "short"} target of`
-                          : `${forecastDimension === "market_cap" ? "market cap" : "token price"} reached the ${forecast.prediction_direction === "long" ? "long" : "short"} target of`}{" "}
-                        <span className="font-semibold text-foreground">
-                          {forecast.project_b_id
-                            ? `${forecast.prediction_direction === "long" ? "+" : "-"}${Number(forecast.prediction_target).toFixed(1)}%`
-                            : `$${Number(forecast.prediction_target).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}`}
-                        </span>
-                      </p>
-                    </div>
-                    <Badge variant="outline" className="border-primary/40 text-primary text-[10px] shrink-0 relative">
-                      Early Close
-                    </Badge>
-                  </motion.div>
-                )}
-
-                {/* Vote outcomes — Polymarket style */}
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center justify-between rounded-xl bg-primary/5 border border-primary/10 px-4 py-2.5">
-                    <div className="flex items-center gap-2">
-                      <ArrowUpRight className="h-4 w-4 text-primary" />
-                      <span className="text-sm font-semibold text-foreground">{yesLabel}</span>
-                      <span className="text-[10px] text-muted-foreground">{forecast.total_votes_yes} votes</span>
-                      {forecast.avg_confidence_yes != null && (
-                        <span className="text-[10px] text-primary/60 flex items-center gap-0.5">
-                          <Gauge className="h-3 w-3" /> {forecast.avg_confidence_yes.toFixed(1)}/5
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-xl font-bold text-foreground font-['Space_Grotesk']">{yesPct.toFixed(0)}%</span>
+                    )}
                   </div>
-                  <div className="flex items-center justify-between rounded-xl bg-destructive/5 border border-destructive/10 px-4 py-2.5">
-                    <div className="flex items-center gap-2">
-                      <ArrowDownRight className="h-4 w-4 text-destructive" />
-                      <span className="text-sm font-semibold text-foreground">{noLabel}</span>
-                      <span className="text-[10px] text-muted-foreground">{forecast.total_votes_no} votes</span>
-                      {forecast.avg_confidence_no != null && (
-                        <span className="text-[10px] text-destructive/60 flex items-center gap-0.5">
-                          <Gauge className="h-3 w-3" /> {forecast.avg_confidence_no.toFixed(1)}/5
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-xl font-bold text-foreground font-['Space_Grotesk']">{noPct.toFixed(0)}%</span>
-                  </div>
-                </div>
 
-                {/* Final result badge + Your Prediction if ended */}
-                {isEnded && (() => {
-                  const outcomeResult = forecast.outcome
-                    ? forecast.outcome
-                    : (yesPct >= 50 ? "yes" : "no");
-                  const outcomeLabel = outcomeResult === "yes" ? yesLabel : noLabel;
-                  const outcomeIsLong = outcomeResult === "yes";
-                  const userVote = forecast.user_vote;
-                  const userCorrect = userVote ? userVote === outcomeResult : null;
-                  const userVoteLabel = userVote === "yes" ? yesLabel : noLabel;
-
-                  return (
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-end">
-                        <Badge
-                          variant="secondary"
-                          className={`text-[10px] font-semibold ${outcomeIsLong ? "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20" : "bg-destructive/10 text-destructive border-destructive/20"}`}
-                        >
-                          Result: {outcomeLabel} {!isPriceMarket ? `(${outcomeIsLong ? yesPct.toFixed(0) : noPct.toFixed(0)}%)` : ""}
-                        </Badge>
+                  {/* Token price mini-chart below probability trend for price/mcap forecasts */}
+                  {(forecastDimension === "token_price" || forecastDimension === "market_cap") && marketDataA.data?.sparkline_7d && (
+                    <div className="mt-4 pt-3 border-t border-border">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">7d Price</span>
                       </div>
-                      {userVote && (
-                        <div className={`flex items-center justify-between rounded-lg px-4 py-2.5 text-xs font-semibold ${
-                          userCorrect
-                            ? "bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20"
-                            : "bg-destructive/10 text-destructive border border-destructive/20"
-                        }`}>
-                          <span>Your Prediction: {userVoteLabel}</span>
-                          <span className="flex items-center gap-1">
-                            {userCorrect ? (
-                              <><CheckCircle2 className="h-3.5 w-3.5" /> Correct</>
-                            ) : (
-                              <><XCircle className="h-3.5 w-3.5" /> Incorrect</>
-                            )}
-                          </span>
-                        </div>
-                      )}
+                      <div className="h-[60px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={((marketDataA.data?.sparkline_7d as number[]) || []).map((v, i) => ({ i, price: v }))} margin={{ top: 2, right: 0, left: 0, bottom: 0 }}>
+                            <defs>
+                              <linearGradient id="priceGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.15} />
+                                <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                              </linearGradient>
+                            </defs>
+                            <Area type="monotone" dataKey="price" stroke="hsl(var(--primary))" fill="url(#priceGrad)" strokeWidth={1.5} dot={false} />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
                     </div>
-                  );
-                })()}
-
-                {/* Market Stats row */}
-                <div className="mt-4 pt-4 border-t border-border grid grid-cols-4 gap-3">
-                  <div className="text-center">
-                    <p className="text-[10px] text-muted-foreground mb-0.5">Total Votes</p>
-                    <p className="text-sm font-bold text-foreground font-['Space_Grotesk']">{totalVotes.toLocaleString()}</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-[10px] text-muted-foreground mb-0.5">{yesLabel} Votes</p>
-                    <p className="text-sm font-bold text-primary font-['Space_Grotesk']">{forecast.total_votes_yes}</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-[10px] text-muted-foreground mb-0.5">{noLabel} Votes</p>
-                    <p className="text-sm font-bold text-destructive font-['Space_Grotesk']">{forecast.total_votes_no}</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-[10px] text-muted-foreground mb-0.5">Comments</p>
-                    <p className="text-sm font-bold text-foreground font-['Space_Grotesk']">{comments.length}</p>
-                  </div>
+                  )}
                 </div>
               </div>
             </motion.div>
-
-            {/* Vote History Chart — for community sentiment, show here in left column */}
-            {forecastDimension !== "token_price" && forecastDimension !== "market_cap" && (
-              <VoteHistoryChart voteHistory={voteHistory} yesLabel={yesLabel} noLabel={noLabel} />
-            )}
-
-            {/* Price / Market Cap Chart for token_price or market_cap forecasts */}
-            {(forecastDimension === "token_price" || forecastDimension === "market_cap") && forecast.project_a_id && (
-              <PriceChart
-                projects={[
-                  { projectId: forecast.project_a_id, projectName: forecast.project_a?.name || "Project A" },
-                  ...(forecast.project_b_id ? [{ projectId: forecast.project_b_id, projectName: forecast.project_b?.name || "Project B" }] : []),
-                ]}
-                dimension={forecastDimension as "token_price" | "market_cap"}
-              />
-            )}
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -773,10 +873,7 @@ const ForecastDetail = () => {
             {/* Forecast Analysis */}
             <ForecastAnalysis forecastId={forecast.id} isEnded={isEnded} totalVotesYes={forecast.total_votes_yes} totalVotesNo={forecast.total_votes_no} predictionTarget={forecast.prediction_target} predictionDirection={forecast.prediction_direction} startPrice={forecast.start_price} forecastDimension={forecastDimension} projectAId={forecast.project_a_id} projectBId={forecast.project_b_id} projectAName={forecast.project_a?.name} projectBName={forecast.project_b?.name} isCreator={!!user && user.id === forecast.creator_user_id} />
 
-            {/* Vote Trend — for token_price/market_cap, show in right column below analysis */}
-            {(forecastDimension === "token_price" || forecastDimension === "market_cap") && (
-              <VoteHistoryChart voteHistory={voteHistory} yesLabel={yesLabel} noLabel={noLabel} />
-            )}
+            {/* Vote Trend chart now embedded in hero section */}
 
             {/* Related Forecasts — column layout */}
             {relatedForecasts.length > 0 && (
