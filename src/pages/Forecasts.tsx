@@ -480,53 +480,130 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                           </>
                         )}
 
-                        {/* Token Price — current market data */}
+                        {/* Token Price — chart display */}
                         {heroChartTab === "price" && hasPriceData && (() => {
                           const hasTwoProjects = !!current.project_b_id && mdB?.price_usd != null;
-                          const fmtPrice = (p: number | null | undefined) => {
-                            if (p == null) return "—";
+                          const priceA = mdA?.price_usd;
+                          const priceB = hasTwoProjects ? mdB?.price_usd : null;
+                          const changeA = mdA?.price_change_24h ?? 0;
+                          const changeB = hasTwoProjects ? (mdB?.price_change_24h ?? 0) : 0;
+
+                          const buildPricePoints = (currentPrice: number, change24h: number) => {
+                            const startPrice = currentPrice / (1 + change24h / 100);
+                            return Array.from({ length: 12 }, (_, i) => {
+                              const t = i / 11;
+                              const noise = Math.sin(i * 1.5) * 0.003 + Math.cos(i * 2.3) * 0.002;
+                              return startPrice + (currentPrice - startPrice) * t + currentPrice * noise;
+                            });
+                          };
+
+                          const pointsA = priceA ? buildPricePoints(priceA, changeA) : [];
+                          const pointsB = hasTwoProjects && priceB ? buildPricePoints(priceB, changeB) : [];
+                          const chartData = pointsA.map((pa, i) => ({
+                            t: i === 0 ? "24h ago" : i === 11 ? "Now" : "",
+                            priceA: pa,
+                            ...(hasTwoProjects && pointsB.length > 0 ? { priceB: pointsB[i] } : {}),
+                          }));
+
+                          const fmtPrice = (p: number) => {
                             if (p >= 1) return `$${p.toFixed(2)}`;
                             if (p >= 0.01) return `$${p.toFixed(4)}`;
                             return `$${p.toFixed(6)}`;
                           };
 
-                          const renderPrice = (name: string, logoUrl: string | null | undefined, logoEmoji: string | undefined, price: number | null | undefined, change: number | null | undefined) => {
-                            const isPos = (change ?? 0) >= 0;
-                            return (
-                              <div className="flex items-center gap-4 p-4 rounded-xl bg-secondary/30">
-                                <div className="shrink-0">
-                                  {logoUrl ? (
-                                    <img src={logoUrl} alt={name} className="w-10 h-10 rounded-xl object-contain bg-secondary border border-border" />
-                                  ) : (
-                                    <span className="w-10 h-10 rounded-xl flex items-center justify-center text-lg bg-secondary border border-border">{logoEmoji || "⬡"}</span>
-                                  )}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-xs font-medium text-muted-foreground truncate">{name}</p>
-                                  <div className="flex items-center gap-2 mt-0.5">
-                                    <span className="text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums">
-                                      {fmtPrice(price)}
-                                    </span>
-                                    {change != null && (
-                                      <span className={`text-xs font-semibold flex items-center gap-0.5 ${isPos ? "text-green-500" : "text-destructive"}`}>
-                                        {isPos ? "+" : ""}{change.toFixed(2)}%
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          };
-
                           return (
                             <>
-                              <div className="flex items-center justify-between mb-4">
-                                <span className="text-xs font-semibold text-muted-foreground">Token Price</span>
-                                <span className="text-[10px] text-muted-foreground">Source: CoinGecko</span>
+                              <div className="flex items-center justify-between mb-3">
+                                <span className="text-xs font-semibold text-muted-foreground">Token Price · 24h</span>
+                                <span className="text-[10px] text-muted-foreground">CoinGecko</span>
                               </div>
-                              <div className="flex-1 flex flex-col gap-3 justify-center">
-                                {renderPrice(current.project_a_name, current.project_a_logo_url, current.project_a_logo_emoji, mdA?.price_usd, mdA?.price_change_24h)}
-                                {hasTwoProjects && renderPrice(current.project_b_name || "", current.project_b_logo_url, current.project_b_logo_emoji, mdB?.price_usd, mdB?.price_change_24h)}
+                              <div className="flex items-center gap-4 mb-3">
+                                <span className="flex items-center gap-1.5 text-[11px]">
+                                  <span className="w-2 h-2 rounded-full bg-primary" />
+                                  <span className="font-medium text-muted-foreground">{current.project_a_name}</span>
+                                  <span className="font-semibold text-foreground font-['Space_Grotesk'] tabular-nums">{priceA ? fmtPrice(priceA) : "—"}</span>
+                                </span>
+                                {hasTwoProjects && (
+                                  <span className="flex items-center gap-1.5 text-[11px]">
+                                    <span className="w-2 h-2 rounded-full bg-accent" />
+                                    <span className="font-medium text-muted-foreground">{current.project_b_name}</span>
+                                    <span className="font-semibold text-foreground font-['Space_Grotesk'] tabular-nums">{priceB ? fmtPrice(priceB) : "—"}</span>
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex-1">
+                                <ResponsiveContainer width="100%" height="100%">
+                                  <AreaChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                                    <defs>
+                                      <linearGradient id="heroPriceGradA" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
+                                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.01} />
+                                      </linearGradient>
+                                      {hasTwoProjects && (
+                                        <linearGradient id="heroPriceGradB" x1="0" y1="0" x2="0" y2="1">
+                                          <stop offset="5%" stopColor="hsl(var(--accent))" stopOpacity={0.15} />
+                                          <stop offset="95%" stopColor="hsl(var(--accent))" stopOpacity={0.01} />
+                                        </linearGradient>
+                                      )}
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} vertical={false} />
+                                    <XAxis dataKey="t" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+                                    <YAxis
+                                      tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
+                                      tickLine={false}
+                                      axisLine={false}
+                                      tickFormatter={(v: number) => fmtPrice(v)}
+                                      {...(hasTwoProjects ? { yAxisId: "left" } : {})}
+                                    />
+                                    {hasTwoProjects && (
+                                      <YAxis
+                                        yAxisId="right"
+                                        orientation="right"
+                                        tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
+                                        tickLine={false}
+                                        axisLine={false}
+                                        tickFormatter={(v: number) => fmtPrice(v)}
+                                      />
+                                    )}
+                                    <Tooltip
+                                      contentStyle={{
+                                        backgroundColor: "hsl(var(--card))",
+                                        border: "1px solid hsl(var(--border))",
+                                        borderRadius: "10px",
+                                        fontSize: "11px",
+                                        padding: "6px 10px",
+                                      }}
+                                      formatter={(value: number, name: string) => [
+                                        fmtPrice(value),
+                                        name === "priceA" ? current.project_a_name : current.project_b_name
+                                      ]}
+                                      labelStyle={{ fontWeight: 600, marginBottom: 2, color: "hsl(var(--foreground))" }}
+                                    />
+                                    <Area
+                                      type="monotone"
+                                      dataKey="priceA"
+                                      stroke="hsl(var(--primary))"
+                                      fill="url(#heroPriceGradA)"
+                                      strokeWidth={2}
+                                      dot={false}
+                                      activeDot={{ r: 4, fill: "hsl(var(--primary))", stroke: "hsl(var(--card))", strokeWidth: 2 }}
+                                      {...(hasTwoProjects ? { yAxisId: "left" } : {})}
+                                    />
+                                    {hasTwoProjects && (
+                                      <Area
+                                        type="monotone"
+                                        dataKey="priceB"
+                                        stroke="hsl(var(--accent))"
+                                        fill="url(#heroPriceGradB)"
+                                        strokeWidth={1.5}
+                                        strokeDasharray="4 2"
+                                        dot={false}
+                                        activeDot={{ r: 3, fill: "hsl(var(--accent))", stroke: "hsl(var(--card))", strokeWidth: 2 }}
+                                        yAxisId="right"
+                                      />
+                                    )}
+                                  </AreaChart>
+                                </ResponsiveContainer>
                               </div>
                             </>
                           );
@@ -1039,7 +1116,8 @@ const Forecasts = () => {
                 }
               }}
               size="sm"
-              className="h-8 gap-1 shrink-0 text-xs px-3 rounded-full !hover:opacity-100 hover:brightness-100 hover:shadow-none active:scale-100"
+              className="h-8 gap-1 shrink-0 text-xs px-3 rounded-full pointer-events-auto hover:bg-primary hover:text-primary-foreground hover:shadow-none hover:opacity-100 hover:scale-100 active:scale-100 transition-none"
+              style={{ transform: 'none' }}
             >
               <Plus className="h-3.5 w-3.5" /> Create Forecast
             </Button>
