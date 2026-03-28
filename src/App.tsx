@@ -70,7 +70,9 @@ const App = () => (
       <BrowserRouter>
         <ScrollToTop />
         <AuthProvider>
-          <AnimatedRoutes />
+          <RealtimeProvider>
+            <AnimatedRoutes />
+          </RealtimeProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
