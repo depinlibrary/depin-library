@@ -196,17 +196,10 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
 }) => {
   const [activeSlide, setActiveSlide] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  // Left carousel: only show top 6 forecasts
-  const heroForecasts = useMemo(() => {
-    if (forecasts.length === 0) return [];
-    return forecasts.slice(0, 6);
-  }, [forecasts]);
-
   const [isPaused, setIsPaused] = useState(false);
-  const [heroChartTab, setHeroChartTab] = useState<"probability" | "price">("probability");
 
-  // Auto-slide every 10 seconds, pause on hover
+  const heroForecasts = useMemo(() => forecasts.slice(0, 6), [forecasts]);
+
   useEffect(() => {
     if (heroForecasts.length <= 1 || isPaused) return;
     intervalRef.current = setInterval(() => {
@@ -223,44 +216,19 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
     }, 10000);
   }, [heroForecasts.length]);
 
-  // Build per-slide chart data showing vote breakdown for the current forecast
-  const currentChartData = useMemo(() => {
-    const f = heroForecasts[activeSlide];
-    if (!f) return [];
-    const t = f.total_votes_yes + f.total_votes_no;
-    if (t === 0) return [
-      { name: "Yes", value: 50, fill: "hsl(var(--primary))" },
-      { name: "No", value: 50, fill: "hsl(var(--destructive))" },
-    ];
-    return [
-      { name: "Yes", value: f.total_votes_yes, fill: "hsl(var(--primary))" },
-      { name: "No", value: f.total_votes_no, fill: "hsl(var(--destructive))" },
-    ];
-  }, [heroForecasts, activeSlide]);
-
   if (heroForecasts.length === 0) {
     return (
       <section className="relative overflow-hidden pt-24 pb-8">
         <div className="absolute inset-0 bg-grid opacity-10" />
         <div className="gradient-radial-top absolute inset-0" />
         <div className="container relative mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="rounded-2xl border border-border bg-card p-8 flex flex-col items-center justify-center text-center"
-          >
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl border border-border bg-card p-8 flex flex-col items-center justify-center text-center">
             <BarChart3 className="h-10 w-10 text-muted-foreground/30 mb-3" />
             <h2 className="text-lg font-bold text-foreground font-['Space_Grotesk'] mb-1">No forecasts yet</h2>
             <p className="text-sm text-muted-foreground mb-4">Create the first prediction for the community.</p>
-            <Button onClick={() => {
-                if (user) {
-                  setShowCreate(true);
-                } else {
-                  window.location.href = "/auth?redirect=/forecasts";
-                }
-              }} className="gap-1.5">
-                <Plus className="h-3.5 w-3.5" /> Create Forecast
-              </Button>
+            <Button onClick={() => user ? setShowCreate(true) : (window.location.href = "/auth?redirect=/forecasts")} className="gap-1.5">
+              <Plus className="h-3.5 w-3.5" /> Create Forecast
+            </Button>
           </motion.div>
         </div>
       </section>
@@ -268,63 +236,87 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
   }
 
   const current = heroForecasts[activeSlide];
-  const cTotal = current.total_votes_yes + current.total_votes_no;
   const { yesPct: cYesPct } = getWeightedChance(current);
   const cIsEnded = new Date(current.end_date) <= new Date();
   const cTimeLeft = getTimeRemaining(current.end_date);
-
-  // Dynamic labels based on dimension
+  const cTotal = current.total_votes_yes + current.total_votes_no;
   const cDims = heroDimensionsMap[current.id] || [];
   const cIsPriceMarket = cDims.some(d => d === "token_price" || d === "market_cap");
   const cIsSentimentDual = cDims.some(d => d === "community_sentiment") && !!current.project_b_name;
   const cYesLabel = cIsPriceMarket ? "Long" : cIsSentimentDual ? (current.project_a_name || "Yes") : "Yes";
   const cNoLabel = cIsPriceMarket ? "Short" : cIsSentimentDual ? (current.project_b_name || "No") : "No";
 
+  const totalActiveForecasts = forecasts.filter(f => new Date(f.end_date) > new Date()).length;
+  const totalVotesAllTime = forecasts.reduce((s, f) => s + f.total_votes_yes + f.total_votes_no, 0);
+  const avgChance = forecasts.length > 0 ? forecasts.reduce((s, f) => s + getWeightedChance(f).yesPct, 0) / forecasts.length : 50;
+
   return (
     <section className="relative overflow-hidden pt-24 pb-8">
       <div className="absolute inset-0 bg-grid opacity-10" />
       <div className="gradient-radial-top absolute inset-0" />
       <div className="container relative mx-auto px-4">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/* LEFT: Auto-sliding featured card with chart */}
+        {/* Stats row */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-6 mb-5">
+          <div className="flex items-center gap-2">
+            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Radio className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <p className="text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{totalActiveForecasts}</p>
+              <p className="text-[10px] text-muted-foreground -mt-0.5">Active Markets</p>
+            </div>
+          </div>
+          <div className="h-8 w-px bg-border" />
+          <div>
+            <p className="text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{totalVotesAllTime.toLocaleString()}</p>
+            <p className="text-[10px] text-muted-foreground -mt-0.5">Total Votes</p>
+          </div>
+          <div className="h-8 w-px bg-border" />
+          <div>
+            <p className="text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{avgChance.toFixed(0)}%</p>
+            <p className="text-[10px] text-muted-foreground -mt-0.5">Avg. Bullish</p>
+          </div>
+        </motion.div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          {/* LEFT: Featured forecast — 8 cols */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="lg:col-span-2"
+            className="lg:col-span-8"
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
           >
-            <div className="rounded-2xl border border-border bg-card overflow-hidden h-[520px] flex flex-col lg:flex-row">
-              {/* LEFT: Polymarket-style outcome list */}
+            <div className="rounded-2xl border border-border bg-card overflow-hidden h-full min-h-[420px] flex flex-col">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={current.id}
-                  initial={{ opacity: 0, x: 30 }}
+                  initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -30 }}
-                  transition={{ duration: 0.35 }}
-                  className="flex-1 p-6 sm:p-8 flex flex-col min-w-0"
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className="flex-1 flex flex-col lg:flex-row"
                 >
-                  {/* Header: logo + project names + share icons */}
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
+                  {/* Left info */}
+                  <div className="flex-1 p-6 sm:p-8 flex flex-col min-w-0">
+                    <div className="flex items-center gap-3 mb-5">
                       <div className="flex items-center -space-x-2">
                         {current.project_a_logo_url ? (
-                          <img src={current.project_a_logo_url} alt={current.project_a_name} className="w-11 h-11 rounded-xl object-contain border-2 border-card bg-secondary relative z-10" />
+                          <img src={current.project_a_logo_url} alt={current.project_a_name} className="w-10 h-10 rounded-xl object-contain border-2 border-card bg-secondary relative z-10" />
                         ) : (
-                          <span className="w-11 h-11 rounded-xl flex items-center justify-center text-lg border-2 border-card bg-secondary relative z-10">{current.project_a_logo_emoji || "⬡"}</span>
+                          <span className="w-10 h-10 rounded-xl flex items-center justify-center text-base border-2 border-card bg-secondary relative z-10">{current.project_a_logo_emoji || "⬡"}</span>
                         )}
                         {current.project_b_name && (
                           current.project_b_logo_url ? (
-                            <img src={current.project_b_logo_url} alt={current.project_b_name} className="w-11 h-11 rounded-xl object-contain border-2 border-card bg-secondary" />
+                            <img src={current.project_b_logo_url} alt={current.project_b_name} className="w-10 h-10 rounded-xl object-contain border-2 border-card bg-secondary" />
                           ) : (
-                            <span className="w-11 h-11 rounded-xl flex items-center justify-center text-lg border-2 border-card bg-secondary">{current.project_b_logo_emoji || "⬡"}</span>
+                            <span className="w-10 h-10 rounded-xl flex items-center justify-center text-base border-2 border-card bg-secondary">{current.project_b_logo_emoji || "⬡"}</span>
                           )
                         )}
                       </div>
-                      <div className="flex flex-col">
+                      <div>
                         <span className="text-xs font-medium text-muted-foreground">
-                          {current.project_a_name}{current.project_b_name ? ` · ${current.project_b_name}` : ''}
+                          {current.project_a_name}{current.project_b_name ? ` vs ${current.project_b_name}` : ''}
                         </span>
                         <span className="flex items-center gap-1.5 mt-0.5">
                           <span className="relative flex h-2 w-2">
@@ -337,322 +329,120 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                         </span>
                       </div>
                     </div>
-                    </div>
 
-                  {/* Title */}
-                  <Link to={`/forecasts/${current.id}`}>
-                    <h2 className="text-xl sm:text-2xl font-bold text-foreground leading-tight mb-6 font-['Space_Grotesk'] tracking-tight hover:underline transition-all">
-                      {current.title}
-                    </h2>
-                  </Link>
+                    <Link to={`/forecasts/${current.id}`}>
+                      <h2 className="text-xl sm:text-2xl font-bold text-foreground leading-tight mb-4 font-['Space_Grotesk'] tracking-tight hover:underline transition-all">
+                        {current.title}
+                      </h2>
+                    </Link>
 
-                  {/* Polymarket-style outcome rows — clean, no dividers */}
-                  <div className="flex-1 flex flex-col justify-center space-y-1">
-                    <div className="flex items-center justify-between py-3 px-1 rounded-lg hover:bg-secondary/30 transition-colors">
-                      <span className="text-sm font-medium text-foreground">{cYesLabel}</span>
-                      <span className="text-2xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{cYesPct.toFixed(0)}%</span>
+                    <div className="mt-auto space-y-3">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-4xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{cYesPct.toFixed(0)}%</span>
+                        <span className="text-sm text-muted-foreground">chance</span>
+                      </div>
+                      <div className="h-2.5 rounded-full bg-secondary overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${cYesPct}%` }}
+                          transition={{ duration: 0.8, ease: "easeOut" }}
+                          className="h-full rounded-full bg-primary"
+                        />
+                      </div>
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-primary" />
+                          {cYesLabel} · {cYesPct.toFixed(0)}%
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-destructive" />
+                          {cNoLabel} · {(100 - cYesPct).toFixed(0)}%
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground">{cTotal.toLocaleString()} votes</p>
                     </div>
-                    <div className="flex items-center justify-between py-3 px-1 rounded-lg hover:bg-secondary/30 transition-colors">
-                      <span className="text-sm font-medium text-foreground">{cNoLabel}</span>
-                      <span className="text-2xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{(100 - cYesPct).toFixed(0)}%</span>
+                  </div>
+
+                  {/* Right: chart */}
+                  <div className="lg:w-[45%] p-6 sm:p-8 flex flex-col border-t lg:border-t-0 lg:border-l border-border">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-xs font-semibold text-muted-foreground">Probability Trend</span>
+                      {cDims[0] && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-muted-foreground font-medium capitalize">{dimensionLabelMap[cDims[0]] || cDims[0]}</span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-h-[200px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={(() => {
+                          const total = current.total_votes_yes + current.total_votes_no;
+                          if (total === 0) return [{ t: "Start", yes: 50, no: 50 }, { t: "Now", yes: 50, no: 50 }];
+                          const base = cYesPct;
+                          const points = [];
+                          for (let i = 0; i < 12; i++) {
+                            const variance = (Math.sin(i * 1.3 + total) * 8) + (Math.cos(i * 0.7 + current.total_votes_yes) * 5);
+                            const yp = Math.max(5, Math.min(95, base + variance - (variance * (i / 12))));
+                            points.push({ t: i === 0 ? "Start" : i === 11 ? "Now" : "", yes: Math.round(yp * 10) / 10, no: Math.round((100 - yp) * 10) / 10 });
+                          }
+                          points[points.length - 1].yes = Math.round(base * 10) / 10;
+                          points[points.length - 1].no = Math.round((100 - base) * 10) / 10;
+                          return points;
+                        })()} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                          <defs>
+                            <linearGradient id="heroYesGrad" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
+                              <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.01} />
+                            </linearGradient>
+                            <linearGradient id="heroNoGrad" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="hsl(var(--destructive))" stopOpacity={0.15} />
+                              <stop offset="95%" stopColor="hsl(var(--destructive))" stopOpacity={0.01} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} vertical={false} />
+                          <ReferenceLine y={50} stroke="hsl(var(--muted-foreground))" strokeDasharray="6 4" opacity={0.25} />
+                          <XAxis dataKey="t" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} />
+                          <YAxis domain={[0, 100]} tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v}%`} />
+                          <Tooltip
+                            contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "10px", fontSize: "11px", padding: "6px 10px" }}
+                            formatter={(value: number, name: string) => [`${value}%`, name === "yes" ? cYesLabel : cNoLabel]}
+                            labelStyle={{ fontWeight: 600, marginBottom: 2, color: "hsl(var(--foreground))" }}
+                          />
+                          <Area type="monotone" dataKey="yes" name="yes" stroke="hsl(var(--primary))" fill="url(#heroYesGrad)" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: "hsl(var(--primary))", stroke: "hsl(var(--card))", strokeWidth: 2 }} />
+                          <Area type="monotone" dataKey="no" name="no" stroke="hsl(var(--destructive))" fill="url(#heroNoGrad)" strokeWidth={1.5} strokeDasharray="4 2" dot={false} activeDot={{ r: 3, fill: "hsl(var(--destructive))", stroke: "hsl(var(--card))", strokeWidth: 2 }} />
+                        </AreaChart>
+                      </ResponsiveContainer>
                     </div>
                   </div>
                 </motion.div>
               </AnimatePresence>
 
-              {/* RIGHT: Chart + Token Price with tab switcher */}
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={`chart-${current.id}`}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="lg:w-[55%] p-6 sm:p-8 flex flex-col"
-                >
-                  {(() => {
-                    const mdA = allMarketData[current.project_a_id];
-                    const mdB = current.project_b_id ? allMarketData[current.project_b_id] : null;
-                    const hasPriceData = cIsPriceMarket && mdA?.price_usd != null;
-
-                    return (
-                      <>
-                        {/* Share/Copy + Tab switcher — right-aligned */}
-                        <div className="flex items-center justify-end gap-2 mb-4">
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              navigator.clipboard.writeText(`${window.location.origin}/forecasts/${current.id}`);
-                              toast.success("Link copied!");
-                            }}
-                            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-                            title="Copy link"
-                          >
-                            <Copy className="h-4 w-4" />
-                          </button>
-                          {hasPriceData && (
-                            <div className="flex items-center gap-1 bg-secondary/50 rounded-lg p-0.5 ml-1">
-                              <button
-                                onClick={() => setHeroChartTab("probability")}
-                                className={`px-3 py-1.5 rounded-md text-[11px] font-medium transition-all ${
-                                  heroChartTab === "probability"
-                                    ? "bg-background text-foreground shadow-sm"
-                                    : "text-muted-foreground hover:text-foreground"
-                                }`}
-                              >
-                                Probability
-                              </button>
-                              <button
-                                onClick={() => setHeroChartTab("price")}
-                                className={`px-3 py-1.5 rounded-md text-[11px] font-medium transition-all ${
-                                  heroChartTab === "price"
-                                    ? "bg-background text-foreground shadow-sm"
-                                    : "text-muted-foreground hover:text-foreground"
-                                }`}
-                              >
-                                Token Price
-                              </button>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Probability Trend */}
-                        {heroChartTab === "probability" && (
-                          <>
-                            <div className="flex items-center justify-end gap-4 mb-3">
-                              <span className="flex items-center gap-1.5 text-[11px]">
-                                <span className="w-2 h-2 rounded-full bg-primary" />
-                                <span className="font-medium text-muted-foreground">{cYesLabel}</span>
-                                <span className="font-semibold text-primary font-['Space_Grotesk']">{cYesPct.toFixed(1)}%</span>
-                              </span>
-                              <span className="flex items-center gap-1.5 text-[11px]">
-                                <span className="w-2 h-2 rounded-full bg-destructive" />
-                                <span className="font-medium text-muted-foreground">{cNoLabel}</span>
-                                <span className="font-semibold text-destructive font-['Space_Grotesk']">{(100 - cYesPct).toFixed(1)}%</span>
-                              </span>
-                            </div>
-                            <div className="flex-1">
-                              <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={(() => {
-                                  const total = current.total_votes_yes + current.total_votes_no;
-                                  if (total === 0) return [{ t: "Start", yes: 50, no: 50 }, { t: "Now", yes: 50, no: 50 }];
-                                  const base = cYesPct;
-                                  const points = [];
-                                  for (let i = 0; i < 12; i++) {
-                                    const variance = (Math.sin(i * 1.3 + total) * 8) + (Math.cos(i * 0.7 + current.total_votes_yes) * 5);
-                                    const yesPct = Math.max(5, Math.min(95, base + variance - (variance * (i / 12))));
-                                    points.push({ t: i === 0 ? "Start" : i === 11 ? "Now" : ``, yes: Math.round(yesPct * 10) / 10, no: Math.round((100 - yesPct) * 10) / 10 });
-                                  }
-                                  points[points.length - 1].yes = Math.round(base * 10) / 10;
-                                  points[points.length - 1].no = Math.round((100 - base) * 10) / 10;
-                                  return points;
-                                })()} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                                  <defs>
-                                    <linearGradient id="heroYesGrad" x1="0" y1="0" x2="0" y2="1">
-                                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
-                                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.01} />
-                                    </linearGradient>
-                                    <linearGradient id="heroNoGrad" x1="0" y1="0" x2="0" y2="1">
-                                      <stop offset="5%" stopColor="hsl(var(--destructive))" stopOpacity={0.15} />
-                                      <stop offset="95%" stopColor="hsl(var(--destructive))" stopOpacity={0.01} />
-                                    </linearGradient>
-                                  </defs>
-                                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} vertical={false} />
-                                  <ReferenceLine y={50} stroke="hsl(var(--muted-foreground))" strokeDasharray="6 4" opacity={0.25} />
-                                  <XAxis dataKey="t" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} />
-                                  <YAxis domain={[0, 100]} tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v}%`} />
-                                  <Tooltip
-                                    contentStyle={{
-                                      backgroundColor: "hsl(var(--card))",
-                                      border: "1px solid hsl(var(--border))",
-                                      borderRadius: "10px",
-                                      fontSize: "11px",
-                                      padding: "6px 10px",
-                                    }}
-                                    formatter={(value: number, name: string) => [`${value}%`, name === "yes" ? cYesLabel : cNoLabel]}
-                                    labelStyle={{ fontWeight: 600, marginBottom: 2, color: "hsl(var(--foreground))" }}
-                                  />
-                                  <Area type="monotone" dataKey="yes" name="yes" stroke="hsl(var(--primary))" fill="url(#heroYesGrad)" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: "hsl(var(--primary))", stroke: "hsl(var(--card))", strokeWidth: 2 }} />
-                                  <Area type="monotone" dataKey="no" name="no" stroke="hsl(var(--destructive))" fill="url(#heroNoGrad)" strokeWidth={1.5} strokeDasharray="4 2" dot={false} activeDot={{ r: 3, fill: "hsl(var(--destructive))", stroke: "hsl(var(--card))", strokeWidth: 2 }} />
-                                </AreaChart>
-                              </ResponsiveContainer>
-                            </div>
-                          </>
-                        )}
-
-                        {/* Token Price — chart display */}
-                        {heroChartTab === "price" && hasPriceData && (() => {
-                          const hasTwoProjects = !!current.project_b_id && mdB?.price_usd != null;
-                          const priceA = mdA?.price_usd;
-                          const priceB = hasTwoProjects ? mdB?.price_usd : null;
-                          const changeA = mdA?.price_change_24h ?? 0;
-                          const changeB = hasTwoProjects ? (mdB?.price_change_24h ?? 0) : 0;
-
-                          const buildPricePoints = (currentPrice: number, change24h: number) => {
-                            const startPrice = currentPrice / (1 + change24h / 100);
-                            return Array.from({ length: 12 }, (_, i) => {
-                              const t = i / 11;
-                              const noise = Math.sin(i * 1.5) * 0.003 + Math.cos(i * 2.3) * 0.002;
-                              return startPrice + (currentPrice - startPrice) * t + currentPrice * noise;
-                            });
-                          };
-
-                          const pointsA = priceA ? buildPricePoints(priceA, changeA) : [];
-                          const pointsB = hasTwoProjects && priceB ? buildPricePoints(priceB, changeB) : [];
-                          const chartData = pointsA.map((pa, i) => ({
-                            t: i === 0 ? "24h ago" : i === 11 ? "Now" : "",
-                            priceA: pa,
-                            ...(hasTwoProjects && pointsB.length > 0 ? { priceB: pointsB[i] } : {}),
-                          }));
-
-                          const fmtPrice = (p: number) => {
-                            if (p >= 1) return `$${p.toFixed(2)}`;
-                            if (p >= 0.01) return `$${p.toFixed(4)}`;
-                            return `$${p.toFixed(6)}`;
-                          };
-
-                          return (
-                            <>
-                              <div className="flex items-center justify-between mb-3">
-                                <span className="text-xs font-semibold text-muted-foreground">Token Price · 24h</span>
-                                <span className="text-[10px] text-muted-foreground">CoinGecko</span>
-                              </div>
-                              <div className="flex items-center gap-4 mb-3">
-                                <span className="flex items-center gap-1.5 text-[11px]">
-                                  <span className="w-2 h-2 rounded-full bg-primary" />
-                                  <span className="font-medium text-muted-foreground">{current.project_a_name}</span>
-                                  <span className="font-semibold text-foreground font-['Space_Grotesk'] tabular-nums">{priceA ? fmtPrice(priceA) : "—"}</span>
-                                </span>
-                                {hasTwoProjects && (
-                                  <span className="flex items-center gap-1.5 text-[11px]">
-                                    <span className="w-2 h-2 rounded-full bg-accent" />
-                                    <span className="font-medium text-muted-foreground">{current.project_b_name}</span>
-                                    <span className="font-semibold text-foreground font-['Space_Grotesk'] tabular-nums">{priceB ? fmtPrice(priceB) : "—"}</span>
-                                  </span>
-                                )}
-                              </div>
-                              <div className="flex-1">
-                                <ResponsiveContainer width="100%" height="100%">
-                                  <AreaChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                                    <defs>
-                                      <linearGradient id="heroPriceGradA" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
-                                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.01} />
-                                      </linearGradient>
-                                      {hasTwoProjects && (
-                                        <linearGradient id="heroPriceGradB" x1="0" y1="0" x2="0" y2="1">
-                                          <stop offset="5%" stopColor="hsl(var(--accent))" stopOpacity={0.15} />
-                                          <stop offset="95%" stopColor="hsl(var(--accent))" stopOpacity={0.01} />
-                                        </linearGradient>
-                                      )}
-                                    </defs>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} vertical={false} />
-                                    <XAxis dataKey="t" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-                                    <YAxis
-                                      tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
-                                      tickLine={false}
-                                      axisLine={false}
-                                      tickFormatter={(v: number) => fmtPrice(v)}
-                                      {...(hasTwoProjects ? { yAxisId: "left" } : {})}
-                                    />
-                                    {hasTwoProjects && (
-                                      <YAxis
-                                        yAxisId="right"
-                                        orientation="right"
-                                        tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
-                                        tickLine={false}
-                                        axisLine={false}
-                                        tickFormatter={(v: number) => fmtPrice(v)}
-                                      />
-                                    )}
-                                    <Tooltip
-                                      contentStyle={{
-                                        backgroundColor: "hsl(var(--card))",
-                                        border: "1px solid hsl(var(--border))",
-                                        borderRadius: "10px",
-                                        fontSize: "11px",
-                                        padding: "6px 10px",
-                                      }}
-                                      formatter={(value: number, name: string) => [
-                                        fmtPrice(value),
-                                        name === "priceA" ? current.project_a_name : current.project_b_name
-                                      ]}
-                                      labelStyle={{ fontWeight: 600, marginBottom: 2, color: "hsl(var(--foreground))" }}
-                                    />
-                                    <Area
-                                      type="monotone"
-                                      dataKey="priceA"
-                                      stroke="hsl(var(--primary))"
-                                      fill="url(#heroPriceGradA)"
-                                      strokeWidth={2}
-                                      dot={false}
-                                      activeDot={{ r: 4, fill: "hsl(var(--primary))", stroke: "hsl(var(--card))", strokeWidth: 2 }}
-                                      {...(hasTwoProjects ? { yAxisId: "left" } : {})}
-                                    />
-                                    {hasTwoProjects && (
-                                      <Area
-                                        type="monotone"
-                                        dataKey="priceB"
-                                        stroke="hsl(var(--accent))"
-                                        fill="url(#heroPriceGradB)"
-                                        strokeWidth={1.5}
-                                        strokeDasharray="4 2"
-                                        dot={false}
-                                        activeDot={{ r: 3, fill: "hsl(var(--accent))", stroke: "hsl(var(--card))", strokeWidth: 2 }}
-                                        yAxisId="right"
-                                      />
-                                    )}
-                                  </AreaChart>
-                                </ResponsiveContainer>
-                              </div>
-                            </>
-                          );
-                        })()}
-                      </>
-                    );
-                  })()}
-                </motion.div>
-              </AnimatePresence>
+              {heroForecasts.length > 1 && (
+                <div className="flex items-center justify-start gap-0.5 px-6 pb-4">
+                  {heroForecasts.map((_, i) => (
+                    <button key={i} onClick={() => goToSlide(i)} className="p-0.5" aria-label={`Go to slide ${i + 1}`}>
+                      <span className={`block rounded-full transition-all duration-300 ${i === activeSlide ? 'w-5 h-1.5 bg-primary' : 'w-1.5 h-1.5 bg-muted-foreground/30 hover:bg-muted-foreground/50'}`} />
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
-
-            {/* Slide dots - left aligned, tight spacing */}
-            {heroForecasts.length > 1 && (
-              <div className="flex items-center justify-start gap-0.5 mt-3">
-                {heroForecasts.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => goToSlide(i)}
-                    className="p-0.5"
-                    aria-label={`Go to slide ${i + 1}`}
-                  >
-                    <span className={`block rounded-full transition-all duration-300 ${
-                      i === activeSlide
-                        ? 'w-5 h-1.5 bg-primary'
-                        : 'w-1.5 h-1.5 bg-muted-foreground/30 hover:bg-muted-foreground/50'
-                    }`} />
-                  </button>
-                ))}
-              </div>
-            )}
           </motion.div>
 
-          {/* Right sidebar — matches left column height */}
+          {/* RIGHT sidebar — 4 cols */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="flex flex-col gap-4 h-[520px]"
+            className="lg:col-span-4 flex flex-col gap-4"
           >
-            {/* Top Forecasts */}
             <div className="rounded-2xl border border-border bg-card overflow-hidden flex-1 flex flex-col min-h-0">
-              <div className="px-5 py-3.5 flex items-center justify-between shrink-0">
-                <h3 className="text-base font-bold text-foreground font-['Space_Grotesk']">Top Forecasts</h3>
-                <span></span>
+              <div className="px-5 py-3.5 flex items-center justify-between shrink-0 border-b border-border">
+                <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Top Forecasts</h3>
+                <Trophy className="h-3.5 w-3.5 text-primary/60" />
               </div>
               <div className="flex-1 overflow-y-auto">
-                {topLiveForecasts.slice(0, 4).map((f, i) => {
-                  const fTotal = f.total_votes_yes + f.total_votes_no;
+                {topLiveForecasts.slice(0, 5).map((f, i) => {
                   const { yesPct: fYesPct } = getWeightedChance(f);
+                  const fTotal = f.total_votes_yes + f.total_votes_no;
                   const fIsEnded = new Date(f.end_date) <= new Date();
                   return (
                     <Link key={f.id} to={`/forecasts/${f.id}`} className="flex items-start gap-3 px-5 py-3 hover:bg-secondary/30 transition-colors">
@@ -669,12 +459,7 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                       </div>
                       <div className="flex flex-col items-end shrink-0">
                         <span className="text-sm font-bold text-foreground font-['Space_Grotesk']">{fYesPct.toFixed(0)}%</span>
-                        <span className={`text-[10px] font-medium flex items-center gap-0.5 ${
-                          fIsEnded ? 'text-muted-foreground' : fYesPct >= 50 ? 'text-primary' : 'text-destructive'
-                        }`}>
-                          {fIsEnded ? '' : fYesPct >= 50 ? <ArrowUpRight className="h-2.5 w-2.5" /> : <ArrowDownRight className="h-2.5 w-2.5" />}
-                          {fIsEnded ? 'Ended' : `${fTotal} votes`}
-                        </span>
+                        <span className="text-[10px] text-muted-foreground">{fTotal} votes</span>
                       </div>
                     </Link>
                   );
@@ -685,28 +470,25 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
               </div>
             </div>
 
-            {/* Trending Projects */}
             {trendingTopics.length > 0 && (
-              <div className="rounded-2xl border border-border bg-card overflow-hidden shrink-0 flex flex-col" style={{ maxHeight: '220px' }}>
-                <div className="px-5 py-3.5 flex items-center justify-between shrink-0">
-                  <h3 className="text-base font-bold text-foreground font-['Space_Grotesk']">Trending Projects</h3>
-                  <TrendingUp className="h-4 w-4 text-primary/60" />
+              <div className="rounded-2xl border border-border bg-card overflow-hidden shrink-0">
+                <div className="px-5 py-3.5 flex items-center justify-between shrink-0 border-b border-border">
+                  <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Trending Projects</h3>
+                  <TrendingUp className="h-3.5 w-3.5 text-primary/60" />
                 </div>
-                <div className="overflow-y-auto flex-1">
+                <div>
                   {trendingTopics.slice(0, 4).map((project: any, i: number) => (
                     <Link key={project.id} to={`/project/${project.slug}`} className="flex items-center gap-3 px-5 py-2.5 hover:bg-secondary/30 transition-colors">
                       <span className="text-xs font-bold text-muted-foreground/50 w-4 shrink-0">{i + 1}</span>
                       <div className="flex items-center gap-2 flex-1 min-w-0">
                         {project.logo_url ? (
-                          <img src={project.logo_url} alt={project.name} className="w-7 h-7 rounded-md object-contain bg-secondary" />
+                          <img src={project.logo_url} alt={project.name} className="w-6 h-6 rounded-md object-contain bg-secondary" />
                         ) : (
-                          <span className="w-7 h-7 rounded-md flex items-center justify-center text-sm bg-secondary">{project.logo_emoji || "⬡"}</span>
+                          <span className="w-6 h-6 rounded-md flex items-center justify-center text-sm bg-secondary">{project.logo_emoji || "⬡"}</span>
                         )}
                         <span className="text-xs font-semibold text-foreground truncate">{project.name}</span>
                       </div>
-                      <div className="flex items-center gap-1 shrink-0">
-                        <span className="text-[10px] font-medium text-muted-foreground">{project.totalVotes} votes</span>
-                      </div>
+                      <span className="text-[10px] font-medium text-muted-foreground shrink-0">{project.totalVotes} votes</span>
                     </Link>
                   ))}
                 </div>
@@ -718,7 +500,6 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
     </section>
   );
 };
-
 const Forecasts = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
