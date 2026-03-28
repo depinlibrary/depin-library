@@ -79,72 +79,62 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
       transition={{ delay: index * 0.05, duration: 0.4 }}
       className="group relative rounded-xl border border-border bg-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20 h-full flex flex-col"
     >
-      <div className="p-5 flex-1 flex flex-col">
+      <div className="p-4 flex-1 flex flex-col">
         {/* Header row: logos + time */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2.5">
-            <div className="flex items-center -space-x-2">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center -space-x-1.5">
               {forecast.project_a_logo_url ? (
-                <img src={forecast.project_a_logo_url} alt={forecast.project_a_name} className="w-9 h-9 rounded-lg object-contain border border-card bg-secondary relative z-10" />
+                <img src={forecast.project_a_logo_url} alt={forecast.project_a_name} className="w-7 h-7 rounded-lg object-contain border border-card bg-secondary relative z-10" />
               ) : (
-                <span className="w-9 h-9 rounded-lg flex items-center justify-center text-sm border border-card bg-secondary relative z-10">{forecast.project_a_logo_emoji || "⬡"}</span>
+                <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs border border-card bg-secondary relative z-10">{forecast.project_a_logo_emoji || "⬡"}</span>
               )}
               {forecast.project_b_name && (
                 forecast.project_b_logo_url ? (
-                  <img src={forecast.project_b_logo_url} alt={forecast.project_b_name} className="w-9 h-9 rounded-lg object-contain border border-card bg-secondary relative z-0" />
+                  <img src={forecast.project_b_logo_url} alt={forecast.project_b_name} className="w-7 h-7 rounded-lg object-contain border border-card bg-secondary relative z-0" />
                 ) : (
-                  <span className="w-9 h-9 rounded-lg flex items-center justify-center text-sm border border-card bg-secondary relative z-0">{forecast.project_b_logo_emoji || "⬡"}</span>
+                  <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs border border-card bg-secondary relative z-0">{forecast.project_b_logo_emoji || "⬡"}</span>
                 )
               )}
             </div>
-            <div className="flex items-center gap-1.5">
-              <Link to={`/project/${forecast.project_a_slug}`} className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">{forecast.project_a_name}</Link>
+            <div className="flex items-center gap-1">
+              <Link to={`/project/${forecast.project_a_slug}`} className="text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors">{forecast.project_a_name}</Link>
               {forecast.project_b_name && (
                 <>
-                  <span className="text-muted-foreground/40 text-[10px]">vs</span>
-                  <Link to={`/project/${forecast.project_b_slug}`} className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">{forecast.project_b_name}</Link>
+                  <span className="text-muted-foreground/40 text-[9px]">vs</span>
+                  <Link to={`/project/${forecast.project_b_slug}`} className="text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors">{forecast.project_b_name}</Link>
                 </>
               )}
             </div>
           </div>
-          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${isEnded ? 'bg-destructive/10 text-destructive' : 'bg-green-500/10 text-green-600 dark:text-green-400'}`}>
+          <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${isEnded ? 'bg-destructive/10 text-destructive' : 'bg-green-500/10 text-green-600 dark:text-green-400'}`}>
             {timeLeft}
           </span>
         </div>
 
-        {/* Title only */}
+        {/* Title */}
         <Link to={`/forecasts/${forecast.id}`} className="block mb-auto">
-          <h3 className="text-sm font-semibold text-foreground leading-snug line-clamp-2 group-hover:underline transition-all duration-200">
+          <h3 className="text-[13px] font-semibold text-foreground leading-snug line-clamp-2 group-hover:underline transition-all duration-200">
             {forecast.title}
           </h3>
         </Link>
 
-        {/* Percentage + bar */}
-        <div className="mt-5 space-y-2.5">
-          <div className="flex items-center justify-between">
-            <span className="text-xl font-bold text-foreground">{yesPct.toFixed(0)}% chance</span>
-            <span className="text-xs text-muted-foreground">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</span>
-          </div>
-          <div className="h-2 rounded-full bg-secondary overflow-hidden">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${yesPct}%` }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
-              className="h-full rounded-full bg-primary"
-            />
-          </div>
+        {/* Percentage + votes */}
+        <div className="mt-4 flex items-end justify-between">
+          <span className="text-lg font-bold text-foreground tabular-nums">{yesPct.toFixed(0)}%<span className="text-xs font-normal text-muted-foreground ml-1">chance</span></span>
+          <span className="text-[10px] text-muted-foreground">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</span>
         </div>
       </div>
 
-      {/* Bottom section — consistent spacing for all card states */}
-      <div className="px-5 pb-5">
+      {/* Bottom section — compact Polymarket-style */}
+      <div className="px-4 pb-4">
         {isEnded && forecast.user_vote ? (() => {
           const outcomeResult = finalResult;
           const userCorrect = outcomeResult === forecast.user_vote;
           const userVoteLabel = forecast.user_vote === "yes" ? yesLabel : noLabel;
           const resultLabel = outcomeResult === "yes" ? yesLabel : noLabel;
           return (
-            <div className={`flex items-center justify-between rounded-lg px-3 py-2.5 text-[11px] font-semibold ${
+            <div className={`flex items-center justify-between rounded-lg px-2.5 py-2 text-[10px] font-semibold mb-2 ${
               userCorrect
                 ? "bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20"
                 : "bg-destructive/10 text-destructive border border-destructive/20"
@@ -161,12 +151,12 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
           );
         })() : null}
 
-        {/* Vote buttons — always shown, disabled when ended */}
-        <div className="flex gap-2.5 mt-2">
+        {/* Vote buttons — inline Polymarket style */}
+        <div className="flex gap-2">
           <button
             onClick={() => !isEnded ? (isAuthenticated ? onVote(forecast.id, "yes") : toast.error("Sign in to vote")) : undefined}
             disabled={isEnded}
-            className={`flex-1 rounded-lg py-2.5 text-sm font-bold transition-all duration-200 ${
+            className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all duration-200 ${
               isEnded
                 ? "bg-secondary text-muted-foreground cursor-not-allowed opacity-60"
                 : forecast.user_vote === "yes"
@@ -174,13 +164,12 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
                   : "bg-primary/10 text-primary hover:bg-primary/20"
             }`}
           >
-            {isPriceMarket && <TrendingUp className="h-3.5 w-3.5 inline mr-1" />}
             {yesLabel}
           </button>
           <button
             onClick={() => !isEnded ? (isAuthenticated ? onVote(forecast.id, "no") : toast.error("Sign in to vote")) : undefined}
             disabled={isEnded}
-            className={`flex-1 rounded-lg py-2.5 text-sm font-bold transition-all duration-200 ${
+            className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all duration-200 ${
               isEnded
                 ? "bg-secondary text-muted-foreground cursor-not-allowed opacity-60"
                 : forecast.user_vote === "no"
@@ -188,7 +177,6 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
                   : "bg-destructive/10 text-destructive hover:bg-destructive/20"
             }`}
           >
-            {isPriceMarket && <ArrowDownRight className="h-3.5 w-3.5 inline mr-1" />}
             {noLabel}
           </button>
         </div>
@@ -372,28 +360,20 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                     </h2>
                   </Link>
 
-                  {/* Polymarket-style outcome rows */}
-                  <div className="flex-1 flex flex-col justify-center">
-                    <div className="divide-y divide-border border-y border-border">
-                      <div className="flex items-center justify-between py-3.5 px-1">
-                        <div className="flex items-center gap-2.5">
-                          {cIsPriceMarket ? <TrendingUp className="h-4 w-4 text-primary" /> : <ArrowUpRight className="h-4 w-4 text-primary" />}
-                          <span className="text-sm font-semibold text-foreground">{cYesLabel}</span>
-                        </div>
-                        <span className="text-2xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{cYesPct.toFixed(0)}%</span>
-                      </div>
-                      <div className="flex items-center justify-between py-3.5 px-1">
-                        <div className="flex items-center gap-2.5">
-                          <ArrowDownRight className="h-4 w-4 text-destructive" />
-                          <span className="text-sm font-semibold text-foreground">{cNoLabel}</span>
-                        </div>
-                        <span className="text-2xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{(100 - cYesPct).toFixed(0)}%</span>
-                      </div>
+                  {/* Polymarket-style outcome rows — clean, no dividers */}
+                  <div className="flex-1 flex flex-col justify-center space-y-1">
+                    <div className="flex items-center justify-between py-3 px-1 rounded-lg hover:bg-secondary/30 transition-colors">
+                      <span className="text-sm font-medium text-foreground">{cYesLabel}</span>
+                      <span className="text-2xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{cYesPct.toFixed(0)}%</span>
+                    </div>
+                    <div className="flex items-center justify-between py-3 px-1 rounded-lg hover:bg-secondary/30 transition-colors">
+                      <span className="text-sm font-medium text-foreground">{cNoLabel}</span>
+                      <span className="text-2xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{(100 - cYesPct).toFixed(0)}%</span>
                     </div>
                   </div>
 
                   {/* Footer: votes + view details */}
-                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/50">
+                  <div className="flex items-center justify-between mt-4">
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                       <Users className="h-3.5 w-3.5" />
                       <span>{cTotal.toLocaleString()} votes</span>
@@ -1064,8 +1044,8 @@ const Forecasts = () => {
         {/* Main content */}
         <section className={`flex-1 min-w-0 transition-all duration-300`}>
           {isLoading ? (
-            <div className={`grid gap-4 sm:grid-cols-2 ${showCreate ? 'lg:grid-cols-2' : 'lg:grid-cols-3'}`}>
-              {Array.from({ length: 6 }).map((_, i) => (
+             <div className={`grid gap-3 sm:grid-cols-2 ${showCreate ? 'lg:grid-cols-2' : 'lg:grid-cols-3 xl:grid-cols-4'}`}>
+                {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="animate-pulse rounded-xl border border-border bg-card overflow-hidden">
                   <div className="p-5 space-y-3">
                     <div className="flex items-center gap-2">
@@ -1102,7 +1082,7 @@ const Forecasts = () => {
             </motion.div>
           ) : (
             <>
-              <div className={`grid gap-4 sm:grid-cols-2 ${showCreate ? 'lg:grid-cols-2' : 'lg:grid-cols-3'}`}>
+              <div className={`grid gap-3 sm:grid-cols-2 ${showCreate ? 'lg:grid-cols-2' : 'lg:grid-cols-3 xl:grid-cols-4'}`}>
                 <AnimatePresence mode="popLayout">
                   {forecasts.map((forecast, i) => (
                     <ForecastCard
