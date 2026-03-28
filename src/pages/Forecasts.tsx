@@ -1313,7 +1313,35 @@ const Forecasts = () => {
                           </button>
                         ))}
                       </div>
-                      {timePreset === "custom" && <Input type="datetime-local" value={endDate} onChange={(e) => setEndDate(e.target.value)} min={new Date().toISOString().slice(0, 16)} className="mt-2" />}
+                      {timePreset === "custom" && (
+                        <div className="mt-2 grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-[10px] text-muted-foreground mb-1 block">Date</label>
+                            <Input
+                              type="date"
+                              value={endDate ? endDate.split("T")[0] : ""}
+                              onChange={(e) => {
+                                const time = endDate ? endDate.split("T")[1] || "12:00" : "12:00";
+                                setEndDate(`${e.target.value}T${time}`);
+                              }}
+                              min={new Date().toISOString().slice(0, 10)}
+                              className="h-9"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[10px] text-muted-foreground mb-1 block">Time</label>
+                            <Input
+                              type="time"
+                              value={endDate ? endDate.split("T")[1] || "12:00" : "12:00"}
+                              onChange={(e) => {
+                                const date = endDate ? endDate.split("T")[0] : new Date().toISOString().slice(0, 10);
+                                setEndDate(`${date}T${e.target.value}`);
+                              }}
+                              className="h-9"
+                            />
+                          </div>
+                        </div>
+                      )}
                       {timePreset && timePreset !== "custom" && endDate && <p className="text-[10px] text-muted-foreground mt-1.5">Ends: {new Date(endDate).toLocaleString()}</p>}
                     </div>
                   </div>
