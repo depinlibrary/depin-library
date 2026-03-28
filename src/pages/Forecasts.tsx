@@ -255,28 +255,6 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
       <div className="absolute inset-0 bg-grid opacity-10" />
       <div className="gradient-radial-top absolute inset-0" />
       <div className="container relative mx-auto px-4">
-        {/* Stats row */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-6 mb-5">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Radio className="h-4 w-4 text-primary" />
-            </div>
-            <div>
-              <p className="text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{totalActiveForecasts}</p>
-              <p className="text-[10px] text-muted-foreground -mt-0.5">Active Markets</p>
-            </div>
-          </div>
-          <div className="h-8 w-px bg-border" />
-          <div>
-            <p className="text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{totalVotesAllTime.toLocaleString()}</p>
-            <p className="text-[10px] text-muted-foreground -mt-0.5">Total Votes</p>
-          </div>
-          <div className="h-8 w-px bg-border" />
-          <div>
-            <p className="text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{avgChance.toFixed(0)}%</p>
-            <p className="text-[10px] text-muted-foreground -mt-0.5">Avg. Bullish</p>
-          </div>
-        </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
           {/* LEFT: Featured forecast — 8 cols */}
@@ -287,7 +265,7 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
           >
-            <div className="rounded-2xl border border-border bg-card overflow-hidden h-full min-h-[420px] flex flex-col">
+            <div className="rounded-2xl border border-border bg-card overflow-hidden h-full flex flex-col">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={current.id}
@@ -297,51 +275,51 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                   transition={{ duration: 0.3 }}
                   className="flex-1 flex flex-col lg:flex-row"
                 >
-                  {/* Left info */}
-                  <div className="flex-1 p-6 sm:p-8 flex flex-col min-w-0">
-                    <div className="flex items-center gap-3 mb-5">
-                      <div className="flex items-center -space-x-2">
+                  {/* Left info — compact */}
+                  <div className="flex-1 p-5 flex flex-col min-w-0">
+                    <div className="flex items-center gap-2.5 mb-3">
+                      <div className="flex items-center -space-x-1.5">
                         {current.project_a_logo_url ? (
-                          <img src={current.project_a_logo_url} alt={current.project_a_name} className="w-10 h-10 rounded-xl object-contain border-2 border-card bg-secondary relative z-10" />
+                          <img src={current.project_a_logo_url} alt={current.project_a_name} className="w-8 h-8 rounded-lg object-contain border-2 border-card bg-secondary relative z-10" />
                         ) : (
-                          <span className="w-10 h-10 rounded-xl flex items-center justify-center text-base border-2 border-card bg-secondary relative z-10">{current.project_a_logo_emoji || "⬡"}</span>
+                          <span className="w-8 h-8 rounded-lg flex items-center justify-center text-sm border-2 border-card bg-secondary relative z-10">{current.project_a_logo_emoji || "⬡"}</span>
                         )}
                         {current.project_b_name && (
                           current.project_b_logo_url ? (
-                            <img src={current.project_b_logo_url} alt={current.project_b_name} className="w-10 h-10 rounded-xl object-contain border-2 border-card bg-secondary" />
+                            <img src={current.project_b_logo_url} alt={current.project_b_name} className="w-8 h-8 rounded-lg object-contain border-2 border-card bg-secondary" />
                           ) : (
-                            <span className="w-10 h-10 rounded-xl flex items-center justify-center text-base border-2 border-card bg-secondary">{current.project_b_logo_emoji || "⬡"}</span>
+                            <span className="w-8 h-8 rounded-lg flex items-center justify-center text-sm border-2 border-card bg-secondary">{current.project_b_logo_emoji || "⬡"}</span>
                           )
                         )}
                       </div>
-                      <div>
-                        <span className="text-xs font-medium text-muted-foreground">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-medium text-muted-foreground">
                           {current.project_a_name}{current.project_b_name ? ` vs ${current.project_b_name}` : ''}
                         </span>
-                        <span className="flex items-center gap-1.5 mt-0.5">
-                          <span className="relative flex h-2 w-2">
+                        <span className="flex items-center gap-1">
+                          <span className="relative flex h-1.5 w-1.5">
                             {!cIsEnded && <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-green-500" />}
-                            <span className={`relative inline-flex rounded-full h-2 w-2 ${cIsEnded ? 'bg-destructive animate-pulse' : 'bg-green-500'}`} />
+                            <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${cIsEnded ? 'bg-destructive' : 'bg-green-500'}`} />
                           </span>
                           <span className={`text-[10px] font-semibold ${cIsEnded ? 'text-destructive' : 'text-green-500'}`}>
-                            {cIsEnded ? 'Ended' : `Live · ${cTimeLeft}`}
+                            {cIsEnded ? 'Ended' : cTimeLeft}
                           </span>
                         </span>
                       </div>
                     </div>
 
                     <Link to={`/forecasts/${current.id}`}>
-                      <h2 className="text-xl sm:text-2xl font-bold text-foreground leading-tight mb-4 font-['Space_Grotesk'] tracking-tight hover:underline transition-all">
+                      <h2 className="text-lg sm:text-xl font-bold text-foreground leading-snug mb-3 font-['Space_Grotesk'] tracking-tight hover:underline transition-all line-clamp-2">
                         {current.title}
                       </h2>
                     </Link>
 
-                    <div className="mt-auto space-y-3">
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-4xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{cYesPct.toFixed(0)}%</span>
-                        <span className="text-sm text-muted-foreground">chance</span>
+                    <div className="mt-auto space-y-2">
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-3xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{cYesPct.toFixed(0)}%</span>
+                        <span className="text-xs text-muted-foreground">chance</span>
                       </div>
-                      <div className="h-2.5 rounded-full bg-secondary overflow-hidden">
+                      <div className="h-2 rounded-full bg-secondary overflow-hidden">
                         <motion.div
                           initial={{ width: 0 }}
                           animate={{ width: `${cYesPct}%` }}
@@ -349,13 +327,13 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                           className="h-full rounded-full bg-primary"
                         />
                       </div>
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-primary" />
+                      <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-primary" />
                           {cYesLabel} · {cYesPct.toFixed(0)}%
                         </span>
-                        <span className="flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-destructive" />
+                        <span className="flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-destructive" />
                           {cNoLabel} · {(100 - cYesPct).toFixed(0)}%
                         </span>
                       </div>
@@ -364,7 +342,7 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                   </div>
 
                   {/* Right: chart */}
-                  <div className="lg:w-[45%] p-6 sm:p-8 flex flex-col border-t lg:border-t-0 lg:border-l border-border">
+                  <div className="lg:w-[45%] p-5 flex flex-col border-t lg:border-t-0 lg:border-l border-border">
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-xs font-semibold text-muted-foreground">Probability Trend</span>
                       {cDims[0] && (
