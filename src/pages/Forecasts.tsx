@@ -185,13 +185,14 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
   );
 };
 // ---- Hero Section with Auto-Sliding Carousel + Sentiment Chart ----
-const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setShowCreate, heroDimensionsMap }: {
+const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setShowCreate, heroDimensionsMap, allMarketData }: {
   forecasts: Forecast[];
   topLiveForecasts: Forecast[];
   trendingTopics: any[];
   user: any;
   setShowCreate: (v: boolean) => void;
   heroDimensionsMap: Record<string, string[]>;
+  allMarketData: Record<string, any>;
 }) => {
   const [activeSlide, setActiveSlide] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -203,6 +204,7 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
   }, [forecasts]);
 
   const [isPaused, setIsPaused] = useState(false);
+  const [heroChartTab, setHeroChartTab] = useState<"probability" | "price">("probability");
 
   // Auto-slide every 10 seconds, pause on hover
   useEffect(() => {
