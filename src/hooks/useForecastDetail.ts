@@ -22,6 +22,24 @@ export type VoteHistoryEntry = {
 };
 
 export function useForecastDetail(forecastId: string | undefined) {
+  const queryClient = useQueryClient();
+
+  // Realtime: re-fetch when this forecast row changes (votes, status, outcome)
+  useEffect(() => {
+    if (!forecastId) return;
+    const channel = supabase
+      .channel(`forecast-detail-${forecastId}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "forecasts", filter: `id=eq.${forecastId}` },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["forecast-detail", forecastId] });
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [forecastId, queryClient]);
+
   return useQuery({
     queryKey: ["forecast-detail", forecastId],
     enabled: !!forecastId,
