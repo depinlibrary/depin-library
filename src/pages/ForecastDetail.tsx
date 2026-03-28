@@ -760,13 +760,6 @@ const ForecastDetail = () => {
                             </>
                           );
                         })()}
-                                    />
-                                  </AreaChart>
-                                </ResponsiveContainer>
-                              </div>
-                            </>
-                          );
-                        })()}
                       </>
                     );
                   })()}
