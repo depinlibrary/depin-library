@@ -304,8 +304,8 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
           >
-            <div className="rounded-2xl border border-border bg-card overflow-hidden h-[520px] p-6 sm:p-8">
-              {/* Slide content */}
+            <div className="rounded-2xl border border-border bg-card overflow-hidden h-[520px] flex flex-col lg:flex-row">
+              {/* LEFT: Polymarket-style outcome list */}
               <AnimatePresence mode="wait">
                 <motion.div
                   key={current.id}
@@ -313,34 +313,32 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -30 }}
                   transition={{ duration: 0.35 }}
+                  className="flex-1 p-6 sm:p-8 flex flex-col min-w-0"
                 >
-                  {/* Header with live/ended indicator */}
+                  {/* Header: logo + project names + share icons */}
                   <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                       <div className="flex items-center -space-x-2">
                         {current.project_a_logo_url ? (
-                          <img src={current.project_a_logo_url} alt={current.project_a_name} className="w-10 h-10 rounded-xl object-contain border-2 border-card bg-secondary relative z-10" />
+                          <img src={current.project_a_logo_url} alt={current.project_a_name} className="w-11 h-11 rounded-xl object-contain border-2 border-card bg-secondary relative z-10" />
                         ) : (
-                          <span className="w-10 h-10 rounded-xl flex items-center justify-center text-lg border-2 border-card bg-secondary relative z-10">{current.project_a_logo_emoji || "⬡"}</span>
+                          <span className="w-11 h-11 rounded-xl flex items-center justify-center text-lg border-2 border-card bg-secondary relative z-10">{current.project_a_logo_emoji || "⬡"}</span>
                         )}
                         {current.project_b_name && (
                           current.project_b_logo_url ? (
-                            <img src={current.project_b_logo_url} alt={current.project_b_name} className="w-10 h-10 rounded-xl object-contain border-2 border-card bg-secondary" />
+                            <img src={current.project_b_logo_url} alt={current.project_b_name} className="w-11 h-11 rounded-xl object-contain border-2 border-card bg-secondary" />
                           ) : (
-                            <span className="w-10 h-10 rounded-xl flex items-center justify-center text-lg border-2 border-card bg-secondary">{current.project_b_logo_emoji || "⬡"}</span>
+                            <span className="w-11 h-11 rounded-xl flex items-center justify-center text-lg border-2 border-card bg-secondary">{current.project_b_logo_emoji || "⬡"}</span>
                           )
                         )}
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-[11px] font-medium text-muted-foreground">
+                        <span className="text-xs font-medium text-muted-foreground">
                           {current.project_a_name}{current.project_b_name ? ` · ${current.project_b_name}` : ''}
                         </span>
-                        {/* Blinking live/ended indicator */}
-                        <span className="flex items-center gap-1.5">
-                          <span className={`relative flex h-2 w-2`}>
-                            {!cIsEnded && (
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-green-500" />
-                            )}
+                        <span className="flex items-center gap-1.5 mt-0.5">
+                          <span className="relative flex h-2 w-2">
+                            {!cIsEnded && <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-green-500" />}
                             <span className={`relative inline-flex rounded-full h-2 w-2 ${cIsEnded ? 'bg-destructive animate-pulse' : 'bg-green-500'}`} />
                           </span>
                           <span className={`text-[10px] font-semibold ${cIsEnded ? 'text-destructive' : 'text-green-500'}`}>
@@ -349,12 +347,11 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                         </span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1">
                       <button
                         onClick={(e) => {
                           e.preventDefault();
-                          const url = `${window.location.origin}/forecasts/${current.id}`;
-                          navigator.clipboard.writeText(url);
+                          navigator.clipboard.writeText(`${window.location.origin}/forecasts/${current.id}`);
                           toast.success("Link copied!");
                         }}
                         className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
@@ -370,31 +367,33 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
 
                   {/* Title */}
                   <Link to={`/forecasts/${current.id}`}>
-                    <h2 className="text-xl sm:text-2xl font-bold text-foreground leading-tight mb-5 font-['Space_Grotesk'] tracking-tight hover:underline transition-all">
+                    <h2 className="text-xl sm:text-2xl font-bold text-foreground leading-tight mb-6 font-['Space_Grotesk'] tracking-tight hover:underline transition-all">
                       {current.title}
                     </h2>
                   </Link>
 
-                  {/* Vote outcomes */}
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center justify-between rounded-xl bg-primary/5 border border-primary/10 px-4 py-2.5">
-                      <div className="flex items-center gap-2">
-                        {cIsPriceMarket ? <TrendingUp className="h-4 w-4 text-primary" /> : <ArrowUpRight className="h-4 w-4 text-primary" />}
-                        <span className="text-sm font-semibold text-foreground">{cYesLabel}</span>
+                  {/* Polymarket-style outcome rows */}
+                  <div className="flex-1 flex flex-col justify-center">
+                    <div className="divide-y divide-border border-y border-border">
+                      <div className="flex items-center justify-between py-3.5 px-1">
+                        <div className="flex items-center gap-2.5">
+                          {cIsPriceMarket ? <TrendingUp className="h-4 w-4 text-primary" /> : <ArrowUpRight className="h-4 w-4 text-primary" />}
+                          <span className="text-sm font-semibold text-foreground">{cYesLabel}</span>
+                        </div>
+                        <span className="text-2xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{cYesPct.toFixed(0)}%</span>
                       </div>
-                      <span className="text-xl font-bold text-foreground font-['Space_Grotesk']">{cYesPct.toFixed(0)}%</span>
-                    </div>
-                    <div className="flex items-center justify-between rounded-xl bg-destructive/5 border border-destructive/10 px-4 py-2.5">
-                      <div className="flex items-center gap-2">
-                        <ArrowDownRight className="h-4 w-4 text-destructive" />
-                        <span className="text-sm font-semibold text-foreground">{cNoLabel}</span>
+                      <div className="flex items-center justify-between py-3.5 px-1">
+                        <div className="flex items-center gap-2.5">
+                          <ArrowDownRight className="h-4 w-4 text-destructive" />
+                          <span className="text-sm font-semibold text-foreground">{cNoLabel}</span>
+                        </div>
+                        <span className="text-2xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{(100 - cYesPct).toFixed(0)}%</span>
                       </div>
-                      <span className="text-xl font-bold text-foreground font-['Space_Grotesk']">{(100 - cYesPct).toFixed(0)}%</span>
                     </div>
                   </div>
 
-                  {/* Footer */}
-                  <div className="flex items-center justify-between">
+                  {/* Footer: votes + view details */}
+                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/50">
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                       <Users className="h-3.5 w-3.5" />
                       <span>{cTotal.toLocaleString()} votes</span>
@@ -406,7 +405,7 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                 </motion.div>
               </AnimatePresence>
 
-              {/* Per-slide Trading-style Chart */}
+              {/* RIGHT: Trading-style Chart */}
               <AnimatePresence mode="wait">
                 <motion.div
                   key={`chart-${current.id}`}
@@ -414,24 +413,22 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.3 }}
-                  className="mt-5 pt-5 border-t border-border"
+                  className="lg:w-[55%] border-t lg:border-t-0 lg:border-l border-border p-6 sm:p-8 flex flex-col"
                 >
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Vote Trend · {current.project_a_name}</h3>
-                    <div className="flex items-center gap-3">
-                      <span className="flex items-center gap-1.5 text-[10px]">
-                        <span className="w-2 h-2 rounded-full bg-primary" />
-                        <span className="font-medium text-muted-foreground">{cYesLabel}</span>
-                        <span className="font-semibold text-primary font-['Space_Grotesk']">{cYesPct.toFixed(1)}%</span>
-                      </span>
-                      <span className="flex items-center gap-1.5 text-[10px]">
-                        <span className="w-2 h-2 rounded-full bg-destructive" />
-                        <span className="font-medium text-muted-foreground">{cNoLabel}</span>
-                        <span className="font-semibold text-destructive font-['Space_Grotesk']">{(100 - cYesPct).toFixed(1)}%</span>
-                      </span>
-                    </div>
+                  {/* Chart legend */}
+                  <div className="flex items-center justify-end gap-4 mb-3">
+                    <span className="flex items-center gap-1.5 text-[11px]">
+                      <span className="w-2 h-2 rounded-full bg-primary" />
+                      <span className="font-medium text-muted-foreground">{cYesLabel}</span>
+                      <span className="font-semibold text-primary font-['Space_Grotesk']">{cYesPct.toFixed(1)}%</span>
+                    </span>
+                    <span className="flex items-center gap-1.5 text-[11px]">
+                      <span className="w-2 h-2 rounded-full bg-destructive" />
+                      <span className="font-medium text-muted-foreground">{cNoLabel}</span>
+                      <span className="font-semibold text-destructive font-['Space_Grotesk']">{(100 - cYesPct).toFixed(1)}%</span>
+                    </span>
                   </div>
-                  <div className="h-36">
+                  <div className="flex-1">
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={(() => {
                         const total = current.total_votes_yes + current.total_votes_no;
@@ -479,7 +476,6 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                   </div>
                 </motion.div>
               </AnimatePresence>
-
             </div>
 
             {/* Slide dots - left aligned, tight spacing */}
@@ -982,7 +978,7 @@ const Forecasts = () => {
                 }
               }}
               size="sm"
-              className="h-8 gap-1 shrink-0 text-xs px-3 rounded-full hover:bg-primary hover:text-primary-foreground"
+              className="h-8 gap-1 shrink-0 text-xs px-3 rounded-full"
             >
               <Plus className="h-3.5 w-3.5" /> Create Forecast
             </Button>
@@ -1317,7 +1313,35 @@ const Forecasts = () => {
                           </button>
                         ))}
                       </div>
-                      {timePreset === "custom" && <Input type="datetime-local" value={endDate} onChange={(e) => setEndDate(e.target.value)} min={new Date().toISOString().slice(0, 16)} className="mt-2" />}
+                      {timePreset === "custom" && (
+                        <div className="mt-2 grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-[10px] text-muted-foreground mb-1 block">Date</label>
+                            <Input
+                              type="date"
+                              value={endDate ? endDate.split("T")[0] : ""}
+                              onChange={(e) => {
+                                const time = endDate ? endDate.split("T")[1] || "12:00" : "12:00";
+                                setEndDate(`${e.target.value}T${time}`);
+                              }}
+                              min={new Date().toISOString().slice(0, 10)}
+                              className="h-9"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[10px] text-muted-foreground mb-1 block">Time</label>
+                            <Input
+                              type="time"
+                              value={endDate ? endDate.split("T")[1] || "12:00" : "12:00"}
+                              onChange={(e) => {
+                                const date = endDate ? endDate.split("T")[0] : new Date().toISOString().slice(0, 10);
+                                setEndDate(`${date}T${e.target.value}`);
+                              }}
+                              className="h-9"
+                            />
+                          </div>
+                        </div>
+                      )}
                       {timePreset && timePreset !== "custom" && endDate && <p className="text-[10px] text-muted-foreground mt-1.5">Ends: {new Date(endDate).toLocaleString()}</p>}
                     </div>
                   </div>
@@ -1384,7 +1408,35 @@ const Forecasts = () => {
                       </button>
                     ))}
                   </div>
-                  {timePreset === "custom" && <Input type="datetime-local" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="mt-2" />}
+                  {timePreset === "custom" && (
+                    <div className="mt-2 grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-[10px] text-muted-foreground mb-1 block">Date</label>
+                        <Input
+                          type="date"
+                          value={endDate ? endDate.split("T")[0] : ""}
+                          onChange={(e) => {
+                            const time = endDate ? endDate.split("T")[1] || "12:00" : "12:00";
+                            setEndDate(`${e.target.value}T${time}`);
+                          }}
+                          min={new Date().toISOString().slice(0, 10)}
+                          className="h-9"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] text-muted-foreground mb-1 block">Time</label>
+                        <Input
+                          type="time"
+                          value={endDate ? endDate.split("T")[1] || "12:00" : "12:00"}
+                          onChange={(e) => {
+                            const date = endDate ? endDate.split("T")[0] : new Date().toISOString().slice(0, 10);
+                            setEndDate(`${date}T${e.target.value}`);
+                          }}
+                          className="h-9"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
               <DialogFooter>
