@@ -940,7 +940,7 @@ const Forecasts = () => {
 
 
             {/* Create Forecast */}
-            <button
+            <Button
               onClick={() => {
                 if (user) {
                   if (dailyRemaining <= 0) {
@@ -957,10 +957,11 @@ const Forecasts = () => {
                   });
                 }
               }}
-              className="h-8 gap-1 shrink-0 text-xs px-3 rounded-full bg-primary text-primary-foreground inline-flex items-center justify-center font-medium"
+              size="sm"
+              className="h-8 gap-1 shrink-0 text-xs px-3 rounded-full"
             >
               <Plus className="h-3.5 w-3.5" /> Create Forecast
-            </button>
+            </Button>
           </div>
 
           {/* Expandable filter panel */}
