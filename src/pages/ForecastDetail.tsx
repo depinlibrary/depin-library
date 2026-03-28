@@ -568,7 +568,6 @@ const ForecastDetail = () => {
                 <div className="lg:w-[55%] border-t lg:border-t-0 lg:border-l border-border p-6 sm:p-8 flex flex-col">
                   {(() => {
                     const hasPriceData = (forecastDimension === "token_price" || forecastDimension === "market_cap") && marketDataA.data?.sparkline_7d;
-                    const [heroChartTab, setHeroChartTab] = useState<"probability" | "price">("probability");
 
                     return (
                       <>
