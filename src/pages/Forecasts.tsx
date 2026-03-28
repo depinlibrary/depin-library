@@ -126,15 +126,15 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
         </div>
       </div>
 
-      {/* Bottom section — consistent spacing for all card states */}
-      <div className="px-5 pb-5">
+      {/* Bottom section — compact Polymarket-style */}
+      <div className="px-4 pb-4">
         {isEnded && forecast.user_vote ? (() => {
           const outcomeResult = finalResult;
           const userCorrect = outcomeResult === forecast.user_vote;
           const userVoteLabel = forecast.user_vote === "yes" ? yesLabel : noLabel;
           const resultLabel = outcomeResult === "yes" ? yesLabel : noLabel;
           return (
-            <div className={`flex items-center justify-between rounded-lg px-3 py-2.5 text-[11px] font-semibold ${
+            <div className={`flex items-center justify-between rounded-lg px-2.5 py-2 text-[10px] font-semibold mb-2 ${
               userCorrect
                 ? "bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20"
                 : "bg-destructive/10 text-destructive border border-destructive/20"
@@ -151,12 +151,12 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
           );
         })() : null}
 
-        {/* Vote buttons — always shown, disabled when ended */}
-        <div className="flex gap-2.5 mt-2">
+        {/* Vote buttons — inline Polymarket style */}
+        <div className="flex gap-2">
           <button
             onClick={() => !isEnded ? (isAuthenticated ? onVote(forecast.id, "yes") : toast.error("Sign in to vote")) : undefined}
             disabled={isEnded}
-            className={`flex-1 rounded-lg py-2.5 text-sm font-bold transition-all duration-200 ${
+            className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all duration-200 ${
               isEnded
                 ? "bg-secondary text-muted-foreground cursor-not-allowed opacity-60"
                 : forecast.user_vote === "yes"
@@ -164,13 +164,12 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
                   : "bg-primary/10 text-primary hover:bg-primary/20"
             }`}
           >
-            {isPriceMarket && <TrendingUp className="h-3.5 w-3.5 inline mr-1" />}
             {yesLabel}
           </button>
           <button
             onClick={() => !isEnded ? (isAuthenticated ? onVote(forecast.id, "no") : toast.error("Sign in to vote")) : undefined}
             disabled={isEnded}
-            className={`flex-1 rounded-lg py-2.5 text-sm font-bold transition-all duration-200 ${
+            className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all duration-200 ${
               isEnded
                 ? "bg-secondary text-muted-foreground cursor-not-allowed opacity-60"
                 : forecast.user_vote === "no"
@@ -178,7 +177,6 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
                   : "bg-destructive/10 text-destructive hover:bg-destructive/20"
             }`}
           >
-            {isPriceMarket && <ArrowDownRight className="h-3.5 w-3.5 inline mr-1" />}
             {noLabel}
           </button>
         </div>
