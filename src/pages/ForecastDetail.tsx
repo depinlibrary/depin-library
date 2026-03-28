@@ -623,131 +623,81 @@ const ForecastDetail = () => {
                           </>
                         )}
 
-                        {/* Token Price Chart — cross chart when two projects */}
+                        {/* Token Price — current market data display */}
                         {heroChartTab === "price" && hasPriceData && (() => {
-                          const sparklineA = (marketDataA.data?.sparkline_7d as number[]) || [];
-                          const sparklineB = forecast.project_b ? (marketDataB.data?.sparkline_7d as number[]) || [] : [];
-                          const hasTwoProjects = forecast.project_b && sparklineB.length > 0;
+                          const hasTwoProjects = !!forecast.project_b && marketDataB.data?.price_usd != null;
                           const dimLabel = forecastDimension === "market_cap" ? "Market Cap" : "Token Price";
 
-                          // Normalize sparklines to percentage change from first value for cross-chart
-                          const maxLen = Math.max(sparklineA.length, sparklineB.length);
-                          const priceData = Array.from({ length: maxLen }, (_, i) => {
-                            const entry: Record<string, number | undefined> = { i };
-                            if (i < sparklineA.length) {
-                              entry.priceA = hasTwoProjects
-                                ? ((sparklineA[i] - sparklineA[0]) / sparklineA[0]) * 100
-                                : sparklineA[i];
-                            }
-                            if (hasTwoProjects && i < sparklineB.length) {
-                              entry.priceB = ((sparklineB[i] - sparklineB[0]) / sparklineB[0]) * 100;
-                            }
-                            return entry;
-                          });
-
-                          const changeA = marketDataA.data?.price_change_24h;
-                          const changeB = marketDataB.data?.price_change_24h;
-                          const isPositiveA = (changeA ?? 0) >= 0;
-
-                          return (
-                            <>
-                              <div className="flex items-center justify-between mb-3 flex-wrap gap-y-1">
-                                <span className="text-xs font-semibold text-muted-foreground">{dimLabel} · 7D {hasTwoProjects && "(% change)"}</span>
-                                <span className="text-[10px] text-muted-foreground">CoinGecko</span>
-                              </div>
-                              {/* Legend for cross chart */}
-                              <div className="flex items-center gap-4 mb-3">
-                                <div className="flex items-center gap-1.5 text-[11px]">
-                                  <span className="w-2 h-2 rounded-full bg-primary" />
-                                  <span className="font-medium text-muted-foreground">{forecast.project_a?.name}</span>
-                                  {marketDataA.data?.price_usd != null && (
-                                    <span className="font-semibold text-foreground font-['Space_Grotesk']">{formatTokenPrice(marketDataA.data.price_usd)}</span>
-                                  )}
-                                  {changeA != null && (
-                                    <span className={`font-semibold flex items-center gap-0.5 ${isPositiveA ? "text-green-500" : "text-destructive"}`}>
-                                      {isPositiveA ? "+" : ""}{changeA.toFixed(1)}%
-                                    </span>
+                          const renderProjectPrice = (
+                            name: string,
+                            logoUrl: string | null | undefined,
+                            logoEmoji: string | undefined,
+                            priceUsd: number | null | undefined,
+                            marketCap: number | null | undefined,
+                            change24h: number | null | undefined,
+                            accentClass: string,
+                          ) => {
+                            const value = forecastDimension === "market_cap" ? marketCap : priceUsd;
+                            const isPos = (change24h ?? 0) >= 0;
+                            const formatMcap = (v: number) => {
+                              if (v >= 1e9) return `$${(v / 1e9).toFixed(2)}B`;
+                              if (v >= 1e6) return `$${(v / 1e6).toFixed(2)}M`;
+                              return `$${v.toLocaleString()}`;
+                            };
+                            return (
+                              <div className="flex items-center gap-4 p-4 rounded-xl bg-secondary/30">
+                                <div className="shrink-0">
+                                  {logoUrl ? (
+                                    <img src={logoUrl} alt={name} className="w-10 h-10 rounded-xl object-contain bg-secondary border border-border" />
+                                  ) : (
+                                    <span className="w-10 h-10 rounded-xl flex items-center justify-center text-lg bg-secondary border border-border">{logoEmoji || "⬡"}</span>
                                   )}
                                 </div>
-                                {hasTwoProjects && (
-                                  <div className="flex items-center gap-1.5 text-[11px]">
-                                    <span className="w-2 h-2 rounded-full bg-accent" />
-                                    <span className="font-medium text-muted-foreground">{forecast.project_b?.name}</span>
-                                    {marketDataB.data?.price_usd != null && (
-                                      <span className="font-semibold text-foreground font-['Space_Grotesk']">{formatTokenPrice(marketDataB.data.price_usd)}</span>
-                                    )}
-                                    {changeB != null && (
-                                      <span className={`font-semibold flex items-center gap-0.5 ${(changeB ?? 0) >= 0 ? "text-green-500" : "text-destructive"}`}>
-                                        {(changeB ?? 0) >= 0 ? "+" : ""}{changeB.toFixed(1)}%
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-xs font-medium text-muted-foreground truncate">{name}</p>
+                                  <div className="flex items-center gap-2 mt-0.5">
+                                    <span className={`text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums`}>
+                                      {value != null
+                                        ? forecastDimension === "market_cap" ? formatMcap(value) : formatTokenPrice(value)
+                                        : "—"}
+                                    </span>
+                                    {change24h != null && (
+                                      <span className={`text-xs font-semibold flex items-center gap-0.5 ${isPos ? "text-green-500" : "text-destructive"}`}>
+                                        {isPos ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                                        {isPos ? "+" : ""}{change24h.toFixed(2)}%
                                       </span>
                                     )}
                                   </div>
-                                )}
+                                </div>
                               </div>
-                              <div className="flex-1 min-h-[200px]">
-                                <ResponsiveContainer width="100%" height="100%">
-                                  <AreaChart data={priceData} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
-                                    <defs>
-                                      <linearGradient id="detailPriceGradA" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
-                                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.01} />
-                                      </linearGradient>
-                                      <linearGradient id="detailPriceGradB" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="hsl(var(--accent))" stopOpacity={0.15} />
-                                        <stop offset="95%" stopColor="hsl(var(--accent))" stopOpacity={0.01} />
-                                      </linearGradient>
-                                    </defs>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} vertical={false} />
-                                    {hasTwoProjects && <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" strokeDasharray="6 4" opacity={0.25} />}
-                                    <XAxis dataKey="i" tick={false} tickLine={false} axisLine={false} />
-                                    <YAxis
-                                      tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
-                                      tickLine={false}
-                                      axisLine={false}
-                                      tickFormatter={(v: number) => hasTwoProjects ? `${v > 0 ? "+" : ""}${v.toFixed(0)}%` : formatTokenPrice(v)}
-                                      domain={["auto", "auto"]}
-                                      width={65}
-                                    />
-                                    <Tooltip
-                                      contentStyle={{
-                                        backgroundColor: "hsl(var(--card))",
-                                        border: "1px solid hsl(var(--border))",
-                                        borderRadius: "10px",
-                                        fontSize: "11px",
-                                        padding: "6px 10px",
-                                      }}
-                                      formatter={(value: number, name: string) => [
-                                        hasTwoProjects ? `${value > 0 ? "+" : ""}${value.toFixed(2)}%` : formatTokenPrice(value),
-                                        name === "priceA" ? forecast.project_a?.name : forecast.project_b?.name,
-                                      ]}
-                                      labelFormatter={() => ""}
-                                      labelStyle={{ display: "none" }}
-                                    />
-                                    <Area
-                                      type="monotone"
-                                      dataKey="priceA"
-                                      name="priceA"
-                                      stroke="hsl(var(--primary))"
-                                      fill="url(#detailPriceGradA)"
-                                      strokeWidth={2}
-                                      dot={false}
-                                      activeDot={{ r: 4, stroke: "hsl(var(--card))", strokeWidth: 2 }}
-                                    />
-                                    {hasTwoProjects && (
-                                      <Area
-                                        type="monotone"
-                                        dataKey="priceB"
-                                        name="priceB"
-                                        stroke="hsl(var(--accent-foreground))"
-                                        fill="url(#detailPriceGradB)"
-                                        strokeWidth={1.5}
-                                        strokeDasharray="4 2"
-                                        dot={false}
-                                        activeDot={{ r: 3, stroke: "hsl(var(--card))", strokeWidth: 2 }}
-                                      />
-                                    )}
-                                  </AreaChart>
-                                </ResponsiveContainer>
+                            );
+                          };
+
+                          return (
+                            <>
+                              <div className="flex items-center justify-between mb-4">
+                                <span className="text-xs font-semibold text-muted-foreground">{dimLabel}</span>
+                                <span className="text-[10px] text-muted-foreground">Source: CoinGecko</span>
+                              </div>
+                              <div className={`flex-1 flex flex-col ${hasTwoProjects ? "gap-3" : "gap-3"} justify-center`}>
+                                {renderProjectPrice(
+                                  forecast.project_a?.name || "",
+                                  forecast.project_a?.logo_url,
+                                  forecast.project_a?.logo_emoji,
+                                  marketDataA.data?.price_usd,
+                                  marketDataA.data?.market_cap_usd,
+                                  marketDataA.data?.price_change_24h,
+                                  "text-primary",
+                                )}
+                                {hasTwoProjects && renderProjectPrice(
+                                  forecast.project_b?.name || "",
+                                  forecast.project_b?.logo_url,
+                                  forecast.project_b?.logo_emoji,
+                                  marketDataB.data?.price_usd,
+                                  marketDataB.data?.market_cap_usd,
+                                  marketDataB.data?.price_change_24h,
+                                  "text-accent",
+                                )}
                               </div>
                             </>
                           );
