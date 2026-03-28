@@ -631,50 +631,88 @@ const ForecastDetail = () => {
                           </>
                         )}
 
-                        {/* Token Price Chart */}
+                        {/* Token Price Chart — cross chart when two projects */}
                         {heroChartTab === "price" && hasPriceData && (() => {
-                          const sparkline = (marketDataA.data?.sparkline_7d as number[]) || [];
-                          const priceData = sparkline.map((v, i) => ({ i, price: v }));
-                          const currentPrice = marketDataA.data?.price_usd;
-                          const change24h = marketDataA.data?.price_change_24h;
-                          const isPositive = (change24h ?? 0) >= 0;
+                          const sparklineA = (marketDataA.data?.sparkline_7d as number[]) || [];
+                          const sparklineB = forecast.project_b ? (marketDataB.data?.sparkline_7d as number[]) || [] : [];
+                          const hasTwoProjects = forecast.project_b && sparklineB.length > 0;
                           const dimLabel = forecastDimension === "market_cap" ? "Market Cap" : "Token Price";
+
+                          // Normalize sparklines to percentage change from first value for cross-chart
+                          const maxLen = Math.max(sparklineA.length, sparklineB.length);
+                          const priceData = Array.from({ length: maxLen }, (_, i) => {
+                            const entry: Record<string, number | undefined> = { i };
+                            if (i < sparklineA.length) {
+                              entry.priceA = hasTwoProjects
+                                ? ((sparklineA[i] - sparklineA[0]) / sparklineA[0]) * 100
+                                : sparklineA[i];
+                            }
+                            if (hasTwoProjects && i < sparklineB.length) {
+                              entry.priceB = ((sparklineB[i] - sparklineB[0]) / sparklineB[0]) * 100;
+                            }
+                            return entry;
+                          });
+
+                          const changeA = marketDataA.data?.price_change_24h;
+                          const changeB = marketDataB.data?.price_change_24h;
+                          const isPositiveA = (changeA ?? 0) >= 0;
 
                           return (
                             <>
-                              <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-xs font-semibold text-muted-foreground">{dimLabel} · 7D</span>
-                                  {currentPrice != null && (
-                                    <span className="text-sm font-bold text-foreground font-['Space_Grotesk']">
-                                      {formatTokenPrice(currentPrice)}
-                                    </span>
+                              <div className="flex items-center justify-between mb-3 flex-wrap gap-y-1">
+                                <span className="text-xs font-semibold text-muted-foreground">{dimLabel} · 7D {hasTwoProjects && "(% change)"}</span>
+                                <span className="text-[10px] text-muted-foreground">CoinGecko</span>
+                              </div>
+                              {/* Legend for cross chart */}
+                              <div className="flex items-center gap-4 mb-3">
+                                <div className="flex items-center gap-1.5 text-[11px]">
+                                  <span className="w-2 h-2 rounded-full bg-primary" />
+                                  <span className="font-medium text-muted-foreground">{forecast.project_a?.name}</span>
+                                  {marketDataA.data?.price_usd != null && (
+                                    <span className="font-semibold text-foreground font-['Space_Grotesk']">{formatTokenPrice(marketDataA.data.price_usd)}</span>
                                   )}
-                                  {change24h != null && (
-                                    <span className={`text-[11px] font-semibold flex items-center gap-0.5 ${isPositive ? "text-green-500" : "text-destructive"}`}>
-                                      {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                                      {isPositive ? "+" : ""}{change24h.toFixed(2)}%
+                                  {changeA != null && (
+                                    <span className={`font-semibold flex items-center gap-0.5 ${isPositiveA ? "text-green-500" : "text-destructive"}`}>
+                                      {isPositiveA ? "+" : ""}{changeA.toFixed(1)}%
                                     </span>
                                   )}
                                 </div>
-                                <span className="text-[10px] text-muted-foreground">CoinGecko</span>
+                                {hasTwoProjects && (
+                                  <div className="flex items-center gap-1.5 text-[11px]">
+                                    <span className="w-2 h-2 rounded-full bg-accent" />
+                                    <span className="font-medium text-muted-foreground">{forecast.project_b?.name}</span>
+                                    {marketDataB.data?.price_usd != null && (
+                                      <span className="font-semibold text-foreground font-['Space_Grotesk']">{formatTokenPrice(marketDataB.data.price_usd)}</span>
+                                    )}
+                                    {changeB != null && (
+                                      <span className={`font-semibold flex items-center gap-0.5 ${(changeB ?? 0) >= 0 ? "text-green-500" : "text-destructive"}`}>
+                                        {(changeB ?? 0) >= 0 ? "+" : ""}{changeB.toFixed(1)}%
+                                      </span>
+                                    )}
+                                  </div>
+                                )}
                               </div>
                               <div className="flex-1 min-h-[200px]">
                                 <ResponsiveContainer width="100%" height="100%">
                                   <AreaChart data={priceData} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
                                     <defs>
-                                      <linearGradient id="detailPriceGrad" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor={isPositive ? "hsl(var(--primary))" : "hsl(var(--destructive))"} stopOpacity={0.2} />
-                                        <stop offset="95%" stopColor={isPositive ? "hsl(var(--primary))" : "hsl(var(--destructive))"} stopOpacity={0.01} />
+                                      <linearGradient id="detailPriceGradA" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
+                                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.01} />
+                                      </linearGradient>
+                                      <linearGradient id="detailPriceGradB" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="hsl(var(--accent))" stopOpacity={0.15} />
+                                        <stop offset="95%" stopColor="hsl(var(--accent))" stopOpacity={0.01} />
                                       </linearGradient>
                                     </defs>
                                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} vertical={false} />
+                                    {hasTwoProjects && <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" strokeDasharray="6 4" opacity={0.25} />}
                                     <XAxis dataKey="i" tick={false} tickLine={false} axisLine={false} />
                                     <YAxis
                                       tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
                                       tickLine={false}
                                       axisLine={false}
-                                      tickFormatter={(v: number) => formatTokenPrice(v)}
+                                      tickFormatter={(v: number) => hasTwoProjects ? `${v > 0 ? "+" : ""}${v.toFixed(0)}%` : formatTokenPrice(v)}
                                       domain={["auto", "auto"]}
                                       width={65}
                                     />
@@ -686,18 +724,42 @@ const ForecastDetail = () => {
                                         fontSize: "11px",
                                         padding: "6px 10px",
                                       }}
-                                      formatter={(value: number) => [formatTokenPrice(value), dimLabel]}
+                                      formatter={(value: number, name: string) => [
+                                        hasTwoProjects ? `${value > 0 ? "+" : ""}${value.toFixed(2)}%` : formatTokenPrice(value),
+                                        name === "priceA" ? forecast.project_a?.name : forecast.project_b?.name,
+                                      ]}
                                       labelFormatter={() => ""}
                                       labelStyle={{ display: "none" }}
                                     />
                                     <Area
                                       type="monotone"
-                                      dataKey="price"
-                                      stroke={isPositive ? "hsl(var(--primary))" : "hsl(var(--destructive))"}
-                                      fill="url(#detailPriceGrad)"
+                                      dataKey="priceA"
+                                      name="priceA"
+                                      stroke="hsl(var(--primary))"
+                                      fill="url(#detailPriceGradA)"
                                       strokeWidth={2}
                                       dot={false}
                                       activeDot={{ r: 4, stroke: "hsl(var(--card))", strokeWidth: 2 }}
+                                    />
+                                    {hasTwoProjects && (
+                                      <Area
+                                        type="monotone"
+                                        dataKey="priceB"
+                                        name="priceB"
+                                        stroke="hsl(var(--accent-foreground))"
+                                        fill="url(#detailPriceGradB)"
+                                        strokeWidth={1.5}
+                                        strokeDasharray="4 2"
+                                        dot={false}
+                                        activeDot={{ r: 3, stroke: "hsl(var(--card))", strokeWidth: 2 }}
+                                      />
+                                    )}
+                                  </AreaChart>
+                                </ResponsiveContainer>
+                              </div>
+                            </>
+                          );
+                        })()}
                                     />
                                   </AreaChart>
                                 </ResponsiveContainer>
