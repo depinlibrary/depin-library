@@ -563,91 +563,183 @@ const ForecastDetail = () => {
                   </div>
                 </div>
 
-                {/* RIGHT: Probability trend chart */}
+                {/* RIGHT: Chart section with tab switcher */}
                 <div className="lg:w-[55%] border-t lg:border-t-0 lg:border-l border-border p-6 sm:p-8 flex flex-col">
-                  {/* Chart legend */}
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-semibold text-muted-foreground">Probability Trend</span>
-                    <div className="flex items-center gap-4">
-                      <span className="flex items-center gap-1.5 text-[11px]">
-                        <span className="w-2 h-2 rounded-full bg-primary" />
-                        <span className="font-medium text-muted-foreground">{yesLabel}</span>
-                        <span className="font-semibold text-primary font-['Space_Grotesk']">{yesPct.toFixed(1)}%</span>
-                      </span>
-                      <span className="flex items-center gap-1.5 text-[11px]">
-                        <span className="w-2 h-2 rounded-full bg-destructive" />
-                        <span className="font-medium text-muted-foreground">{noLabel}</span>
-                        <span className="font-semibold text-destructive font-['Space_Grotesk']">{noPct.toFixed(1)}%</span>
-                      </span>
-                    </div>
-                  </div>
+                  {(() => {
+                    const hasPriceData = (forecastDimension === "token_price" || forecastDimension === "market_cap") && marketDataA.data?.sparkline_7d;
+                    const [heroChartTab, setHeroChartTab] = useState<"probability" | "price">("probability");
 
-                  {/* Chart */}
-                  <div className="flex-1 min-h-[200px]">
-                    {voteHistory.length >= 2 ? (
-                      <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={voteHistory.map(v => ({
-                          ...v,
-                          yes_pct: v.weighted_yes_pct,
-                          no_pct: 100 - v.weighted_yes_pct,
-                        }))} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                          <defs>
-                            <linearGradient id="detailYesGrad" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
-                              <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.01} />
-                            </linearGradient>
-                            <linearGradient id="detailNoGrad" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="hsl(var(--destructive))" stopOpacity={0.15} />
-                              <stop offset="95%" stopColor="hsl(var(--destructive))" stopOpacity={0.01} />
-                            </linearGradient>
-                          </defs>
-                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} vertical={false} />
-                          <ReferenceLine y={50} stroke="hsl(var(--muted-foreground))" strokeDasharray="6 4" opacity={0.25} />
-                          <XAxis dataKey="date" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-                          <YAxis domain={[0, 100]} tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} tickFormatter={(v: number) => `${v}%`} />
-                          <Tooltip
-                            contentStyle={{
-                              backgroundColor: "hsl(var(--card))",
-                              border: "1px solid hsl(var(--border))",
-                              borderRadius: "10px",
-                              fontSize: "11px",
-                              padding: "6px 10px",
-                            }}
-                            formatter={(value: number, name: string) => [`${value}%`, name === "yes_pct" ? yesLabel : noLabel]}
-                            labelStyle={{ fontWeight: 600, marginBottom: 2, color: "hsl(var(--foreground))" }}
-                          />
-                          <Area type="monotone" dataKey="yes_pct" name="yes_pct" stroke="hsl(var(--primary))" fill="url(#detailYesGrad)" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: "hsl(var(--primary))", stroke: "hsl(var(--card))", strokeWidth: 2 }} />
-                          <Area type="monotone" dataKey="no_pct" name="no_pct" stroke="hsl(var(--destructive))" fill="url(#detailNoGrad)" strokeWidth={1.5} strokeDasharray="4 2" dot={false} activeDot={{ r: 3, fill: "hsl(var(--destructive))", stroke: "hsl(var(--card))", strokeWidth: 2 }} />
-                        </AreaChart>
-                      </ResponsiveContainer>
-                    ) : (
-                      <div className="flex items-center justify-center h-full text-xs text-muted-foreground">
-                        Not enough votes for a trend chart yet
-                      </div>
-                    )}
-                  </div>
+                    return (
+                      <>
+                        {/* Tab switcher — only show if price data exists */}
+                        {hasPriceData ? (
+                          <div className="flex items-center gap-1 bg-secondary/50 rounded-lg p-0.5 mb-4 self-start">
+                            <button
+                              onClick={() => setHeroChartTab("probability")}
+                              className={`px-3 py-1.5 rounded-md text-[11px] font-medium transition-all ${
+                                heroChartTab === "probability"
+                                  ? "bg-background text-foreground shadow-sm"
+                                  : "text-muted-foreground hover:text-foreground"
+                              }`}
+                            >
+                              Probability
+                            </button>
+                            <button
+                              onClick={() => setHeroChartTab("price")}
+                              className={`px-3 py-1.5 rounded-md text-[11px] font-medium transition-all ${
+                                heroChartTab === "price"
+                                  ? "bg-background text-foreground shadow-sm"
+                                  : "text-muted-foreground hover:text-foreground"
+                              }`}
+                            >
+                              {forecastDimension === "market_cap" ? "Market Cap" : "Token Price"}
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="text-xs font-semibold text-muted-foreground mb-3">Probability Trend</span>
+                        )}
 
-                  {/* Token price mini-chart below probability trend for price/mcap forecasts */}
-                  {(forecastDimension === "token_price" || forecastDimension === "market_cap") && marketDataA.data?.sparkline_7d && (
-                    <div className="mt-4 pt-3 border-t border-border">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">7d Price</span>
-                      </div>
-                      <div className="h-[60px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart data={((marketDataA.data?.sparkline_7d as number[]) || []).map((v, i) => ({ i, price: v }))} margin={{ top: 2, right: 0, left: 0, bottom: 0 }}>
-                            <defs>
-                              <linearGradient id="priceGrad" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.15} />
-                                <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                              </linearGradient>
-                            </defs>
-                            <Area type="monotone" dataKey="price" stroke="hsl(var(--primary))" fill="url(#priceGrad)" strokeWidth={1.5} dot={false} />
-                          </AreaChart>
-                        </ResponsiveContainer>
-                      </div>
-                    </div>
-                  )}
+                        {/* Probability Trend */}
+                        {heroChartTab === "probability" && (
+                          <>
+                            <div className="flex items-center justify-between mb-3">
+                              {hasPriceData && <span className="text-xs font-semibold text-muted-foreground">Probability Trend</span>}
+                              <div className="flex items-center gap-4 ml-auto">
+                                <span className="flex items-center gap-1.5 text-[11px]">
+                                  <span className="w-2 h-2 rounded-full bg-primary" />
+                                  <span className="font-medium text-muted-foreground">{yesLabel}</span>
+                                  <span className="font-semibold text-primary font-['Space_Grotesk']">{yesPct.toFixed(1)}%</span>
+                                </span>
+                                <span className="flex items-center gap-1.5 text-[11px]">
+                                  <span className="w-2 h-2 rounded-full bg-destructive" />
+                                  <span className="font-medium text-muted-foreground">{noLabel}</span>
+                                  <span className="font-semibold text-destructive font-['Space_Grotesk']">{noPct.toFixed(1)}%</span>
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex-1 min-h-[200px]">
+                              {voteHistory.length >= 2 ? (
+                                <ResponsiveContainer width="100%" height="100%">
+                                  <AreaChart data={voteHistory.map(v => ({
+                                    ...v,
+                                    yes_pct: v.weighted_yes_pct,
+                                    no_pct: 100 - v.weighted_yes_pct,
+                                  }))} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                                    <defs>
+                                      <linearGradient id="detailYesGrad" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
+                                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.01} />
+                                      </linearGradient>
+                                      <linearGradient id="detailNoGrad" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="hsl(var(--destructive))" stopOpacity={0.15} />
+                                        <stop offset="95%" stopColor="hsl(var(--destructive))" stopOpacity={0.01} />
+                                      </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} vertical={false} />
+                                    <ReferenceLine y={50} stroke="hsl(var(--muted-foreground))" strokeDasharray="6 4" opacity={0.25} />
+                                    <XAxis dataKey="date" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+                                    <YAxis domain={[0, 100]} tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} tickFormatter={(v: number) => `${v}%`} />
+                                    <Tooltip
+                                      contentStyle={{
+                                        backgroundColor: "hsl(var(--card))",
+                                        border: "1px solid hsl(var(--border))",
+                                        borderRadius: "10px",
+                                        fontSize: "11px",
+                                        padding: "6px 10px",
+                                      }}
+                                      formatter={(value: number, name: string) => [`${value}%`, name === "yes_pct" ? yesLabel : noLabel]}
+                                      labelStyle={{ fontWeight: 600, marginBottom: 2, color: "hsl(var(--foreground))" }}
+                                    />
+                                    <Area type="monotone" dataKey="yes_pct" name="yes_pct" stroke="hsl(var(--primary))" fill="url(#detailYesGrad)" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: "hsl(var(--primary))", stroke: "hsl(var(--card))", strokeWidth: 2 }} />
+                                    <Area type="monotone" dataKey="no_pct" name="no_pct" stroke="hsl(var(--destructive))" fill="url(#detailNoGrad)" strokeWidth={1.5} strokeDasharray="4 2" dot={false} activeDot={{ r: 3, fill: "hsl(var(--destructive))", stroke: "hsl(var(--card))", strokeWidth: 2 }} />
+                                  </AreaChart>
+                                </ResponsiveContainer>
+                              ) : (
+                                <div className="flex items-center justify-center h-full text-xs text-muted-foreground">
+                                  Not enough votes for a trend chart yet
+                                </div>
+                              )}
+                            </div>
+                          </>
+                        )}
+
+                        {/* Token Price Chart */}
+                        {heroChartTab === "price" && hasPriceData && (() => {
+                          const sparkline = (marketDataA.data?.sparkline_7d as number[]) || [];
+                          const priceData = sparkline.map((v, i) => ({ i, price: v }));
+                          const currentPrice = marketDataA.data?.price_usd;
+                          const change24h = marketDataA.data?.price_change_24h;
+                          const isPositive = (change24h ?? 0) >= 0;
+                          const dimLabel = forecastDimension === "market_cap" ? "Market Cap" : "Token Price";
+
+                          return (
+                            <>
+                              <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs font-semibold text-muted-foreground">{dimLabel} · 7D</span>
+                                  {currentPrice != null && (
+                                    <span className="text-sm font-bold text-foreground font-['Space_Grotesk']">
+                                      {formatTokenPrice(currentPrice)}
+                                    </span>
+                                  )}
+                                  {change24h != null && (
+                                    <span className={`text-[11px] font-semibold flex items-center gap-0.5 ${isPositive ? "text-green-500" : "text-destructive"}`}>
+                                      {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                                      {isPositive ? "+" : ""}{change24h.toFixed(2)}%
+                                    </span>
+                                  )}
+                                </div>
+                                <span className="text-[10px] text-muted-foreground">CoinGecko</span>
+                              </div>
+                              <div className="flex-1 min-h-[200px]">
+                                <ResponsiveContainer width="100%" height="100%">
+                                  <AreaChart data={priceData} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
+                                    <defs>
+                                      <linearGradient id="detailPriceGrad" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor={isPositive ? "hsl(var(--primary))" : "hsl(var(--destructive))"} stopOpacity={0.2} />
+                                        <stop offset="95%" stopColor={isPositive ? "hsl(var(--primary))" : "hsl(var(--destructive))"} stopOpacity={0.01} />
+                                      </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} vertical={false} />
+                                    <XAxis dataKey="i" tick={false} tickLine={false} axisLine={false} />
+                                    <YAxis
+                                      tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
+                                      tickLine={false}
+                                      axisLine={false}
+                                      tickFormatter={(v: number) => formatTokenPrice(v)}
+                                      domain={["auto", "auto"]}
+                                      width={65}
+                                    />
+                                    <Tooltip
+                                      contentStyle={{
+                                        backgroundColor: "hsl(var(--card))",
+                                        border: "1px solid hsl(var(--border))",
+                                        borderRadius: "10px",
+                                        fontSize: "11px",
+                                        padding: "6px 10px",
+                                      }}
+                                      formatter={(value: number) => [formatTokenPrice(value), dimLabel]}
+                                      labelFormatter={() => ""}
+                                      labelStyle={{ display: "none" }}
+                                    />
+                                    <Area
+                                      type="monotone"
+                                      dataKey="price"
+                                      stroke={isPositive ? "hsl(var(--primary))" : "hsl(var(--destructive))"}
+                                      fill="url(#detailPriceGrad)"
+                                      strokeWidth={2}
+                                      dot={false}
+                                      activeDot={{ r: 4, stroke: "hsl(var(--card))", strokeWidth: 2 }}
+                                    />
+                                  </AreaChart>
+                                </ResponsiveContainer>
+                              </div>
+                            </>
+                          );
+                        })()}
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
             </motion.div>
