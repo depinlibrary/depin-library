@@ -337,23 +337,7 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                         </span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          navigator.clipboard.writeText(`${window.location.origin}/forecasts/${current.id}`);
-                          toast.success("Link copied!");
-                        }}
-                        className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-                        title="Copy link"
-                      >
-                        <Copy className="h-4 w-4" />
-                      </button>
-                      <button className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
-                        <Bookmark className="h-4 w-4" />
-                      </button>
                     </div>
-                  </div>
 
                   {/* Title */}
                   <Link to={`/forecasts/${current.id}`}>
@@ -372,17 +356,6 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                       <span className="text-sm font-medium text-foreground">{cNoLabel}</span>
                       <span className="text-2xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{(100 - cYesPct).toFixed(0)}%</span>
                     </div>
-                  </div>
-
-                  {/* Footer: votes + view details */}
-                  <div className="flex items-center justify-between mt-4">
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <Users className="h-3.5 w-3.5" />
-                      <span>{cTotal.toLocaleString()} votes</span>
-                    </div>
-                    <Link to={`/forecasts/${current.id}`} className="text-xs font-semibold text-primary hover:underline flex items-center gap-1">
-                      View details <ChevronRightIcon className="h-3 w-3" />
-                    </Link>
                   </div>
                 </motion.div>
               </AnimatePresence>
