@@ -524,48 +524,16 @@ const ForecastDetail = () => {
                   })()}
 
                   {/* Footer stats */}
-                  <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
+                  <div className="flex items-center mt-4 pt-3 border-t border-border">
                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1"><Users className="h-3.5 w-3.5" /> {totalVotes.toLocaleString()} votes</span>
                       <span className="flex items-center gap-1">{comments.length} comments</span>
                     </div>
-                    {/* Token price badges */}
-                    {(() => {
-                      const priceA = marketDataA.data;
-                      const priceB = marketDataB.data;
-                      if (!priceA?.price_usd) return null;
-                      return (
-                        <div className="flex items-center gap-3">
-                          <div className="flex items-center gap-1.5 text-xs">
-                            <span className="text-muted-foreground">{forecast.project_a?.name}:</span>
-                            <span className="font-semibold text-foreground">{formatTokenPrice(priceA.price_usd)}</span>
-                            {priceA.price_change_24h != null && (
-                              <span className={`flex items-center gap-0.5 font-medium ${priceA.price_change_24h > 0 ? "text-green-500" : priceA.price_change_24h < 0 ? "text-destructive" : "text-muted-foreground"}`}>
-                                {priceA.price_change_24h > 0 ? <TrendingUp className="h-3 w-3" /> : priceA.price_change_24h < 0 ? <TrendingDown className="h-3 w-3" /> : <Minus className="h-3 w-3" />}
-                                {Math.abs(priceA.price_change_24h).toFixed(1)}%
-                              </span>
-                            )}
-                          </div>
-                          {priceB?.price_usd && (
-                            <div className="flex items-center gap-1.5 text-xs">
-                              <span className="text-muted-foreground">{forecast.project_b?.name}:</span>
-                              <span className="font-semibold text-foreground">{formatTokenPrice(priceB.price_usd)}</span>
-                              {priceB.price_change_24h != null && (
-                                <span className={`flex items-center gap-0.5 font-medium ${priceB.price_change_24h > 0 ? "text-green-500" : priceB.price_change_24h < 0 ? "text-destructive" : "text-muted-foreground"}`}>
-                                  {priceB.price_change_24h > 0 ? <TrendingUp className="h-3 w-3" /> : priceB.price_change_24h < 0 ? <TrendingDown className="h-3 w-3" /> : <Minus className="h-3 w-3" />}
-                                  {Math.abs(priceB.price_change_24h).toFixed(1)}%
-                                </span>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })()}
                   </div>
                 </div>
 
                 {/* RIGHT: Chart section with tab switcher */}
-                <div className="lg:w-[55%] border-t lg:border-t-0 lg:border-l border-border p-6 sm:p-8 flex flex-col">
+                <div className="lg:w-[55%] p-6 sm:p-8 flex flex-col">
                   {(() => {
                     const hasPriceData = (forecastDimension === "token_price" || forecastDimension === "market_cap") && marketDataA.data?.sparkline_7d;
 

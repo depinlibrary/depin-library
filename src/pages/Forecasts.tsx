@@ -393,7 +393,7 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.3 }}
-                  className="lg:w-[55%] border-t lg:border-t-0 lg:border-l border-border p-6 sm:p-8 flex flex-col"
+                  className="lg:w-[55%] p-6 sm:p-8 flex flex-col"
                 >
                   {/* Chart legend */}
                   <div className="flex items-center justify-end gap-4 mb-3">
@@ -958,7 +958,8 @@ const Forecasts = () => {
                 }
               }}
               size="sm"
-              className="h-8 gap-1 shrink-0 text-xs px-3 rounded-full"
+              className="h-8 gap-1 shrink-0 text-xs px-3 rounded-full hover:bg-primary hover:text-primary-foreground pointer-events-auto cursor-pointer !shadow-none"
+              style={{ transform: 'none' }}
             >
               <Plus className="h-3.5 w-3.5" /> Create Forecast
             </Button>
