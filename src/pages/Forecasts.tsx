@@ -372,28 +372,20 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                     </h2>
                   </Link>
 
-                  {/* Polymarket-style outcome rows */}
-                  <div className="flex-1 flex flex-col justify-center">
-                    <div className="divide-y divide-border border-y border-border">
-                      <div className="flex items-center justify-between py-3.5 px-1">
-                        <div className="flex items-center gap-2.5">
-                          {cIsPriceMarket ? <TrendingUp className="h-4 w-4 text-primary" /> : <ArrowUpRight className="h-4 w-4 text-primary" />}
-                          <span className="text-sm font-semibold text-foreground">{cYesLabel}</span>
-                        </div>
-                        <span className="text-2xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{cYesPct.toFixed(0)}%</span>
-                      </div>
-                      <div className="flex items-center justify-between py-3.5 px-1">
-                        <div className="flex items-center gap-2.5">
-                          <ArrowDownRight className="h-4 w-4 text-destructive" />
-                          <span className="text-sm font-semibold text-foreground">{cNoLabel}</span>
-                        </div>
-                        <span className="text-2xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{(100 - cYesPct).toFixed(0)}%</span>
-                      </div>
+                  {/* Polymarket-style outcome rows — clean, no dividers */}
+                  <div className="flex-1 flex flex-col justify-center space-y-1">
+                    <div className="flex items-center justify-between py-3 px-1 rounded-lg hover:bg-secondary/30 transition-colors">
+                      <span className="text-sm font-medium text-foreground">{cYesLabel}</span>
+                      <span className="text-2xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{cYesPct.toFixed(0)}%</span>
+                    </div>
+                    <div className="flex items-center justify-between py-3 px-1 rounded-lg hover:bg-secondary/30 transition-colors">
+                      <span className="text-sm font-medium text-foreground">{cNoLabel}</span>
+                      <span className="text-2xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{(100 - cYesPct).toFixed(0)}%</span>
                     </div>
                   </div>
 
                   {/* Footer: votes + view details */}
-                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/50">
+                  <div className="flex items-center justify-between mt-4">
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                       <Users className="h-3.5 w-3.5" />
                       <span>{cTotal.toLocaleString()} votes</span>
@@ -1064,8 +1056,8 @@ const Forecasts = () => {
         {/* Main content */}
         <section className={`flex-1 min-w-0 transition-all duration-300`}>
           {isLoading ? (
-            <div className={`grid gap-4 sm:grid-cols-2 ${showCreate ? 'lg:grid-cols-2' : 'lg:grid-cols-3'}`}>
-              {Array.from({ length: 6 }).map((_, i) => (
+             <div className={`grid gap-3 sm:grid-cols-2 ${showCreate ? 'lg:grid-cols-2' : 'lg:grid-cols-3 xl:grid-cols-4'}`}>
+                {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="animate-pulse rounded-xl border border-border bg-card overflow-hidden">
                   <div className="p-5 space-y-3">
                     <div className="flex items-center gap-2">
@@ -1102,7 +1094,7 @@ const Forecasts = () => {
             </motion.div>
           ) : (
             <>
-              <div className={`grid gap-4 sm:grid-cols-2 ${showCreate ? 'lg:grid-cols-2' : 'lg:grid-cols-3'}`}>
+              <div className={`grid gap-3 sm:grid-cols-2 ${showCreate ? 'lg:grid-cols-2' : 'lg:grid-cols-3 xl:grid-cols-4'}`}>
                 <AnimatePresence mode="popLayout">
                   {forecasts.map((forecast, i) => (
                     <ForecastCard
