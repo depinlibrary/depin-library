@@ -428,7 +428,7 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                       <span className="font-semibold text-destructive font-['Space_Grotesk']">{(100 - cYesPct).toFixed(1)}%</span>
                     </span>
                   </div>
-                  <div className="h-36">
+                  <div className="flex-1">
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={(() => {
                         const total = current.total_votes_yes + current.total_votes_no;
@@ -476,7 +476,6 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                   </div>
                 </motion.div>
               </AnimatePresence>
-
             </div>
 
             {/* Slide dots - left aligned, tight spacing */}
