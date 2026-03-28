@@ -958,8 +958,7 @@ const Forecasts = () => {
                 }
               }}
               size="sm"
-              className="h-8 gap-1 shrink-0 text-xs px-3 rounded-full hover:bg-primary hover:text-primary-foreground pointer-events-auto cursor-pointer !shadow-none"
-              style={{ transform: 'none' }}
+              className="h-8 gap-1 shrink-0 text-xs px-3 rounded-full !hover:opacity-100 hover:brightness-100 hover:shadow-none active:scale-100"
             >
               <Plus className="h-3.5 w-3.5" /> Create Forecast
             </Button>
