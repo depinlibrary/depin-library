@@ -360,7 +360,7 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                 </motion.div>
               </AnimatePresence>
 
-              {/* RIGHT: Trading-style Chart */}
+              {/* RIGHT: Chart + Token Price with tab switcher */}
               <AnimatePresence mode="wait">
                 <motion.div
                   key={`chart-${current.id}`}
@@ -370,65 +370,170 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                   transition={{ duration: 0.3 }}
                   className="lg:w-[55%] p-6 sm:p-8 flex flex-col"
                 >
-                  {/* Chart legend */}
-                  <div className="flex items-center justify-end gap-4 mb-3">
-                    <span className="flex items-center gap-1.5 text-[11px]">
-                      <span className="w-2 h-2 rounded-full bg-primary" />
-                      <span className="font-medium text-muted-foreground">{cYesLabel}</span>
-                      <span className="font-semibold text-primary font-['Space_Grotesk']">{cYesPct.toFixed(1)}%</span>
-                    </span>
-                    <span className="flex items-center gap-1.5 text-[11px]">
-                      <span className="w-2 h-2 rounded-full bg-destructive" />
-                      <span className="font-medium text-muted-foreground">{cNoLabel}</span>
-                      <span className="font-semibold text-destructive font-['Space_Grotesk']">{(100 - cYesPct).toFixed(1)}%</span>
-                    </span>
-                  </div>
-                  <div className="flex-1">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={(() => {
-                        const total = current.total_votes_yes + current.total_votes_no;
-                        if (total === 0) return [{ t: "Start", yes: 50, no: 50 }, { t: "Now", yes: 50, no: 50 }];
-                        const base = cYesPct;
-                        const points = [];
-                        for (let i = 0; i < 12; i++) {
-                          const variance = (Math.sin(i * 1.3 + total) * 8) + (Math.cos(i * 0.7 + current.total_votes_yes) * 5);
-                          const yesPct = Math.max(5, Math.min(95, base + variance - (variance * (i / 12))));
-                          points.push({ t: i === 0 ? "Start" : i === 11 ? "Now" : ``, yes: Math.round(yesPct * 10) / 10, no: Math.round((100 - yesPct) * 10) / 10 });
-                        }
-                        points[points.length - 1].yes = Math.round(base * 10) / 10;
-                        points[points.length - 1].no = Math.round((100 - base) * 10) / 10;
-                        return points;
-                      })()} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                        <defs>
-                          <linearGradient id="heroYesGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
-                            <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.01} />
-                          </linearGradient>
-                          <linearGradient id="heroNoGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="hsl(var(--destructive))" stopOpacity={0.15} />
-                            <stop offset="95%" stopColor="hsl(var(--destructive))" stopOpacity={0.01} />
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} vertical={false} />
-                        <ReferenceLine y={50} stroke="hsl(var(--muted-foreground))" strokeDasharray="6 4" opacity={0.25} />
-                        <XAxis dataKey="t" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} />
-                        <YAxis domain={[0, 100]} tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v}%`} />
-                        <Tooltip
-                          contentStyle={{
-                            backgroundColor: "hsl(var(--card))",
-                            border: "1px solid hsl(var(--border))",
-                            borderRadius: "10px",
-                            fontSize: "11px",
-                            padding: "6px 10px",
-                          }}
-                          formatter={(value: number, name: string) => [`${value}%`, name === "yes" ? cYesLabel : cNoLabel]}
-                          labelStyle={{ fontWeight: 600, marginBottom: 2, color: "hsl(var(--foreground))" }}
-                        />
-                        <Area type="monotone" dataKey="yes" name="yes" stroke="hsl(var(--primary))" fill="url(#heroYesGrad)" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: "hsl(var(--primary))", stroke: "hsl(var(--card))", strokeWidth: 2 }} />
-                        <Area type="monotone" dataKey="no" name="no" stroke="hsl(var(--destructive))" fill="url(#heroNoGrad)" strokeWidth={1.5} strokeDasharray="4 2" dot={false} activeDot={{ r: 3, fill: "hsl(var(--destructive))", stroke: "hsl(var(--card))", strokeWidth: 2 }} />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
+                  {(() => {
+                    const mdA = allMarketData[current.project_a_id];
+                    const mdB = current.project_b_id ? allMarketData[current.project_b_id] : null;
+                    const hasPriceData = cIsPriceMarket && mdA?.price_usd != null;
+
+                    return (
+                      <>
+                        {/* Share/Copy + Tab switcher — right-aligned */}
+                        <div className="flex items-center justify-end gap-2 mb-4">
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              navigator.clipboard.writeText(`${window.location.origin}/forecasts/${current.id}`);
+                              toast.success("Link copied!");
+                            }}
+                            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                            title="Copy link"
+                          >
+                            <Copy className="h-4 w-4" />
+                          </button>
+                          {hasPriceData && (
+                            <div className="flex items-center gap-1 bg-secondary/50 rounded-lg p-0.5 ml-1">
+                              <button
+                                onClick={() => setHeroChartTab("probability")}
+                                className={`px-3 py-1.5 rounded-md text-[11px] font-medium transition-all ${
+                                  heroChartTab === "probability"
+                                    ? "bg-background text-foreground shadow-sm"
+                                    : "text-muted-foreground hover:text-foreground"
+                                }`}
+                              >
+                                Probability
+                              </button>
+                              <button
+                                onClick={() => setHeroChartTab("price")}
+                                className={`px-3 py-1.5 rounded-md text-[11px] font-medium transition-all ${
+                                  heroChartTab === "price"
+                                    ? "bg-background text-foreground shadow-sm"
+                                    : "text-muted-foreground hover:text-foreground"
+                                }`}
+                              >
+                                Token Price
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Probability Trend */}
+                        {heroChartTab === "probability" && (
+                          <>
+                            <div className="flex items-center justify-end gap-4 mb-3">
+                              <span className="flex items-center gap-1.5 text-[11px]">
+                                <span className="w-2 h-2 rounded-full bg-primary" />
+                                <span className="font-medium text-muted-foreground">{cYesLabel}</span>
+                                <span className="font-semibold text-primary font-['Space_Grotesk']">{cYesPct.toFixed(1)}%</span>
+                              </span>
+                              <span className="flex items-center gap-1.5 text-[11px]">
+                                <span className="w-2 h-2 rounded-full bg-destructive" />
+                                <span className="font-medium text-muted-foreground">{cNoLabel}</span>
+                                <span className="font-semibold text-destructive font-['Space_Grotesk']">{(100 - cYesPct).toFixed(1)}%</span>
+                              </span>
+                            </div>
+                            <div className="flex-1">
+                              <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart data={(() => {
+                                  const total = current.total_votes_yes + current.total_votes_no;
+                                  if (total === 0) return [{ t: "Start", yes: 50, no: 50 }, { t: "Now", yes: 50, no: 50 }];
+                                  const base = cYesPct;
+                                  const points = [];
+                                  for (let i = 0; i < 12; i++) {
+                                    const variance = (Math.sin(i * 1.3 + total) * 8) + (Math.cos(i * 0.7 + current.total_votes_yes) * 5);
+                                    const yesPct = Math.max(5, Math.min(95, base + variance - (variance * (i / 12))));
+                                    points.push({ t: i === 0 ? "Start" : i === 11 ? "Now" : ``, yes: Math.round(yesPct * 10) / 10, no: Math.round((100 - yesPct) * 10) / 10 });
+                                  }
+                                  points[points.length - 1].yes = Math.round(base * 10) / 10;
+                                  points[points.length - 1].no = Math.round((100 - base) * 10) / 10;
+                                  return points;
+                                })()} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                                  <defs>
+                                    <linearGradient id="heroYesGrad" x1="0" y1="0" x2="0" y2="1">
+                                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
+                                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.01} />
+                                    </linearGradient>
+                                    <linearGradient id="heroNoGrad" x1="0" y1="0" x2="0" y2="1">
+                                      <stop offset="5%" stopColor="hsl(var(--destructive))" stopOpacity={0.15} />
+                                      <stop offset="95%" stopColor="hsl(var(--destructive))" stopOpacity={0.01} />
+                                    </linearGradient>
+                                  </defs>
+                                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} vertical={false} />
+                                  <ReferenceLine y={50} stroke="hsl(var(--muted-foreground))" strokeDasharray="6 4" opacity={0.25} />
+                                  <XAxis dataKey="t" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} />
+                                  <YAxis domain={[0, 100]} tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v}%`} />
+                                  <Tooltip
+                                    contentStyle={{
+                                      backgroundColor: "hsl(var(--card))",
+                                      border: "1px solid hsl(var(--border))",
+                                      borderRadius: "10px",
+                                      fontSize: "11px",
+                                      padding: "6px 10px",
+                                    }}
+                                    formatter={(value: number, name: string) => [`${value}%`, name === "yes" ? cYesLabel : cNoLabel]}
+                                    labelStyle={{ fontWeight: 600, marginBottom: 2, color: "hsl(var(--foreground))" }}
+                                  />
+                                  <Area type="monotone" dataKey="yes" name="yes" stroke="hsl(var(--primary))" fill="url(#heroYesGrad)" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: "hsl(var(--primary))", stroke: "hsl(var(--card))", strokeWidth: 2 }} />
+                                  <Area type="monotone" dataKey="no" name="no" stroke="hsl(var(--destructive))" fill="url(#heroNoGrad)" strokeWidth={1.5} strokeDasharray="4 2" dot={false} activeDot={{ r: 3, fill: "hsl(var(--destructive))", stroke: "hsl(var(--card))", strokeWidth: 2 }} />
+                                </AreaChart>
+                              </ResponsiveContainer>
+                            </div>
+                          </>
+                        )}
+
+                        {/* Token Price — current market data */}
+                        {heroChartTab === "price" && hasPriceData && (() => {
+                          const hasTwoProjects = !!current.project_b_id && mdB?.price_usd != null;
+                          const fmtPrice = (p: number | null | undefined) => {
+                            if (p == null) return "—";
+                            if (p >= 1) return `$${p.toFixed(2)}`;
+                            if (p >= 0.01) return `$${p.toFixed(4)}`;
+                            return `$${p.toFixed(6)}`;
+                          };
+
+                          const renderPrice = (name: string, logoUrl: string | null | undefined, logoEmoji: string | undefined, price: number | null | undefined, change: number | null | undefined) => {
+                            const isPos = (change ?? 0) >= 0;
+                            return (
+                              <div className="flex items-center gap-4 p-4 rounded-xl bg-secondary/30">
+                                <div className="shrink-0">
+                                  {logoUrl ? (
+                                    <img src={logoUrl} alt={name} className="w-10 h-10 rounded-xl object-contain bg-secondary border border-border" />
+                                  ) : (
+                                    <span className="w-10 h-10 rounded-xl flex items-center justify-center text-lg bg-secondary border border-border">{logoEmoji || "⬡"}</span>
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-xs font-medium text-muted-foreground truncate">{name}</p>
+                                  <div className="flex items-center gap-2 mt-0.5">
+                                    <span className="text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums">
+                                      {fmtPrice(price)}
+                                    </span>
+                                    {change != null && (
+                                      <span className={`text-xs font-semibold flex items-center gap-0.5 ${isPos ? "text-green-500" : "text-destructive"}`}>
+                                        {isPos ? "+" : ""}{change.toFixed(2)}%
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          };
+
+                          return (
+                            <>
+                              <div className="flex items-center justify-between mb-4">
+                                <span className="text-xs font-semibold text-muted-foreground">Token Price</span>
+                                <span className="text-[10px] text-muted-foreground">Source: CoinGecko</span>
+                              </div>
+                              <div className="flex-1 flex flex-col gap-3 justify-center">
+                                {renderPrice(current.project_a_name, current.project_a_logo_url, current.project_a_logo_emoji, mdA?.price_usd, mdA?.price_change_24h)}
+                                {hasTwoProjects && renderPrice(current.project_b_name || "", current.project_b_logo_url, current.project_b_logo_emoji, mdB?.price_usd, mdB?.price_change_24h)}
+                              </div>
+                            </>
+                          );
+                        })()}
+                      </>
+                    );
+                  })()}
                 </motion.div>
               </AnimatePresence>
             </div>
