@@ -184,7 +184,7 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
     </motion.div>
   );
 };
-// ---- Hero Section with Auto-Sliding Carousel + Sentiment Chart ----
+// ---- Hero Section — Redesigned informative layout ----
 const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setShowCreate, heroDimensionsMap, allMarketData }: {
   forecasts: Forecast[];
   topLiveForecasts: Forecast[];
