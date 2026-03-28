@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
-import { Pencil, Trash2, Clock, AlertTriangle, CheckCircle, XCircle, BarChart3, Users, Trophy, Activity, TrendingUp, ArrowDownRight, CheckCircle2 } from "lucide-react";
+import { Pencil, Trash2, Clock, AlertTriangle, CheckCircle, XCircle, BarChart3, Users, Trophy, Activity, TrendingUp, ArrowDownRight, CheckCircle2, Vote } from "lucide-react";
 
 type UserForecast = {
   id: string;
@@ -60,7 +60,9 @@ export default function MyForecasts() {
   const [deleteReason, setDeleteReason] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "ended">("all");
   const [sortBy, setSortBy] = useState<"newest" | "votes" | "ending">("newest");
+  const [viewTab, setViewTab] = useState<"created" | "voted">("created");
 
+  // Created forecasts
   const { data: forecasts = [], isLoading } = useQuery({
     queryKey: ["my-forecasts", user?.id],
     queryFn: async () => {
@@ -76,16 +78,49 @@ export default function MyForecasts() {
     enabled: !!user,
   });
 
+  // Voted-on forecasts
+  const { data: votedForecasts = [], isLoading: votedLoading } = useQuery({
+    queryKey: ["my-voted-forecasts", user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      // Get all user votes
+      const { data: votes, error: votesError } = await supabase
+        .from("forecast_votes")
+        .select("forecast_id, vote, created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+      if (votesError) throw votesError;
+      if (!votes || votes.length === 0) return [];
+
+      const forecastIds = votes.map(v => v.forecast_id);
+      const { data: fData, error: fError } = await supabase
+        .from("forecasts")
+        .select("*")
+        .in("id", forecastIds);
+      if (fError) throw fError;
+
+      const voteMap: Record<string, { vote: string; created_at: string }> = {};
+      votes.forEach(v => { voteMap[v.forecast_id] = { vote: v.vote, created_at: v.created_at }; });
+
+      return (fData || []).map((f: any) => ({
+        ...f,
+        user_vote: voteMap[f.id]?.vote,
+        voted_at: voteMap[f.id]?.created_at,
+      })).sort((a: any, b: any) => new Date(b.voted_at).getTime() - new Date(a.voted_at).getTime());
+    },
+    enabled: !!user,
+  });
+
   // Fetch dimensions for all user forecasts
-  const forecastIds = forecasts.map((f) => f.id);
+  const allForecastIds = [...forecasts.map(f => f.id), ...votedForecasts.map((f: any) => f.id)];
   const { data: dimensionsMap = {} } = useQuery({
-    queryKey: ["my-forecast-dimensions", forecastIds],
-    enabled: forecastIds.length > 0,
+    queryKey: ["my-forecast-dimensions", allForecastIds],
+    enabled: allForecastIds.length > 0,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("forecast_targets")
         .select("forecast_id, dimension")
-        .in("forecast_id", forecastIds);
+        .in("forecast_id", allForecastIds);
       if (error) throw error;
       const map: Record<string, string[]> = {};
       (data || []).forEach((d: any) => {
@@ -147,26 +182,254 @@ export default function MyForecasts() {
   const projectMap = new Map((projects as any[]).map((p) => [p.id, p]));
   const getDeletionStatus = (forecastId: string) => deletionRequests.find((r: any) => r.forecast_id === forecastId);
 
-  const filteredForecasts = forecasts
-    .filter((f) => {
-      if (statusFilter === "all") return true;
-      const isEnded = new Date(f.end_date) <= new Date();
-      return statusFilter === "ended" ? isEnded : !isEnded;
-    })
-    .sort((a, b) => {
-      if (sortBy === "votes") return (b.total_votes_yes + b.total_votes_no) - (a.total_votes_yes + a.total_votes_no);
-      if (sortBy === "ending") return new Date(a.end_date).getTime() - new Date(b.end_date).getTime();
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-    });
+  const filterAndSort = (list: any[]) => {
+    return list
+      .filter((f) => {
+        if (statusFilter === "all") return true;
+        const isEnded = new Date(f.end_date) <= new Date();
+        return statusFilter === "ended" ? isEnded : !isEnded;
+      })
+      .sort((a, b) => {
+        if (sortBy === "votes") return (b.total_votes_yes + b.total_votes_no) - (a.total_votes_yes + a.total_votes_no);
+        if (sortBy === "ending") return new Date(a.end_date).getTime() - new Date(b.end_date).getTime();
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
+  };
 
-  const activeCount = forecasts.filter((f) => new Date(f.end_date) > new Date()).length;
-  const endedCount = forecasts.length - activeCount;
+  const filteredCreated = filterAndSort(forecasts);
+  const filteredVoted = filterAndSort(votedForecasts.filter((vf: any) => !forecasts.some(cf => cf.id === vf.id)));
+
+  const activeCreated = forecasts.filter((f) => new Date(f.end_date) > new Date()).length;
+  const votedCount = votedForecasts.filter((vf: any) => !forecasts.some(cf => cf.id === vf.id)).length;
 
   if (!user) return null;
 
+  const renderForecastCard = (f: any, i: number, isVotedView: boolean) => {
+    const projA = projectMap.get(f.project_a_id) as any;
+    const projB = f.project_b_id ? (projectMap.get(f.project_b_id) as any) : null;
+    const canEdit = !isVotedView && isWithin24Hours(f.created_at);
+    const editTimeStr = timeLeftToEdit(f.created_at);
+    const deletionReq = getDeletionStatus(f.id);
+    const isEnded = new Date(f.end_date) <= new Date();
+    const totalVotes = f.total_votes_yes + f.total_votes_no;
+    const yesPct = (() => { const wy = Number(f.weighted_votes_yes) || 0; const wn = Number(f.weighted_votes_no) || 0; const wt = wy + wn; return wt > 0 ? (wy / wt) * 100 : totalVotes > 0 ? (f.total_votes_yes / totalVotes) * 100 : 50; })();
+    const noPct = 100 - yesPct;
+    const timeLeft = getTimeRemaining(f.end_date);
+    const finalResult = isEnded ? (f.outcome || (yesPct >= 50 ? "yes" : "no")) : null;
+    const dims = (dimensionsMap as Record<string, string[]>)[f.id] || [];
+    const isPriceMarket = dims.some(d => d === "token_price" || d === "market_cap");
+    const isSentimentDual = dims.some(d => d === "community_sentiment") && !!projB;
+    const yesLabel = isPriceMarket ? "Long" : isSentimentDual ? (projA?.name || "Yes") : "Yes";
+    const noLabel = isPriceMarket ? "Short" : isSentimentDual ? (projB?.name || "No") : "No";
+
+    const userVote = isVotedView ? f.user_vote : null;
+    const userCorrect = isVotedView && isEnded && finalResult ? finalResult === userVote : null;
+
+    return (
+      <motion.div
+        key={f.id}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0 }}
+        transition={{ delay: i * 0.05, duration: 0.4 }}
+        className="group relative rounded-xl border border-border bg-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20 h-full flex flex-col"
+      >
+        <div className="p-5 flex-1 flex flex-col">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2.5">
+              <div className="flex items-center -space-x-2">
+                {projA?.logo_url ? (
+                  <img src={projA.logo_url} alt={projA.name} className="w-9 h-9 rounded-lg object-contain border border-card bg-secondary relative z-10" />
+                ) : (
+                  <span className="w-9 h-9 rounded-lg flex items-center justify-center text-sm border border-card bg-secondary relative z-10">{projA?.logo_emoji || "⬡"}</span>
+                )}
+                {projB && (
+                  projB.logo_url ? (
+                    <img src={projB.logo_url} alt={projB.name} className="w-9 h-9 rounded-lg object-contain border border-card bg-secondary relative z-0" />
+                  ) : (
+                    <span className="w-9 h-9 rounded-lg flex items-center justify-center text-sm border border-card bg-secondary relative z-0">{projB?.logo_emoji || "⬡"}</span>
+                  )
+                )}
+              </div>
+              <div className="flex items-center gap-1.5">
+                {projA && <Link to={`/project/${projA.slug}`} className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">{projA.name}</Link>}
+                {projB && (
+                  <>
+                    <span className="text-muted-foreground/40 text-[10px]">vs</span>
+                    <Link to={`/project/${projB.slug}`} className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">{projB.name}</Link>
+                  </>
+                )}
+              </div>
+            </div>
+            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${isEnded ? 'bg-destructive/10 text-destructive' : 'bg-green-500/10 text-green-600 dark:text-green-400'}`}>
+              {timeLeft}
+            </span>
+          </div>
+
+          {/* Title */}
+          <Link to={`/forecasts/${f.id}`} className="block mb-auto">
+            <h3 className="text-sm font-semibold text-foreground leading-snug line-clamp-2 group-hover:underline transition-all duration-200">
+              {f.title}
+            </h3>
+          </Link>
+
+          {/* Percentage + bar */}
+          <div className="mt-5 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xl font-bold text-foreground">{yesPct.toFixed(0)}% chance</span>
+              <span className="text-xs text-muted-foreground">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</span>
+            </div>
+            <div className="h-2 rounded-full bg-secondary overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${yesPct}%` }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                className="h-full rounded-full bg-primary"
+              />
+            </div>
+          </div>
+
+          {/* Voted view: user vote result indicator */}
+          {isVotedView && userVote && (
+            <div className={`mt-3 flex items-center justify-between rounded-lg px-2.5 py-2 text-[10px] font-semibold ${
+              !isEnded
+                ? "bg-secondary text-muted-foreground border border-border"
+                : userCorrect
+                  ? "bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20"
+                  : "bg-destructive/10 text-destructive border border-destructive/20"
+            }`}>
+              <span>You voted {userVote === "yes" ? yesLabel : noLabel}</span>
+              {isEnded && (
+                <span className="flex items-center gap-1">
+                  {userCorrect ? (
+                    <><CheckCircle2 className="h-3 w-3" /> Correct</>
+                  ) : (
+                    <><XCircle className="h-3 w-3" /> Incorrect</>
+                  )}
+                </span>
+              )}
+              {!isEnded && <span className="text-[9px]">Pending</span>}
+            </div>
+          )}
+
+          {/* Created view: status indicators */}
+          {!isVotedView && canEdit && editTimeStr && (
+            <div className="flex items-center gap-1 text-[10px] text-amber-500 mt-2">
+              <Clock className="h-3 w-3" />
+              {editTimeStr}
+            </div>
+          )}
+          {!isVotedView && deletionReq && (
+            <div className={`flex items-center gap-1 text-[10px] mt-2 ${
+              deletionReq.status === "pending" ? "text-amber-500" :
+              deletionReq.status === "approved" ? "text-green-500" :
+              "text-destructive"
+            }`}>
+              {deletionReq.status === "pending" && <><AlertTriangle className="h-3 w-3" /> Deletion pending</>}
+              {deletionReq.status === "approved" && <><CheckCircle className="h-3 w-3" /> Deletion approved</>}
+              {deletionReq.status === "denied" && <><XCircle className="h-3 w-3" /> Denied{deletionReq.admin_response ? `: ${deletionReq.admin_response}` : ""}</>}
+            </div>
+          )}
+        </div>
+
+        {/* Bottom section */}
+        <div className="px-5 pb-5">
+          {/* Ended result banner */}
+          {isEnded && !isVotedView && (
+            <div className={`flex items-center justify-between rounded-lg px-3 py-2.5 text-[11px] font-semibold mb-2 ${
+              finalResult === "yes"
+                ? "bg-primary/10 text-primary border border-primary/20"
+                : "bg-destructive/10 text-destructive border border-destructive/20"
+            }`}>
+              <span className="flex items-center gap-1">
+                <Trophy className="h-3 w-3" />
+                Result: {finalResult === "yes" ? yesLabel : noLabel} ({finalResult === "yes" ? yesPct.toFixed(0) : noPct.toFixed(0)}%)
+              </span>
+            </div>
+          )}
+
+          {/* Vote buttons */}
+          <div className="flex gap-2.5">
+            <span className={`flex-1 rounded-lg py-2.5 text-sm font-bold text-center transition-all duration-200 ${
+              isEnded
+                ? "bg-secondary text-muted-foreground cursor-not-allowed opacity-60"
+                : "bg-primary/10 text-primary"
+            }`}>
+              {isPriceMarket && <TrendingUp className="h-3.5 w-3.5 inline mr-1" />}
+              {yesLabel}
+            </span>
+            <span className={`flex-1 rounded-lg py-2.5 text-sm font-bold text-center transition-all duration-200 ${
+              isEnded
+                ? "bg-secondary text-muted-foreground cursor-not-allowed opacity-60"
+                : "bg-destructive/10 text-destructive"
+            }`}>
+              {isPriceMarket && <ArrowDownRight className="h-3.5 w-3.5 inline mr-1" />}
+              {noLabel}
+            </span>
+          </div>
+
+          {/* Edit/Delete actions — only for created view */}
+          {!isVotedView && !isEnded && (
+            <div className="flex mt-2 border-t border-border pt-2">
+              {canEdit ? (
+                <button
+                  onClick={() => {
+                    setEditForecast(f);
+                    setEditTitle(f.title);
+                    setEditDescription(f.description);
+                  }}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[11px] font-medium text-muted-foreground hover:text-foreground transition-all"
+                >
+                  <Pencil className="h-3 w-3" /> Edit
+                </button>
+              ) : !deletionReq ? (
+                <button
+                  onClick={() => {
+                    setDeleteRequestForecast(f);
+                    setDeleteReason("");
+                  }}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[11px] font-medium text-muted-foreground hover:text-destructive transition-all"
+                >
+                  <Trash2 className="h-3 w-3" /> Request Deletion
+                </button>
+              ) : (
+                <div className="flex-1 flex items-center justify-center py-1.5 text-[10px] text-muted-foreground">
+                  Pending review
+                </div>
+              )}
+              <div className="w-px bg-border" />
+              <Link
+                to={`/forecasts/${f.id}`}
+                className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[11px] font-medium text-muted-foreground hover:text-foreground transition-all"
+              >
+                View Details
+              </Link>
+            </div>
+          )}
+        </div>
+      </motion.div>
+    );
+  };
+
+  const currentList = viewTab === "created" ? filteredCreated : filteredVoted;
+  const currentLoading = viewTab === "created" ? isLoading : votedLoading;
+
+  // Stats for voted tab
+  const votedEnded = votedForecasts.filter((vf: any) => !forecasts.some(cf => cf.id === vf.id) && new Date(vf.end_date) <= new Date());
+  const votedCorrect = votedEnded.filter((vf: any) => {
+    const totalVotes = vf.total_votes_yes + vf.total_votes_no;
+    const wy = Number(vf.weighted_votes_yes) || 0;
+    const wn = Number(vf.weighted_votes_no) || 0;
+    const wt = wy + wn;
+    const yesPct = wt > 0 ? (wy / wt) * 100 : totalVotes > 0 ? (vf.total_votes_yes / totalVotes) * 100 : 50;
+    const result = vf.outcome || (yesPct >= 50 ? "yes" : "no");
+    return result === vf.user_vote;
+  });
+  const accuracy = votedEnded.length > 0 ? Math.round((votedCorrect.length / votedEnded.length) * 100) : 0;
+
   return (
     <div className="group relative rounded-xl border border-border bg-card overflow-hidden">
-      {/* Decorative corner accent */}
       <div className="absolute top-0 right-0 w-24 h-24 rounded-bl-[60px] bg-primary/3 pointer-events-none" />
 
       {/* Header */}
@@ -178,11 +441,37 @@ export default function MyForecasts() {
           <div>
             <h2 className="text-sm font-semibold text-foreground">My Forecasts</h2>
             <p className="text-[10px] text-muted-foreground">
-              {forecasts.length} forecast{forecasts.length !== 1 ? "s" : ""}
+              {forecasts.length} created · {votedCount} voted on
+              {votedEnded.length > 0 && ` · ${accuracy}% accuracy`}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {/* Created / Voted tab */}
+          <div className="flex items-center gap-0.5 rounded-lg bg-secondary/40 p-0.5">
+            <button
+              onClick={() => setViewTab("created")}
+              className={`rounded-md px-2.5 py-1 text-[11px] font-medium transition-all flex items-center gap-1 ${
+                viewTab === "created"
+                  ? "bg-card text-foreground shadow-sm border border-border"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <BarChart3 className="h-3 w-3" /> Created
+            </button>
+            <button
+              onClick={() => setViewTab("voted")}
+              className={`rounded-md px-2.5 py-1 text-[11px] font-medium transition-all flex items-center gap-1 ${
+                viewTab === "voted"
+                  ? "bg-card text-foreground shadow-sm border border-border"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Vote className="h-3 w-3" /> Voted On
+              {votedCount > 0 && <span className="text-[9px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">{votedCount}</span>}
+            </button>
+          </div>
+
           <div className="flex items-center gap-0.5 rounded-lg bg-secondary/40 p-0.5">
             {([
               { key: "all" as const, label: "All" },
@@ -221,209 +510,49 @@ export default function MyForecasts() {
         </div>
       </div>
 
+      {/* Voted tab stats summary */}
+      {viewTab === "voted" && votedEnded.length > 0 && (
+        <div className="mx-4 md:mx-5 mb-3 flex items-center gap-4 rounded-lg bg-secondary/30 p-3">
+          <div className="flex items-center gap-1.5">
+            <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
+            <span className="text-xs font-semibold text-foreground">{votedCorrect.length} Correct</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <XCircle className="h-3.5 w-3.5 text-destructive" />
+            <span className="text-xs font-semibold text-foreground">{votedEnded.length - votedCorrect.length} Incorrect</span>
+          </div>
+          <div className="h-4 w-px bg-border" />
+          <span className="text-xs text-muted-foreground">{accuracy}% accuracy from {votedEnded.length} resolved</span>
+        </div>
+      )}
+
       {/* Content */}
-      {isLoading ? (
+      {currentLoading ? (
         <div className="flex items-center justify-center py-12">
           <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
         </div>
-      ) : forecasts.length === 0 ? (
+      ) : currentList.length === 0 ? (
         <div className="p-8 md:p-12 text-center">
           <div className="mx-auto h-10 w-10 rounded-xl bg-secondary/50 flex items-center justify-center mb-3">
-            <BarChart3 className="h-5 w-5 text-muted-foreground/30" />
+            {viewTab === "created" ? <BarChart3 className="h-5 w-5 text-muted-foreground/30" /> : <Vote className="h-5 w-5 text-muted-foreground/30" />}
           </div>
-          <p className="text-sm font-medium text-foreground mb-1">No forecasts yet</p>
-          <p className="text-xs text-muted-foreground mb-3">Create your first prediction to get started</p>
-          <Link to="/forecasts?create=true">
-            <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs">Create Forecast</Button>
+          <p className="text-sm font-medium text-foreground mb-1">
+            {viewTab === "created" ? "No forecasts created" : "No voted forecasts"}
+          </p>
+          <p className="text-xs text-muted-foreground mb-3">
+            {viewTab === "created" ? "Create your first prediction to get started" : "Vote on forecasts to track your predictions here"}
+          </p>
+          <Link to="/forecasts">
+            <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs">
+              {viewTab === "created" ? "Create Forecast" : "Browse Forecasts"}
+            </Button>
           </Link>
         </div>
       ) : (
         <div className="px-4 pb-4 md:px-5 md:pb-5">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <AnimatePresence>
-              {filteredForecasts.map((f, i) => {
-                const projA = projectMap.get(f.project_a_id) as any;
-                const projB = f.project_b_id ? (projectMap.get(f.project_b_id) as any) : null;
-                const canEdit = isWithin24Hours(f.created_at);
-                const editTimeStr = timeLeftToEdit(f.created_at);
-                const deletionReq = getDeletionStatus(f.id);
-                const isEnded = new Date(f.end_date) <= new Date();
-                const totalVotes = f.total_votes_yes + f.total_votes_no;
-                const yesPct = (() => { const wy = Number((f as any).weighted_votes_yes) || 0; const wn = Number((f as any).weighted_votes_no) || 0; const wt = wy + wn; return wt > 0 ? (wy / wt) * 100 : totalVotes > 0 ? (f.total_votes_yes / totalVotes) * 100 : 50; })();
-                const noPct = 100 - yesPct;
-                const timeLeft = getTimeRemaining(f.end_date);
-                const finalResult = isEnded ? (yesPct >= 50 ? "yes" : "no") : null;
-                const dims = (dimensionsMap as Record<string, string[]>)[f.id] || [];
-                const isPriceMarket = dims.some(d => d === "token_price" || d === "market_cap");
-                const isSentimentDual = dims.some(d => d === "community_sentiment") && !!projB;
-                const yesLabel = isPriceMarket ? "Long" : isSentimentDual ? (projA?.name || "Yes") : "Yes";
-                const noLabel = isPriceMarket ? "Short" : isSentimentDual ? (projB?.name || "No") : "No";
-
-                return (
-                  <motion.div
-                    key={f.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ delay: i * 0.05, duration: 0.4 }}
-                    className="group relative rounded-xl border border-border bg-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20 h-full flex flex-col"
-                  >
-                    <div className="p-5 flex-1 flex flex-col">
-                      {/* Header row: logos + time */}
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-2.5">
-                          <div className="flex items-center -space-x-2">
-                            {projA?.logo_url ? (
-                              <img src={projA.logo_url} alt={projA.name} className="w-9 h-9 rounded-lg object-contain border border-card bg-secondary relative z-10" />
-                            ) : (
-                              <span className="w-9 h-9 rounded-lg flex items-center justify-center text-sm border border-card bg-secondary relative z-10">{projA?.logo_emoji || "⬡"}</span>
-                            )}
-                            {projB && (
-                              projB.logo_url ? (
-                                <img src={projB.logo_url} alt={projB.name} className="w-9 h-9 rounded-lg object-contain border border-card bg-secondary relative z-0" />
-                              ) : (
-                                <span className="w-9 h-9 rounded-lg flex items-center justify-center text-sm border border-card bg-secondary relative z-0">{projB?.logo_emoji || "⬡"}</span>
-                              )
-                            )}
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            {projA && (
-                              <Link to={`/project/${projA.slug}`} className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">{projA.name}</Link>
-                            )}
-                            {projB && (
-                              <>
-                                <span className="text-muted-foreground/40 text-[10px]">vs</span>
-                                <Link to={`/project/${projB.slug}`} className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">{projB.name}</Link>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${isEnded ? 'bg-destructive/10 text-destructive' : 'bg-green-500/10 text-green-600 dark:text-green-400'}`}>
-                          {timeLeft}
-                        </span>
-                      </div>
-
-                      {/* Title */}
-                      <Link to={`/forecasts/${f.id}`} className="block mb-auto">
-                        <h3 className="text-sm font-semibold text-foreground leading-snug line-clamp-2 group-hover:underline transition-all duration-200">
-                          {f.title}
-                        </h3>
-                      </Link>
-
-                      {/* Percentage + bar */}
-                      <div className="mt-5 space-y-2.5">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xl font-bold text-foreground">{yesPct.toFixed(0)}% chance</span>
-                          <span className="text-xs text-muted-foreground">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</span>
-                        </div>
-                        <div className="h-2 rounded-full bg-secondary overflow-hidden">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${yesPct}%` }}
-                            transition={{ duration: 0.8, ease: "easeOut" }}
-                            className="h-full rounded-full bg-primary"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Status indicators */}
-                      {canEdit && editTimeStr && (
-                        <div className="flex items-center gap-1 text-[10px] text-amber-500 mt-2">
-                          <Clock className="h-3 w-3" />
-                          {editTimeStr}
-                        </div>
-                      )}
-                      {deletionReq && (
-                        <div className={`flex items-center gap-1 text-[10px] mt-2 ${
-                          deletionReq.status === "pending" ? "text-amber-500" :
-                          deletionReq.status === "approved" ? "text-green-500" :
-                          "text-destructive"
-                        }`}>
-                          {deletionReq.status === "pending" && <><AlertTriangle className="h-3 w-3" /> Deletion pending</>}
-                          {deletionReq.status === "approved" && <><CheckCircle className="h-3 w-3" /> Deletion approved</>}
-                          {deletionReq.status === "denied" && <><XCircle className="h-3 w-3" /> Denied{deletionReq.admin_response ? `: ${deletionReq.admin_response}` : ""}</>}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Bottom section */}
-                    <div className="px-5 pb-5">
-                      {/* Ended result banner */}
-                      {isEnded && (
-                        <div className={`flex items-center justify-between rounded-lg px-3 py-2.5 text-[11px] font-semibold mb-2 ${
-                          finalResult === "yes"
-                            ? "bg-primary/10 text-primary border border-primary/20"
-                            : "bg-destructive/10 text-destructive border border-destructive/20"
-                        }`}>
-                          <span className="flex items-center gap-1">
-                            <Trophy className="h-3 w-3" />
-                            Result: {finalResult === "yes" ? yesLabel : noLabel} ({finalResult === "yes" ? yesPct.toFixed(0) : noPct.toFixed(0)}%)
-                          </span>
-                        </div>
-                      )}
-
-                      {/* Vote buttons — always shown, disabled when ended */}
-                      <div className="flex gap-2.5">
-                        <span className={`flex-1 rounded-lg py-2.5 text-sm font-bold text-center transition-all duration-200 ${
-                          isEnded
-                            ? "bg-secondary text-muted-foreground cursor-not-allowed opacity-60"
-                            : "bg-primary/10 text-primary"
-                        }`}>
-                          {isPriceMarket && <TrendingUp className="h-3.5 w-3.5 inline mr-1" />}
-                          {yesLabel}
-                        </span>
-                        <span className={`flex-1 rounded-lg py-2.5 text-sm font-bold text-center transition-all duration-200 ${
-                          isEnded
-                            ? "bg-secondary text-muted-foreground cursor-not-allowed opacity-60"
-                            : "bg-destructive/10 text-destructive"
-                        }`}>
-                          {isPriceMarket && <ArrowDownRight className="h-3.5 w-3.5 inline mr-1" />}
-                          {noLabel}
-                        </span>
-                      </div>
-
-                      {/* Edit/Delete actions */}
-                      {!isEnded && (
-                        <div className="flex mt-2 border-t border-border pt-2">
-                          {canEdit ? (
-                            <button
-                              onClick={() => {
-                                setEditForecast(f);
-                                setEditTitle(f.title);
-                                setEditDescription(f.description);
-                              }}
-                              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[11px] font-medium text-muted-foreground hover:text-foreground transition-all"
-                            >
-                              <Pencil className="h-3 w-3" /> Edit
-                            </button>
-                          ) : !deletionReq ? (
-                            <button
-                              onClick={() => {
-                                setDeleteRequestForecast(f);
-                                setDeleteReason("");
-                              }}
-                              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[11px] font-medium text-muted-foreground hover:text-destructive transition-all"
-                            >
-                              <Trash2 className="h-3 w-3" /> Request Deletion
-                            </button>
-                          ) : (
-                            <div className="flex-1 flex items-center justify-center py-1.5 text-[10px] text-muted-foreground">
-                              Pending review
-                            </div>
-                          )}
-                          <div className="w-px bg-border" />
-                          <Link
-                            to={`/forecasts/${f.id}`}
-                            className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[11px] font-medium text-muted-foreground hover:text-foreground transition-all"
-                          >
-                            View Details
-                          </Link>
-                        </div>
-                      )}
-                    </div>
-                  </motion.div>
-                );
-              })}
+              {currentList.map((f, i) => renderForecastCard(f, i, viewTab === "voted"))}
             </AnimatePresence>
           </div>
         </div>

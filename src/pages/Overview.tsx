@@ -264,7 +264,7 @@ const Overview = () => {
                 All forecasts <ArrowRight className="h-3 w-3" />
               </Link>
             </motion.div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {endingSoon.map((forecast, i) => {
               const dimension = (forecastDimensionsMap as Record<string, string>)[forecast.id];
               const isPriceMarket = dimension === "token_price" || dimension === "market_cap";
@@ -273,7 +273,6 @@ const Overview = () => {
               const noLabel = isPriceMarket ? "Short" : isSentimentDual ? (forecast.project_b_name || "No") : "No";
               const totalVotes = forecast.total_votes_yes + forecast.total_votes_no;
               const yesPct = (() => { const wy = Number((forecast as any).weighted_votes_yes) || 0; const wn = Number((forecast as any).weighted_votes_no) || 0; const wt = wy + wn; return wt > 0 ? (wy / wt) * 100 : totalVotes > 0 ? (forecast.total_votes_yes / totalVotes) * 100 : 50; })();
-              const noPct = 100 - yesPct;
               const isEnded = new Date(forecast.end_date) <= new Date();
               const timeLeft = getTimeLeft(forecast.end_date);
               return (
@@ -281,66 +280,57 @@ const Overview = () => {
                   <Link
                     to={`/forecasts/${forecast.id}`}
                     className="group relative flex flex-col rounded-xl border border-border bg-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20 h-full">
-                    
-                    <div className="p-5 flex-1 flex flex-col">
+                    <div className="p-4 flex-1 flex flex-col">
                       {/* Header: logos + status */}
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-1.5">
-                          <ProjectLogo
-                            logoUrl={forecast.project_a_logo_url}
-                            logoEmoji={forecast.project_a_logo_emoji || "⬡"}
-                            name={forecast.project_a_name || ""}
-                            size="sm" />
-                          {forecast.project_b_name && (
-                            <>
-                              <span className="text-[10px] font-bold text-muted-foreground uppercase">vs</span>
-                              <ProjectLogo
-                                logoUrl={forecast.project_b_logo_url}
-                                logoEmoji={forecast.project_b_logo_emoji || "⬡"}
-                                name={forecast.project_b_name}
-                                size="sm" />
-                            </>
-                          )}
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center -space-x-1.5">
+                            {forecast.project_a_logo_url ? (
+                              <img src={forecast.project_a_logo_url} alt={forecast.project_a_name} className="w-7 h-7 rounded-lg object-contain border border-card bg-secondary relative z-10" />
+                            ) : (
+                              <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs border border-card bg-secondary relative z-10">{forecast.project_a_logo_emoji || "⬡"}</span>
+                            )}
+                            {forecast.project_b_name && (
+                              forecast.project_b_logo_url ? (
+                                <img src={forecast.project_b_logo_url} alt={forecast.project_b_name} className="w-7 h-7 rounded-lg object-contain border border-card bg-secondary relative z-0" />
+                              ) : (
+                                <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs border border-card bg-secondary relative z-0">{forecast.project_b_logo_emoji || "⬡"}</span>
+                              )
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span className="text-[11px] font-medium text-muted-foreground">{forecast.project_a_name}</span>
+                            {forecast.project_b_name && (
+                              <>
+                                <span className="text-muted-foreground/40 text-[9px]">vs</span>
+                                <span className="text-[11px] font-medium text-muted-foreground">{forecast.project_b_name}</span>
+                              </>
+                            )}
+                          </div>
                         </div>
-                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${isEnded ? 'bg-destructive/10 text-destructive' : 'bg-green-500/10 text-green-600 dark:text-green-400'}`}>
-                          {isEnded ? "Ended" : (
-                            <span className="inline-flex items-center gap-1">
-                              <Clock className="h-3 w-3" />
-                              Live · {timeLeft}
-                            </span>
-                          )}
+                        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${isEnded ? 'bg-destructive/10 text-destructive' : 'bg-green-500/10 text-green-600 dark:text-green-400'}`}>
+                          {isEnded ? "Ended" : timeLeft ? `${timeLeft}` : "Live"}
                         </span>
                       </div>
 
                       {/* Title */}
-                      <h3 className="text-sm font-semibold text-foreground leading-snug line-clamp-2 group-hover:underline transition-all duration-200 mb-auto">
+                      <h3 className="text-[13px] font-semibold text-foreground leading-snug line-clamp-2 group-hover:underline transition-all duration-200 mb-auto">
                         {forecast.title}
                       </h3>
 
-                      {/* Percentage + bar */}
-                      <div className="mt-5 space-y-2.5">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xl font-bold text-foreground">{yesPct.toFixed(0)}% chance</span>
-                        </div>
-                        <div className="h-2 rounded-full bg-secondary overflow-hidden">
-                          <div
-                            className="h-full rounded-full bg-primary transition-all"
-                            style={{ width: `${yesPct}%` }} />
-                        </div>
+                      {/* Percentage + votes */}
+                      <div className="mt-4 flex items-end justify-between">
+                        <span className="text-lg font-bold text-foreground tabular-nums">{yesPct.toFixed(0)}%<span className="text-xs font-normal text-muted-foreground ml-1">chance</span></span>
+                        <span className="text-[10px] text-muted-foreground">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</span>
                       </div>
                     </div>
 
-                    {/* Vote-style footer + total votes */}
-                    <div className="px-5 pb-5 pt-1 space-y-2">
-                      <div className="flex gap-2.5">
-                        <span className="flex-1 rounded-lg py-2.5 text-sm font-bold text-center bg-primary/10 text-primary">
-                          {yesLabel}
-                        </span>
-                        <span className="flex-1 rounded-lg py-2.5 text-sm font-bold text-center bg-destructive/10 text-destructive">
-                          {noLabel}
-                        </span>
+                    {/* Compact vote buttons */}
+                    <div className="px-4 pb-4">
+                      <div className="flex gap-2">
+                        <span className="flex-1 rounded-lg py-2 text-xs font-bold text-center bg-primary/10 text-primary">{yesLabel}</span>
+                        <span className="flex-1 rounded-lg py-2 text-xs font-bold text-center bg-destructive/10 text-destructive">{noLabel}</span>
                       </div>
-                      <p className="text-[10px] text-muted-foreground text-center">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</p>
                     </div>
                   </Link>
                 </motion.div>);
