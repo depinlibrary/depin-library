@@ -520,47 +520,44 @@ const ForecastDetail = () => {
 
                 {/* RIGHT: Chart section with tab switcher */}
                 <div className="lg:w-[55%] p-6 sm:p-8 flex flex-col">
-                  {/* Share/Copy + Tab switcher row */}
-                  <div className="flex items-center justify-end gap-2 mb-4">
-                    <button onClick={handleShareX} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" title="Share on X">
-                      <ExternalLink className="h-4 w-4" />
-                    </button>
-                    <button onClick={handleCopyLink} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" title="Copy link">
-                      <Copy className="h-4 w-4" />
-                    </button>
-                  </div>
                   {(() => {
                     const hasPriceData = (forecastDimension === "token_price" || forecastDimension === "market_cap") && marketDataA.data?.sparkline_7d;
 
                     return (
                       <>
-                        {/* Tab switcher — only show if price data exists */}
-                        {hasPriceData ? (
-                          <div className="flex items-center gap-1 bg-secondary/50 rounded-lg p-0.5 mb-4 self-start">
-                            <button
-                              onClick={() => setHeroChartTab("probability")}
-                              className={`px-3 py-1.5 rounded-md text-[11px] font-medium transition-all ${
-                                heroChartTab === "probability"
-                                  ? "bg-background text-foreground shadow-sm"
-                                  : "text-muted-foreground hover:text-foreground"
-                              }`}
-                            >
-                              Probability
-                            </button>
-                            <button
-                              onClick={() => setHeroChartTab("price")}
-                              className={`px-3 py-1.5 rounded-md text-[11px] font-medium transition-all ${
-                                heroChartTab === "price"
-                                  ? "bg-background text-foreground shadow-sm"
-                                  : "text-muted-foreground hover:text-foreground"
-                              }`}
-                            >
-                              {forecastDimension === "market_cap" ? "Market Cap" : "Token Price"}
-                            </button>
-                          </div>
-                        ) : (
-                          <span className="text-xs font-semibold text-muted-foreground mb-3">Probability Trend</span>
-                        )}
+                        {/* Share/Copy + Tab switcher — single row, right-aligned */}
+                        <div className="flex items-center justify-end gap-2 mb-4">
+                          <button onClick={handleShareX} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" title="Share on X">
+                            <ExternalLink className="h-4 w-4" />
+                          </button>
+                          <button onClick={handleCopyLink} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" title="Copy link">
+                            <Copy className="h-4 w-4" />
+                          </button>
+                          {hasPriceData && (
+                            <div className="flex items-center gap-1 bg-secondary/50 rounded-lg p-0.5 ml-1">
+                              <button
+                                onClick={() => setHeroChartTab("probability")}
+                                className={`px-3 py-1.5 rounded-md text-[11px] font-medium transition-all ${
+                                  heroChartTab === "probability"
+                                    ? "bg-background text-foreground shadow-sm"
+                                    : "text-muted-foreground hover:text-foreground"
+                                }`}
+                              >
+                                Probability
+                              </button>
+                              <button
+                                onClick={() => setHeroChartTab("price")}
+                                className={`px-3 py-1.5 rounded-md text-[11px] font-medium transition-all ${
+                                  heroChartTab === "price"
+                                    ? "bg-background text-foreground shadow-sm"
+                                    : "text-muted-foreground hover:text-foreground"
+                                }`}
+                              >
+                                {forecastDimension === "market_cap" ? "Market Cap" : "Token Price"}
+                              </button>
+                            </div>
+                          )}
+                        </div>
 
                         {/* Probability Trend */}
                         {heroChartTab === "probability" && (
