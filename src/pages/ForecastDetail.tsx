@@ -396,15 +396,8 @@ const ForecastDetail = () => {
                         </span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <button onClick={handleShareX} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" title="Share on X">
-                        <ExternalLink className="h-4 w-4" />
-                      </button>
-                      <button onClick={handleCopyLink} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" title="Copy link">
-                        <Copy className="h-4 w-4" />
-                      </button>
                     </div>
-                  </div>
+
 
                   {/* Title */}
                   <h1 className="text-xl sm:text-2xl font-bold text-foreground leading-tight mb-4 font-['Space_Grotesk'] tracking-tight">
@@ -523,17 +516,19 @@ const ForecastDetail = () => {
                     );
                   })()}
 
-                  {/* Footer stats */}
-                  <div className="flex items-center mt-4 pt-3 border-t border-border">
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1"><Users className="h-3.5 w-3.5" /> {totalVotes.toLocaleString()} votes</span>
-                      <span className="flex items-center gap-1">{comments.length} comments</span>
-                    </div>
-                  </div>
                 </div>
 
                 {/* RIGHT: Chart section with tab switcher */}
                 <div className="lg:w-[55%] p-6 sm:p-8 flex flex-col">
+                  {/* Share/Copy + Tab switcher row */}
+                  <div className="flex items-center justify-end gap-2 mb-4">
+                    <button onClick={handleShareX} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" title="Share on X">
+                      <ExternalLink className="h-4 w-4" />
+                    </button>
+                    <button onClick={handleCopyLink} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" title="Copy link">
+                      <Copy className="h-4 w-4" />
+                    </button>
+                  </div>
                   {(() => {
                     const hasPriceData = (forecastDimension === "token_price" || forecastDimension === "market_cap") && marketDataA.data?.sparkline_7d;
 
@@ -909,7 +904,7 @@ const ForecastDetail = () => {
           </div>
 
           {/* ═══════ RIGHT COLUMN (1/3): Creator + Vote + Analysis + Related ═══════ */}
-          <div className="lg:pt-4 lg:pb-16">
+          <div className="lg:pb-16" style={{ paddingTop: 0 }}>
             <div className="space-y-4">
             {/* Creator Card — compact with countdown */}
             <CreatorCardWithCountdown forecast={forecast} isEnded={isEnded} timeLeft={timeLeft} />
