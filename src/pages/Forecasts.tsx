@@ -275,9 +275,9 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                   transition={{ duration: 0.3 }}
                   className="flex-1 flex flex-col lg:flex-row"
                 >
-                  {/* Left info — compact */}
-                  <div className="flex-1 p-5 flex flex-col min-w-0">
-                    <div className="flex items-center gap-2.5 mb-3">
+                  <div className="flex-1 p-5 sm:p-6 flex flex-col min-w-0">
+                    {/* Project badges + status */}
+                    <div className="flex items-center gap-2.5 mb-4">
                       <div className="flex items-center -space-x-1.5">
                         {current.project_a_logo_url ? (
                           <img src={current.project_a_logo_url} alt={current.project_a_name} className="w-8 h-8 rounded-lg object-contain border-2 border-card bg-secondary relative z-10" />
@@ -292,32 +292,37 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                           )
                         )}
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[11px] font-medium text-muted-foreground">
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <span className="text-[11px] font-medium text-muted-foreground truncate">
                           {current.project_a_name}{current.project_b_name ? ` vs ${current.project_b_name}` : ''}
                         </span>
-                        <span className="flex items-center gap-1">
-                          <span className="relative flex h-1.5 w-1.5">
-                            {!cIsEnded && <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-green-500" />}
-                            <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${cIsEnded ? 'bg-destructive' : 'bg-green-500'}`} />
-                          </span>
-                          <span className={`text-[10px] font-semibold ${cIsEnded ? 'text-destructive' : 'text-green-500'}`}>
-                            {cIsEnded ? 'Ended' : cTimeLeft}
-                          </span>
-                        </span>
                       </div>
+                      <span className="flex items-center gap-1 shrink-0">
+                        <span className="relative flex h-1.5 w-1.5">
+                          {!cIsEnded && <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-green-500" />}
+                          <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${cIsEnded ? 'bg-destructive' : 'bg-green-500'}`} />
+                        </span>
+                        <span className={`text-[10px] font-semibold ${cIsEnded ? 'text-destructive' : 'text-green-500'}`}>
+                          {cIsEnded ? 'Ended' : cTimeLeft}
+                        </span>
+                      </span>
                     </div>
 
+                    {/* Title */}
                     <Link to={`/forecasts/${current.id}`}>
-                      <h2 className="text-lg sm:text-xl font-bold text-foreground leading-snug mb-3 font-['Space_Grotesk'] tracking-tight hover:underline transition-all line-clamp-2">
+                      <h2 className="text-lg sm:text-xl font-bold text-foreground leading-snug mb-4 font-['Space_Grotesk'] tracking-tight hover:underline transition-all line-clamp-2">
                         {current.title}
                       </h2>
                     </Link>
 
-                    <div className="mt-auto space-y-2">
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-3xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{cYesPct.toFixed(0)}%</span>
-                        <span className="text-xs text-muted-foreground">chance</span>
+                    {/* Probability + progress */}
+                    <div className="mt-auto space-y-3">
+                      <div className="flex items-end justify-between">
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="text-3xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{cYesPct.toFixed(0)}%</span>
+                          <span className="text-xs text-muted-foreground">chance</span>
+                        </div>
+                        <span className="text-[11px] text-muted-foreground">{cTotal.toLocaleString()} votes</span>
                       </div>
                       <div className="h-2 rounded-full bg-secondary overflow-hidden">
                         <motion.div
@@ -337,57 +342,11 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                           {cNoLabel} · {(100 - cYesPct).toFixed(0)}%
                         </span>
                       </div>
-                      <p className="text-[10px] text-muted-foreground">{cTotal.toLocaleString()} votes</p>
-                    </div>
-                  </div>
-
-                  {/* Right: chart */}
-                  <div className="lg:w-[45%] p-5 flex flex-col border-t lg:border-t-0 lg:border-l border-border">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs font-semibold text-muted-foreground">Probability Trend</span>
                       {cDims[0] && (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-muted-foreground font-medium capitalize">{dimensionLabelMap[cDims[0]] || cDims[0]}</span>
+                        <div className="flex items-center gap-2 pt-1">
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-muted-foreground font-medium capitalize">{dimensionLabelMap[cDims[0]] || cDims[0]}</span>
+                        </div>
                       )}
-                    </div>
-                    <div className="flex-1 min-h-[200px]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={(() => {
-                          const total = current.total_votes_yes + current.total_votes_no;
-                          if (total === 0) return [{ t: "Start", yes: 50, no: 50 }, { t: "Now", yes: 50, no: 50 }];
-                          const base = cYesPct;
-                          const points = [];
-                          for (let i = 0; i < 12; i++) {
-                            const variance = (Math.sin(i * 1.3 + total) * 8) + (Math.cos(i * 0.7 + current.total_votes_yes) * 5);
-                            const yp = Math.max(5, Math.min(95, base + variance - (variance * (i / 12))));
-                            points.push({ t: i === 0 ? "Start" : i === 11 ? "Now" : "", yes: Math.round(yp * 10) / 10, no: Math.round((100 - yp) * 10) / 10 });
-                          }
-                          points[points.length - 1].yes = Math.round(base * 10) / 10;
-                          points[points.length - 1].no = Math.round((100 - base) * 10) / 10;
-                          return points;
-                        })()} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                          <defs>
-                            <linearGradient id="heroYesGrad" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
-                              <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.01} />
-                            </linearGradient>
-                            <linearGradient id="heroNoGrad" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="hsl(var(--destructive))" stopOpacity={0.15} />
-                              <stop offset="95%" stopColor="hsl(var(--destructive))" stopOpacity={0.01} />
-                            </linearGradient>
-                          </defs>
-                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} vertical={false} />
-                          <ReferenceLine y={50} stroke="hsl(var(--muted-foreground))" strokeDasharray="6 4" opacity={0.25} />
-                          <XAxis dataKey="t" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} />
-                          <YAxis domain={[0, 100]} tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v}%`} />
-                          <Tooltip
-                            contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "10px", fontSize: "11px", padding: "6px 10px" }}
-                            formatter={(value: number, name: string) => [`${value}%`, name === "yes" ? cYesLabel : cNoLabel]}
-                            labelStyle={{ fontWeight: 600, marginBottom: 2, color: "hsl(var(--foreground))" }}
-                          />
-                          <Area type="monotone" dataKey="yes" name="yes" stroke="hsl(var(--primary))" fill="url(#heroYesGrad)" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: "hsl(var(--primary))", stroke: "hsl(var(--card))", strokeWidth: 2 }} />
-                          <Area type="monotone" dataKey="no" name="no" stroke="hsl(var(--destructive))" fill="url(#heroNoGrad)" strokeWidth={1.5} strokeDasharray="4 2" dot={false} activeDot={{ r: 3, fill: "hsl(var(--destructive))", stroke: "hsl(var(--card))", strokeWidth: 2 }} />
-                        </AreaChart>
-                      </ResponsiveContainer>
                     </div>
                   </div>
                 </motion.div>
