@@ -284,7 +284,7 @@ const HeroTrendChart = ({ forecastId, yesPct, yesLabel, noLabel }: { forecastId:
   );
 };
 
-// ---- Hero Section — Redesigned informative layout ----
+// ---- Hero Section — Clean single-section layout ----
 const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setShowCreate, heroDimensionsMap, allMarketData }: {
   forecasts: Forecast[];
   topLiveForecasts: Forecast[];
@@ -294,247 +294,126 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
   heroDimensionsMap: Record<string, string[]>;
   allMarketData: Record<string, any>;
 }) => {
-  const [activeSlide, setActiveSlide] = useState(0);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const [isPaused, setIsPaused] = useState(false);
+  const totalActive = useMemo(() => forecasts.filter(f => new Date(f.end_date) > new Date()).length, [forecasts]);
+  const totalVotes = useMemo(() => forecasts.reduce((s, f) => s + f.total_votes_yes + f.total_votes_no, 0), [forecasts]);
 
-  const heroForecasts = useMemo(() => forecasts.slice(0, 6), [forecasts]);
-
-  useEffect(() => {
-    if (heroForecasts.length <= 1 || isPaused) return;
-    intervalRef.current = setInterval(() => {
-      setActiveSlide(prev => (prev + 1) % heroForecasts.length);
-    }, 10000);
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [heroForecasts.length, isPaused]);
-
-  const goToSlide = useCallback((index: number) => {
-    setActiveSlide(index);
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    intervalRef.current = setInterval(() => {
-      setActiveSlide(prev => (prev + 1) % heroForecasts.length);
-    }, 10000);
-  }, [heroForecasts.length]);
-
-  if (heroForecasts.length === 0) {
-    return (
-      <section className="relative overflow-hidden pt-24 pb-8">
-        <div className="absolute inset-0 bg-grid opacity-10" />
-        <div className="gradient-radial-top absolute inset-0" />
-        <div className="container relative mx-auto px-4">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl border border-border bg-card p-8 flex flex-col items-center justify-center text-center">
-            <BarChart3 className="h-10 w-10 text-muted-foreground/30 mb-3" />
-            <h2 className="text-lg font-bold text-foreground font-['Space_Grotesk'] mb-1">No forecasts yet</h2>
-            <p className="text-sm text-muted-foreground mb-4">Create the first prediction for the community.</p>
-            <Button onClick={() => user ? setShowCreate(true) : (window.location.href = "/auth?redirect=/forecasts")} className="gap-1.5">
-              <Plus className="h-3.5 w-3.5" /> Create Forecast
-            </Button>
-          </motion.div>
-        </div>
-      </section>
-    );
-  }
-
-  const current = heroForecasts[activeSlide];
-  const { yesPct: cYesPct } = getWeightedChance(current);
-  const cIsEnded = new Date(current.end_date) <= new Date();
-  const cTimeLeft = getTimeRemaining(current.end_date);
-  const cTotal = current.total_votes_yes + current.total_votes_no;
-  const cDims = heroDimensionsMap[current.id] || [];
-  const cIsPriceMarket = cDims.some(d => d === "token_price" || d === "market_cap");
-  const cIsSentimentDual = cDims.some(d => d === "community_sentiment") && !!current.project_b_name;
-  const cYesLabel = cIsPriceMarket ? "Long" : cIsSentimentDual ? (current.project_a_name || "Yes") : "Yes";
-  const cNoLabel = cIsPriceMarket ? "Short" : cIsSentimentDual ? (current.project_b_name || "No") : "No";
-
-  const totalActiveForecasts = forecasts.filter(f => new Date(f.end_date) > new Date()).length;
-  const totalVotesAllTime = forecasts.reduce((s, f) => s + f.total_votes_yes + f.total_votes_no, 0);
-  const avgChance = forecasts.length > 0 ? forecasts.reduce((s, f) => s + getWeightedChance(f).yesPct, 0) / forecasts.length : 50;
+  // Top 6 forecasts for the featured row
+  const featured = useMemo(() => {
+    const live = forecasts.filter(f => new Date(f.end_date) > new Date());
+    return live.sort((a, b) => (b.total_votes_yes + b.total_votes_no) - (a.total_votes_yes + a.total_votes_no)).slice(0, 6);
+  }, [forecasts]);
 
   return (
-    <section className="relative overflow-hidden pt-24 pb-6">
+    <section className="relative overflow-hidden pt-24 pb-4">
       <div className="absolute inset-0 bg-grid opacity-10" />
       <div className="gradient-radial-top absolute inset-0" />
       <div className="container relative mx-auto px-4">
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
-          {/* LEFT: Featured forecast — Polymarket-inspired */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="lg:col-span-8"
-            onMouseEnter={() => setIsPaused(true)}
-            onMouseLeave={() => setIsPaused(false)}
+        {/* Top row: headline + stats + CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-5"
+        >
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground font-['Space_Grotesk'] tracking-tight">
+              Forecast Markets
+            </h1>
+            <div className="flex items-center gap-3 mt-1">
+              <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                <Radio className="h-3 w-3 text-green-500" />
+                <span className="font-semibold text-foreground">{totalActive}</span> active
+              </span>
+              <span className="text-border">·</span>
+              <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                <Users className="h-3 w-3" />
+                <span className="font-semibold text-foreground">{totalVotes.toLocaleString()}</span> votes
+              </span>
+            </div>
+          </div>
+          <Button
+            onClick={() => user ? setShowCreate(true) : (window.location.href = "/auth?redirect=/forecasts")}
+            className="gap-1.5 shrink-0"
+            size="sm"
           >
-            <div className="rounded-xl border border-border bg-card overflow-hidden">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={current.id}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
+            <Plus className="h-3.5 w-3.5" /> Create Forecast
+          </Button>
+        </motion.div>
+
+        {/* Featured forecasts — horizontal scroll row */}
+        {featured.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide"
+          >
+            {featured.map((f, i) => {
+              const { yesPct } = getWeightedChance(f);
+              const dims = heroDimensionsMap[f.id] || [];
+              const isPriceMarket = dims.some(d => d === "token_price" || d === "market_cap");
+              const isSentimentDual = dims.some(d => d === "community_sentiment") && !!f.project_b_name;
+              const yesLabel = isPriceMarket ? "Long" : isSentimentDual ? (f.project_a_name || "Yes") : "Yes";
+              const noLabel = isPriceMarket ? "Short" : isSentimentDual ? (f.project_b_name || "No") : "No";
+              const total = f.total_votes_yes + f.total_votes_no;
+              const timeLeft = getTimeRemaining(f.end_date);
+
+              return (
+                <Link
+                  key={f.id}
+                  to={`/forecasts/${f.id}`}
+                  className="group min-w-[260px] max-w-[300px] flex-shrink-0 rounded-xl border border-border bg-card p-3.5 hover:border-primary/30 hover:shadow-md hover:shadow-primary/5 transition-all duration-200"
                 >
-                  {/* Header: logo + title + status */}
-                  <div className="flex items-start gap-3 px-4 pt-3.5 pb-2">
-                    <div className="flex items-center -space-x-1.5 shrink-0 mt-0.5">
-                      {current.project_a_logo_url ? (
-                        <img src={current.project_a_logo_url} alt={current.project_a_name} className="w-8 h-8 rounded-lg object-contain border-2 border-card bg-secondary relative z-10" />
+                  {/* Header */}
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="flex items-center -space-x-1">
+                      {f.project_a_logo_url ? (
+                        <img src={f.project_a_logo_url} alt="" className="w-5 h-5 rounded-md object-contain border border-card bg-secondary relative z-10" />
                       ) : (
-                        <span className="w-8 h-8 rounded-lg flex items-center justify-center text-sm border-2 border-card bg-secondary relative z-10">{current.project_a_logo_emoji || "⬡"}</span>
+                        <span className="w-5 h-5 rounded-md flex items-center justify-center text-[9px] border border-card bg-secondary relative z-10">{f.project_a_logo_emoji || "⬡"}</span>
                       )}
-                      {current.project_b_name && (
-                        current.project_b_logo_url ? (
-                          <img src={current.project_b_logo_url} alt={current.project_b_name} className="w-8 h-8 rounded-lg object-contain border-2 border-card bg-secondary" />
+                      {f.project_b_name && (
+                        f.project_b_logo_url ? (
+                          <img src={f.project_b_logo_url} alt="" className="w-5 h-5 rounded-md object-contain border border-card bg-secondary" />
                         ) : (
-                          <span className="w-8 h-8 rounded-lg flex items-center justify-center text-sm border-2 border-card bg-secondary">{current.project_b_logo_emoji || "⬡"}</span>
+                          <span className="w-5 h-5 rounded-md flex items-center justify-center text-[9px] border border-card bg-secondary">{f.project_b_logo_emoji || "⬡"}</span>
                         )
                       )}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-[10px] font-medium text-muted-foreground truncate">
-                          {current.project_a_name}{current.project_b_name ? ` · ${current.project_b_name}` : ''}
-                        </span>
-                        {cDims[0] && (
-                          <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground font-medium capitalize">{dimensionLabelMap[cDims[0]] || cDims[0]}</span>
-                        )}
-                      </div>
-                      <Link to={`/forecasts/${current.id}`}>
-                        <h2 className="text-sm sm:text-base font-bold text-foreground leading-snug font-['Space_Grotesk'] tracking-tight hover:underline transition-all line-clamp-2">
-                          {current.title}
-                        </h2>
-                      </Link>
-                    </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <span className="relative flex h-1.5 w-1.5">
-                        {!cIsEnded && <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-green-500" />}
-                        <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${cIsEnded ? 'bg-destructive' : 'bg-green-500'}`} />
+                    <span className="text-[10px] font-semibold text-green-500">{timeLeft}</span>
+                  </div>
+                  {/* Title */}
+                  <p className="text-xs font-semibold text-foreground leading-snug line-clamp-2 mb-3 group-hover:underline">
+                    {f.title}
+                  </p>
+                  {/* Percentage + Long/Short */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{yesPct.toFixed(0)}%</span>
+                    <div className="flex gap-1.5">
+                      <span className="flex items-center gap-0.5 text-[10px] font-semibold text-primary bg-primary/10 rounded-md px-2 py-0.5">
+                        <ArrowUpRight className="h-3 w-3" /> {yesLabel}
                       </span>
-                      <span className={`text-[10px] font-semibold ${cIsEnded ? 'text-destructive' : 'text-green-500'}`}>
-                        {cIsEnded ? 'Ended' : cTimeLeft}
+                      <span className="flex items-center gap-0.5 text-[10px] font-semibold text-destructive bg-destructive/10 rounded-md px-2 py-0.5">
+                        <ArrowDownRight className="h-3 w-3" /> {noLabel}
                       </span>
                     </div>
                   </div>
-
-                  {/* Body: outcome rows left + chart right */}
-                  <div className="flex flex-col sm:flex-row border-t border-border/50">
-                    {/* Left: outcome rows */}
-                    <div className="sm:w-[220px] shrink-0 sm:border-r border-border/50">
-                      <div className="flex items-center justify-between px-4 py-2.5 hover:bg-secondary/20 transition-colors">
-                        <span className="flex items-center gap-1.5">
-                          <ArrowUpRight className="h-3.5 w-3.5 text-primary" />
-                          <span className="text-xs font-semibold text-foreground">{cYesLabel}</span>
-                        </span>
-                        <span className="text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{cYesPct.toFixed(0)}%</span>
-                      </div>
-                      <div className="border-t border-border/30 mx-4" />
-                      <div className="flex items-center justify-between px-4 py-2.5 hover:bg-secondary/20 transition-colors">
-                        <span className="flex items-center gap-1.5">
-                          <ArrowDownRight className="h-3.5 w-3.5 text-destructive" />
-                          <span className="text-xs font-semibold text-foreground">{cNoLabel}</span>
-                        </span>
-                        <span className="text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{(100 - cYesPct).toFixed(0)}%</span>
-                      </div>
-                      <div className="border-t border-border/30 mx-4" />
-                      <div className="flex items-center justify-between px-4 py-2.5">
-                        <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                          <Eye className="h-3 w-3" /> {cTotal.toLocaleString()} votes
-                        </span>
-                        <Link
-                          to={`/forecasts/${current.id}`}
-                          className="text-[10px] font-semibold text-primary hover:underline flex items-center gap-0.5"
-                        >
-                          Vote <ChevronRightIcon className="h-3 w-3" />
-                        </Link>
-                      </div>
-                    </div>
-
-                    {/* Right: trend chart */}
-                    <div className="flex-1 min-w-0 p-3">
-                      <HeroTrendChart forecastId={current.id} yesPct={cYesPct} yesLabel={cYesLabel} noLabel={cNoLabel} />
-                    </div>
+                  {/* Progress bar */}
+                  <div className="h-1 rounded-full bg-secondary overflow-hidden mt-2">
+                    <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${yesPct}%` }} />
                   </div>
-                </motion.div>
-              </AnimatePresence>
-
-              {heroForecasts.length > 1 && (
-                <div className="flex items-center justify-start gap-0.5 px-4 pb-2.5 border-t border-border/30 pt-2">
-                  {heroForecasts.map((_, i) => (
-                    <button key={i} onClick={() => goToSlide(i)} className="p-0.5" aria-label={`Go to slide ${i + 1}`}>
-                      <span className={`block rounded-full transition-all duration-300 ${i === activeSlide ? 'w-5 h-1.5 bg-primary' : 'w-1.5 h-1.5 bg-muted-foreground/30 hover:bg-muted-foreground/50'}`} />
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+                  <span className="text-[9px] text-muted-foreground mt-1.5 block">{total} votes</span>
+                </Link>
+              );
+            })}
           </motion.div>
+        )}
 
-          {/* RIGHT sidebar — compact */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="lg:col-span-4 flex flex-col gap-3"
-          >
-            <div className="rounded-xl border border-border bg-card overflow-hidden flex-1 flex flex-col min-h-0">
-              <div className="px-4 py-2.5 flex items-center justify-between shrink-0 border-b border-border">
-                <h3 className="text-xs font-bold text-foreground font-['Space_Grotesk']">Top Forecasts</h3>
-                <Trophy className="h-3 w-3 text-primary/60" />
-              </div>
-              <div className="flex-1 overflow-y-auto">
-                {topLiveForecasts.slice(0, 4).map((f, i) => {
-                  const { yesPct: fYesPct } = getWeightedChance(f);
-                  const fTotal = f.total_votes_yes + f.total_votes_no;
-                  const fIsEnded = new Date(f.end_date) <= new Date();
-                  return (
-                    <Link key={f.id} to={`/forecasts/${f.id}`} className="flex items-start gap-2.5 px-4 py-2 hover:bg-secondary/30 transition-colors">
-                      <span className="text-[10px] font-bold text-muted-foreground/50 mt-0.5 w-3 shrink-0">{i + 1}</span>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[11px] font-semibold text-foreground leading-snug line-clamp-2">{f.title}</p>
-                        <span className="flex items-center gap-1 mt-0.5">
-                          <span className={`inline-flex rounded-full h-1 w-1 ${fIsEnded ? 'bg-destructive' : 'bg-green-500'}`} />
-                          <span className={`text-[9px] font-medium ${fIsEnded ? 'text-destructive/70' : 'text-green-500/70'}`}>{fIsEnded ? 'Ended' : 'Live'}</span>
-                        </span>
-                      </div>
-                      <div className="flex flex-col items-end shrink-0">
-                        <span className="text-xs font-bold text-foreground font-['Space_Grotesk']">{fYesPct.toFixed(0)}%</span>
-                        <span className="text-[9px] text-muted-foreground">{fTotal}</span>
-                      </div>
-                    </Link>
-                  );
-                })}
-                {topLiveForecasts.length === 0 && (
-                  <div className="px-4 py-4 text-center text-[10px] text-muted-foreground">No live forecasts</div>
-                )}
-              </div>
-            </div>
-
-            {trendingTopics.length > 0 && (
-              <div className="rounded-xl border border-border bg-card overflow-hidden shrink-0">
-                <div className="px-4 py-2.5 flex items-center justify-between shrink-0 border-b border-border">
-                  <h3 className="text-xs font-bold text-foreground font-['Space_Grotesk']">Trending Projects</h3>
-                  <TrendingUp className="h-3 w-3 text-primary/60" />
-                </div>
-                <div>
-                  {trendingTopics.slice(0, 3).map((project: any, i: number) => (
-                    <Link key={project.id} to={`/project/${project.slug}`} className="flex items-center gap-2.5 px-4 py-2 hover:bg-secondary/30 transition-colors">
-                      <span className="text-[10px] font-bold text-muted-foreground/50 w-3 shrink-0">{i + 1}</span>
-                      <div className="flex items-center gap-2 flex-1 min-w-0">
-                        {project.logo_url ? (
-                          <img src={project.logo_url} alt={project.name} className="w-5 h-5 rounded-md object-contain bg-secondary" />
-                        ) : (
-                          <span className="w-5 h-5 rounded-md flex items-center justify-center text-xs bg-secondary">{project.logo_emoji || "⬡"}</span>
-                        )}
-                        <span className="text-[11px] font-semibold text-foreground truncate">{project.name}</span>
-                      </div>
-                      <span className="text-[9px] font-medium text-muted-foreground shrink-0">{project.totalVotes}</span>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
+        {featured.length === 0 && (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl border border-border bg-card p-6 flex flex-col items-center justify-center text-center">
+            <BarChart3 className="h-8 w-8 text-muted-foreground/30 mb-2" />
+            <p className="text-sm text-muted-foreground">No active forecasts yet. Be the first to create one.</p>
           </motion.div>
-        </div>
+        )}
       </div>
     </section>
   );
