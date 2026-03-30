@@ -186,6 +186,104 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
     </motion.div>
   );
 };
+// ---- Mini Trend Chart for Hero ----
+const HeroTrendChart = ({ forecastId, yesPct, yesLabel, noLabel }: { forecastId: string; yesPct: number; yesLabel: string; noLabel: string }) => {
+  const { data: voteHistory = [] } = useForecastVoteHistory(forecastId);
+
+  const chartData = useMemo(() => {
+    if (voteHistory.length <= 1) return [];
+    return voteHistory.map((entry) => ({
+      date: entry.date,
+      yes: entry.weighted_yes_pct,
+      no: Math.round((100 - entry.weighted_yes_pct) * 10) / 10,
+    }));
+  }, [voteHistory]);
+
+  if (chartData.length <= 1) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center text-center rounded-lg bg-secondary/30 border border-border/50 p-4">
+        <BarChart3 className="h-6 w-6 text-muted-foreground/30 mb-1.5" />
+        <span className="text-[10px] text-muted-foreground">Trend chart appears after 2+ votes</span>
+      </div>
+    );
+  }
+
+  const latest = chartData[chartData.length - 1];
+  const first = chartData[0];
+  const pctChange = latest.yes - first.yes;
+
+  return (
+    <div className="h-full flex flex-col">
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-[10px] font-semibold text-muted-foreground">Probability Trend</span>
+        <span className={`text-[10px] font-bold flex items-center gap-0.5 ${
+          pctChange > 0 ? "text-primary" : pctChange < 0 ? "text-destructive" : "text-muted-foreground"
+        }`}>
+          {pctChange > 0 ? <ArrowUpRight className="h-3 w-3" /> : pctChange < 0 ? <ArrowDownRight className="h-3 w-3" /> : null}
+          {Math.abs(pctChange).toFixed(1)}%
+        </span>
+      </div>
+      <div className="flex-1 min-h-[100px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={chartData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+            <defs>
+              <linearGradient id="heroYesGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
+                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.01} />
+              </linearGradient>
+            </defs>
+            <YAxis domain={[0, 100]} hide />
+            <RechartsTooltip
+              contentStyle={{
+                backgroundColor: "hsl(var(--card))",
+                border: "1px solid hsl(var(--border))",
+                borderRadius: "8px",
+                fontSize: "10px",
+                padding: "6px 10px",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+              }}
+              labelStyle={{ fontWeight: 700, fontSize: "9px", color: "hsl(var(--foreground))" }}
+              formatter={(value: number, name: string) => [
+                `${value.toFixed(1)}%`,
+                name === "yes" ? yesLabel : noLabel,
+              ]}
+            />
+            <Area
+              type="monotone"
+              dataKey="no"
+              stroke="hsl(var(--destructive))"
+              fill="none"
+              strokeWidth={1}
+              strokeDasharray="3 2"
+              dot={false}
+              activeDot={{ r: 3, strokeWidth: 1, stroke: "hsl(var(--card))", fill: "hsl(var(--destructive))" }}
+            />
+            <Area
+              type="monotone"
+              dataKey="yes"
+              stroke="hsl(var(--primary))"
+              fill="url(#heroYesGrad)"
+              strokeWidth={2}
+              dot={false}
+              activeDot={{ r: 3, strokeWidth: 1, stroke: "hsl(var(--card))", fill: "hsl(var(--primary))" }}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+      {/* Legend */}
+      <div className="flex items-center gap-3 mt-1">
+        <span className="flex items-center gap-1 text-[9px] text-muted-foreground">
+          <span className="w-1.5 h-1.5 rounded-full bg-primary" /> {yesLabel}
+        </span>
+        <span className="flex items-center gap-1 text-[9px] text-muted-foreground">
+          <span className="w-1.5 h-1.5 rounded-full bg-destructive" /> {noLabel}
+        </span>
+        <span className="text-[9px] text-muted-foreground/50 ml-auto">{chartData.length} pts</span>
+      </div>
+    </div>
+  );
+};
+
 // ---- Hero Section — Redesigned informative layout ----
 const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setShowCreate, heroDimensionsMap, allMarketData }: {
   forecasts: Forecast[];
