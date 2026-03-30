@@ -3,7 +3,6 @@ import { getWeightedChance } from "@/lib/forecastUtils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Timer, ThumbsUp, ThumbsDown, Plus, TrendingUp, Clock, Flame, ChevronLeft, ChevronRight, LogIn, Users, BarChart3, Zap, X, Filter, Trophy, CheckCircle, CheckCircle2, Circle, RotateCcw, DollarSign, Server, Activity, ArrowUpRight, ArrowDownRight, Copy, ChevronRight as ChevronRightIcon, Radio, Search, XCircle } from "lucide-react";
 
-
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -185,9 +184,7 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
     </motion.div>
   );
 };
-
-
-// ---- Hero Section — Clean single-section layout ----
+// ---- Hero Section — Full-width prediction market showcase ----
 const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setShowCreate, heroDimensionsMap, allMarketData }: {
   forecasts: Forecast[];
   topLiveForecasts: Forecast[];
@@ -197,126 +194,345 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
   heroDimensionsMap: Record<string, string[]>;
   allMarketData: Record<string, any>;
 }) => {
-  const totalActive = useMemo(() => forecasts.filter(f => new Date(f.end_date) > new Date()).length, [forecasts]);
-  const totalVotes = useMemo(() => forecasts.reduce((s, f) => s + f.total_votes_yes + f.total_votes_no, 0), [forecasts]);
+  const [activeSlide, setActiveSlide] = useState(0);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [isPaused, setIsPaused] = useState(false);
 
-  // Top 6 forecasts for the featured row
-  const featured = useMemo(() => {
-    const live = forecasts.filter(f => new Date(f.end_date) > new Date());
-    return live.sort((a, b) => (b.total_votes_yes + b.total_votes_no) - (a.total_votes_yes + a.total_votes_no)).slice(0, 6);
-  }, [forecasts]);
+  const heroForecasts = useMemo(() => forecasts.slice(0, 6), [forecasts]);
+
+  useEffect(() => {
+    if (heroForecasts.length <= 1 || isPaused) return;
+    intervalRef.current = setInterval(() => {
+      setActiveSlide(prev => (prev + 1) % heroForecasts.length);
+    }, 10000);
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+  }, [heroForecasts.length, isPaused]);
+
+  const goToSlide = useCallback((index: number) => {
+    setActiveSlide(index);
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    intervalRef.current = setInterval(() => {
+      setActiveSlide(prev => (prev + 1) % heroForecasts.length);
+    }, 10000);
+  }, [heroForecasts.length]);
+
+  // Aggregate stats
+  const totalActiveForecasts = forecasts.filter(f => new Date(f.end_date) > new Date()).length;
+  const totalVotesAllTime = forecasts.reduce((s, f) => s + f.total_votes_yes + f.total_votes_no, 0);
+
+  if (heroForecasts.length === 0) {
+    return (
+      <section className="relative overflow-hidden pt-24 pb-8">
+        <div className="absolute inset-0 bg-grid opacity-10" />
+        <div className="gradient-radial-top absolute inset-0" />
+        <div className="container relative mx-auto px-4">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl border border-border bg-card p-8 flex flex-col items-center justify-center text-center">
+            <BarChart3 className="h-10 w-10 text-muted-foreground/30 mb-3" />
+            <h2 className="text-lg font-bold text-foreground font-['Space_Grotesk'] mb-1">No forecasts yet</h2>
+            <p className="text-sm text-muted-foreground mb-4">Create the first prediction for the community.</p>
+            <Button onClick={() => user ? setShowCreate(true) : (window.location.href = "/auth?redirect=/forecasts")} className="gap-1.5">
+              <Plus className="h-3.5 w-3.5" /> Create Forecast
+            </Button>
+          </motion.div>
+        </div>
+      </section>
+    );
+  }
+
+  const current = heroForecasts[activeSlide];
+  const { yesPct: cYesPct } = getWeightedChance(current);
+  const cIsEnded = new Date(current.end_date) <= new Date();
+  const cTimeLeft = getTimeRemaining(current.end_date);
+  const cTotal = current.total_votes_yes + current.total_votes_no;
+  const cDims = heroDimensionsMap[current.id] || [];
+  const cIsPriceMarket = cDims.some(d => d === "token_price" || d === "market_cap");
+  const cIsSentimentDual = cDims.some(d => d === "community_sentiment") && !!current.project_b_name;
+  const cYesLabel = cIsPriceMarket ? "Long" : cIsSentimentDual ? (current.project_a_name || "Yes") : "Yes";
+  const cNoLabel = cIsPriceMarket ? "Short" : cIsSentimentDual ? (current.project_b_name || "No") : "No";
+
+  // Top 3 for the ticker strip
+  const tickerForecasts = topLiveForecasts.slice(0, 4);
 
   return (
-    <section className="relative overflow-hidden pt-24 pb-4">
+    <section className="relative overflow-hidden pt-24 pb-6">
       <div className="absolute inset-0 bg-grid opacity-10" />
       <div className="gradient-radial-top absolute inset-0" />
+
       <div className="container relative mx-auto px-4">
-        {/* Top row: headline + stats + CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-5"
-        >
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-foreground font-['Space_Grotesk'] tracking-tight">
-              Forecast Markets
-            </h1>
-            <div className="flex items-center gap-3 mt-1">
-              <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                <Radio className="h-3 w-3 text-green-500" />
-                <span className="font-semibold text-foreground">{totalActive}</span> active
-              </span>
-              <span className="text-border">·</span>
-              <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                <Users className="h-3 w-3" />
-                <span className="font-semibold text-foreground">{totalVotes.toLocaleString()}</span> votes
-              </span>
-            </div>
-          </div>
-          <Button
-            onClick={() => user ? setShowCreate(true) : (window.location.href = "/auth?redirect=/forecasts")}
-            className="gap-1.5 shrink-0"
-            size="sm"
-          >
-            <Plus className="h-3.5 w-3.5" /> Create Forecast
-          </Button>
-        </motion.div>
-
-        {/* Featured forecasts — horizontal scroll row */}
-        {featured.length > 0 && (
+        {/* Live ticker strip — scrolling top forecasts */}
+        {tickerForecasts.length > 0 && (
           <motion.div
-            initial={{ opacity: 0, y: 12 }}
+            initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.05 }}
-            className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide"
+            className="mb-4 flex items-stretch gap-3 overflow-x-auto scrollbar-hide pb-1"
           >
-            {featured.map((f, i) => {
-              const { yesPct } = getWeightedChance(f);
-              const dims = heroDimensionsMap[f.id] || [];
-              const isPriceMarket = dims.some(d => d === "token_price" || d === "market_cap");
-              const isSentimentDual = dims.some(d => d === "community_sentiment") && !!f.project_b_name;
-              const yesLabel = isPriceMarket ? "Long" : isSentimentDual ? (f.project_a_name || "Yes") : "Yes";
-              const noLabel = isPriceMarket ? "Short" : isSentimentDual ? (f.project_b_name || "No") : "No";
-              const total = f.total_votes_yes + f.total_votes_no;
-              const timeLeft = getTimeRemaining(f.end_date);
-
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/5 border border-primary/10 shrink-0">
+              <Radio className="h-3 w-3 text-primary animate-pulse" />
+              <span className="text-[10px] font-bold text-primary uppercase tracking-wider">Live</span>
+            </div>
+            {tickerForecasts.map((f) => {
+              const { yesPct: tPct } = getWeightedChance(f);
+              const tEnded = new Date(f.end_date) <= new Date();
               return (
                 <Link
                   key={f.id}
                   to={`/forecasts/${f.id}`}
-                  className="group min-w-[260px] max-w-[300px] flex-shrink-0 rounded-xl border border-border bg-card p-3.5 hover:border-primary/30 hover:shadow-md hover:shadow-primary/5 transition-all duration-200"
+                  className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-card border border-border hover:border-primary/30 transition-all shrink-0 min-w-0 max-w-[320px] group"
                 >
-                  {/* Header */}
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="flex items-center -space-x-1">
-                      {f.project_a_logo_url ? (
-                        <img src={f.project_a_logo_url} alt="" className="w-5 h-5 rounded-md object-contain border border-card bg-secondary relative z-10" />
+                  <div className="flex items-center -space-x-1.5 shrink-0">
+                    {f.project_a_logo_url ? (
+                      <img src={f.project_a_logo_url} alt="" className="w-6 h-6 rounded-md object-contain bg-secondary border border-card relative z-10" />
+                    ) : (
+                      <span className="w-6 h-6 rounded-md flex items-center justify-center text-[10px] bg-secondary border border-card relative z-10">{f.project_a_logo_emoji || "⬡"}</span>
+                    )}
+                    {f.project_b_name && (
+                      f.project_b_logo_url ? (
+                        <img src={f.project_b_logo_url} alt="" className="w-6 h-6 rounded-md object-contain bg-secondary border border-card" />
                       ) : (
-                        <span className="w-5 h-5 rounded-md flex items-center justify-center text-[9px] border border-card bg-secondary relative z-10">{f.project_a_logo_emoji || "⬡"}</span>
-                      )}
-                      {f.project_b_name && (
-                        f.project_b_logo_url ? (
-                          <img src={f.project_b_logo_url} alt="" className="w-5 h-5 rounded-md object-contain border border-card bg-secondary" />
-                        ) : (
-                          <span className="w-5 h-5 rounded-md flex items-center justify-center text-[9px] border border-card bg-secondary">{f.project_b_logo_emoji || "⬡"}</span>
-                        )
-                      )}
-                    </div>
-                    <span className="text-[10px] font-semibold text-green-500">{timeLeft}</span>
+                        <span className="w-6 h-6 rounded-md flex items-center justify-center text-[10px] bg-secondary border border-card">{f.project_b_logo_emoji || "⬡"}</span>
+                      )
+                    )}
                   </div>
-                  {/* Title */}
-                  <p className="text-xs font-semibold text-foreground leading-snug line-clamp-2 mb-3 group-hover:underline">
-                    {f.title}
-                  </p>
-                  {/* Percentage + Long/Short */}
-                  <div className="flex items-center justify-between">
-                    <span className="text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{yesPct.toFixed(0)}%</span>
-                    <div className="flex gap-1.5">
-                      <span className="flex items-center gap-0.5 text-[10px] font-semibold text-primary bg-primary/10 rounded-md px-2 py-0.5">
-                        <ArrowUpRight className="h-3 w-3" /> {yesLabel}
-                      </span>
-                      <span className="flex items-center gap-0.5 text-[10px] font-semibold text-destructive bg-destructive/10 rounded-md px-2 py-0.5">
-                        <ArrowDownRight className="h-3 w-3" /> {noLabel}
-                      </span>
-                    </div>
-                  </div>
-                  {/* Progress bar */}
-                  <div className="h-1 rounded-full bg-secondary overflow-hidden mt-2">
-                    <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${yesPct}%` }} />
-                  </div>
-                  <span className="text-[9px] text-muted-foreground mt-1.5 block">{total} votes</span>
+                  <p className="text-[11px] font-medium text-foreground truncate flex-1 group-hover:underline">{f.title}</p>
+                  <span className={`text-sm font-bold tabular-nums shrink-0 ${tPct >= 50 ? 'text-primary' : 'text-destructive'}`}>
+                    {tPct.toFixed(0)}%
+                  </span>
                 </Link>
               );
             })}
           </motion.div>
         )}
 
-        {featured.length === 0 && (
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl border border-border bg-card p-6 flex flex-col items-center justify-center text-center">
-            <BarChart3 className="h-8 w-8 text-muted-foreground/30 mb-2" />
-            <p className="text-sm text-muted-foreground">No active forecasts yet. Be the first to create one.</p>
-          </motion.div>
-        )}
+        {/* Main hero card — full width, immersive */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+        >
+          <div className="rounded-2xl border border-border bg-card overflow-hidden">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={current.id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25 }}
+              >
+                <div className="grid grid-cols-1 lg:grid-cols-2">
+                  {/* Left: market info */}
+                  <div className="p-6 sm:p-8 flex flex-col border-b lg:border-b-0 lg:border-r border-border">
+                    {/* Navigation row */}
+                    <div className="flex items-center justify-between mb-5">
+                      <div className="flex items-center gap-2">
+                        {cDims[0] && (() => {
+                          const Icon = dimensionIconMap[cDims[0]] || BarChart3;
+                          return <Icon className="h-3.5 w-3.5 text-primary" />;
+                        })()}
+                        {cDims[0] && (
+                          <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">
+                            {dimensionLabelMap[cDims[0]] || cDims[0]} Market
+                          </span>
+                        )}
+                        {!cDims[0] && (
+                          <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">
+                            Prediction Market
+                          </span>
+                        )}
+                      </div>
+                      {heroForecasts.length > 1 && (
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => goToSlide((activeSlide - 1 + heroForecasts.length) % heroForecasts.length)}
+                            className="w-7 h-7 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors"
+                          >
+                            <ChevronLeft className="h-3.5 w-3.5" />
+                          </button>
+                          <span className="text-[10px] font-medium text-muted-foreground tabular-nums">
+                            {activeSlide + 1}/{heroForecasts.length}
+                          </span>
+                          <button
+                            onClick={() => goToSlide((activeSlide + 1) % heroForecasts.length)}
+                            className="w-7 h-7 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors"
+                          >
+                            <ChevronRight className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Title */}
+                    <Link to={`/forecasts/${current.id}`}>
+                      <h2 className="text-xl sm:text-2xl font-bold text-foreground leading-tight font-['Space_Grotesk'] tracking-tight hover:underline transition-all line-clamp-2 mb-6">
+                        {current.title}
+                      </h2>
+                    </Link>
+
+                    {/* Market table */}
+                    <div className="space-y-0 flex-1">
+                      {/* Table header */}
+                      <div className="grid grid-cols-[1fr_auto_auto] gap-x-4 sm:gap-x-8 items-center pb-2.5">
+                        <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Outcome</span>
+                        <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider text-right">Votes</span>
+                        <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider text-center w-[72px]">Odds</span>
+                      </div>
+
+                      <div className="border-t border-border" />
+
+                      {/* Row A */}
+                      <div className="grid grid-cols-[1fr_auto_auto] gap-x-4 sm:gap-x-8 items-center py-4">
+                        <div className="flex items-center gap-3 min-w-0">
+                          {current.project_a_logo_url ? (
+                            <img src={current.project_a_logo_url} alt={current.project_a_name} className="w-10 h-10 rounded-xl object-contain bg-secondary shrink-0 border border-border" />
+                          ) : (
+                            <span className="w-10 h-10 rounded-xl flex items-center justify-center text-lg bg-secondary shrink-0 border border-border">{current.project_a_logo_emoji || "⬡"}</span>
+                          )}
+                          <div className="min-w-0">
+                            <Link to={`/project/${current.project_a_slug}`} className="text-sm font-semibold text-foreground hover:text-primary transition-colors block truncate">
+                              {current.project_a_name}
+                            </Link>
+                            <div className="w-10 h-[3px] rounded-full bg-primary mt-1.5" />
+                          </div>
+                        </div>
+                        <span className="text-sm font-medium text-muted-foreground tabular-nums text-right">
+                          {current.total_votes_yes.toLocaleString()}
+                        </span>
+                        <span className="inline-flex items-center justify-center w-[72px] py-2 rounded-xl border border-primary/25 bg-primary/5 text-sm font-bold text-foreground tabular-nums">
+                          {cYesPct.toFixed(0)}%
+                        </span>
+                      </div>
+
+                      <div className="border-t border-border/40" />
+
+                      {/* Row B */}
+                      <div className="grid grid-cols-[1fr_auto_auto] gap-x-4 sm:gap-x-8 items-center py-4">
+                        <div className="flex items-center gap-3 min-w-0">
+                          {current.project_b_name ? (
+                            <>
+                              {current.project_b_logo_url ? (
+                                <img src={current.project_b_logo_url} alt={current.project_b_name} className="w-10 h-10 rounded-xl object-contain bg-secondary shrink-0 border border-border" />
+                              ) : (
+                                <span className="w-10 h-10 rounded-xl flex items-center justify-center text-lg bg-secondary shrink-0 border border-border">{current.project_b_logo_emoji || "⬡"}</span>
+                              )}
+                              <div className="min-w-0">
+                                <Link to={`/project/${current.project_b_slug}`} className="text-sm font-semibold text-foreground hover:text-primary transition-colors block truncate">
+                                  {current.project_b_name}
+                                </Link>
+                                <div className="w-10 h-[3px] rounded-full bg-destructive mt-1.5" />
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <span className="w-10 h-10 rounded-xl flex items-center justify-center text-lg bg-destructive/10 shrink-0 border border-destructive/20">
+                                <ThumbsDown className="h-4.5 w-4.5 text-destructive" />
+                              </span>
+                              <div className="min-w-0">
+                                <span className="text-sm font-semibold text-foreground">{cNoLabel}</span>
+                                <div className="w-10 h-[3px] rounded-full bg-destructive mt-1.5" />
+                              </div>
+                            </>
+                          )}
+                        </div>
+                        <span className="text-sm font-medium text-muted-foreground tabular-nums text-right">
+                          {current.total_votes_no.toLocaleString()}
+                        </span>
+                        <span className="inline-flex items-center justify-center w-[72px] py-2 rounded-xl border border-destructive/25 bg-destructive/5 text-sm font-bold text-foreground tabular-nums">
+                          {(100 - cYesPct).toFixed(0)}%
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Footer stats */}
+                    <div className="pt-4 mt-2 border-t border-border flex items-center justify-between">
+                      <span className="text-[11px] text-muted-foreground">{cTotal.toLocaleString()} total votes</span>
+                      <span className="flex items-center gap-1.5">
+                        <span className="relative flex h-1.5 w-1.5">
+                          {!cIsEnded && <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-green-500" />}
+                          <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${cIsEnded ? 'bg-destructive' : 'bg-green-500'}`} />
+                        </span>
+                        <span className={`text-[10px] font-semibold ${cIsEnded ? 'text-destructive' : 'text-green-500'}`}>
+                          {cIsEnded ? 'Ended' : cTimeLeft}
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Right: visual probability + quick stats */}
+                  <div className="p-6 sm:p-8 flex flex-col items-center justify-center">
+                    {/* Large circular probability gauge */}
+                    <div className="relative w-40 h-40 sm:w-48 sm:h-48 mb-6">
+                      <svg viewBox="0 0 120 120" className="w-full h-full -rotate-90">
+                        {/* Background track */}
+                        <circle cx="60" cy="60" r="52" fill="none" strokeWidth="10" className="stroke-secondary" />
+                        {/* Yes arc */}
+                        <motion.circle
+                          cx="60" cy="60" r="52"
+                          fill="none"
+                          strokeWidth="10"
+                          strokeLinecap="round"
+                          className="stroke-primary"
+                          strokeDasharray={`${(cYesPct / 100) * 2 * Math.PI * 52} ${2 * Math.PI * 52}`}
+                          initial={{ strokeDashoffset: 2 * Math.PI * 52 }}
+                          animate={{ strokeDashoffset: 0 }}
+                          transition={{ duration: 1, ease: "easeOut" }}
+                        />
+                        {/* No arc — starts where yes ends */}
+                        <circle
+                          cx="60" cy="60" r="52"
+                          fill="none"
+                          strokeWidth="10"
+                          strokeLinecap="round"
+                          className="stroke-destructive/40"
+                          strokeDasharray={`${((100 - cYesPct) / 100) * 2 * Math.PI * 52} ${2 * Math.PI * 52}`}
+                          strokeDashoffset={`${-((cYesPct / 100) * 2 * Math.PI * 52)}`}
+                        />
+                      </svg>
+                      {/* Center text */}
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <motion.span
+                          key={`pct-${current.id}`}
+                          initial={{ scale: 0.8, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          className="text-3xl sm:text-4xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums"
+                        >
+                          {cYesPct.toFixed(0)}%
+                        </motion.span>
+                        <span className="text-[10px] text-muted-foreground font-medium mt-0.5">{cYesLabel} chance</span>
+                      </div>
+                    </div>
+
+                    {/* Outcome legend */}
+                    <div className="flex items-center gap-6 mb-6">
+                      <div className="flex items-center gap-2">
+                        <span className="w-3 h-3 rounded-full bg-primary" />
+                        <span className="text-xs font-semibold text-foreground">{cYesLabel}</span>
+                        <span className="text-xs text-muted-foreground tabular-nums">{cYesPct.toFixed(0)}%</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="w-3 h-3 rounded-full bg-destructive/60" />
+                        <span className="text-xs font-semibold text-foreground">{cNoLabel}</span>
+                        <span className="text-xs text-muted-foreground tabular-nums">{(100 - cYesPct).toFixed(0)}%</span>
+                      </div>
+                    </div>
+
+                    {/* Quick platform stats */}
+                    <div className="grid grid-cols-2 gap-3 w-full max-w-xs">
+                      <div className="rounded-xl bg-secondary/50 border border-border/50 p-3 text-center">
+                        <span className="text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{totalActiveForecasts}</span>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">Active Markets</p>
+                      </div>
+                      <div className="rounded-xl bg-secondary/50 border border-border/50 p-3 text-center">
+                        <span className="text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{totalVotesAllTime.toLocaleString()}</span>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">Total Votes</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </motion.div>
       </div>
     </section>
   );
