@@ -213,7 +213,7 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
     if (intervalRef.current) clearInterval(intervalRef.current);
     intervalRef.current = setInterval(() => {
       setActiveSlide(prev => (prev + 1) % heroForecasts.length);
-    }, 10000);
+    }, 15000);
   }, [heroForecasts.length]);
 
   // Aggregate stats
