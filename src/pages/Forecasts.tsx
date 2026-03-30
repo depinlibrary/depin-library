@@ -1,7 +1,9 @@
 import { useState, useEffect, useMemo, useCallback, useRef, useSyncExternalStore } from "react";
 import { getWeightedChance } from "@/lib/forecastUtils";
 import { motion, AnimatePresence } from "framer-motion";
-import { Timer, ThumbsUp, ThumbsDown, Plus, TrendingUp, Clock, Flame, ChevronLeft, ChevronRight, LogIn, Users, BarChart3, Zap, X, Filter, Trophy, CheckCircle, CheckCircle2, Circle, RotateCcw, DollarSign, Server, Activity, ArrowUpRight, ArrowDownRight, Copy, ChevronRight as ChevronRightIcon, Radio, Search, XCircle } from "lucide-react";
+import { Timer, ThumbsUp, ThumbsDown, Plus, TrendingUp, Clock, Flame, ChevronLeft, ChevronRight, LogIn, Users, BarChart3, Zap, X, Filter, Trophy, CheckCircle, CheckCircle2, Circle, RotateCcw, DollarSign, Server, Activity, ArrowUpRight, ArrowDownRight, Copy, ChevronRight as ChevronRightIcon, Radio, Search, XCircle, Eye } from "lucide-react";
+import { AreaChart, Area, ResponsiveContainer, YAxis, Tooltip as RechartsTooltip } from "recharts";
+import { useForecastVoteHistory } from "@/hooks/useForecastDetail";
 
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -184,6 +186,104 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
     </motion.div>
   );
 };
+// ---- Mini Trend Chart for Hero ----
+const HeroTrendChart = ({ forecastId, yesPct, yesLabel, noLabel }: { forecastId: string; yesPct: number; yesLabel: string; noLabel: string }) => {
+  const { data: voteHistory = [] } = useForecastVoteHistory(forecastId);
+
+  const chartData = useMemo(() => {
+    if (voteHistory.length <= 1) return [];
+    return voteHistory.map((entry) => ({
+      date: entry.date,
+      yes: entry.weighted_yes_pct,
+      no: Math.round((100 - entry.weighted_yes_pct) * 10) / 10,
+    }));
+  }, [voteHistory]);
+
+  if (chartData.length <= 1) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center text-center rounded-lg bg-secondary/30 border border-border/50 p-4">
+        <BarChart3 className="h-6 w-6 text-muted-foreground/30 mb-1.5" />
+        <span className="text-[10px] text-muted-foreground">Trend chart appears after 2+ votes</span>
+      </div>
+    );
+  }
+
+  const latest = chartData[chartData.length - 1];
+  const first = chartData[0];
+  const pctChange = latest.yes - first.yes;
+
+  return (
+    <div className="h-full flex flex-col">
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-[10px] font-semibold text-muted-foreground">Probability Trend</span>
+        <span className={`text-[10px] font-bold flex items-center gap-0.5 ${
+          pctChange > 0 ? "text-primary" : pctChange < 0 ? "text-destructive" : "text-muted-foreground"
+        }`}>
+          {pctChange > 0 ? <ArrowUpRight className="h-3 w-3" /> : pctChange < 0 ? <ArrowDownRight className="h-3 w-3" /> : null}
+          {Math.abs(pctChange).toFixed(1)}%
+        </span>
+      </div>
+      <div className="flex-1 min-h-[100px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={chartData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+            <defs>
+              <linearGradient id="heroYesGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
+                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.01} />
+              </linearGradient>
+            </defs>
+            <YAxis domain={[0, 100]} hide />
+            <RechartsTooltip
+              contentStyle={{
+                backgroundColor: "hsl(var(--card))",
+                border: "1px solid hsl(var(--border))",
+                borderRadius: "8px",
+                fontSize: "10px",
+                padding: "6px 10px",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+              }}
+              labelStyle={{ fontWeight: 700, fontSize: "9px", color: "hsl(var(--foreground))" }}
+              formatter={(value: number, name: string) => [
+                `${value.toFixed(1)}%`,
+                name === "yes" ? yesLabel : noLabel,
+              ]}
+            />
+            <Area
+              type="monotone"
+              dataKey="no"
+              stroke="hsl(var(--destructive))"
+              fill="none"
+              strokeWidth={1}
+              strokeDasharray="3 2"
+              dot={false}
+              activeDot={{ r: 3, strokeWidth: 1, stroke: "hsl(var(--card))", fill: "hsl(var(--destructive))" }}
+            />
+            <Area
+              type="monotone"
+              dataKey="yes"
+              stroke="hsl(var(--primary))"
+              fill="url(#heroYesGrad)"
+              strokeWidth={2}
+              dot={false}
+              activeDot={{ r: 3, strokeWidth: 1, stroke: "hsl(var(--card))", fill: "hsl(var(--primary))" }}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+      {/* Legend */}
+      <div className="flex items-center gap-3 mt-1">
+        <span className="flex items-center gap-1 text-[9px] text-muted-foreground">
+          <span className="w-1.5 h-1.5 rounded-full bg-primary" /> {yesLabel}
+        </span>
+        <span className="flex items-center gap-1 text-[9px] text-muted-foreground">
+          <span className="w-1.5 h-1.5 rounded-full bg-destructive" /> {noLabel}
+        </span>
+        <span className="text-[9px] text-muted-foreground/50 ml-auto">{chartData.length} pts</span>
+      </div>
+    </div>
+  );
+};
+
 // ---- Hero Section — Redesigned informative layout ----
 const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setShowCreate, heroDimensionsMap, allMarketData }: {
   forecasts: Forecast[];
@@ -273,31 +373,34 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.3 }}
-                  className="flex-1 flex flex-col lg:flex-row"
+                  className="flex-1 flex flex-col"
                 >
-                  <div className="flex-1 p-5 sm:p-6 flex flex-col min-w-0">
-                    {/* Project badges + status */}
-                    <div className="flex items-center gap-2.5 mb-4">
+                  {/* Top bar: project info + status */}
+                  <div className="flex items-center justify-between px-5 pt-4 pb-0">
+                    <div className="flex items-center gap-2.5">
                       <div className="flex items-center -space-x-1.5">
                         {current.project_a_logo_url ? (
-                          <img src={current.project_a_logo_url} alt={current.project_a_name} className="w-8 h-8 rounded-lg object-contain border-2 border-card bg-secondary relative z-10" />
+                          <img src={current.project_a_logo_url} alt={current.project_a_name} className="w-7 h-7 rounded-lg object-contain border-2 border-card bg-secondary relative z-10" />
                         ) : (
-                          <span className="w-8 h-8 rounded-lg flex items-center justify-center text-sm border-2 border-card bg-secondary relative z-10">{current.project_a_logo_emoji || "⬡"}</span>
+                          <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs border-2 border-card bg-secondary relative z-10">{current.project_a_logo_emoji || "⬡"}</span>
                         )}
                         {current.project_b_name && (
                           current.project_b_logo_url ? (
-                            <img src={current.project_b_logo_url} alt={current.project_b_name} className="w-8 h-8 rounded-lg object-contain border-2 border-card bg-secondary" />
+                            <img src={current.project_b_logo_url} alt={current.project_b_name} className="w-7 h-7 rounded-lg object-contain border-2 border-card bg-secondary" />
                           ) : (
-                            <span className="w-8 h-8 rounded-lg flex items-center justify-center text-sm border-2 border-card bg-secondary">{current.project_b_logo_emoji || "⬡"}</span>
+                            <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs border-2 border-card bg-secondary">{current.project_b_logo_emoji || "⬡"}</span>
                           )
                         )}
                       </div>
-                      <div className="flex items-center gap-2 flex-1 min-w-0">
-                        <span className="text-[11px] font-medium text-muted-foreground truncate">
-                          {current.project_a_name}{current.project_b_name ? ` vs ${current.project_b_name}` : ''}
-                        </span>
-                      </div>
-                      <span className="flex items-center gap-1 shrink-0">
+                      <span className="text-[11px] font-medium text-muted-foreground truncate">
+                        {current.project_a_name}{current.project_b_name ? ` vs ${current.project_b_name}` : ''}
+                      </span>
+                      {cDims[0] && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground font-medium capitalize">{dimensionLabelMap[cDims[0]] || cDims[0]}</span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="flex items-center gap-1">
                         <span className="relative flex h-1.5 w-1.5">
                           {!cIsEnded && <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-green-500" />}
                           <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${cIsEnded ? 'bg-destructive' : 'bg-green-500'}`} />
@@ -306,54 +409,72 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                           {cIsEnded ? 'Ended' : cTimeLeft}
                         </span>
                       </span>
+                      <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                        <Eye className="h-3 w-3" /> {cTotal.toLocaleString()}
+                      </span>
                     </div>
+                  </div>
 
-                    {/* Title */}
+                  {/* Title */}
+                  <div className="px-5 pt-2.5 pb-2">
                     <Link to={`/forecasts/${current.id}`}>
-                      <h2 className="text-lg sm:text-xl font-bold text-foreground leading-snug mb-4 font-['Space_Grotesk'] tracking-tight hover:underline transition-all line-clamp-2">
+                      <h2 className="text-base sm:text-lg font-bold text-foreground leading-snug font-['Space_Grotesk'] tracking-tight hover:underline transition-all line-clamp-2">
                         {current.title}
                       </h2>
                     </Link>
+                  </div>
 
-                    {/* Probability + progress */}
-                    <div className="mt-auto space-y-3">
-                      <div className="flex items-end justify-between">
-                        <div className="flex items-baseline gap-1.5">
+                  {/* Main content: probability + Long/Short + mini chart */}
+                  <div className="flex-1 flex flex-col sm:flex-row gap-0 px-5 pb-2">
+                    {/* Left: probability + Long/Short buttons */}
+                    <div className="flex flex-col justify-between sm:w-[200px] shrink-0 pr-4">
+                      <div>
+                        <div className="flex items-baseline gap-1 mb-2">
                           <span className="text-3xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{cYesPct.toFixed(0)}%</span>
-                          <span className="text-xs text-muted-foreground">chance</span>
+                          <span className="text-[10px] text-muted-foreground">chance</span>
                         </div>
-                        <span className="text-[11px] text-muted-foreground">{cTotal.toLocaleString()} votes</span>
-                      </div>
-                      <div className="h-2 rounded-full bg-secondary overflow-hidden">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: `${cYesPct}%` }}
-                          transition={{ duration: 0.8, ease: "easeOut" }}
-                          className="h-full rounded-full bg-primary"
-                        />
-                      </div>
-                      <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                          {cYesLabel} · {cYesPct.toFixed(0)}%
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-destructive" />
-                          {cNoLabel} · {(100 - cYesPct).toFixed(0)}%
-                        </span>
-                      </div>
-                      {cDims[0] && (
-                        <div className="flex items-center gap-2 pt-1">
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-muted-foreground font-medium capitalize">{dimensionLabelMap[cDims[0]] || cDims[0]}</span>
+                        {/* Progress bar */}
+                        <div className="h-1.5 rounded-full bg-secondary overflow-hidden mb-2">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${cYesPct}%` }}
+                            transition={{ duration: 0.8, ease: "easeOut" }}
+                            className="h-full rounded-full bg-primary"
+                          />
                         </div>
-                      )}
+                      </div>
+
+                      {/* Long / Short action buttons */}
+                      <div className="flex gap-2 mt-1">
+                        <Link
+                          to={`/forecasts/${current.id}`}
+                          className="flex-1 flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-bold bg-primary/10 text-primary hover:bg-primary/20 transition-all"
+                        >
+                          <ArrowUpRight className="h-3.5 w-3.5" />
+                          {cYesLabel}
+                          <span className="text-[10px] font-normal opacity-70">{cYesPct.toFixed(0)}%</span>
+                        </Link>
+                        <Link
+                          to={`/forecasts/${current.id}`}
+                          className="flex-1 flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-bold bg-destructive/10 text-destructive hover:bg-destructive/20 transition-all"
+                        >
+                          <ArrowDownRight className="h-3.5 w-3.5" />
+                          {cNoLabel}
+                          <span className="text-[10px] font-normal opacity-70">{(100 - cYesPct).toFixed(0)}%</span>
+                        </Link>
+                      </div>
+                    </div>
+
+                    {/* Right: mini probability trend chart */}
+                    <div className="flex-1 min-w-0 pt-1 sm:pt-0">
+                      <HeroTrendChart forecastId={current.id} yesPct={cYesPct} yesLabel={cYesLabel} noLabel={cNoLabel} />
                     </div>
                   </div>
                 </motion.div>
               </AnimatePresence>
 
               {heroForecasts.length > 1 && (
-                <div className="flex items-center justify-start gap-0.5 px-6 pb-4">
+                <div className="flex items-center justify-start gap-0.5 px-5 pb-3">
                   {heroForecasts.map((_, i) => (
                     <button key={i} onClick={() => goToSlide(i)} className="p-0.5" aria-label={`Go to slide ${i + 1}`}>
                       <span className={`block rounded-full transition-all duration-300 ${i === activeSlide ? 'w-5 h-1.5 bg-primary' : 'w-1.5 h-1.5 bg-muted-foreground/30 hover:bg-muted-foreground/50'}`} />
