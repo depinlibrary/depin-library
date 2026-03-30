@@ -204,7 +204,7 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
     if (heroForecasts.length <= 1 || isPaused) return;
     intervalRef.current = setInterval(() => {
       setActiveSlide(prev => (prev + 1) % heroForecasts.length);
-    }, 10000);
+    }, 15000);
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, [heroForecasts.length, isPaused]);
 
