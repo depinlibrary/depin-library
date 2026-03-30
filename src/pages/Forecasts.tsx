@@ -183,7 +183,8 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
         </div>
       </div>
     </motion.div>
-
+  );
+};
 
 
 // ---- Hero Section — Clean single-section layout ----
