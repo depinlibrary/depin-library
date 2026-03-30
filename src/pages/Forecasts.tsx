@@ -259,50 +259,6 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
       <div className="gradient-radial-top absolute inset-0" />
 
       <div className="container relative mx-auto px-4">
-        {/* Live ticker strip — scrolling top forecasts */}
-        {tickerForecasts.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-4 flex items-stretch gap-3 overflow-x-auto scrollbar-hide pb-1"
-          >
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/5 border border-primary/10 shrink-0">
-              <Radio className="h-3 w-3 text-primary animate-pulse" />
-              <span className="text-[10px] font-bold text-primary uppercase tracking-wider">Live</span>
-            </div>
-            {tickerForecasts.map((f) => {
-              const { yesPct: tPct } = getWeightedChance(f);
-              const tEnded = new Date(f.end_date) <= new Date();
-              return (
-                <Link
-                  key={f.id}
-                  to={`/forecasts/${f.id}`}
-                  className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-card border border-border hover:border-primary/30 transition-all shrink-0 min-w-0 max-w-[320px] group"
-                >
-                  <div className="flex items-center -space-x-1.5 shrink-0">
-                    {f.project_a_logo_url ? (
-                      <img src={f.project_a_logo_url} alt="" className="w-6 h-6 rounded-md object-contain bg-secondary border border-card relative z-10" />
-                    ) : (
-                      <span className="w-6 h-6 rounded-md flex items-center justify-center text-[10px] bg-secondary border border-card relative z-10">{f.project_a_logo_emoji || "⬡"}</span>
-                    )}
-                    {f.project_b_name && (
-                      f.project_b_logo_url ? (
-                        <img src={f.project_b_logo_url} alt="" className="w-6 h-6 rounded-md object-contain bg-secondary border border-card" />
-                      ) : (
-                        <span className="w-6 h-6 rounded-md flex items-center justify-center text-[10px] bg-secondary border border-card">{f.project_b_logo_emoji || "⬡"}</span>
-                      )
-                    )}
-                  </div>
-                  <p className="text-[11px] font-medium text-foreground truncate flex-1 group-hover:underline">{f.title}</p>
-                  <span className={`text-sm font-bold tabular-nums shrink-0 ${tPct >= 50 ? 'text-primary' : 'text-destructive'}`}>
-                    {tPct.toFixed(0)}%
-                  </span>
-                </Link>
-              );
-            })}
-          </motion.div>
-        )}
-
         {/* Main hero card — full width, immersive */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -318,7 +274,7 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.25 }}
+                transition={{ duration: 0.35 }}
               >
                 <div className="grid grid-cols-1 lg:grid-cols-2">
                   {/* Left: market info */}
@@ -458,80 +414,62 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                     </div>
                   </div>
 
-                  {/* Right: visual probability + quick stats */}
-                  <div className="p-6 sm:p-8 flex flex-col items-center justify-center">
-                    {/* Large circular probability gauge */}
-                    <div className="relative w-40 h-40 sm:w-48 sm:h-48 mb-6">
-                      <svg viewBox="0 0 120 120" className="w-full h-full -rotate-90">
-                        {/* Background track */}
-                        <circle cx="60" cy="60" r="52" fill="none" strokeWidth="10" className="stroke-secondary" />
-                        {/* Yes arc */}
-                        <motion.circle
-                          cx="60" cy="60" r="52"
-                          fill="none"
-                          strokeWidth="10"
-                          strokeLinecap="round"
-                          className="stroke-primary"
-                          strokeDasharray={`${(cYesPct / 100) * 2 * Math.PI * 52} ${2 * Math.PI * 52}`}
-                          initial={{ strokeDashoffset: 2 * Math.PI * 52 }}
-                          animate={{ strokeDashoffset: 0 }}
-                          transition={{ duration: 1, ease: "easeOut" }}
-                        />
-                        {/* No arc — starts where yes ends */}
-                        <circle
-                          cx="60" cy="60" r="52"
-                          fill="none"
-                          strokeWidth="10"
-                          strokeLinecap="round"
-                          className="stroke-destructive/40"
-                          strokeDasharray={`${((100 - cYesPct) / 100) * 2 * Math.PI * 52} ${2 * Math.PI * 52}`}
-                          strokeDashoffset={`${-((cYesPct / 100) * 2 * Math.PI * 52)}`}
-                        />
-                      </svg>
-                      {/* Center text */}
-                      <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <motion.span
-                          key={`pct-${current.id}`}
-                          initial={{ scale: 0.8, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          className="text-3xl sm:text-4xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums"
-                        >
-                          {cYesPct.toFixed(0)}%
-                        </motion.span>
-                        <span className="text-[10px] text-muted-foreground font-medium mt-0.5">{cYesLabel} chance</span>
-                      </div>
+                  {/* Right: Trending Topics */}
+                  <div className="p-6 sm:p-8 flex flex-col">
+                    <div className="flex items-center gap-2 mb-5">
+                      <TrendingUp className="h-4 w-4 text-primary" />
+                      <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Trending Topics</h3>
                     </div>
 
-                    {/* Outcome legend */}
-                    <div className="flex items-center gap-6 mb-6">
-                      <div className="flex items-center gap-2">
-                        <span className="w-3 h-3 rounded-full bg-primary" />
-                        <span className="text-xs font-semibold text-foreground">{cYesLabel}</span>
-                        <span className="text-xs text-muted-foreground tabular-nums">{cYesPct.toFixed(0)}%</span>
+                    {trendingTopics.length > 0 ? (
+                      <div className="space-y-1 flex-1">
+                        {trendingTopics.map((topic: any, i: number) => (
+                          <Link
+                            key={topic.id}
+                            to={`/project/${topic.slug}`}
+                            className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-secondary/60 transition-colors group"
+                          >
+                            <span className="text-[11px] font-bold text-muted-foreground/50 w-5 tabular-nums">{i + 1}</span>
+                            {topic.logo_url ? (
+                              <img src={topic.logo_url} alt={topic.name} className="w-8 h-8 rounded-lg object-contain bg-secondary border border-border shrink-0" />
+                            ) : (
+                              <span className="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-secondary border border-border shrink-0">{topic.logo_emoji || "⬡"}</span>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors block truncate">{topic.name}</span>
+                              <span className="text-[10px] text-muted-foreground">{topic.totalVotes?.toLocaleString()} votes</span>
+                            </div>
+                            <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground/40 group-hover:text-primary transition-colors shrink-0" />
+                          </Link>
+                        ))}
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="w-3 h-3 rounded-full bg-destructive/60" />
-                        <span className="text-xs font-semibold text-foreground">{cNoLabel}</span>
-                        <span className="text-xs text-muted-foreground tabular-nums">{(100 - cYesPct).toFixed(0)}%</span>
+                    ) : (
+                      <div className="flex-1 flex items-center justify-center">
+                        <p className="text-sm text-muted-foreground">No trending topics yet</p>
                       </div>
-                    </div>
-
-                    {/* Quick platform stats */}
-                    <div className="grid grid-cols-2 gap-3 w-full max-w-xs">
-                      <div className="rounded-xl bg-secondary/50 border border-border/50 p-3 text-center">
-                        <span className="text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{totalActiveForecasts}</span>
-                        <p className="text-[10px] text-muted-foreground mt-0.5">Active Markets</p>
-                      </div>
-                      <div className="rounded-xl bg-secondary/50 border border-border/50 p-3 text-center">
-                        <span className="text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{totalVotesAllTime.toLocaleString()}</span>
-                        <p className="text-[10px] text-muted-foreground mt-0.5">Total Votes</p>
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               </motion.div>
             </AnimatePresence>
           </div>
+
+          {/* Dot indicators */}
+          {heroForecasts.length > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-4">
+              {heroForecasts.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => goToSlide(i)}
+                  className={`rounded-full transition-all duration-300 ${
+                    i === activeSlide
+                      ? "w-6 h-2 bg-primary"
+                      : "w-2 h-2 bg-muted-foreground/25 hover:bg-muted-foreground/40"
+                  }`}
+                />
+              ))}
+            </div>
+          )}
         </motion.div>
       </div>
     </section>
