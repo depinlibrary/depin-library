@@ -351,13 +351,13 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
   const avgChance = forecasts.length > 0 ? forecasts.reduce((s, f) => s + getWeightedChance(f).yesPct, 0) / forecasts.length : 50;
 
   return (
-    <section className="relative overflow-hidden pt-24 pb-8">
+    <section className="relative overflow-hidden pt-24 pb-6">
       <div className="absolute inset-0 bg-grid opacity-10" />
       <div className="gradient-radial-top absolute inset-0" />
       <div className="container relative mx-auto px-4">
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-          {/* LEFT: Featured forecast — 8 cols */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
+          {/* LEFT: Featured forecast — Polymarket-inspired */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -365,7 +365,7 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
           >
-            <div className="rounded-2xl border border-border bg-card overflow-hidden h-full flex flex-col">
+            <div className="rounded-xl border border-border bg-card overflow-hidden">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={current.id}
@@ -373,100 +373,84 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.3 }}
-                  className="flex-1 flex flex-col"
                 >
-                  {/* Top bar: project info + status */}
-                  <div className="flex items-center justify-between px-5 pt-4 pb-0">
-                    <div className="flex items-center gap-2.5">
-                      <div className="flex items-center -space-x-1.5">
-                        {current.project_a_logo_url ? (
-                          <img src={current.project_a_logo_url} alt={current.project_a_name} className="w-7 h-7 rounded-lg object-contain border-2 border-card bg-secondary relative z-10" />
+                  {/* Header: logo + title + status */}
+                  <div className="flex items-start gap-3 px-4 pt-3.5 pb-2">
+                    <div className="flex items-center -space-x-1.5 shrink-0 mt-0.5">
+                      {current.project_a_logo_url ? (
+                        <img src={current.project_a_logo_url} alt={current.project_a_name} className="w-8 h-8 rounded-lg object-contain border-2 border-card bg-secondary relative z-10" />
+                      ) : (
+                        <span className="w-8 h-8 rounded-lg flex items-center justify-center text-sm border-2 border-card bg-secondary relative z-10">{current.project_a_logo_emoji || "⬡"}</span>
+                      )}
+                      {current.project_b_name && (
+                        current.project_b_logo_url ? (
+                          <img src={current.project_b_logo_url} alt={current.project_b_name} className="w-8 h-8 rounded-lg object-contain border-2 border-card bg-secondary" />
                         ) : (
-                          <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs border-2 border-card bg-secondary relative z-10">{current.project_a_logo_emoji || "⬡"}</span>
-                        )}
-                        {current.project_b_name && (
-                          current.project_b_logo_url ? (
-                            <img src={current.project_b_logo_url} alt={current.project_b_name} className="w-7 h-7 rounded-lg object-contain border-2 border-card bg-secondary" />
-                          ) : (
-                            <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs border-2 border-card bg-secondary">{current.project_b_logo_emoji || "⬡"}</span>
-                          )
-                        )}
-                      </div>
-                      <span className="text-[11px] font-medium text-muted-foreground truncate">
-                        {current.project_a_name}{current.project_b_name ? ` vs ${current.project_b_name}` : ''}
-                      </span>
-                      {cDims[0] && (
-                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground font-medium capitalize">{dimensionLabelMap[cDims[0]] || cDims[0]}</span>
+                          <span className="w-8 h-8 rounded-lg flex items-center justify-center text-sm border-2 border-card bg-secondary">{current.project_b_logo_emoji || "⬡"}</span>
+                        )
                       )}
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className="flex items-center gap-1">
-                        <span className="relative flex h-1.5 w-1.5">
-                          {!cIsEnded && <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-green-500" />}
-                          <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${cIsEnded ? 'bg-destructive' : 'bg-green-500'}`} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="text-[10px] font-medium text-muted-foreground truncate">
+                          {current.project_a_name}{current.project_b_name ? ` · ${current.project_b_name}` : ''}
                         </span>
-                        <span className={`text-[10px] font-semibold ${cIsEnded ? 'text-destructive' : 'text-green-500'}`}>
-                          {cIsEnded ? 'Ended' : cTimeLeft}
-                        </span>
+                        {cDims[0] && (
+                          <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground font-medium capitalize">{dimensionLabelMap[cDims[0]] || cDims[0]}</span>
+                        )}
+                      </div>
+                      <Link to={`/forecasts/${current.id}`}>
+                        <h2 className="text-sm sm:text-base font-bold text-foreground leading-snug font-['Space_Grotesk'] tracking-tight hover:underline transition-all line-clamp-2">
+                          {current.title}
+                        </h2>
+                      </Link>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <span className="relative flex h-1.5 w-1.5">
+                        {!cIsEnded && <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-green-500" />}
+                        <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${cIsEnded ? 'bg-destructive' : 'bg-green-500'}`} />
                       </span>
-                      <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-                        <Eye className="h-3 w-3" /> {cTotal.toLocaleString()}
+                      <span className={`text-[10px] font-semibold ${cIsEnded ? 'text-destructive' : 'text-green-500'}`}>
+                        {cIsEnded ? 'Ended' : cTimeLeft}
                       </span>
                     </div>
                   </div>
 
-                  {/* Title */}
-                  <div className="px-5 pt-2.5 pb-2">
-                    <Link to={`/forecasts/${current.id}`}>
-                      <h2 className="text-base sm:text-lg font-bold text-foreground leading-snug font-['Space_Grotesk'] tracking-tight hover:underline transition-all line-clamp-2">
-                        {current.title}
-                      </h2>
-                    </Link>
-                  </div>
-
-                  {/* Main content: probability + Long/Short + mini chart */}
-                  <div className="flex-1 flex flex-col sm:flex-row gap-0 px-5 pb-2">
-                    {/* Left: probability + Long/Short buttons */}
-                    <div className="flex flex-col justify-between sm:w-[200px] shrink-0 pr-4">
-                      <div>
-                        <div className="flex items-baseline gap-1 mb-2">
-                          <span className="text-3xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{cYesPct.toFixed(0)}%</span>
-                          <span className="text-[10px] text-muted-foreground">chance</span>
-                        </div>
-                        {/* Progress bar */}
-                        <div className="h-1.5 rounded-full bg-secondary overflow-hidden mb-2">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${cYesPct}%` }}
-                            transition={{ duration: 0.8, ease: "easeOut" }}
-                            className="h-full rounded-full bg-primary"
-                          />
-                        </div>
+                  {/* Body: outcome rows left + chart right */}
+                  <div className="flex flex-col sm:flex-row border-t border-border/50">
+                    {/* Left: outcome rows */}
+                    <div className="sm:w-[220px] shrink-0 sm:border-r border-border/50">
+                      <div className="flex items-center justify-between px-4 py-2.5 hover:bg-secondary/20 transition-colors">
+                        <span className="flex items-center gap-1.5">
+                          <ArrowUpRight className="h-3.5 w-3.5 text-primary" />
+                          <span className="text-xs font-semibold text-foreground">{cYesLabel}</span>
+                        </span>
+                        <span className="text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{cYesPct.toFixed(0)}%</span>
                       </div>
-
-                      {/* Long / Short action buttons */}
-                      <div className="flex gap-2 mt-1">
+                      <div className="border-t border-border/30 mx-4" />
+                      <div className="flex items-center justify-between px-4 py-2.5 hover:bg-secondary/20 transition-colors">
+                        <span className="flex items-center gap-1.5">
+                          <ArrowDownRight className="h-3.5 w-3.5 text-destructive" />
+                          <span className="text-xs font-semibold text-foreground">{cNoLabel}</span>
+                        </span>
+                        <span className="text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{(100 - cYesPct).toFixed(0)}%</span>
+                      </div>
+                      <div className="border-t border-border/30 mx-4" />
+                      <div className="flex items-center justify-between px-4 py-2.5">
+                        <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                          <Eye className="h-3 w-3" /> {cTotal.toLocaleString()} votes
+                        </span>
                         <Link
                           to={`/forecasts/${current.id}`}
-                          className="flex-1 flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-bold bg-primary/10 text-primary hover:bg-primary/20 transition-all"
+                          className="text-[10px] font-semibold text-primary hover:underline flex items-center gap-0.5"
                         >
-                          <ArrowUpRight className="h-3.5 w-3.5" />
-                          {cYesLabel}
-                          <span className="text-[10px] font-normal opacity-70">{cYesPct.toFixed(0)}%</span>
-                        </Link>
-                        <Link
-                          to={`/forecasts/${current.id}`}
-                          className="flex-1 flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-bold bg-destructive/10 text-destructive hover:bg-destructive/20 transition-all"
-                        >
-                          <ArrowDownRight className="h-3.5 w-3.5" />
-                          {cNoLabel}
-                          <span className="text-[10px] font-normal opacity-70">{(100 - cYesPct).toFixed(0)}%</span>
+                          Vote <ChevronRightIcon className="h-3 w-3" />
                         </Link>
                       </div>
                     </div>
 
-                    {/* Right: mini probability trend chart */}
-                    <div className="flex-1 min-w-0 pt-1 sm:pt-0">
+                    {/* Right: trend chart */}
+                    <div className="flex-1 min-w-0 p-3">
                       <HeroTrendChart forecastId={current.id} yesPct={cYesPct} yesLabel={cYesLabel} noLabel={cNoLabel} />
                     </div>
                   </div>
@@ -474,7 +458,7 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
               </AnimatePresence>
 
               {heroForecasts.length > 1 && (
-                <div className="flex items-center justify-start gap-0.5 px-5 pb-3">
+                <div className="flex items-center justify-start gap-0.5 px-4 pb-2.5 border-t border-border/30 pt-2">
                   {heroForecasts.map((_, i) => (
                     <button key={i} onClick={() => goToSlide(i)} className="p-0.5" aria-label={`Go to slide ${i + 1}`}>
                       <span className={`block rounded-full transition-all duration-300 ${i === activeSlide ? 'w-5 h-1.5 bg-primary' : 'w-1.5 h-1.5 bg-muted-foreground/30 hover:bg-muted-foreground/50'}`} />
@@ -485,68 +469,65 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
             </div>
           </motion.div>
 
-          {/* RIGHT sidebar — 4 cols */}
+          {/* RIGHT sidebar — compact */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="lg:col-span-4 flex flex-col gap-4"
+            className="lg:col-span-4 flex flex-col gap-3"
           >
-            <div className="rounded-2xl border border-border bg-card overflow-hidden flex-1 flex flex-col min-h-0">
-              <div className="px-5 py-3.5 flex items-center justify-between shrink-0 border-b border-border">
-                <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Top Forecasts</h3>
-                <Trophy className="h-3.5 w-3.5 text-primary/60" />
+            <div className="rounded-xl border border-border bg-card overflow-hidden flex-1 flex flex-col min-h-0">
+              <div className="px-4 py-2.5 flex items-center justify-between shrink-0 border-b border-border">
+                <h3 className="text-xs font-bold text-foreground font-['Space_Grotesk']">Top Forecasts</h3>
+                <Trophy className="h-3 w-3 text-primary/60" />
               </div>
               <div className="flex-1 overflow-y-auto">
-                {topLiveForecasts.slice(0, 5).map((f, i) => {
+                {topLiveForecasts.slice(0, 4).map((f, i) => {
                   const { yesPct: fYesPct } = getWeightedChance(f);
                   const fTotal = f.total_votes_yes + f.total_votes_no;
                   const fIsEnded = new Date(f.end_date) <= new Date();
                   return (
-                    <Link key={f.id} to={`/forecasts/${f.id}`} className="flex items-start gap-3 px-5 py-3 hover:bg-secondary/30 transition-colors">
-                      <span className="text-xs font-bold text-muted-foreground/50 mt-0.5 w-4 shrink-0">{i + 1}</span>
+                    <Link key={f.id} to={`/forecasts/${f.id}`} className="flex items-start gap-2.5 px-4 py-2 hover:bg-secondary/30 transition-colors">
+                      <span className="text-[10px] font-bold text-muted-foreground/50 mt-0.5 w-3 shrink-0">{i + 1}</span>
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-foreground leading-snug line-clamp-2">{f.title}</p>
-                        <span className="flex items-center gap-1 mt-1">
-                          <span className="relative flex h-1.5 w-1.5">
-                            {!fIsEnded && <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-green-500" />}
-                            <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${fIsEnded ? 'bg-destructive' : 'bg-green-500'}`} />
-                          </span>
+                        <p className="text-[11px] font-semibold text-foreground leading-snug line-clamp-2">{f.title}</p>
+                        <span className="flex items-center gap-1 mt-0.5">
+                          <span className={`inline-flex rounded-full h-1 w-1 ${fIsEnded ? 'bg-destructive' : 'bg-green-500'}`} />
                           <span className={`text-[9px] font-medium ${fIsEnded ? 'text-destructive/70' : 'text-green-500/70'}`}>{fIsEnded ? 'Ended' : 'Live'}</span>
                         </span>
                       </div>
                       <div className="flex flex-col items-end shrink-0">
-                        <span className="text-sm font-bold text-foreground font-['Space_Grotesk']">{fYesPct.toFixed(0)}%</span>
-                        <span className="text-[10px] text-muted-foreground">{fTotal} votes</span>
+                        <span className="text-xs font-bold text-foreground font-['Space_Grotesk']">{fYesPct.toFixed(0)}%</span>
+                        <span className="text-[9px] text-muted-foreground">{fTotal}</span>
                       </div>
                     </Link>
                   );
                 })}
                 {topLiveForecasts.length === 0 && (
-                  <div className="px-5 py-6 text-center text-xs text-muted-foreground">No live forecasts</div>
+                  <div className="px-4 py-4 text-center text-[10px] text-muted-foreground">No live forecasts</div>
                 )}
               </div>
             </div>
 
             {trendingTopics.length > 0 && (
-              <div className="rounded-2xl border border-border bg-card overflow-hidden shrink-0">
-                <div className="px-5 py-3.5 flex items-center justify-between shrink-0 border-b border-border">
-                  <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Trending Projects</h3>
-                  <TrendingUp className="h-3.5 w-3.5 text-primary/60" />
+              <div className="rounded-xl border border-border bg-card overflow-hidden shrink-0">
+                <div className="px-4 py-2.5 flex items-center justify-between shrink-0 border-b border-border">
+                  <h3 className="text-xs font-bold text-foreground font-['Space_Grotesk']">Trending Projects</h3>
+                  <TrendingUp className="h-3 w-3 text-primary/60" />
                 </div>
                 <div>
-                  {trendingTopics.slice(0, 4).map((project: any, i: number) => (
-                    <Link key={project.id} to={`/project/${project.slug}`} className="flex items-center gap-3 px-5 py-2.5 hover:bg-secondary/30 transition-colors">
-                      <span className="text-xs font-bold text-muted-foreground/50 w-4 shrink-0">{i + 1}</span>
+                  {trendingTopics.slice(0, 3).map((project: any, i: number) => (
+                    <Link key={project.id} to={`/project/${project.slug}`} className="flex items-center gap-2.5 px-4 py-2 hover:bg-secondary/30 transition-colors">
+                      <span className="text-[10px] font-bold text-muted-foreground/50 w-3 shrink-0">{i + 1}</span>
                       <div className="flex items-center gap-2 flex-1 min-w-0">
                         {project.logo_url ? (
-                          <img src={project.logo_url} alt={project.name} className="w-6 h-6 rounded-md object-contain bg-secondary" />
+                          <img src={project.logo_url} alt={project.name} className="w-5 h-5 rounded-md object-contain bg-secondary" />
                         ) : (
-                          <span className="w-6 h-6 rounded-md flex items-center justify-center text-sm bg-secondary">{project.logo_emoji || "⬡"}</span>
+                          <span className="w-5 h-5 rounded-md flex items-center justify-center text-xs bg-secondary">{project.logo_emoji || "⬡"}</span>
                         )}
-                        <span className="text-xs font-semibold text-foreground truncate">{project.name}</span>
+                        <span className="text-[11px] font-semibold text-foreground truncate">{project.name}</span>
                       </div>
-                      <span className="text-[10px] font-medium text-muted-foreground shrink-0">{project.totalVotes} votes</span>
+                      <span className="text-[9px] font-medium text-muted-foreground shrink-0">{project.totalVotes}</span>
                     </Link>
                   ))}
                 </div>
