@@ -184,7 +184,7 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
     </motion.div>
   );
 };
-// ---- Hero Section — Full-width prediction market showcase ----
+// ---- Hero Section — Polymarket × Kalshi fusion ----
 const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setShowCreate, heroDimensionsMap, allMarketData }: {
   forecasts: Forecast[];
   topLiveForecasts: Forecast[];
@@ -198,13 +198,13 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [isPaused, setIsPaused] = useState(false);
 
-  const heroForecasts = useMemo(() => forecasts.slice(0, 6), [forecasts]);
+  const heroForecasts = useMemo(() => forecasts.slice(0, 7), [forecasts]);
 
   useEffect(() => {
     if (heroForecasts.length <= 1 || isPaused) return;
     intervalRef.current = setInterval(() => {
       setActiveSlide(prev => (prev + 1) % heroForecasts.length);
-    }, 10000);
+    }, 8000);
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, [heroForecasts.length, isPaused]);
 
@@ -213,12 +213,11 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
     if (intervalRef.current) clearInterval(intervalRef.current);
     intervalRef.current = setInterval(() => {
       setActiveSlide(prev => (prev + 1) % heroForecasts.length);
-    }, 10000);
+    }, 8000);
   }, [heroForecasts.length]);
 
-  // Aggregate stats
-  const totalActiveForecasts = forecasts.filter(f => new Date(f.end_date) > new Date()).length;
-  const totalVotesAllTime = forecasts.reduce((s, f) => s + f.total_votes_yes + f.total_votes_no, 0);
+  const totalActive = forecasts.filter(f => new Date(f.end_date) > new Date()).length;
+  const totalVotes = forecasts.reduce((s, f) => s + f.total_votes_yes + f.total_votes_no, 0);
 
   if (heroForecasts.length === 0) {
     return (
@@ -250,8 +249,9 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
   const cYesLabel = cIsPriceMarket ? "Long" : cIsSentimentDual ? (current.project_a_name || "Yes") : "Yes";
   const cNoLabel = cIsPriceMarket ? "Short" : cIsSentimentDual ? (current.project_b_name || "No") : "No";
 
-  // Top 3 for the ticker strip
-  const tickerForecasts = topLiveForecasts.slice(0, 4);
+  // Breaking news / trending sidebar items
+  const breakingForecasts = topLiveForecasts.slice(0, 4);
+  const hotTopics = trendingTopics.slice(0, 5);
 
   return (
     <section className="relative overflow-hidden pt-24 pb-6">
@@ -259,280 +259,360 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
       <div className="gradient-radial-top absolute inset-0" />
 
       <div className="container relative mx-auto px-4">
-        {/* Live ticker strip — scrolling top forecasts */}
-        {tickerForecasts.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5">
+
+          {/* ═══════ LEFT: Featured Market Card — Polymarket style (8 cols) ═══════ */}
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-4 flex items-stretch gap-3 overflow-x-auto scrollbar-hide pb-1"
+            className="lg:col-span-8"
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
           >
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/5 border border-primary/10 shrink-0">
-              <Radio className="h-3 w-3 text-primary animate-pulse" />
-              <span className="text-[10px] font-bold text-primary uppercase tracking-wider">Live</span>
-            </div>
-            {tickerForecasts.map((f) => {
-              const { yesPct: tPct } = getWeightedChance(f);
-              const tEnded = new Date(f.end_date) <= new Date();
-              return (
-                <Link
-                  key={f.id}
-                  to={`/forecasts/${f.id}`}
-                  className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-card border border-border hover:border-primary/30 transition-all shrink-0 min-w-0 max-w-[320px] group"
+            <div className="rounded-2xl border border-border bg-card overflow-hidden h-full flex flex-col">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={current.id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex-1 flex flex-col"
                 >
-                  <div className="flex items-center -space-x-1.5 shrink-0">
-                    {f.project_a_logo_url ? (
-                      <img src={f.project_a_logo_url} alt="" className="w-6 h-6 rounded-md object-contain bg-secondary border border-card relative z-10" />
-                    ) : (
-                      <span className="w-6 h-6 rounded-md flex items-center justify-center text-[10px] bg-secondary border border-card relative z-10">{f.project_a_logo_emoji || "⬡"}</span>
-                    )}
-                    {f.project_b_name && (
-                      f.project_b_logo_url ? (
-                        <img src={f.project_b_logo_url} alt="" className="w-6 h-6 rounded-md object-contain bg-secondary border border-card" />
-                      ) : (
-                        <span className="w-6 h-6 rounded-md flex items-center justify-center text-[10px] bg-secondary border border-card">{f.project_b_logo_emoji || "⬡"}</span>
-                      )
+                  {/* Category tag + share/bookmark row */}
+                  <div className="px-6 pt-5 pb-0 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      {cDims[0] && (() => {
+                        const Icon = dimensionIconMap[cDims[0]] || BarChart3;
+                        return (
+                          <span className="flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                            <Icon className="h-3 w-3 text-primary" />
+                            {dimensionLabelMap[cDims[0]] || cDims[0]}
+                          </span>
+                        );
+                      })()}
+                      {!cDims[0] && (
+                        <span className="flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                          <Zap className="h-3 w-3 text-primary" /> DePIN
+                        </span>
+                      )}
+                      <span className="text-muted-foreground/30">·</span>
+                      <span className={`text-[10px] font-semibold ${cIsEnded ? 'text-destructive' : 'text-green-500'}`}>
+                        {cIsEnded ? 'Ended' : cTimeLeft}
+                      </span>
+                    </div>
+                    {/* Navigation arrows — Kalshi style */}
+                    {heroForecasts.length > 1 && (
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => goToSlide((activeSlide - 1 + heroForecasts.length) % heroForecasts.length)}
+                          className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                        >
+                          <ChevronLeft className="h-3.5 w-3.5" />
+                        </button>
+                        <span className="text-[10px] font-medium text-muted-foreground tabular-nums px-1">
+                          {activeSlide + 1} of {heroForecasts.length}
+                        </span>
+                        <button
+                          onClick={() => goToSlide((activeSlide + 1) % heroForecasts.length)}
+                          className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                        >
+                          <ChevronRight className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
                     )}
                   </div>
-                  <p className="text-[11px] font-medium text-foreground truncate flex-1 group-hover:underline">{f.title}</p>
-                  <span className={`text-sm font-bold tabular-nums shrink-0 ${tPct >= 50 ? 'text-primary' : 'text-destructive'}`}>
-                    {tPct.toFixed(0)}%
-                  </span>
-                </Link>
-              );
-            })}
-          </motion.div>
-        )}
 
-        {/* Main hero card — full width, immersive */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
-        >
-          <div className="rounded-2xl border border-border bg-card overflow-hidden">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={current.id}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.25 }}
-              >
-                <div className="grid grid-cols-1 lg:grid-cols-2">
-                  {/* Left: market info */}
-                  <div className="p-6 sm:p-8 flex flex-col border-b lg:border-b-0 lg:border-r border-border">
-                    {/* Navigation row */}
-                    <div className="flex items-center justify-between mb-5">
-                      <div className="flex items-center gap-2">
-                        {cDims[0] && (() => {
-                          const Icon = dimensionIconMap[cDims[0]] || BarChart3;
-                          return <Icon className="h-3.5 w-3.5 text-primary" />;
-                        })()}
-                        {cDims[0] && (
-                          <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">
-                            {dimensionLabelMap[cDims[0]] || cDims[0]} Market
-                          </span>
-                        )}
-                        {!cDims[0] && (
-                          <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">
-                            Prediction Market
-                          </span>
-                        )}
-                      </div>
-                      {heroForecasts.length > 1 && (
-                        <div className="flex items-center gap-1.5">
-                          <button
-                            onClick={() => goToSlide((activeSlide - 1 + heroForecasts.length) % heroForecasts.length)}
-                            className="w-7 h-7 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors"
-                          >
-                            <ChevronLeft className="h-3.5 w-3.5" />
-                          </button>
-                          <span className="text-[10px] font-medium text-muted-foreground tabular-nums">
-                            {activeSlide + 1}/{heroForecasts.length}
-                          </span>
-                          <button
-                            onClick={() => goToSlide((activeSlide + 1) % heroForecasts.length)}
-                            className="w-7 h-7 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors"
-                          >
-                            <ChevronRight className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Title */}
+                  {/* Title — large, Polymarket-style */}
+                  <div className="px-6 pt-4 pb-2">
                     <Link to={`/forecasts/${current.id}`}>
-                      <h2 className="text-xl sm:text-2xl font-bold text-foreground leading-tight font-['Space_Grotesk'] tracking-tight hover:underline transition-all line-clamp-2 mb-6">
+                      <h2 className="text-2xl sm:text-[28px] font-bold text-foreground leading-tight font-['Space_Grotesk'] tracking-tight hover:underline transition-all line-clamp-2">
                         {current.title}
                       </h2>
                     </Link>
+                  </div>
 
-                    {/* Market table */}
-                    <div className="space-y-0 flex-1">
-                      {/* Table header */}
-                      <div className="grid grid-cols-[1fr_auto_auto] gap-x-4 sm:gap-x-8 items-center pb-2.5">
-                        <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Outcome</span>
-                        <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider text-right">Votes</span>
-                        <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider text-center w-[72px]">Odds</span>
+                  {/* Two-column: Market table + Probability visual */}
+                  <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-0">
+                    {/* Market outcomes — Kalshi table */}
+                    <div className="px-6 py-4">
+                      {/* Column headers */}
+                      <div className="grid grid-cols-[1fr_60px_72px] gap-x-3 items-center pb-2">
+                        <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Market</span>
+                        <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider text-center">Votes</span>
+                        <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider text-center">Odds</span>
                       </div>
-
                       <div className="border-t border-border" />
 
-                      {/* Row A */}
-                      <div className="grid grid-cols-[1fr_auto_auto] gap-x-4 sm:gap-x-8 items-center py-4">
-                        <div className="flex items-center gap-3 min-w-0">
+                      {/* Outcome A */}
+                      <div className="grid grid-cols-[1fr_60px_72px] gap-x-3 items-center py-3.5">
+                        <div className="flex items-center gap-2.5 min-w-0">
                           {current.project_a_logo_url ? (
-                            <img src={current.project_a_logo_url} alt={current.project_a_name} className="w-10 h-10 rounded-xl object-contain bg-secondary shrink-0 border border-border" />
+                            <img src={current.project_a_logo_url} alt={current.project_a_name} className="w-9 h-9 rounded-xl object-contain bg-secondary shrink-0" />
                           ) : (
-                            <span className="w-10 h-10 rounded-xl flex items-center justify-center text-lg bg-secondary shrink-0 border border-border">{current.project_a_logo_emoji || "⬡"}</span>
+                            <span className="w-9 h-9 rounded-xl flex items-center justify-center text-base bg-secondary shrink-0">{current.project_a_logo_emoji || "⬡"}</span>
                           )}
                           <div className="min-w-0">
-                            <Link to={`/project/${current.project_a_slug}`} className="text-sm font-semibold text-foreground hover:text-primary transition-colors block truncate">
+                            <Link to={`/project/${current.project_a_slug}`} className="text-[13px] font-semibold text-foreground hover:text-primary transition-colors truncate block">
                               {current.project_a_name}
                             </Link>
-                            <div className="w-10 h-[3px] rounded-full bg-primary mt-1.5" />
+                            <div className="w-8 h-[2px] rounded-full bg-primary mt-1" />
                           </div>
                         </div>
-                        <span className="text-sm font-medium text-muted-foreground tabular-nums text-right">
+                        <span className="text-xs font-medium text-muted-foreground tabular-nums text-center">
                           {current.total_votes_yes.toLocaleString()}
                         </span>
-                        <span className="inline-flex items-center justify-center w-[72px] py-2 rounded-xl border border-primary/25 bg-primary/5 text-sm font-bold text-foreground tabular-nums">
+                        <span className="inline-flex items-center justify-center py-1.5 rounded-lg border border-primary/20 bg-primary/5 text-[13px] font-bold text-foreground tabular-nums">
                           {cYesPct.toFixed(0)}%
                         </span>
                       </div>
 
-                      <div className="border-t border-border/40" />
+                      <div className="border-t border-border/30" />
 
-                      {/* Row B */}
-                      <div className="grid grid-cols-[1fr_auto_auto] gap-x-4 sm:gap-x-8 items-center py-4">
-                        <div className="flex items-center gap-3 min-w-0">
+                      {/* Outcome B */}
+                      <div className="grid grid-cols-[1fr_60px_72px] gap-x-3 items-center py-3.5">
+                        <div className="flex items-center gap-2.5 min-w-0">
                           {current.project_b_name ? (
                             <>
                               {current.project_b_logo_url ? (
-                                <img src={current.project_b_logo_url} alt={current.project_b_name} className="w-10 h-10 rounded-xl object-contain bg-secondary shrink-0 border border-border" />
+                                <img src={current.project_b_logo_url} alt={current.project_b_name} className="w-9 h-9 rounded-xl object-contain bg-secondary shrink-0" />
                               ) : (
-                                <span className="w-10 h-10 rounded-xl flex items-center justify-center text-lg bg-secondary shrink-0 border border-border">{current.project_b_logo_emoji || "⬡"}</span>
+                                <span className="w-9 h-9 rounded-xl flex items-center justify-center text-base bg-secondary shrink-0">{current.project_b_logo_emoji || "⬡"}</span>
                               )}
                               <div className="min-w-0">
-                                <Link to={`/project/${current.project_b_slug}`} className="text-sm font-semibold text-foreground hover:text-primary transition-colors block truncate">
+                                <Link to={`/project/${current.project_b_slug}`} className="text-[13px] font-semibold text-foreground hover:text-primary transition-colors truncate block">
                                   {current.project_b_name}
                                 </Link>
-                                <div className="w-10 h-[3px] rounded-full bg-destructive mt-1.5" />
+                                <div className="w-8 h-[2px] rounded-full bg-destructive mt-1" />
                               </div>
                             </>
                           ) : (
                             <>
-                              <span className="w-10 h-10 rounded-xl flex items-center justify-center text-lg bg-destructive/10 shrink-0 border border-destructive/20">
-                                <ThumbsDown className="h-4.5 w-4.5 text-destructive" />
+                              <span className="w-9 h-9 rounded-xl flex items-center justify-center text-base bg-destructive/10 shrink-0">
+                                <ThumbsDown className="h-4 w-4 text-destructive" />
                               </span>
                               <div className="min-w-0">
-                                <span className="text-sm font-semibold text-foreground">{cNoLabel}</span>
-                                <div className="w-10 h-[3px] rounded-full bg-destructive mt-1.5" />
+                                <span className="text-[13px] font-semibold text-foreground">{cNoLabel}</span>
+                                <div className="w-8 h-[2px] rounded-full bg-destructive mt-1" />
                               </div>
                             </>
                           )}
                         </div>
-                        <span className="text-sm font-medium text-muted-foreground tabular-nums text-right">
+                        <span className="text-xs font-medium text-muted-foreground tabular-nums text-center">
                           {current.total_votes_no.toLocaleString()}
                         </span>
-                        <span className="inline-flex items-center justify-center w-[72px] py-2 rounded-xl border border-destructive/25 bg-destructive/5 text-sm font-bold text-foreground tabular-nums">
+                        <span className="inline-flex items-center justify-center py-1.5 rounded-lg border border-destructive/20 bg-destructive/5 text-[13px] font-bold text-foreground tabular-nums">
                           {(100 - cYesPct).toFixed(0)}%
                         </span>
                       </div>
+
+                      {/* Volume badge — Polymarket style */}
+                      <div className="pt-3 border-t border-border/30 flex items-center gap-3">
+                        <span className="text-[11px] text-muted-foreground font-medium">{cTotal.toLocaleString()} votes</span>
+                      </div>
                     </div>
 
-                    {/* Footer stats */}
-                    <div className="pt-4 mt-2 border-t border-border flex items-center justify-between">
-                      <span className="text-[11px] text-muted-foreground">{cTotal.toLocaleString()} total votes</span>
-                      <span className="flex items-center gap-1.5">
-                        <span className="relative flex h-1.5 w-1.5">
-                          {!cIsEnded && <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-green-500" />}
-                          <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${cIsEnded ? 'bg-destructive' : 'bg-green-500'}`} />
-                        </span>
-                        <span className={`text-[10px] font-semibold ${cIsEnded ? 'text-destructive' : 'text-green-500'}`}>
-                          {cIsEnded ? 'Ended' : cTimeLeft}
-                        </span>
-                      </span>
+                    {/* Right half: large probability visual + inline Polymarket bar chart */}
+                    <div className="px-6 py-4 flex flex-col items-center justify-center border-t md:border-t-0 md:border-l border-border/30">
+                      {/* Stacked probability bars — Polymarket style */}
+                      <div className="w-full space-y-3 mb-5">
+                        {/* Outcome legend */}
+                        <div className="flex items-center gap-4 justify-center mb-1">
+                          <div className="flex items-center gap-1.5">
+                            <span className="w-2.5 h-2.5 rounded-full bg-primary" />
+                            <span className="text-[11px] font-semibold text-foreground">{current.project_a_name}</span>
+                            <span className="text-[11px] font-bold text-primary tabular-nums">{cYesPct.toFixed(0)}%</span>
+                          </div>
+                          {(current.project_b_name || cNoLabel) && (
+                            <div className="flex items-center gap-1.5">
+                              <span className="w-2.5 h-2.5 rounded-full bg-destructive/60" />
+                              <span className="text-[11px] font-semibold text-foreground">{current.project_b_name || cNoLabel}</span>
+                              <span className="text-[11px] font-bold text-destructive tabular-nums">{(100 - cYesPct).toFixed(0)}%</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Horizontal stacked bar */}
+                        <div className="relative h-10 rounded-xl overflow-hidden bg-secondary">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${cYesPct}%` }}
+                            transition={{ duration: 1, ease: "easeOut" }}
+                            className="absolute inset-y-0 left-0 bg-primary/80 flex items-center justify-center"
+                          >
+                            {cYesPct >= 15 && (
+                              <span className="text-xs font-bold text-primary-foreground tabular-nums">{cYesPct.toFixed(0)}%</span>
+                            )}
+                          </motion.div>
+                          <div className="absolute inset-y-0 right-0 flex items-center justify-center" style={{ left: `${cYesPct}%` }}>
+                            {(100 - cYesPct) >= 15 && (
+                              <span className="text-xs font-bold text-foreground/70 tabular-nums w-full text-center">{(100 - cYesPct).toFixed(0)}%</span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Additional outcome bars for multi-row Polymarket look */}
+                        {current.description && (
+                          <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2 mt-2">{current.description}</p>
+                        )}
+                      </div>
+
+                      {/* Vote action row — Polymarket Yes/No buttons */}
+                      <div className="flex gap-2 w-full">
+                        <button
+                          onClick={() => !cIsEnded ? (user ? undefined : (window.location.href = "/auth?redirect=/forecasts")) : undefined}
+                          className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                            cIsEnded ? 'bg-secondary text-muted-foreground cursor-not-allowed opacity-60' : 'bg-primary/10 text-primary hover:bg-primary/20'
+                          }`}
+                          disabled={cIsEnded}
+                        >
+                          {cYesLabel} {cYesPct.toFixed(0)}¢
+                        </button>
+                        <button
+                          onClick={() => !cIsEnded ? (user ? undefined : (window.location.href = "/auth?redirect=/forecasts")) : undefined}
+                          className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                            cIsEnded ? 'bg-secondary text-muted-foreground cursor-not-allowed opacity-60' : 'bg-destructive/10 text-destructive hover:bg-destructive/20'
+                          }`}
+                          disabled={cIsEnded}
+                        >
+                          {cNoLabel} {(100 - cYesPct).toFixed(0)}¢
+                        </button>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Right: visual probability + quick stats */}
-                  <div className="p-6 sm:p-8 flex flex-col items-center justify-center">
-                    {/* Large circular probability gauge */}
-                    <div className="relative w-40 h-40 sm:w-48 sm:h-48 mb-6">
-                      <svg viewBox="0 0 120 120" className="w-full h-full -rotate-90">
-                        {/* Background track */}
-                        <circle cx="60" cy="60" r="52" fill="none" strokeWidth="10" className="stroke-secondary" />
-                        {/* Yes arc */}
-                        <motion.circle
-                          cx="60" cy="60" r="52"
-                          fill="none"
-                          strokeWidth="10"
-                          strokeLinecap="round"
-                          className="stroke-primary"
-                          strokeDasharray={`${(cYesPct / 100) * 2 * Math.PI * 52} ${2 * Math.PI * 52}`}
-                          initial={{ strokeDashoffset: 2 * Math.PI * 52 }}
-                          animate={{ strokeDashoffset: 0 }}
-                          transition={{ duration: 1, ease: "easeOut" }}
-                        />
-                        {/* No arc — starts where yes ends */}
-                        <circle
-                          cx="60" cy="60" r="52"
-                          fill="none"
-                          strokeWidth="10"
-                          strokeLinecap="round"
-                          className="stroke-destructive/40"
-                          strokeDasharray={`${((100 - cYesPct) / 100) * 2 * Math.PI * 52} ${2 * Math.PI * 52}`}
-                          strokeDashoffset={`${-((cYesPct / 100) * 2 * Math.PI * 52)}`}
-                        />
-                      </svg>
-                      {/* Center text */}
-                      <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <motion.span
-                          key={`pct-${current.id}`}
-                          initial={{ scale: 0.8, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          className="text-3xl sm:text-4xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums"
-                        >
-                          {cYesPct.toFixed(0)}%
-                        </motion.span>
-                        <span className="text-[10px] text-muted-foreground font-medium mt-0.5">{cYesLabel} chance</span>
-                      </div>
+                  {/* Bottom bar: slide dots + quick navigate — Polymarket style */}
+                  <div className="px-6 py-3 border-t border-border flex items-center justify-between">
+                    <div className="flex items-center gap-1">
+                      {heroForecasts.map((_, i) => (
+                        <button key={i} onClick={() => goToSlide(i)} className="p-0.5" aria-label={`Slide ${i + 1}`}>
+                          <span className={`block rounded-full transition-all duration-300 ${
+                            i === activeSlide ? 'w-5 h-[5px] bg-primary' : 'w-[5px] h-[5px] bg-muted-foreground/25 hover:bg-muted-foreground/40'
+                          }`} />
+                        </button>
+                      ))}
                     </div>
+                    <Link to={`/forecasts/${current.id}`} className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors">
+                      View market <ArrowUpRight className="h-3 w-3" />
+                    </Link>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </motion.div>
 
-                    {/* Outcome legend */}
-                    <div className="flex items-center gap-6 mb-6">
-                      <div className="flex items-center gap-2">
-                        <span className="w-3 h-3 rounded-full bg-primary" />
-                        <span className="text-xs font-semibold text-foreground">{cYesLabel}</span>
-                        <span className="text-xs text-muted-foreground tabular-nums">{cYesPct.toFixed(0)}%</span>
+          {/* ═══════ RIGHT: Breaking + Hot Topics sidebar — Kalshi style (4 cols) ═══════ */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="lg:col-span-4 flex flex-col gap-4"
+          >
+            {/* Breaking news / top movers */}
+            <div className="rounded-2xl border border-border bg-card overflow-hidden flex-1 flex flex-col min-h-0">
+              <div className="px-5 py-3 flex items-center justify-between shrink-0 border-b border-border">
+                <div className="flex items-center gap-2">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+                  </span>
+                  <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Top Markets</h3>
+                </div>
+                <Link to="/forecasts" className="text-[10px] font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-0.5">
+                  View all <ChevronRightIcon className="h-3 w-3" />
+                </Link>
+              </div>
+              <div className="flex-1 overflow-y-auto">
+                {breakingForecasts.map((f, i) => {
+                  const { yesPct: fPct } = getWeightedChance(f);
+                  const fTotal = f.total_votes_yes + f.total_votes_no;
+                  const fEnded = new Date(f.end_date) <= new Date();
+                  const prevPct = 50; // baseline
+                  const delta = fPct - prevPct;
+                  return (
+                    <Link key={f.id} to={`/forecasts/${f.id}`} className="flex items-start gap-3 px-5 py-3 hover:bg-secondary/30 transition-colors border-b border-border/30 last:border-b-0">
+                      <span className="text-xs font-bold text-muted-foreground/40 mt-0.5 w-4 shrink-0 tabular-nums">{i + 1}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-foreground leading-snug line-clamp-2 hover:underline">{f.title}</p>
+                        <div className="flex items-center gap-2 mt-1.5">
+                          <span className="text-[10px] text-muted-foreground">{fTotal} votes</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="w-3 h-3 rounded-full bg-destructive/60" />
-                        <span className="text-xs font-semibold text-foreground">{cNoLabel}</span>
-                        <span className="text-xs text-muted-foreground tabular-nums">{(100 - cYesPct).toFixed(0)}%</span>
+                      <div className="flex flex-col items-end shrink-0 gap-0.5">
+                        <span className="text-sm font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{fPct.toFixed(0)}%</span>
+                        <span className={`text-[10px] font-semibold flex items-center gap-0.5 ${
+                          delta >= 0 ? 'text-green-500' : 'text-destructive'
+                        }`}>
+                          {delta >= 0 ? <ArrowUpRight className="h-2.5 w-2.5" /> : <ArrowDownRight className="h-2.5 w-2.5" />}
+                          {Math.abs(delta).toFixed(0)}
+                        </span>
                       </div>
-                    </div>
+                    </Link>
+                  );
+                })}
+                {breakingForecasts.length === 0 && (
+                  <div className="px-5 py-6 text-center text-xs text-muted-foreground">No live markets</div>
+                )}
+              </div>
+            </div>
 
-                    {/* Quick platform stats */}
-                    <div className="grid grid-cols-2 gap-3 w-full max-w-xs">
-                      <div className="rounded-xl bg-secondary/50 border border-border/50 p-3 text-center">
-                        <span className="text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{totalActiveForecasts}</span>
-                        <p className="text-[10px] text-muted-foreground mt-0.5">Active Markets</p>
-                      </div>
-                      <div className="rounded-xl bg-secondary/50 border border-border/50 p-3 text-center">
-                        <span className="text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{totalVotesAllTime.toLocaleString()}</span>
-                        <p className="text-[10px] text-muted-foreground mt-0.5">Total Votes</p>
-                      </div>
-                    </div>
+            {/* Hot topics — Kalshi trending sidebar */}
+            {hotTopics.length > 0 && (
+              <div className="rounded-2xl border border-border bg-card overflow-hidden shrink-0">
+                <div className="px-5 py-3 flex items-center justify-between shrink-0 border-b border-border">
+                  <div className="flex items-center gap-2">
+                    <Flame className="h-3.5 w-3.5 text-accent" />
+                    <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Hot Topics</h3>
                   </div>
                 </div>
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        </motion.div>
+                <div>
+                  {hotTopics.map((project: any, i: number) => {
+                    const mktData = allMarketData[project.id];
+                    const price = mktData?.price_usd;
+                    const change = mktData?.price_change_24h;
+                    return (
+                      <Link key={project.id} to={`/project/${project.slug}`} className="flex items-center gap-3 px-5 py-2.5 hover:bg-secondary/30 transition-colors">
+                        <span className="text-xs font-bold text-muted-foreground/40 w-4 shrink-0 tabular-nums">{i + 1}</span>
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          {project.logo_url ? (
+                            <img src={project.logo_url} alt={project.name} className="w-6 h-6 rounded-md object-contain bg-secondary" />
+                          ) : (
+                            <span className="w-6 h-6 rounded-md flex items-center justify-center text-sm bg-secondary">{project.logo_emoji || "⬡"}</span>
+                          )}
+                          <span className="text-xs font-semibold text-foreground truncate">{project.name}</span>
+                        </div>
+                        {price != null ? (
+                          <div className="flex flex-col items-end shrink-0">
+                            <span className="text-[11px] font-bold text-foreground tabular-nums">${price < 1 ? price.toFixed(4) : price.toFixed(2)}</span>
+                            {change != null && (
+                              <span className={`text-[9px] font-semibold ${change >= 0 ? 'text-green-500' : 'text-destructive'}`}>
+                                {change >= 0 ? '▲' : '▼'} {Math.abs(change).toFixed(1)}%
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-[10px] font-medium text-muted-foreground shrink-0">{project.totalVotes || 0} votes</span>
+                        )}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Quick stats bar */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-xl border border-border bg-card px-4 py-3 text-center">
+                <span className="text-base font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{totalActive}</span>
+                <p className="text-[9px] text-muted-foreground font-medium mt-0.5 uppercase tracking-wider">Live Markets</p>
+              </div>
+              <div className="rounded-xl border border-border bg-card px-4 py-3 text-center">
+                <span className="text-base font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{totalVotes.toLocaleString()}</span>
+                <p className="text-[9px] text-muted-foreground font-medium mt-0.5 uppercase tracking-wider">Total Votes</p>
+              </div>
+            </div>
+          </motion.div>
+        </div>
       </div>
     </section>
   );
