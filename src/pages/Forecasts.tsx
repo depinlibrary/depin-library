@@ -763,12 +763,9 @@ const Forecasts = () => {
       {/* Polymarket-style Hero with Auto-Slide — uses unfiltered data */}
       <HeroSection
         forecasts={heroAllForecasts}
-        topLiveForecasts={heroTopLiveForecasts}
-        trendingTopics={trendingTopics}
         user={user}
         setShowCreate={setShowCreate}
         heroDimensionsMap={heroDimensionsMap as Record<string, string[]>}
-        allMarketData={allMarketData}
       />
 
       {/* Controls — Polymarket-style single row */}
