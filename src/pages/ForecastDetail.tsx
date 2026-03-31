@@ -350,57 +350,34 @@ const ForecastDetail = () => {
               className="rounded-2xl border border-border bg-card overflow-hidden"
             >
               <div className="flex flex-col lg:flex-row">
-                {/* LEFT: Outcome rows + stats */}
+                {/* LEFT: Market table matching Forecasts page hero */}
                 <div className="flex-1 p-6 sm:p-8 flex flex-col min-w-0">
-                  {/* Header with project logos + live/ended indicator */}
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center -space-x-2">
-                        {forecast.project_a?.logo_url ? (
-                          <img src={forecast.project_a.logo_url} alt={forecast.project_a.name} className="w-11 h-11 rounded-xl object-contain border-2 border-card bg-secondary relative z-10" />
-                        ) : (
-                          <span className="w-11 h-11 rounded-xl flex items-center justify-center text-lg border-2 border-card bg-secondary relative z-10">{forecast.project_a?.logo_emoji || "⬡"}</span>
-                        )}
-                        {forecast.project_b && (
-                          forecast.project_b.logo_url ? (
-                            <img src={forecast.project_b.logo_url} alt={forecast.project_b.name} className="w-11 h-11 rounded-xl object-contain border-2 border-card bg-secondary" />
-                          ) : (
-                            <span className="w-11 h-11 rounded-xl flex items-center justify-center text-lg border-2 border-card bg-secondary">{forecast.project_b?.logo_emoji || "⬡"}</span>
-                          )
-                        )}
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-xs font-medium text-muted-foreground">
-                          <Link to={`/project/${forecast.project_a?.slug}`} className="hover:text-foreground transition-colors">
-                            {forecast.project_a?.name}
-                          </Link>
-                          {forecast.project_b && (
-                            <>
-                              {" · "}
-                              <Link to={`/project/${forecast.project_b?.slug}`} className="hover:text-foreground transition-colors">
-                                {forecast.project_b?.name}
-                              </Link>
-                            </>
-                          )}
-                        </span>
-                        <span className="flex items-center gap-1.5 mt-0.5">
-                          <span className="relative flex h-2 w-2">
-                            {!isEnded && (
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-green-500" />
-                            )}
-                            <span className={`relative inline-flex rounded-full h-2 w-2 ${isEnded ? 'bg-destructive animate-pulse' : 'bg-green-500'}`} />
-                          </span>
-                          <span className={`text-[10px] font-semibold ${isEnded ? 'text-destructive' : 'text-green-500'}`}>
-                            {isEnded ? 'Ended' : `Live · ${timeLeft}`}
-                          </span>
-                        </span>
-                      </div>
+                  {/* Category + status */}
+                  <div className="flex items-center justify-between mb-5">
+                    <div className="flex items-center gap-2">
+                      {forecastDimension && (() => {
+                        const dimIcons: Record<string, typeof TrendingUp> = { token_price: TrendingUp, market_cap: TrendingUp, community_sentiment: Users };
+                        const dimLabels: Record<string, string> = { token_price: "Price", market_cap: "MCap", community_sentiment: "Sentiment" };
+                        const Icon = dimIcons[forecastDimension] || TrendingUp;
+                        return <Icon className="h-3.5 w-3.5 text-primary" />;
+                      })()}
+                      <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">
+                        {forecastDimension ? ({ token_price: "Price", market_cap: "MCap", community_sentiment: "Sentiment" }[forecastDimension] || forecastDimension) + " Market" : "Prediction Market"}
+                      </span>
                     </div>
-                    </div>
-
+                    <span className="flex items-center gap-1.5">
+                      <span className="relative flex h-1.5 w-1.5">
+                        {!isEnded && <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-green-500" />}
+                        <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${isEnded ? 'bg-destructive' : 'bg-green-500'}`} />
+                      </span>
+                      <span className={`text-[10px] font-semibold ${isEnded ? 'text-destructive' : 'text-green-500'}`}>
+                        {isEnded ? 'Ended' : timeLeft}
+                      </span>
+                    </span>
+                  </div>
 
                   {/* Title */}
-                  <h1 className="text-xl sm:text-2xl font-bold text-foreground leading-tight mb-4 font-['Space_Grotesk'] tracking-tight">
+                  <h1 className="text-xl sm:text-2xl font-bold text-foreground leading-tight mb-6 font-['Space_Grotesk'] tracking-tight">
                     {forecast.title}
                   </h1>
 
@@ -445,33 +422,88 @@ const ForecastDetail = () => {
                     </motion.div>
                   )}
 
-                  {/* Polymarket-style outcome rows — clean, no dividers */}
-                  <div className="flex-1 flex flex-col justify-center space-y-1">
-                    <div className="flex items-center justify-between py-3 px-1 rounded-lg hover:bg-secondary/30 transition-colors">
-                      <div className="flex items-center gap-2">
-                        <ArrowUpRight className="h-4 w-4 text-primary" />
-                        <span className="text-sm font-medium text-foreground">{yesLabel}</span>
-                        <span className="text-[10px] text-muted-foreground">{forecast.total_votes_yes} votes</span>
-                        {forecast.avg_confidence_yes != null && (
-                          <span className="text-[10px] text-primary/60 flex items-center gap-0.5">
-                            <Gauge className="h-3 w-3" /> {forecast.avg_confidence_yes.toFixed(1)}/5
-                          </span>
-                        )}
-                      </div>
-                      <span className="text-2xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{yesPct.toFixed(0)}%</span>
+                  {/* Market table — Outcome + Odds */}
+                  <div className="space-y-0 flex-1">
+                    <div className="grid grid-cols-[1fr_auto] gap-x-4 sm:gap-x-8 items-center pb-2.5">
+                      <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Outcome</span>
+                      <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider text-center w-[72px]">Odds</span>
                     </div>
-                    <div className="flex items-center justify-between py-3 px-1 rounded-lg hover:bg-secondary/30 transition-colors">
-                      <div className="flex items-center gap-2">
-                        <ArrowDownRight className="h-4 w-4 text-destructive" />
-                        <span className="text-sm font-medium text-foreground">{noLabel}</span>
-                        <span className="text-[10px] text-muted-foreground">{forecast.total_votes_no} votes</span>
-                        {forecast.avg_confidence_no != null && (
-                          <span className="text-[10px] text-destructive/60 flex items-center gap-0.5">
-                            <Gauge className="h-3 w-3" /> {forecast.avg_confidence_no.toFixed(1)}/5
-                          </span>
+
+                    <div className="border-t border-border" />
+
+                    {/* Row A — Yes/Long */}
+                    <div className="grid grid-cols-[1fr_auto] gap-x-4 sm:gap-x-8 items-center py-4">
+                      <div className="flex items-center gap-3 min-w-0">
+                        {forecast.project_a?.logo_url ? (
+                          <img src={forecast.project_a.logo_url} alt={forecast.project_a.name} className="w-10 h-10 rounded-xl object-contain bg-secondary shrink-0 border border-border" />
+                        ) : (
+                          <span className="w-10 h-10 rounded-xl flex items-center justify-center text-lg bg-secondary shrink-0 border border-border">{forecast.project_a?.logo_emoji || "⬡"}</span>
+                        )}
+                        <div className="min-w-0">
+                          <Link to={`/project/${forecast.project_a?.slug}`} className="text-sm font-semibold text-foreground hover:text-primary transition-colors block truncate">
+                            {forecast.project_a?.name}
+                          </Link>
+                          <div className="flex items-center gap-2 mt-1">
+                            <div className="w-10 h-[3px] rounded-full bg-primary" />
+                            <span className="text-[10px] text-muted-foreground">{forecast.total_votes_yes} votes</span>
+                            {forecast.avg_confidence_yes != null && (
+                              <span className="text-[10px] text-primary/60 flex items-center gap-0.5">
+                                <Gauge className="h-3 w-3" /> {forecast.avg_confidence_yes.toFixed(1)}/5
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <span className="inline-flex items-center justify-center w-[72px] py-2 rounded-xl border border-primary/25 bg-primary/5 text-sm font-bold text-foreground tabular-nums">
+                        {yesPct.toFixed(0)}%
+                      </span>
+                    </div>
+
+                    <div className="border-t border-border/40" />
+
+                    {/* Row B — No/Short */}
+                    <div className="grid grid-cols-[1fr_auto] gap-x-4 sm:gap-x-8 items-center py-4">
+                      <div className="flex items-center gap-3 min-w-0">
+                        {forecast.project_b ? (
+                          <>
+                            {forecast.project_b.logo_url ? (
+                              <img src={forecast.project_b.logo_url} alt={forecast.project_b.name} className="w-10 h-10 rounded-xl object-contain bg-secondary shrink-0 border border-border" />
+                            ) : (
+                              <span className="w-10 h-10 rounded-xl flex items-center justify-center text-lg bg-secondary shrink-0 border border-border">{forecast.project_b?.logo_emoji || "⬡"}</span>
+                            )}
+                            <div className="min-w-0">
+                              <Link to={`/project/${forecast.project_b?.slug}`} className="text-sm font-semibold text-foreground hover:text-primary transition-colors block truncate">
+                                {forecast.project_b?.name}
+                              </Link>
+                              <div className="flex items-center gap-2 mt-1">
+                                <div className="w-10 h-[3px] rounded-full bg-destructive" />
+                                <span className="text-[10px] text-muted-foreground">{forecast.total_votes_no} votes</span>
+                                {forecast.avg_confidence_no != null && (
+                                  <span className="text-[10px] text-destructive/60 flex items-center gap-0.5">
+                                    <Gauge className="h-3 w-3" /> {forecast.avg_confidence_no.toFixed(1)}/5
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <span className="w-10 h-10 rounded-xl flex items-center justify-center text-lg bg-destructive/10 shrink-0 border border-destructive/20">
+                              <ArrowDownRight className="h-4.5 w-4.5 text-destructive" />
+                            </span>
+                            <div className="min-w-0">
+                              <span className="text-sm font-semibold text-foreground">{noLabel}</span>
+                              <div className="flex items-center gap-2 mt-1">
+                                <div className="w-10 h-[3px] rounded-full bg-destructive" />
+                                <span className="text-[10px] text-muted-foreground">{forecast.total_votes_no} votes</span>
+                              </div>
+                            </div>
+                          </>
                         )}
                       </div>
-                      <span className="text-2xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{noPct.toFixed(0)}%</span>
+                      <span className="inline-flex items-center justify-center w-[72px] py-2 rounded-xl border border-destructive/25 bg-destructive/5 text-sm font-bold text-foreground tabular-nums">
+                        {noPct.toFixed(0)}%
+                      </span>
                     </div>
                   </div>
 

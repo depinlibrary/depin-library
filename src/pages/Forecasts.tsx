@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo, useCallback, useRef, useSyncExternalStore } from "react";
 import { getWeightedChance } from "@/lib/forecastUtils";
 import { motion, AnimatePresence } from "framer-motion";
-import { Timer, ThumbsUp, ThumbsDown, Plus, TrendingUp, Clock, Flame, ChevronLeft, ChevronRight, LogIn, Users, BarChart3, Zap, X, Filter, Trophy, CheckCircle, CheckCircle2, Circle, RotateCcw, DollarSign, Server, Activity, ArrowUpRight, ArrowDownRight, Copy, ChevronRight as ChevronRightIcon, Radio, Search, XCircle } from "lucide-react";
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from "recharts";
+import { Timer, ThumbsUp, ThumbsDown, Plus, TrendingUp, Clock, Flame, ChevronLeft, ChevronRight, LogIn, Users, BarChart3, Zap, X, Filter, Trophy, CheckCircle, CheckCircle2, Circle, RotateCcw, DollarSign, Server, Activity, ArrowUpRight, ArrowDownRight, Copy, ChevronRight as ChevronRightIcon, Search, XCircle } from "lucide-react";
 
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -14,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { useForecasts, useCreateForecast, useVoteForecast, type ForecastSortOption, type ForecastStatusFilter, type Forecast } from "@/hooks/useForecasts";
 import { useProjects } from "@/hooks/useProjects";
 import { useAllTokenMarketData } from "@/hooks/useTokenMarketData";
+import { useForecastVoteHistory } from "@/hooks/useForecastDetail";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -185,20 +187,30 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
   );
 };
 // ---- Hero Section — Full-width prediction market showcase ----
-const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setShowCreate, heroDimensionsMap, allMarketData }: {
+const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap }: {
   forecasts: Forecast[];
-  topLiveForecasts: Forecast[];
-  trendingTopics: any[];
   user: any;
   setShowCreate: (v: boolean) => void;
   heroDimensionsMap: Record<string, string[]>;
-  allMarketData: Record<string, any>;
 }) => {
   const [activeSlide, setActiveSlide] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [isPaused, setIsPaused] = useState(false);
 
   const heroForecasts = useMemo(() => forecasts.slice(0, 6), [forecasts]);
+
+  // Fetch vote history for the active hero forecast
+  const activeId = heroForecasts[activeSlide]?.id;
+  const { data: heroVoteHistory = [] } = useForecastVoteHistory(activeId);
+
+  // Build probability chart data from vote history
+  const chartData = useMemo(() => {
+    return heroVoteHistory.map((entry) => ({
+      date: entry.date,
+      yes_pct: entry.weighted_yes_pct,
+      no_pct: Math.round((100 - entry.weighted_yes_pct) * 10) / 10,
+    }));
+  }, [heroVoteHistory]);
 
   useEffect(() => {
     if (heroForecasts.length <= 1 || isPaused) return;
@@ -215,10 +227,6 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
       setActiveSlide(prev => (prev + 1) % heroForecasts.length);
     }, 10000);
   }, [heroForecasts.length]);
-
-  // Aggregate stats
-  const totalActiveForecasts = forecasts.filter(f => new Date(f.end_date) > new Date()).length;
-  const totalVotesAllTime = forecasts.reduce((s, f) => s + f.total_votes_yes + f.total_votes_no, 0);
 
   if (heroForecasts.length === 0) {
     return (
@@ -243,15 +251,11 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
   const { yesPct: cYesPct } = getWeightedChance(current);
   const cIsEnded = new Date(current.end_date) <= new Date();
   const cTimeLeft = getTimeRemaining(current.end_date);
-  const cTotal = current.total_votes_yes + current.total_votes_no;
   const cDims = heroDimensionsMap[current.id] || [];
   const cIsPriceMarket = cDims.some(d => d === "token_price" || d === "market_cap");
   const cIsSentimentDual = cDims.some(d => d === "community_sentiment") && !!current.project_b_name;
   const cYesLabel = cIsPriceMarket ? "Long" : cIsSentimentDual ? (current.project_a_name || "Yes") : "Yes";
   const cNoLabel = cIsPriceMarket ? "Short" : cIsSentimentDual ? (current.project_b_name || "No") : "No";
-
-  // Top 3 for the ticker strip
-  const tickerForecasts = topLiveForecasts.slice(0, 4);
 
   return (
     <section className="relative overflow-hidden pt-24 pb-6">
@@ -259,51 +263,7 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
       <div className="gradient-radial-top absolute inset-0" />
 
       <div className="container relative mx-auto px-4">
-        {/* Live ticker strip — scrolling top forecasts */}
-        {tickerForecasts.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-4 flex items-stretch gap-3 overflow-x-auto scrollbar-hide pb-1"
-          >
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/5 border border-primary/10 shrink-0">
-              <Radio className="h-3 w-3 text-primary animate-pulse" />
-              <span className="text-[10px] font-bold text-primary uppercase tracking-wider">Live</span>
-            </div>
-            {tickerForecasts.map((f) => {
-              const { yesPct: tPct } = getWeightedChance(f);
-              const tEnded = new Date(f.end_date) <= new Date();
-              return (
-                <Link
-                  key={f.id}
-                  to={`/forecasts/${f.id}`}
-                  className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-card border border-border hover:border-primary/30 transition-all shrink-0 min-w-0 max-w-[320px] group"
-                >
-                  <div className="flex items-center -space-x-1.5 shrink-0">
-                    {f.project_a_logo_url ? (
-                      <img src={f.project_a_logo_url} alt="" className="w-6 h-6 rounded-md object-contain bg-secondary border border-card relative z-10" />
-                    ) : (
-                      <span className="w-6 h-6 rounded-md flex items-center justify-center text-[10px] bg-secondary border border-card relative z-10">{f.project_a_logo_emoji || "⬡"}</span>
-                    )}
-                    {f.project_b_name && (
-                      f.project_b_logo_url ? (
-                        <img src={f.project_b_logo_url} alt="" className="w-6 h-6 rounded-md object-contain bg-secondary border border-card" />
-                      ) : (
-                        <span className="w-6 h-6 rounded-md flex items-center justify-center text-[10px] bg-secondary border border-card">{f.project_b_logo_emoji || "⬡"}</span>
-                      )
-                    )}
-                  </div>
-                  <p className="text-[11px] font-medium text-foreground truncate flex-1 group-hover:underline">{f.title}</p>
-                  <span className={`text-sm font-bold tabular-nums shrink-0 ${tPct >= 50 ? 'text-primary' : 'text-destructive'}`}>
-                    {tPct.toFixed(0)}%
-                  </span>
-                </Link>
-              );
-            })}
-          </motion.div>
-        )}
-
-        {/* Main hero card — full width, immersive */}
+        {/* Main hero card — full width */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -311,55 +271,27 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
-          <div className="rounded-2xl border border-border bg-card overflow-hidden">
+          <div className="rounded-2xl border border-border bg-card overflow-hidden relative">
             <AnimatePresence mode="wait">
               <motion.div
                 key={current.id}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.25 }}
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -30 }}
+                transition={{ duration: 0.35, ease: "easeInOut" }}
               >
                 <div className="grid grid-cols-1 lg:grid-cols-2">
                   {/* Left: market info */}
                   <div className="p-6 sm:p-8 flex flex-col border-b lg:border-b-0 lg:border-r border-border">
-                    {/* Navigation row */}
-                    <div className="flex items-center justify-between mb-5">
-                      <div className="flex items-center gap-2">
-                        {cDims[0] && (() => {
-                          const Icon = dimensionIconMap[cDims[0]] || BarChart3;
-                          return <Icon className="h-3.5 w-3.5 text-primary" />;
-                        })()}
-                        {cDims[0] && (
-                          <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">
-                            {dimensionLabelMap[cDims[0]] || cDims[0]} Market
-                          </span>
-                        )}
-                        {!cDims[0] && (
-                          <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">
-                            Prediction Market
-                          </span>
-                        )}
-                      </div>
-                      {heroForecasts.length > 1 && (
-                        <div className="flex items-center gap-1.5">
-                          <button
-                            onClick={() => goToSlide((activeSlide - 1 + heroForecasts.length) % heroForecasts.length)}
-                            className="w-7 h-7 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors"
-                          >
-                            <ChevronLeft className="h-3.5 w-3.5" />
-                          </button>
-                          <span className="text-[10px] font-medium text-muted-foreground tabular-nums">
-                            {activeSlide + 1}/{heroForecasts.length}
-                          </span>
-                          <button
-                            onClick={() => goToSlide((activeSlide + 1) % heroForecasts.length)}
-                            className="w-7 h-7 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors"
-                          >
-                            <ChevronRight className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      )}
+                    {/* Category label */}
+                    <div className="flex items-center gap-2 mb-5">
+                      {cDims[0] && (() => {
+                        const Icon = dimensionIconMap[cDims[0]] || BarChart3;
+                        return <Icon className="h-3.5 w-3.5 text-primary" />;
+                      })()}
+                      <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">
+                        {cDims[0] ? (dimensionLabelMap[cDims[0]] || cDims[0]) + " Market" : "Prediction Market"}
+                      </span>
                     </div>
 
                     {/* Title */}
@@ -372,16 +304,15 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                     {/* Market table */}
                     <div className="space-y-0 flex-1">
                       {/* Table header */}
-                      <div className="grid grid-cols-[1fr_auto_auto] gap-x-4 sm:gap-x-8 items-center pb-2.5">
+                      <div className="grid grid-cols-[1fr_auto] gap-x-4 sm:gap-x-8 items-center pb-2.5">
                         <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Outcome</span>
-                        <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider text-right">Votes</span>
                         <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider text-center w-[72px]">Odds</span>
                       </div>
 
                       <div className="border-t border-border" />
 
                       {/* Row A */}
-                      <div className="grid grid-cols-[1fr_auto_auto] gap-x-4 sm:gap-x-8 items-center py-4">
+                      <div className="grid grid-cols-[1fr_auto] gap-x-4 sm:gap-x-8 items-center py-4">
                         <div className="flex items-center gap-3 min-w-0">
                           {current.project_a_logo_url ? (
                             <img src={current.project_a_logo_url} alt={current.project_a_name} className="w-10 h-10 rounded-xl object-contain bg-secondary shrink-0 border border-border" />
@@ -395,9 +326,6 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                             <div className="w-10 h-[3px] rounded-full bg-primary mt-1.5" />
                           </div>
                         </div>
-                        <span className="text-sm font-medium text-muted-foreground tabular-nums text-right">
-                          {current.total_votes_yes.toLocaleString()}
-                        </span>
                         <span className="inline-flex items-center justify-center w-[72px] py-2 rounded-xl border border-primary/25 bg-primary/5 text-sm font-bold text-foreground tabular-nums">
                           {cYesPct.toFixed(0)}%
                         </span>
@@ -406,7 +334,7 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                       <div className="border-t border-border/40" />
 
                       {/* Row B */}
-                      <div className="grid grid-cols-[1fr_auto_auto] gap-x-4 sm:gap-x-8 items-center py-4">
+                      <div className="grid grid-cols-[1fr_auto] gap-x-4 sm:gap-x-8 items-center py-4">
                         <div className="flex items-center gap-3 min-w-0">
                           {current.project_b_name ? (
                             <>
@@ -434,18 +362,17 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                             </>
                           )}
                         </div>
-                        <span className="text-sm font-medium text-muted-foreground tabular-nums text-right">
-                          {current.total_votes_no.toLocaleString()}
-                        </span>
                         <span className="inline-flex items-center justify-center w-[72px] py-2 rounded-xl border border-destructive/25 bg-destructive/5 text-sm font-bold text-foreground tabular-nums">
                           {(100 - cYesPct).toFixed(0)}%
                         </span>
                       </div>
                     </div>
 
-                    {/* Footer stats */}
+                    {/* Footer: status */}
                     <div className="pt-4 mt-2 border-t border-border flex items-center justify-between">
-                      <span className="text-[11px] text-muted-foreground">{cTotal.toLocaleString()} total votes</span>
+                      <Link to={`/forecasts/${current.id}`} className="text-[11px] font-medium text-primary hover:underline">
+                        View Market →
+                      </Link>
                       <span className="flex items-center gap-1.5">
                         <span className="relative flex h-1.5 w-1.5">
                           {!cIsEnded && <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-green-500" />}
@@ -458,79 +385,86 @@ const HeroSection = ({ forecasts, topLiveForecasts, trendingTopics, user, setSho
                     </div>
                   </div>
 
-                  {/* Right: visual probability + quick stats */}
-                  <div className="p-6 sm:p-8 flex flex-col items-center justify-center">
-                    {/* Large circular probability gauge */}
-                    <div className="relative w-40 h-40 sm:w-48 sm:h-48 mb-6">
-                      <svg viewBox="0 0 120 120" className="w-full h-full -rotate-90">
-                        {/* Background track */}
-                        <circle cx="60" cy="60" r="52" fill="none" strokeWidth="10" className="stroke-secondary" />
-                        {/* Yes arc */}
-                        <motion.circle
-                          cx="60" cy="60" r="52"
-                          fill="none"
-                          strokeWidth="10"
-                          strokeLinecap="round"
-                          className="stroke-primary"
-                          strokeDasharray={`${(cYesPct / 100) * 2 * Math.PI * 52} ${2 * Math.PI * 52}`}
-                          initial={{ strokeDashoffset: 2 * Math.PI * 52 }}
-                          animate={{ strokeDashoffset: 0 }}
-                          transition={{ duration: 1, ease: "easeOut" }}
-                        />
-                        {/* No arc — starts where yes ends */}
-                        <circle
-                          cx="60" cy="60" r="52"
-                          fill="none"
-                          strokeWidth="10"
-                          strokeLinecap="round"
-                          className="stroke-destructive/40"
-                          strokeDasharray={`${((100 - cYesPct) / 100) * 2 * Math.PI * 52} ${2 * Math.PI * 52}`}
-                          strokeDashoffset={`${-((cYesPct / 100) * 2 * Math.PI * 52)}`}
-                        />
-                      </svg>
-                      {/* Center text */}
-                      <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <motion.span
-                          key={`pct-${current.id}`}
-                          initial={{ scale: 0.8, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          className="text-3xl sm:text-4xl font-bold text-foreground font-['Space_Grotesk'] tabular-nums"
-                        >
-                          {cYesPct.toFixed(0)}%
-                        </motion.span>
-                        <span className="text-[10px] text-muted-foreground font-medium mt-0.5">{cYesLabel} chance</span>
+                  {/* Right: Probability Trend Chart */}
+                  <div className="p-6 sm:p-8 flex flex-col">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-xs font-semibold text-muted-foreground">Probability Trend</span>
+                      <div className="flex items-center gap-4">
+                        <span className="flex items-center gap-1.5 text-[11px]">
+                          <span className="w-2 h-2 rounded-full bg-primary" />
+                          <span className="font-medium text-muted-foreground">{cYesLabel}</span>
+                          <span className="font-semibold text-primary font-['Space_Grotesk']">{cYesPct.toFixed(1)}%</span>
+                        </span>
+                        <span className="flex items-center gap-1.5 text-[11px]">
+                          <span className="w-2 h-2 rounded-full bg-destructive" />
+                          <span className="font-medium text-muted-foreground">{cNoLabel}</span>
+                          <span className="font-semibold text-destructive font-['Space_Grotesk']">{(100 - cYesPct).toFixed(1)}%</span>
+                        </span>
                       </div>
                     </div>
-
-                    {/* Outcome legend */}
-                    <div className="flex items-center gap-6 mb-6">
-                      <div className="flex items-center gap-2">
-                        <span className="w-3 h-3 rounded-full bg-primary" />
-                        <span className="text-xs font-semibold text-foreground">{cYesLabel}</span>
-                        <span className="text-xs text-muted-foreground tabular-nums">{cYesPct.toFixed(0)}%</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="w-3 h-3 rounded-full bg-destructive/60" />
-                        <span className="text-xs font-semibold text-foreground">{cNoLabel}</span>
-                        <span className="text-xs text-muted-foreground tabular-nums">{(100 - cYesPct).toFixed(0)}%</span>
-                      </div>
-                    </div>
-
-                    {/* Quick platform stats */}
-                    <div className="grid grid-cols-2 gap-3 w-full max-w-xs">
-                      <div className="rounded-xl bg-secondary/50 border border-border/50 p-3 text-center">
-                        <span className="text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{totalActiveForecasts}</span>
-                        <p className="text-[10px] text-muted-foreground mt-0.5">Active Markets</p>
-                      </div>
-                      <div className="rounded-xl bg-secondary/50 border border-border/50 p-3 text-center">
-                        <span className="text-lg font-bold text-foreground font-['Space_Grotesk'] tabular-nums">{totalVotesAllTime.toLocaleString()}</span>
-                        <p className="text-[10px] text-muted-foreground mt-0.5">Total Votes</p>
-                      </div>
+                    <div className="flex-1 min-h-[220px]">
+                      {chartData.length >= 2 ? (
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                            <defs>
+                              <linearGradient id="heroYesGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
+                                <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.01} />
+                              </linearGradient>
+                              <linearGradient id="heroNoGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="hsl(var(--destructive))" stopOpacity={0.15} />
+                                <stop offset="95%" stopColor="hsl(var(--destructive))" stopOpacity={0.01} />
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} vertical={false} />
+                            <ReferenceLine y={50} stroke="hsl(var(--muted-foreground))" strokeDasharray="6 4" opacity={0.25} />
+                            <XAxis dataKey="date" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+                            <YAxis domain={[0, 100]} tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} tickFormatter={(v: number) => `${v}%`} />
+                            <Tooltip
+                              contentStyle={{
+                                backgroundColor: "hsl(var(--card))",
+                                border: "1px solid hsl(var(--border))",
+                                borderRadius: "10px",
+                                fontSize: "11px",
+                                padding: "6px 10px",
+                              }}
+                              formatter={(value: number, name: string) => [`${value}%`, name === "yes_pct" ? cYesLabel : cNoLabel]}
+                              labelStyle={{ fontWeight: 600, marginBottom: 2, color: "hsl(var(--foreground))" }}
+                            />
+                            <Area type="monotone" dataKey="no_pct" name="no_pct" stroke="hsl(var(--destructive))" fill="url(#heroNoGrad)" strokeWidth={1.5} strokeDasharray="4 2" dot={false} activeDot={{ r: 3, fill: "hsl(var(--destructive))", stroke: "hsl(var(--card))", strokeWidth: 2 }} />
+                            <Area type="monotone" dataKey="yes_pct" name="yes_pct" stroke="hsl(var(--primary))" fill="url(#heroYesGrad)" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: "hsl(var(--primary))", stroke: "hsl(var(--card))", strokeWidth: 2 }} />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      ) : (
+                        <div className="flex items-center justify-center h-full">
+                          <div className="text-center">
+                            <BarChart3 className="h-8 w-8 text-muted-foreground/20 mx-auto mb-2" />
+                            <p className="text-xs text-muted-foreground">Not enough votes for a trend chart yet</p>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
               </motion.div>
             </AnimatePresence>
+
+            {/* Slide dots — inside the card */}
+            {heroForecasts.length > 1 && (
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-10">
+                {heroForecasts.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => goToSlide(i)}
+                    className={`rounded-full transition-all duration-300 ${
+                      i === activeSlide
+                        ? "w-5 h-1.5 bg-primary"
+                        : "w-1.5 h-1.5 bg-muted-foreground/30 hover:bg-muted-foreground/50"
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </motion.div>
       </div>
@@ -829,12 +763,9 @@ const Forecasts = () => {
       {/* Polymarket-style Hero with Auto-Slide — uses unfiltered data */}
       <HeroSection
         forecasts={heroAllForecasts}
-        topLiveForecasts={heroTopLiveForecasts}
-        trendingTopics={trendingTopics}
         user={user}
         setShowCreate={setShowCreate}
         heroDimensionsMap={heroDimensionsMap as Record<string, string[]>}
-        allMarketData={allMarketData}
       />
 
       {/* Controls — Polymarket-style single row */}
