@@ -203,6 +203,15 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap }: {
   const activeId = heroForecasts[activeSlide]?.id;
   const { data: heroVoteHistory = [] } = useForecastVoteHistory(activeId);
 
+  // Build probability chart data from vote history
+  const chartData = useMemo(() => {
+    return heroVoteHistory.map((entry) => ({
+      date: entry.date,
+      yes_pct: entry.weighted_yes_pct,
+      no_pct: Math.round((100 - entry.weighted_yes_pct) * 10) / 10,
+    }));
+  }, [heroVoteHistory]);
+
   useEffect(() => {
     if (heroForecasts.length <= 1 || isPaused) return;
     intervalRef.current = setInterval(() => {
@@ -247,15 +256,6 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap }: {
   const cIsSentimentDual = cDims.some(d => d === "community_sentiment") && !!current.project_b_name;
   const cYesLabel = cIsPriceMarket ? "Long" : cIsSentimentDual ? (current.project_a_name || "Yes") : "Yes";
   const cNoLabel = cIsPriceMarket ? "Short" : cIsSentimentDual ? (current.project_b_name || "No") : "No";
-
-  // Build probability chart data from vote history
-  const chartData = useMemo(() => {
-    return heroVoteHistory.map((entry) => ({
-      date: entry.date,
-      yes_pct: entry.weighted_yes_pct,
-      no_pct: Math.round((100 - entry.weighted_yes_pct) * 10) / 10,
-    }));
-  }, [heroVoteHistory]);
 
   return (
     <section className="relative overflow-hidden pt-24 pb-6">
