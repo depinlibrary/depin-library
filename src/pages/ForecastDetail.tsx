@@ -1094,10 +1094,7 @@ const ForecastDetail = () => {
 
             {/* Vote Trend chart now embedded in hero section */}
 
-            {/* Related Forecasts — column layout */}
-            {relatedForecasts.length > 0 && (
-              <RelatedForecastsList forecasts={relatedForecasts} />
-            )}
+            {/* Related Forecasts removed */}
             </div>
           </div>
         </div>
