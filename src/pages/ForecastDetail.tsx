@@ -343,28 +343,16 @@ const ForecastDetail = () => {
               <ArrowLeft className="h-3.5 w-3.5" /> Back to Forecasts
             </Link>
             <div className="space-y-4">
-            {/* Hero Card — split layout like Forecasts page hero */}
+            {/* Hero Card — compact header with project + title + odds */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="rounded-2xl border border-border bg-card overflow-hidden"
             >
-              <div className="flex flex-col lg:flex-row">
-                {/* LEFT: Market table matching Forecasts page hero */}
-                <div className="flex-1 p-6 sm:p-8 flex flex-col min-w-0">
-                  {/* Category + status */}
-                  <div className="flex items-center justify-between mb-5">
-                    <div className="flex items-center gap-2">
-                      {forecastDimension && (() => {
-                        const dimIcons: Record<string, typeof TrendingUp> = { token_price: TrendingUp, market_cap: TrendingUp, community_sentiment: Users };
-                        const dimLabels: Record<string, string> = { token_price: "Price", market_cap: "MCap", community_sentiment: "Sentiment" };
-                        const Icon = dimIcons[forecastDimension] || TrendingUp;
-                        return <Icon className="h-3.5 w-3.5 text-primary" />;
-                      })()}
-                      <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">
-                        {forecastDimension ? ({ token_price: "Price", market_cap: "MCap", community_sentiment: "Sentiment" }[forecastDimension] || forecastDimension) + " Market" : "Prediction Market"}
-                      </span>
-                    </div>
+              <div className="p-6 sm:p-8">
+                {/* Top row: status tag + share */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
                     <span className="flex items-center gap-1.5">
                       <span className="relative flex h-1.5 w-1.5">
                         {!isEnded && <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-green-500" />}
@@ -374,105 +362,176 @@ const ForecastDetail = () => {
                         {isEnded ? 'Ended' : timeLeft}
                       </span>
                     </span>
-                  </div>
-
-                  {/* Title */}
-                  <h1 className="text-xl sm:text-2xl font-bold text-foreground leading-tight mb-6 font-['Space_Grotesk'] tracking-tight">
-                    {forecast.title}
-                  </h1>
-
-                  {/* Target Hit banner moved to Results section in sidebar */}
-
-                  {/* Market table — Outcome + Odds */}
-                  <div className="space-y-0 flex-1">
-                    <div className="grid grid-cols-[1fr_auto] gap-x-4 sm:gap-x-8 items-center pb-2.5">
-                      <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Outcome</span>
-                      <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider text-center w-[72px]">Odds</span>
-                    </div>
-
-                    <div className="border-t border-border" />
-
-                    {/* Row A — Yes/Long */}
-                    <div className="grid grid-cols-[1fr_auto] gap-x-4 sm:gap-x-8 items-center py-4">
-                      <div className="flex items-center gap-3 min-w-0">
-                        {forecast.project_a?.logo_url ? (
-                          <img src={forecast.project_a.logo_url} alt={forecast.project_a.name} className="w-10 h-10 rounded-xl object-contain bg-secondary shrink-0 border border-border" />
-                        ) : (
-                          <span className="w-10 h-10 rounded-xl flex items-center justify-center text-lg bg-secondary shrink-0 border border-border">{forecast.project_a?.logo_emoji || "⬡"}</span>
-                        )}
-                        <div className="min-w-0">
-                          <Link to={`/project/${forecast.project_a?.slug}`} className="text-sm font-semibold text-foreground hover:text-primary transition-colors block truncate">
-                            {forecast.project_a?.name}
-                          </Link>
-                          <div className="flex items-center gap-2 mt-1">
-                            <div className="w-10 h-[3px] rounded-full bg-primary" />
-                            <span className="text-[10px] text-muted-foreground">{forecast.total_votes_yes} votes</span>
-                            {forecast.avg_confidence_yes != null && (
-                              <span className="text-[10px] text-primary/60 flex items-center gap-0.5">
-                                <Gauge className="h-3 w-3" /> {forecast.avg_confidence_yes.toFixed(1)}/5
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <span className="inline-flex items-center justify-center w-[72px] py-2 rounded-xl border border-primary/25 bg-primary/5 text-sm font-bold text-foreground tabular-nums">
-                        {yesPct.toFixed(0)}%
+                    {forecastDimension && (
+                      <span className="text-[10px] font-semibold text-primary uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/5 border border-primary/15">
+                        {({ token_price: "Price", market_cap: "MCap", community_sentiment: "Sentiment" }[forecastDimension] || forecastDimension)}
                       </span>
-                    </div>
-
-                    <div className="border-t border-border/40" />
-
-                    {/* Row B — No/Short */}
-                    <div className="grid grid-cols-[1fr_auto] gap-x-4 sm:gap-x-8 items-center py-4">
-                      <div className="flex items-center gap-3 min-w-0">
-                        {forecast.project_b ? (
-                          <>
-                            {forecast.project_b.logo_url ? (
-                              <img src={forecast.project_b.logo_url} alt={forecast.project_b.name} className="w-10 h-10 rounded-xl object-contain bg-secondary shrink-0 border border-border" />
-                            ) : (
-                              <span className="w-10 h-10 rounded-xl flex items-center justify-center text-lg bg-secondary shrink-0 border border-border">{forecast.project_b?.logo_emoji || "⬡"}</span>
-                            )}
-                            <div className="min-w-0">
-                              <Link to={`/project/${forecast.project_b?.slug}`} className="text-sm font-semibold text-foreground hover:text-primary transition-colors block truncate">
-                                {forecast.project_b?.name}
-                              </Link>
-                              <div className="flex items-center gap-2 mt-1">
-                                <div className="w-10 h-[3px] rounded-full bg-destructive" />
-                                <span className="text-[10px] text-muted-foreground">{forecast.total_votes_no} votes</span>
-                                {forecast.avg_confidence_no != null && (
-                                  <span className="text-[10px] text-destructive/60 flex items-center gap-0.5">
-                                    <Gauge className="h-3 w-3" /> {forecast.avg_confidence_no.toFixed(1)}/5
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            <span className="w-10 h-10 rounded-xl flex items-center justify-center text-lg bg-destructive/10 shrink-0 border border-destructive/20">
-                              <ArrowDownRight className="h-4.5 w-4.5 text-destructive" />
-                            </span>
-                            <div className="min-w-0">
-                              <span className="text-sm font-semibold text-foreground">{noLabel}</span>
-                              <div className="flex items-center gap-2 mt-1">
-                                <div className="w-10 h-[3px] rounded-full bg-destructive" />
-                                <span className="text-[10px] text-muted-foreground">{forecast.total_votes_no} votes</span>
-                              </div>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                      <span className="inline-flex items-center justify-center w-[72px] py-2 rounded-xl border border-destructive/25 bg-destructive/5 text-sm font-bold text-foreground tabular-nums">
-                        {noPct.toFixed(0)}%
-                      </span>
-                    </div>
+                    )}
                   </div>
-
-                  {/* Results moved to sidebar below creator card */}
-
+                  <div className="flex items-center gap-1.5">
+                    <button onClick={handleShareX} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" title="Share on X">
+                      <ExternalLink className="h-4 w-4" />
+                    </button>
+                    <button onClick={handleCopyLink} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" title="Copy link">
+                      <Copy className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
 
-                {/* RIGHT: Chart section with tab switcher */}
+                {/* Project logos + names joined with title */}
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="flex items-center -space-x-1.5">
+                    {forecast.project_a?.logo_url ? (
+                      <img src={forecast.project_a.logo_url} alt={forecast.project_a.name} className="w-8 h-8 rounded-lg object-contain bg-secondary border border-card relative z-10" />
+                    ) : (
+                      <span className="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-secondary border border-card relative z-10">{forecast.project_a?.logo_emoji || "⬡"}</span>
+                    )}
+                    {forecast.project_b && (
+                      forecast.project_b.logo_url ? (
+                        <img src={forecast.project_b.logo_url} alt={forecast.project_b.name} className="w-8 h-8 rounded-lg object-contain bg-secondary border border-card relative z-0" />
+                      ) : (
+                        <span className="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-secondary border border-card relative z-0">{forecast.project_b?.logo_emoji || "⬡"}</span>
+                      )
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Link to={`/project/${forecast.project_a?.slug}`} className="font-medium hover:text-foreground transition-colors">{forecast.project_a?.name}</Link>
+                    {forecast.project_b && (
+                      <>
+                        <span className="text-muted-foreground/40">vs</span>
+                        <Link to={`/project/${forecast.project_b?.slug}`} className="font-medium hover:text-foreground transition-colors">{forecast.project_b?.name}</Link>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Title */}
+                <h1 className="text-xl sm:text-2xl font-bold text-foreground leading-tight mb-5 font-['Space_Grotesk'] tracking-tight">
+                  {forecast.title}
+                </h1>
+
+                {/* Odds pills — Long/Short or Yes/No with percentages */}
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 flex-1">
+                    <span className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-primary/25 bg-primary/5 text-sm font-bold text-foreground tabular-nums">
+                      <span className="w-2 h-2 rounded-full bg-primary" />
+                      {yesLabel} {yesPct.toFixed(0)}%
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-destructive/25 bg-destructive/5 text-sm font-bold text-foreground tabular-nums">
+                      <span className="w-2 h-2 rounded-full bg-destructive" />
+                      {noLabel} {noPct.toFixed(0)}%
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-muted-foreground">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</span>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Charts section — Probability Trend + Token Price */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 }}
+              className="rounded-2xl border border-border bg-card overflow-hidden"
+            >
+              <div className="p-6 sm:p-8 flex flex-col">
+                {(() => {
+                  const hasPriceData = (forecastDimension === "token_price" || forecastDimension === "market_cap") && marketDataA.data?.sparkline_7d;
+
+                  return (
+                    <>
+                      {/* Tab switcher */}
+                      {hasPriceData && (
+                        <div className="flex items-center gap-1 bg-secondary/50 rounded-lg p-0.5 mb-4 self-start">
+                          <button
+                            onClick={() => setHeroChartTab("probability")}
+                            className={`px-3 py-1.5 rounded-md text-[11px] font-medium transition-all ${
+                              heroChartTab === "probability"
+                                ? "bg-background text-foreground shadow-sm"
+                                : "text-muted-foreground hover:text-foreground"
+                            }`}
+                          >
+                            Probability
+                          </button>
+                          <button
+                            onClick={() => setHeroChartTab("price")}
+                            className={`px-3 py-1.5 rounded-md text-[11px] font-medium transition-all ${
+                              heroChartTab === "price"
+                                ? "bg-background text-foreground shadow-sm"
+                                : "text-muted-foreground hover:text-foreground"
+                            }`}
+                          >
+                            {forecastDimension === "market_cap" ? "Market Cap" : "Token Price"}
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Probability Trend */}
+                      {heroChartTab === "probability" && (
+                        <>
+                          <div className="flex items-center justify-between mb-3">
+                            <span className="text-xs font-semibold text-muted-foreground">Probability Trend</span>
+                            <div className="flex items-center gap-4 ml-auto">
+                              <span className="flex items-center gap-1.5 text-[11px]">
+                                <span className="w-2 h-2 rounded-full bg-primary" />
+                                <span className="font-medium text-muted-foreground">{yesLabel}</span>
+                                <span className="font-semibold text-primary font-['Space_Grotesk']">{yesPct.toFixed(1)}%</span>
+                              </span>
+                              <span className="flex items-center gap-1.5 text-[11px]">
+                                <span className="w-2 h-2 rounded-full bg-destructive" />
+                                <span className="font-medium text-muted-foreground">{noLabel}</span>
+                                <span className="font-semibold text-destructive font-['Space_Grotesk']">{noPct.toFixed(1)}%</span>
+                              </span>
+                            </div>
+                          </div>
+                          <div className="min-h-[220px]">
+                            {voteHistory.length >= 2 ? (
+                              <ResponsiveContainer width="100%" height={220}>
+                                <AreaChart data={voteHistory.map(v => ({
+                                  ...v,
+                                  yes_pct: v.weighted_yes_pct,
+                                  no_pct: 100 - v.weighted_yes_pct,
+                                }))} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                                  <defs>
+                                    <linearGradient id="detailYesGrad" x1="0" y1="0" x2="0" y2="1">
+                                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
+                                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.01} />
+                                    </linearGradient>
+                                    <linearGradient id="detailNoGrad" x1="0" y1="0" x2="0" y2="1">
+                                      <stop offset="5%" stopColor="hsl(var(--destructive))" stopOpacity={0.15} />
+                                      <stop offset="95%" stopColor="hsl(var(--destructive))" stopOpacity={0.01} />
+                                    </linearGradient>
+                                  </defs>
+                                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} vertical={false} />
+                                  <ReferenceLine y={50} stroke="hsl(var(--muted-foreground))" strokeDasharray="6 4" opacity={0.25} />
+                                  <XAxis dataKey="date" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+                                  <YAxis domain={[0, 100]} tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} tickFormatter={(v: number) => `${v}%`} />
+                                  <Tooltip
+                                    contentStyle={{
+                                      backgroundColor: "hsl(var(--card))",
+                                      border: "1px solid hsl(var(--border))",
+                                      borderRadius: "10px",
+                                      fontSize: "11px",
+                                      padding: "6px 10px",
+                                    }}
+                                    formatter={(value: number, name: string) => [`${value}%`, name === "yes_pct" ? yesLabel : noLabel]}
+                                    labelStyle={{ fontWeight: 600, marginBottom: 2, color: "hsl(var(--foreground))" }}
+                                  />
+                                  <Area type="monotone" dataKey="yes_pct" name="yes_pct" stroke="hsl(var(--primary))" fill="url(#detailYesGrad)" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: "hsl(var(--primary))", stroke: "hsl(var(--card))", strokeWidth: 2 }} />
+                                  <Area type="monotone" dataKey="no_pct" name="no_pct" stroke="hsl(var(--destructive))" fill="url(#detailNoGrad)" strokeWidth={1.5} strokeDasharray="4 2" dot={false} activeDot={{ r: 3, fill: "hsl(var(--destructive))", stroke: "hsl(var(--card))", strokeWidth: 2 }} />
+                                </AreaChart>
+                              </ResponsiveContainer>
+                            ) : (
+                              <div className="flex items-center justify-center h-[220px] text-xs text-muted-foreground">
+                                Not enough votes for a trend chart yet
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      )}
+
+                      {/* Token Price chart */}
+                      {heroChartTab === "price" && hasPriceData && (() => {
                 <div className="lg:w-[55%] p-6 sm:p-8 flex flex-col">
                   {(() => {
                     const hasPriceData = (forecastDimension === "token_price" || forecastDimension === "market_cap") && marketDataA.data?.sparkline_7d;
