@@ -27,7 +27,6 @@ import {
   useDeleteForecastComment,
   useEditForecastComment,
   useForecastVoteHistory,
-  useRelatedForecasts,
 } from "@/hooks/useForecastDetail";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
