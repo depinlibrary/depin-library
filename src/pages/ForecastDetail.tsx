@@ -915,6 +915,87 @@ const ForecastDetail = () => {
             {/* Creator Card — compact with countdown */}
             <CreatorCardWithCountdown forecast={forecast} isEnded={isEnded} timeLeft={timeLeft} />
 
+            {/* Forecast Results — shown below creator when ended */}
+            {isEnded && (() => {
+              const outcomeResult = forecast.outcome
+                ? forecast.outcome
+                : (yesPct >= 50 ? "yes" : "no");
+              const outcomeLabel = outcomeResult === "yes" ? yesLabel : noLabel;
+              const outcomeIsLong = outcomeResult === "yes";
+              const userVote = forecast.user_vote;
+              const userCorrect = userVote ? userVote === outcomeResult : null;
+              const userVoteLabel = userVote === "yes" ? yesLabel : noLabel;
+
+              return (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.03 }}
+                  className="rounded-2xl border border-border bg-card overflow-hidden"
+                >
+                  <div className="px-5 py-3.5 border-b border-border flex items-center gap-2">
+                    <Trophy className="h-4 w-4 text-primary" />
+                    <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Forecast Results</h3>
+                  </div>
+                  <div className="p-5 space-y-3">
+                    {/* Overall result */}
+                    <div className={`flex items-center justify-between rounded-xl px-4 py-3 ${
+                      outcomeIsLong
+                        ? "bg-green-500/10 border border-green-500/20"
+                        : "bg-destructive/10 border border-destructive/20"
+                    }`}>
+                      <span className="text-xs font-medium text-muted-foreground">Final Outcome</span>
+                      <Badge
+                        variant="secondary"
+                        className={`text-xs font-bold ${outcomeIsLong ? "bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/25" : "bg-destructive/15 text-destructive border-destructive/25"}`}
+                      >
+                        {outcomeLabel} {!isPriceMarket ? `(${outcomeIsLong ? yesPct.toFixed(0) : noPct.toFixed(0)}%)` : ""}
+                      </Badge>
+                    </div>
+
+                    {/* Target hit info for price markets */}
+                    {forecast.status === "resolved" && isPriceMarket && forecast.prediction_target != null && (
+                      <div className="flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3">
+                        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary/15 shrink-0">
+                          <Target className="h-4 w-4 text-primary" />
+                        </div>
+                        <div className="min-w-0">
+                          <span className="text-[11px] font-bold text-primary block">Target Hit</span>
+                          <p className="text-[10px] text-muted-foreground leading-snug">
+                            {forecast.project_b_id
+                              ? `Outperformance reached ${forecast.prediction_direction === "long" ? "+" : "-"}${Number(forecast.prediction_target).toFixed(1)}%`
+                              : `${forecastDimension === "market_cap" ? "Market cap" : "Price"} reached $${Number(forecast.prediction_target).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}`}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* User's prediction result */}
+                    {userVote ? (
+                      <div className={`flex items-center justify-between rounded-xl px-4 py-3 text-xs font-semibold ${
+                        userCorrect
+                          ? "bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20"
+                          : "bg-destructive/10 text-destructive border border-destructive/20"
+                      }`}>
+                        <span>Your Prediction: {userVoteLabel}</span>
+                        <span className="flex items-center gap-1">
+                          {userCorrect ? (
+                            <><CheckCircle2 className="h-3.5 w-3.5" /> Correct</>
+                          ) : (
+                            <><XCircle className="h-3.5 w-3.5" /> Incorrect</>
+                          )}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="rounded-xl px-4 py-3 bg-secondary/30 border border-border/50 text-xs text-muted-foreground text-center">
+                        You did not vote on this forecast
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })()}
+
             {/* Cast Your Vote — hide for ended price/market cap forecasts */}
             {!(isEnded && isPriceMarket) && (
               <motion.div
