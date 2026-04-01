@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { getWeightedChance } from "@/lib/forecastUtils";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Clock, CalendarDays, Timer, Users, ExternalLink, Copy, ArrowUpRight, ArrowDownRight, ThumbsUp, ThumbsDown, Gauge, Target, Zap, CheckCircle2, XCircle, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { ArrowLeft, Clock, CalendarDays, Timer, Users, ExternalLink, Copy, ArrowUpRight, ArrowDownRight, ThumbsUp, ThumbsDown, Gauge, Target, Zap, CheckCircle2, XCircle, TrendingUp, TrendingDown, Minus, Trophy } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from "recharts";
 import { useTokenMarketData } from "@/hooks/useTokenMarketData";
 import { motion } from "framer-motion";
@@ -381,46 +381,7 @@ const ForecastDetail = () => {
                     {forecast.title}
                   </h1>
 
-                  {/* Target Hit Banner */}
-                  {forecast.status === "resolved" && isPriceMarket && forecast.prediction_target != null && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ type: "spring", stiffness: 200, damping: 15 }}
-                      className="mb-4 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3 flex items-center gap-3 relative overflow-hidden"
-                    >
-                      <div className="absolute inset-0 opacity-[0.07] pointer-events-none" style={{
-                        background: 'linear-gradient(105deg, transparent 40%, hsl(var(--primary)) 50%, transparent 60%)',
-                        backgroundSize: '200% 100%',
-                        animation: 'shimmer 3s ease-in-out infinite',
-                      }} />
-                      <motion.div
-                        className="flex items-center justify-center h-8 w-8 rounded-full bg-primary/15 shrink-0"
-                        animate={{ scale: [1, 1.1, 1] }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                      >
-                        <Target className="h-4 w-4 text-primary" />
-                      </motion.div>
-                      <div className="flex-1 min-w-0 relative">
-                        <div className="flex items-center gap-1.5 mb-0.5">
-                          <span className="text-xs font-bold text-primary">Target Hit</span>
-                          <motion.div animate={{ rotate: [0, 15, -15, 0] }} transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}>
-                            <Zap className="h-3 w-3 text-primary" />
-                          </motion.div>
-                        </div>
-                        <p className="text-[11px] text-muted-foreground leading-snug">
-                          Auto-resolved early — {forecast.project_b_id
-                            ? `outperformance reached the ${forecast.prediction_direction === "long" ? "long" : "short"} target of`
-                            : `${forecastDimension === "market_cap" ? "market cap" : "token price"} reached the ${forecast.prediction_direction === "long" ? "long" : "short"} target of`}{" "}
-                          <span className="font-semibold text-foreground">
-                            {forecast.project_b_id
-                              ? `${forecast.prediction_direction === "long" ? "+" : "-"}${Number(forecast.prediction_target).toFixed(1)}%`
-                              : `$${Number(forecast.prediction_target).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}`}
-                          </span>
-                        </p>
-                      </div>
-                    </motion.div>
-                  )}
+                  {/* Target Hit banner moved to Results section in sidebar */}
 
                   {/* Market table — Outcome + Odds */}
                   <div className="space-y-0 flex-1">
@@ -507,46 +468,7 @@ const ForecastDetail = () => {
                     </div>
                   </div>
 
-                  {/* Final result badge + Your Prediction if ended */}
-                  {isEnded && (() => {
-                    const outcomeResult = forecast.outcome
-                      ? forecast.outcome
-                      : (yesPct >= 50 ? "yes" : "no");
-                    const outcomeLabel = outcomeResult === "yes" ? yesLabel : noLabel;
-                    const outcomeIsLong = outcomeResult === "yes";
-                    const userVote = forecast.user_vote;
-                    const userCorrect = userVote ? userVote === outcomeResult : null;
-                    const userVoteLabel = userVote === "yes" ? yesLabel : noLabel;
-
-                    return (
-                      <div className="space-y-2 mt-2">
-                        <div className="flex items-center justify-end">
-                          <Badge
-                            variant="secondary"
-                            className={`text-[10px] font-semibold ${outcomeIsLong ? "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20" : "bg-destructive/10 text-destructive border-destructive/20"}`}
-                          >
-                            Result: {outcomeLabel} {!isPriceMarket ? `(${outcomeIsLong ? yesPct.toFixed(0) : noPct.toFixed(0)}%)` : ""}
-                          </Badge>
-                        </div>
-                        {userVote && (
-                          <div className={`flex items-center justify-between rounded-lg px-4 py-2.5 text-xs font-semibold ${
-                            userCorrect
-                              ? "bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20"
-                              : "bg-destructive/10 text-destructive border border-destructive/20"
-                          }`}>
-                            <span>Your Prediction: {userVoteLabel}</span>
-                            <span className="flex items-center gap-1">
-                              {userCorrect ? (
-                                <><CheckCircle2 className="h-3.5 w-3.5" /> Correct</>
-                              ) : (
-                                <><XCircle className="h-3.5 w-3.5" /> Incorrect</>
-                              )}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })()}
+                  {/* Results moved to sidebar below creator card */}
 
                 </div>
 
@@ -953,6 +875,87 @@ const ForecastDetail = () => {
             <div className="space-y-4">
             {/* Creator Card — compact with countdown */}
             <CreatorCardWithCountdown forecast={forecast} isEnded={isEnded} timeLeft={timeLeft} />
+
+            {/* Forecast Results — shown below creator when ended */}
+            {isEnded && (() => {
+              const outcomeResult = forecast.outcome
+                ? forecast.outcome
+                : (yesPct >= 50 ? "yes" : "no");
+              const outcomeLabel = outcomeResult === "yes" ? yesLabel : noLabel;
+              const outcomeIsLong = outcomeResult === "yes";
+              const userVote = forecast.user_vote;
+              const userCorrect = userVote ? userVote === outcomeResult : null;
+              const userVoteLabel = userVote === "yes" ? yesLabel : noLabel;
+
+              return (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.03 }}
+                  className="rounded-2xl border border-border bg-card overflow-hidden"
+                >
+                  <div className="px-5 py-3.5 border-b border-border flex items-center gap-2">
+                    <Trophy className="h-4 w-4 text-primary" />
+                    <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Forecast Results</h3>
+                  </div>
+                  <div className="p-5 space-y-3">
+                    {/* Overall result */}
+                    <div className={`flex items-center justify-between rounded-xl px-4 py-3 ${
+                      outcomeIsLong
+                        ? "bg-green-500/10 border border-green-500/20"
+                        : "bg-destructive/10 border border-destructive/20"
+                    }`}>
+                      <span className="text-xs font-medium text-muted-foreground">Final Outcome</span>
+                      <Badge
+                        variant="secondary"
+                        className={`text-xs font-bold ${outcomeIsLong ? "bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/25" : "bg-destructive/15 text-destructive border-destructive/25"}`}
+                      >
+                        {outcomeLabel} {!isPriceMarket ? `(${outcomeIsLong ? yesPct.toFixed(0) : noPct.toFixed(0)}%)` : ""}
+                      </Badge>
+                    </div>
+
+                    {/* Target hit info for price markets */}
+                    {forecast.status === "resolved" && isPriceMarket && forecast.prediction_target != null && (
+                      <div className="flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3">
+                        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary/15 shrink-0">
+                          <Target className="h-4 w-4 text-primary" />
+                        </div>
+                        <div className="min-w-0">
+                          <span className="text-[11px] font-bold text-primary block">Target Hit</span>
+                          <p className="text-[10px] text-muted-foreground leading-snug">
+                            {forecast.project_b_id
+                              ? `Outperformance reached ${forecast.prediction_direction === "long" ? "+" : "-"}${Number(forecast.prediction_target).toFixed(1)}%`
+                              : `${forecastDimension === "market_cap" ? "Market cap" : "Price"} reached $${Number(forecast.prediction_target).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}`}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* User's prediction result */}
+                    {userVote ? (
+                      <div className={`flex items-center justify-between rounded-xl px-4 py-3 text-xs font-semibold ${
+                        userCorrect
+                          ? "bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20"
+                          : "bg-destructive/10 text-destructive border border-destructive/20"
+                      }`}>
+                        <span>Your Prediction: {userVoteLabel}</span>
+                        <span className="flex items-center gap-1">
+                          {userCorrect ? (
+                            <><CheckCircle2 className="h-3.5 w-3.5" /> Correct</>
+                          ) : (
+                            <><XCircle className="h-3.5 w-3.5" /> Incorrect</>
+                          )}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="rounded-xl px-4 py-3 bg-secondary/30 border border-border/50 text-xs text-muted-foreground text-center">
+                        You did not vote on this forecast
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })()}
 
             {/* Cast Your Vote — hide for ended price/market cap forecasts */}
             {!(isEnded && isPriceMarket) && (

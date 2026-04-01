@@ -383,6 +383,23 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap }: {
                         </span>
                       </span>
                     </div>
+
+                    {/* Slide dots — below View Market, left-aligned */}
+                    {heroForecasts.length > 1 && (
+                      <div className="flex items-center gap-1.5 mt-3">
+                        {heroForecasts.map((_, i) => (
+                          <button
+                            key={i}
+                            onClick={() => goToSlide(i)}
+                            className={`rounded-full transition-all duration-300 ${
+                              i === activeSlide
+                                ? "w-5 h-1.5 bg-primary"
+                                : "w-1.5 h-1.5 bg-muted-foreground/30 hover:bg-muted-foreground/50"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {/* Right: Probability Trend Chart */}
@@ -449,22 +466,7 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap }: {
               </motion.div>
             </AnimatePresence>
 
-            {/* Slide dots — inside the card */}
-            {heroForecasts.length > 1 && (
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-10">
-                {heroForecasts.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => goToSlide(i)}
-                    className={`rounded-full transition-all duration-300 ${
-                      i === activeSlide
-                        ? "w-5 h-1.5 bg-primary"
-                        : "w-1.5 h-1.5 bg-muted-foreground/30 hover:bg-muted-foreground/50"
-                    }`}
-                  />
-                ))}
-              </div>
-            )}
+            {/* Dots moved inside left panel */}
           </div>
         </motion.div>
       </div>
