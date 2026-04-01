@@ -381,46 +381,7 @@ const ForecastDetail = () => {
                     {forecast.title}
                   </h1>
 
-                  {/* Target Hit Banner */}
-                  {forecast.status === "resolved" && isPriceMarket && forecast.prediction_target != null && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ type: "spring", stiffness: 200, damping: 15 }}
-                      className="mb-4 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3 flex items-center gap-3 relative overflow-hidden"
-                    >
-                      <div className="absolute inset-0 opacity-[0.07] pointer-events-none" style={{
-                        background: 'linear-gradient(105deg, transparent 40%, hsl(var(--primary)) 50%, transparent 60%)',
-                        backgroundSize: '200% 100%',
-                        animation: 'shimmer 3s ease-in-out infinite',
-                      }} />
-                      <motion.div
-                        className="flex items-center justify-center h-8 w-8 rounded-full bg-primary/15 shrink-0"
-                        animate={{ scale: [1, 1.1, 1] }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                      >
-                        <Target className="h-4 w-4 text-primary" />
-                      </motion.div>
-                      <div className="flex-1 min-w-0 relative">
-                        <div className="flex items-center gap-1.5 mb-0.5">
-                          <span className="text-xs font-bold text-primary">Target Hit</span>
-                          <motion.div animate={{ rotate: [0, 15, -15, 0] }} transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}>
-                            <Zap className="h-3 w-3 text-primary" />
-                          </motion.div>
-                        </div>
-                        <p className="text-[11px] text-muted-foreground leading-snug">
-                          Auto-resolved early — {forecast.project_b_id
-                            ? `outperformance reached the ${forecast.prediction_direction === "long" ? "long" : "short"} target of`
-                            : `${forecastDimension === "market_cap" ? "market cap" : "token price"} reached the ${forecast.prediction_direction === "long" ? "long" : "short"} target of`}{" "}
-                          <span className="font-semibold text-foreground">
-                            {forecast.project_b_id
-                              ? `${forecast.prediction_direction === "long" ? "+" : "-"}${Number(forecast.prediction_target).toFixed(1)}%`
-                              : `$${Number(forecast.prediction_target).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}`}
-                          </span>
-                        </p>
-                      </div>
-                    </motion.div>
-                  )}
+                  {/* Target Hit banner moved to Results section in sidebar */}
 
                   {/* Market table — Outcome + Odds */}
                   <div className="space-y-0 flex-1">
