@@ -783,8 +783,10 @@ const ForecastDetail = () => {
                         })()}
                       </>
                     );
-                  })()}
-                </div>
+                      })()}
+                    </>
+                  );
+                })()}
               </div>
             </motion.div>
 
