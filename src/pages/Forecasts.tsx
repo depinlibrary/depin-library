@@ -573,6 +573,46 @@ const Forecasts = () => {
   const total = data?.total || 0;
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
+  // Accumulate forecasts for infinite scroll
+  const [allForecasts, setAllForecasts] = useState<Forecast[]>([]);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  // Reset accumulated forecasts when filters/sort change
+  useEffect(() => {
+    setAllForecasts([]);
+    setPage(1);
+  }, [sort, projectFilter, search, statusFilter, topicFilter]);
+
+  // Append new page data
+  useEffect(() => {
+    if (!forecasts.length) return;
+    setAllForecasts(prev => {
+      if (page === 1) return forecasts;
+      // Dedupe by id
+      const existingIds = new Set(prev.map(f => f.id));
+      const newItems = forecasts.filter(f => !existingIds.has(f.id));
+      return [...prev, ...newItems];
+    });
+  }, [forecasts, page]);
+
+  // Infinite scroll observer
+  useEffect(() => {
+    if (!loadMoreRef.current) return;
+    const hasMore = page < totalPages;
+    if (!hasMore || isLoading) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isLoading) {
+          setPage(p => p + 1);
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(loadMoreRef.current);
+    return () => observer.disconnect();
+  }, [page, totalPages, isLoading]);
+
   // Fetch forecast targets (dimensions) for displayed forecasts
   const forecastIds = useMemo(() => forecasts.map(f => f.id), [forecasts]);
   const { data: forecastTargetsMap = {} } = useQuery({
