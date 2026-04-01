@@ -15,7 +15,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import DiscussionSection from "@/components/forecast/DiscussionSection";
 import ForecastAnalysis from "@/components/forecast/ForecastAnalysis";
-import ForecastAnalysis from "@/components/forecast/ForecastAnalysis";
 import UserAvatar from "@/components/UserAvatar";
 import UserStatsHoverCard from "@/components/UserStatsHoverCard";
 import { useAuth } from "@/contexts/AuthContext";
