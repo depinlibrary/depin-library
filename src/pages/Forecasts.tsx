@@ -973,7 +973,7 @@ const Forecasts = () => {
                 </div>
               ))}
             </div>
-          ) : forecasts.length === 0 ? (
+          ) : allForecasts.length === 0 && !isLoading ? (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -997,7 +997,7 @@ const Forecasts = () => {
             <>
               <div className={`grid gap-3 sm:grid-cols-2 ${showCreate ? 'lg:grid-cols-2' : 'lg:grid-cols-3 xl:grid-cols-4'}`}>
                 <AnimatePresence mode="popLayout">
-                  {forecasts.map((forecast, i) => (
+                  {allForecasts.map((forecast, i) => (
                     <ForecastCard
                       key={forecast.id}
                       forecast={forecast}
@@ -1010,41 +1010,13 @@ const Forecasts = () => {
                 </AnimatePresence>
               </div>
 
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-center gap-3 mt-10">
-                  <button
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    disabled={page === 1}
-                    className="flex items-center gap-1.5 rounded-lg border border-border bg-card px-3.5 py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-secondary disabled:opacity-40 disabled:pointer-events-none"
-                  >
-                    <ChevronLeft className="h-3.5 w-3.5" /> Previous
-                  </button>
-                  <div className="flex items-center gap-1">
-                    {Array.from({ length: Math.min(totalPages, 5) }).map((_, i) => {
-                      const pageNum = i + 1;
-                      return (
-                        <button
-                          key={pageNum}
-                          onClick={() => setPage(pageNum)}
-                          className={`w-8 h-8 rounded-lg text-xs font-medium transition-all ${
-                            page === pageNum
-                              ? "bg-primary text-primary-foreground"
-                              : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-                          }`}
-                        >
-                          {pageNum}
-                        </button>
-                      );
-                    })}
+              {/* Infinite scroll sentinel */}
+              {page < totalPages && (
+                <div ref={loadMoreRef} className="flex items-center justify-center py-8">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <div className="h-4 w-4 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
+                    Loading more...
                   </div>
-                  <button
-                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                    disabled={page === totalPages}
-                    className="flex items-center gap-1.5 rounded-lg border border-border bg-card px-3.5 py-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-secondary disabled:opacity-40 disabled:pointer-events-none"
-                  >
-                    Next <ChevronRight className="h-3.5 w-3.5" />
-                  </button>
                 </div>
               )}
             </>
