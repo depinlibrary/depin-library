@@ -507,46 +507,7 @@ const ForecastDetail = () => {
                     </div>
                   </div>
 
-                  {/* Final result badge + Your Prediction if ended */}
-                  {isEnded && (() => {
-                    const outcomeResult = forecast.outcome
-                      ? forecast.outcome
-                      : (yesPct >= 50 ? "yes" : "no");
-                    const outcomeLabel = outcomeResult === "yes" ? yesLabel : noLabel;
-                    const outcomeIsLong = outcomeResult === "yes";
-                    const userVote = forecast.user_vote;
-                    const userCorrect = userVote ? userVote === outcomeResult : null;
-                    const userVoteLabel = userVote === "yes" ? yesLabel : noLabel;
-
-                    return (
-                      <div className="space-y-2 mt-2">
-                        <div className="flex items-center justify-end">
-                          <Badge
-                            variant="secondary"
-                            className={`text-[10px] font-semibold ${outcomeIsLong ? "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20" : "bg-destructive/10 text-destructive border-destructive/20"}`}
-                          >
-                            Result: {outcomeLabel} {!isPriceMarket ? `(${outcomeIsLong ? yesPct.toFixed(0) : noPct.toFixed(0)}%)` : ""}
-                          </Badge>
-                        </div>
-                        {userVote && (
-                          <div className={`flex items-center justify-between rounded-lg px-4 py-2.5 text-xs font-semibold ${
-                            userCorrect
-                              ? "bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20"
-                              : "bg-destructive/10 text-destructive border border-destructive/20"
-                          }`}>
-                            <span>Your Prediction: {userVoteLabel}</span>
-                            <span className="flex items-center gap-1">
-                              {userCorrect ? (
-                                <><CheckCircle2 className="h-3.5 w-3.5" /> Correct</>
-                              ) : (
-                                <><XCircle className="h-3.5 w-3.5" /> Incorrect</>
-                              )}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })()}
+                  {/* Results moved to sidebar below creator card */}
 
                 </div>
 
