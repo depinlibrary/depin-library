@@ -143,7 +143,6 @@ const ForecastDetail = () => {
   const { data: voteHistory = [] } = useForecastVoteHistory(id);
   const marketDataA = useTokenMarketData(forecast?.project_a_id);
   const marketDataB = useTokenMarketData(forecast?.project_b_id || undefined);
-  const { data: relatedForecasts = [] } = useRelatedForecasts(id, forecast?.project_a_id, forecast?.project_b_id);
   const voteForecast = useVoteForecast();
   const addComment = useAddForecastComment();
   const deleteComment = useDeleteForecastComment();
