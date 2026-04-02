@@ -1014,16 +1014,24 @@ const Forecasts = () => {
             <>
               <div className={`grid gap-3 sm:grid-cols-2 ${showCreate ? 'lg:grid-cols-2' : 'lg:grid-cols-3 xl:grid-cols-4'}`}>
                 <AnimatePresence mode="popLayout">
-                  {allForecasts.map((forecast, i) => (
-                    <ForecastCard
-                      key={forecast.id}
-                      forecast={forecast}
-                      onVote={handleVote}
-                      isAuthenticated={!!user}
-                      index={i}
-                      dimensions={forecastTargetsMap[forecast.id] || []}
-                    />
-                  ))}
+                  {(() => {
+                    const now = new Date();
+                    const sorted = [...allForecasts].sort((a, b) => {
+                      const aActive = new Date(a.end_date) > now ? 0 : 1;
+                      const bActive = new Date(b.end_date) > now ? 0 : 1;
+                      return aActive - bActive;
+                    });
+                    return sorted.map((forecast, i) => (
+                      <ForecastCard
+                        key={forecast.id}
+                        forecast={forecast}
+                        onVote={handleVote}
+                        isAuthenticated={!!user}
+                        index={i}
+                        dimensions={forecastTargetsMap[forecast.id] || []}
+                      />
+                    ));
+                  })()}
                 </AnimatePresence>
               </div>
 
