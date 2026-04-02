@@ -347,25 +347,43 @@ const ForecastDetail = () => {
               className="rounded-2xl border border-border bg-card overflow-hidden"
             >
               <div className="p-6 sm:p-8">
-                {/* Top row: status tag + share */}
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <span className="flex items-center gap-1.5">
-                      <span className="relative flex h-1.5 w-1.5">
-                        {!isEnded && <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-green-500" />}
-                        <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${isEnded ? 'bg-destructive' : 'bg-green-500'}`} />
-                      </span>
-                      <span className={`text-[10px] font-semibold ${isEnded ? 'text-destructive' : 'text-green-500'}`}>
-                        {isEnded ? 'Ended' : timeLeft}
-                      </span>
-                    </span>
-                    {forecastDimension && (
-                      <span className="text-[10px] font-semibold text-primary uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/5 border border-primary/15">
-                        {({ token_price: "Price", market_cap: "MCap", community_sentiment: "Sentiment" }[forecastDimension] || forecastDimension)}
-                      </span>
-                    )}
+                {/* Top row: project context + share */}
+                <div className="flex items-start justify-between gap-4 mb-4">
+                  <div className="flex items-start gap-3 min-w-0">
+                    <div className="flex items-center -space-x-1.5 shrink-0">
+                      {forecast.project_a?.logo_url ? (
+                        <img src={forecast.project_a.logo_url} alt={forecast.project_a.name} className="w-8 h-8 rounded-lg object-contain bg-secondary border border-card relative z-10" />
+                      ) : (
+                        <span className="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-secondary border border-card relative z-10">{forecast.project_a?.logo_emoji || "⬡"}</span>
+                      )}
+                      {forecast.project_b && (
+                        forecast.project_b.logo_url ? (
+                          <img src={forecast.project_b.logo_url} alt={forecast.project_b.name} className="w-8 h-8 rounded-lg object-contain bg-secondary border border-card relative z-0" />
+                        ) : (
+                          <span className="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-secondary border border-card relative z-0">{forecast.project_b?.logo_emoji || "⬡"}</span>
+                        )
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                        <Link to={`/project/${forecast.project_a?.slug}`} className="font-medium hover:text-foreground transition-colors">{forecast.project_a?.name}</Link>
+                        {forecast.project_b && (
+                          <>
+                            <span className="text-muted-foreground/40">vs</span>
+                            <Link to={`/project/${forecast.project_b?.slug}`} className="font-medium hover:text-foreground transition-colors">{forecast.project_b?.name}</Link>
+                          </>
+                        )}
+                        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold ${
+                          isEnded ? "bg-destructive/10 text-destructive" : "bg-primary/10 text-primary"
+                        }`}>
+                          <span className={`h-1.5 w-1.5 rounded-full ${isEnded ? "bg-destructive" : "bg-primary"}`} />
+                          {isEnded ? "Ended" : "Live"}
+                        </span>
+                        {!isEnded && <span className="text-[11px] text-muted-foreground">{timeLeft}</span>}
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 shrink-0">
                     <button onClick={handleShareX} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" title="Share on X">
                       <ExternalLink className="h-4 w-4" />
                     </button>
@@ -375,52 +393,29 @@ const ForecastDetail = () => {
                   </div>
                 </div>
 
-                {/* Project logos + names joined with title */}
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="flex items-center -space-x-1.5">
-                    {forecast.project_a?.logo_url ? (
-                      <img src={forecast.project_a.logo_url} alt={forecast.project_a.name} className="w-8 h-8 rounded-lg object-contain bg-secondary border border-card relative z-10" />
-                    ) : (
-                      <span className="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-secondary border border-card relative z-10">{forecast.project_a?.logo_emoji || "⬡"}</span>
-                    )}
-                    {forecast.project_b && (
-                      forecast.project_b.logo_url ? (
-                        <img src={forecast.project_b.logo_url} alt={forecast.project_b.name} className="w-8 h-8 rounded-lg object-contain bg-secondary border border-card relative z-0" />
-                      ) : (
-                        <span className="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-secondary border border-card relative z-0">{forecast.project_b?.logo_emoji || "⬡"}</span>
-                      )
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Link to={`/project/${forecast.project_a?.slug}`} className="font-medium hover:text-foreground transition-colors">{forecast.project_a?.name}</Link>
-                    {forecast.project_b && (
-                      <>
-                        <span className="text-muted-foreground/40">vs</span>
-                        <Link to={`/project/${forecast.project_b?.slug}`} className="font-medium hover:text-foreground transition-colors">{forecast.project_b?.name}</Link>
-                      </>
-                    )}
-                  </div>
-                </div>
-
                 {/* Title */}
-                <h1 className="text-xl sm:text-2xl font-bold text-foreground leading-tight mb-5 font-['Space_Grotesk'] tracking-tight">
+                <h1 className="text-xl sm:text-2xl font-bold text-foreground leading-tight mb-6 font-['Space_Grotesk'] tracking-tight">
                   {forecast.title}
                 </h1>
 
-                {/* Odds pills — Long/Short or Yes/No with percentages */}
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2 flex-1">
-                    <span className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-primary/25 bg-primary/5 text-sm font-bold text-foreground tabular-nums">
+                {/* Odds pills — stacked */}
+                <div className="flex flex-col gap-3">
+                  <div className="flex w-full items-center justify-between rounded-xl border border-primary/25 bg-primary/5 px-4 py-3 text-sm font-bold text-foreground">
+                    <span className="flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-primary" />
-                      {yesLabel} {yesPct.toFixed(0)}%
+                      {yesLabel}
                     </span>
-                    <span className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-destructive/25 bg-destructive/5 text-sm font-bold text-foreground tabular-nums">
-                      <span className="w-2 h-2 rounded-full bg-destructive" />
-                      {noLabel} {noPct.toFixed(0)}%
-                    </span>
+                    <span className="font-['Space_Grotesk'] text-base tabular-nums text-primary">{yesPct.toFixed(0)}%</span>
                   </div>
-                  <span className="text-[10px] text-muted-foreground">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</span>
+                  <div className="flex w-full items-center justify-between rounded-xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm font-bold text-foreground">
+                    <span className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-destructive" />
+                      {noLabel}
+                    </span>
+                    <span className="font-['Space_Grotesk'] text-base tabular-nums text-destructive">{noPct.toFixed(0)}%</span>
+                  </div>
                 </div>
+                <p className="mt-3 text-[11px] text-muted-foreground">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</p>
               </div>
             </motion.div>
 
