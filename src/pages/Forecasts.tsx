@@ -1014,26 +1014,52 @@ const Forecasts = () => {
             <>
               <div className={`grid gap-3 sm:grid-cols-2 ${showCreate ? 'lg:grid-cols-2' : 'lg:grid-cols-3 xl:grid-cols-4'}`}>
                 <AnimatePresence mode="popLayout">
-                  {allForecasts.map((forecast, i) => (
-                    <ForecastCard
-                      key={forecast.id}
-                      forecast={forecast}
-                      onVote={handleVote}
-                      isAuthenticated={!!user}
-                      index={i}
-                      dimensions={forecastTargetsMap[forecast.id] || []}
-                    />
-                  ))}
+                  {(() => {
+                    const now = new Date();
+                    const sorted = [...allForecasts].sort((a, b) => {
+                      const aActive = new Date(a.end_date) > now ? 0 : 1;
+                      const bActive = new Date(b.end_date) > now ? 0 : 1;
+                      return aActive - bActive;
+                    });
+                    return sorted.map((forecast, i) => (
+                      <ForecastCard
+                        key={forecast.id}
+                        forecast={forecast}
+                        onVote={handleVote}
+                        isAuthenticated={!!user}
+                        index={i}
+                        dimensions={forecastTargetsMap[forecast.id] || []}
+                      />
+                    ));
+                  })()}
                 </AnimatePresence>
               </div>
 
               {/* Infinite scroll sentinel */}
               {hasMorePages && (
-                <div ref={loadMoreRef} className="flex items-center justify-center py-8">
+                <div ref={loadMoreRef} className="py-4">
                   {isFetchingMore ? (
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <div className="h-4 w-4 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
-                      Loading more...
+                    <div className={`grid gap-3 sm:grid-cols-2 ${showCreate ? 'lg:grid-cols-2' : 'lg:grid-cols-3 xl:grid-cols-4'}`}>
+                      {Array.from({ length: 4 }).map((_, i) => (
+                        <div key={`skel-${i}`} className="animate-pulse rounded-xl border border-border bg-card overflow-hidden">
+                          <div className="p-4 space-y-3">
+                            <div className="flex items-center gap-2">
+                              <div className="w-7 h-7 rounded-lg bg-secondary" />
+                              <div className="h-3 w-20 bg-secondary rounded" />
+                            </div>
+                            <div className="h-4 w-3/4 bg-secondary rounded" />
+                            <div className="h-3 w-full bg-secondary rounded" />
+                            <div className="flex items-end justify-between mt-4">
+                              <div className="h-5 w-16 bg-secondary rounded" />
+                              <div className="h-3 w-12 bg-secondary rounded" />
+                            </div>
+                          </div>
+                          <div className="px-4 pb-4 flex gap-2">
+                            <div className="flex-1 h-8 bg-secondary rounded-lg" />
+                            <div className="flex-1 h-8 bg-secondary rounded-lg" />
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   ) : (
                     <div className="h-px w-full" />
