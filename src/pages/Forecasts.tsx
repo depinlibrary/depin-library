@@ -256,6 +256,7 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap }: {
   const cIsSentimentDual = cDims.some(d => d === "community_sentiment") && !!current.project_b_name;
   const cYesLabel = cIsPriceMarket ? "Long" : cIsSentimentDual ? (current.project_a_name || "Yes") : "Yes";
   const cNoLabel = cIsPriceMarket ? "Short" : cIsSentimentDual ? (current.project_b_name || "No") : "No";
+  const cStatusLabel = cIsEnded ? "Ended" : "Live";
 
   return (
     <section className="relative overflow-hidden pt-24 pb-6">
@@ -280,30 +281,12 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap }: {
                 exit={{ opacity: 0, x: -30 }}
                 transition={{ duration: 0.35, ease: "easeInOut" }}
               >
-                <div className="grid grid-cols-1 lg:grid-cols-2">
+                <div className="grid grid-cols-1 lg:grid-cols-2 lg:min-h-[440px]">
                   {/* Left: market info */}
                   <div className="p-6 sm:p-8 flex flex-col border-b lg:border-b-0 lg:border-r border-border">
-                    {/* Top: status tag + category */}
-                    <div className="flex items-center gap-2 mb-4">
-                      <span className="flex items-center gap-1.5">
-                        <span className="relative flex h-1.5 w-1.5">
-                          {!cIsEnded && <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-green-500" />}
-                          <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${cIsEnded ? 'bg-destructive' : 'bg-green-500'}`} />
-                        </span>
-                        <span className={`text-[10px] font-semibold ${cIsEnded ? 'text-destructive' : 'text-green-500'}`}>
-                          {cIsEnded ? 'Ended' : cTimeLeft}
-                        </span>
-                      </span>
-                      {cDims[0] && (
-                        <span className="text-[10px] font-semibold text-primary uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/5 border border-primary/15">
-                          {dimensionLabelMap[cDims[0]] || cDims[0]}
-                        </span>
-                      )}
-                    </div>
-
                     {/* Project logos + names */}
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="flex items-center -space-x-1.5">
+                    <div className="flex items-start gap-3 mb-4">
+                      <div className="flex items-center -space-x-1.5 shrink-0">
                         {current.project_a_logo_url ? (
                           <img src={current.project_a_logo_url} alt={current.project_a_name} className="w-8 h-8 rounded-lg object-contain bg-secondary border border-card relative z-10" />
                         ) : (
@@ -317,34 +300,49 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap }: {
                           )
                         )}
                       </div>
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <Link to={`/project/${current.project_a_slug}`} className="font-medium hover:text-foreground transition-colors">{current.project_a_name}</Link>
-                        {current.project_b_name && (
-                          <>
-                            <span className="text-muted-foreground/40">vs</span>
-                            <Link to={`/project/${current.project_b_slug}`} className="font-medium hover:text-foreground transition-colors">{current.project_b_name}</Link>
-                          </>
-                        )}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                          <Link to={`/project/${current.project_a_slug}`} className="font-medium hover:text-foreground transition-colors">{current.project_a_name}</Link>
+                          {current.project_b_name && (
+                            <>
+                              <span className="text-muted-foreground/40">vs</span>
+                              <Link to={`/project/${current.project_b_slug}`} className="font-medium hover:text-foreground transition-colors">{current.project_b_name}</Link>
+                            </>
+                          )}
+                          <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold ${
+                            cIsEnded ? "bg-destructive/10 text-destructive" : "bg-primary/10 text-primary"
+                          }`}>
+                            <span className={`h-1.5 w-1.5 rounded-full ${cIsEnded ? "bg-destructive" : "bg-primary"}`} />
+                            {cStatusLabel}
+                          </span>
+                          {!cIsEnded && <span className="text-[11px] text-muted-foreground">{cTimeLeft}</span>}
+                        </div>
                       </div>
                     </div>
 
                     {/* Title */}
                     <Link to={`/forecasts/${current.id}`}>
-                      <h2 className="text-xl sm:text-2xl font-bold text-foreground leading-tight font-['Space_Grotesk'] tracking-tight hover:underline transition-all line-clamp-2 mb-6">
+                      <h2 className="text-xl sm:text-2xl font-bold text-foreground leading-tight font-['Space_Grotesk'] tracking-tight hover:underline transition-all line-clamp-2 mb-7">
                         {current.title}
                       </h2>
                     </Link>
 
-                    {/* Odds pills — Long/Short or Yes/No */}
-                    <div className="flex items-center gap-3 mt-auto">
-                      <span className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-primary/25 bg-primary/5 text-sm font-bold text-foreground tabular-nums">
-                        <span className="w-2 h-2 rounded-full bg-primary" />
-                        {cYesLabel} {cYesPct.toFixed(0)}%
-                      </span>
-                      <span className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-destructive/25 bg-destructive/5 text-sm font-bold text-foreground tabular-nums">
-                        <span className="w-2 h-2 rounded-full bg-destructive" />
-                        {cNoLabel} {(100 - cYesPct).toFixed(0)}%
-                      </span>
+                    {/* Odds pills — stacked */}
+                    <div className="mt-auto flex flex-col gap-3">
+                      <div className="flex w-full items-center justify-between rounded-xl border border-primary/25 bg-primary/5 px-4 py-3 text-sm font-bold text-foreground">
+                        <span className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-primary" />
+                          {cYesLabel}
+                        </span>
+                        <span className="font-['Space_Grotesk'] text-base tabular-nums text-primary">{cYesPct.toFixed(0)}%</span>
+                      </div>
+                      <div className="flex w-full items-center justify-between rounded-xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm font-bold text-foreground">
+                        <span className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-destructive" />
+                          {cNoLabel}
+                        </span>
+                        <span className="font-['Space_Grotesk'] text-base tabular-nums text-destructive">{(100 - cYesPct).toFixed(0)}%</span>
+                      </div>
                     </div>
 
                     {/* Slide dots — left-aligned */}
@@ -382,7 +380,7 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap }: {
                         </span>
                       </div>
                     </div>
-                    <div className="flex-1 min-h-[220px]">
+                    <div className="flex-1 min-h-[250px] lg:min-h-[280px]">
                       {chartData.length >= 2 ? (
                         <ResponsiveContainer width="100%" height="100%">
                           <AreaChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
@@ -448,7 +446,7 @@ const Forecasts = () => {
   const [statusFilter, setStatusFilter] = useState<ForecastStatusFilter>("all");
   const [topicFilter, setTopicFilter] = useState<string>("");
   const [showFilters, setShowFilters] = useState(false);
-  const { data, isLoading } = useForecasts(sort, page, PAGE_SIZE, projectFilter || undefined, search || undefined, statusFilter, topicFilter || undefined);
+  const { data, isLoading, isFetching } = useForecasts(sort, page, PAGE_SIZE, projectFilter || undefined, search || undefined, statusFilter, topicFilter || undefined);
   const createForecast = useCreateForecast();
   const voteForecast = useVoteForecast();
   const [showCreate, setShowCreate] = useState(false);
@@ -570,18 +568,26 @@ const Forecasts = () => {
   }, [searchParams, user]);
 
   const forecasts = data?.forecasts || [];
-  const total = data?.total || 0;
-  const totalPages = Math.ceil(total / PAGE_SIZE);
 
   // Accumulate forecasts for infinite scroll
   const [allForecasts, setAllForecasts] = useState<Forecast[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const loadMoreRef = useRef<HTMLDivElement>(null);
+  const isPagingRef = useRef(false);
 
   // Reset accumulated forecasts when filters/sort change
   useEffect(() => {
     setAllForecasts([]);
+    setTotalCount(0);
     setPage(1);
+    isPagingRef.current = false;
   }, [sort, projectFilter, search, statusFilter, topicFilter]);
+
+  useEffect(() => {
+    if (typeof data?.total === "number") {
+      setTotalCount(data.total);
+    }
+  }, [data?.total]);
 
   // Append new page data
   useEffect(() => {
@@ -595,26 +601,37 @@ const Forecasts = () => {
     });
   }, [forecasts, page]);
 
+  useEffect(() => {
+    if (!isFetching) {
+      isPagingRef.current = false;
+    }
+  }, [isFetching]);
+
+  const total = totalCount;
+  const hasMorePages = allForecasts.length < totalCount && forecasts.length > 0;
+  const isInitialLoading = isLoading && allForecasts.length === 0;
+  const isFetchingMore = isFetching && allForecasts.length > 0;
+
   // Infinite scroll observer
   useEffect(() => {
-    if (!loadMoreRef.current) return;
-    const hasMore = page < totalPages;
-    if (!hasMore || isLoading) return;
+    const sentinel = loadMoreRef.current;
+    if (!sentinel || !hasMorePages || isFetching) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && !isLoading) {
-          setPage(p => p + 1);
+        if (entries[0]?.isIntersecting && !isPagingRef.current) {
+          isPagingRef.current = true;
+          setPage((p) => p + 1);
         }
       },
-      { threshold: 0.1 }
+      { rootMargin: "320px 0px", threshold: 0 }
     );
-    observer.observe(loadMoreRef.current);
+    observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [page, totalPages, isLoading]);
+  }, [hasMorePages, isFetching]);
 
   // Fetch forecast targets (dimensions) for displayed forecasts
-  const forecastIds = useMemo(() => forecasts.map(f => f.id), [forecasts]);
+  const forecastIds = useMemo(() => allForecasts.map(f => f.id), [allForecasts]);
   const { data: forecastTargetsMap = {} } = useQuery({
     queryKey: ["forecast-targets-batch", forecastIds],
     queryFn: async () => {
@@ -956,7 +973,7 @@ const Forecasts = () => {
       <div className="container mx-auto px-4 py-8 flex-1 flex gap-6">
         {/* Main content */}
         <section className={`flex-1 min-w-0 transition-all duration-300`}>
-          {isLoading ? (
+          {isInitialLoading ? (
              <div className={`grid gap-3 sm:grid-cols-2 ${showCreate ? 'lg:grid-cols-2' : 'lg:grid-cols-3 xl:grid-cols-4'}`}>
                 {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="animate-pulse rounded-xl border border-border bg-card overflow-hidden">
@@ -1011,12 +1028,16 @@ const Forecasts = () => {
               </div>
 
               {/* Infinite scroll sentinel */}
-              {page < totalPages && (
+              {hasMorePages && (
                 <div ref={loadMoreRef} className="flex items-center justify-center py-8">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <div className="h-4 w-4 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
-                    Loading more...
-                  </div>
+                  {isFetchingMore ? (
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <div className="h-4 w-4 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
+                      Loading more...
+                    </div>
+                  ) : (
+                    <div className="h-px w-full" />
+                  )}
                 </div>
               )}
             </>
