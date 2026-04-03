@@ -193,10 +193,19 @@ export default function VoteSection({ forecast, yesPct, noPct, totalVotes, isEnd
           {/* Vote buttons */}
           {!isEnded ? (
             hasVoted ? (
-              <div className="rounded-lg bg-muted/50 border border-border px-4 py-3 text-center">
-                <span className="text-xs font-medium text-muted-foreground">
-                  You voted <span className={`font-semibold ${forecast.user_vote === "yes" ? "text-primary" : "text-destructive"}`}>{forecast.user_vote === "yes" ? "Yes" : "No"}</span> · Votes are final
-                </span>
+              <div className="space-y-3">
+                <div className="rounded-lg bg-muted/50 border border-border px-4 py-3 text-center">
+                  <span className="text-xs font-medium text-muted-foreground">
+                    You voted <span className={`font-semibold ${forecast.user_vote === "yes" ? "text-primary" : "text-destructive"}`}>{forecast.user_vote === "yes" ? "Yes" : "No"}</span> · Votes are final
+                  </span>
+                </div>
+                <Button
+                  onClick={() => setAlreadyVotedDialog(true)}
+                  variant="outline"
+                  className="w-full h-11 text-sm font-semibold"
+                >
+                  Change vote
+                </Button>
               </div>
             ) : (
               <div className="flex gap-3">
