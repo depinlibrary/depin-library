@@ -69,7 +69,7 @@ const SubmitProject = () => {
     let logoUrl: string | null = null;
     if (logoFile) {
       const ext = logoFile.name.split(".").pop();
-      const path = `submissions/${crypto.randomUUID()}.${ext}`;
+      const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
       const { error: uploadError } = await supabase.storage.
       from("project-logos").
       upload(path, logoFile);

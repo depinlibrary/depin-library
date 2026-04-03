@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { shouldNotify } from "@/hooks/useNotificationPreferences";
+
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
