@@ -76,19 +76,15 @@ export function useForecastDetail(forecastId: string | undefined) {
         userVote = vote?.vote || null;
       }
 
-      // Fetch all votes with confidence to compute averages
-      const { data: allVotes } = await supabase
-        .from("forecast_votes")
-        .select("vote, confidence_level")
-        .eq("forecast_id", forecastId!);
+      // Fetch aggregate vote stats via RPC (no individual user exposure)
+      const { data: voteStats } = await supabase
+        .rpc("get_forecast_vote_stats", { p_forecast_id: forecastId! });
 
       let avgConfidenceYes: number | null = null;
       let avgConfidenceNo: number | null = null;
-      if (allVotes && allVotes.length > 0) {
-        const yesVotes = allVotes.filter(v => v.vote === "yes" && v.confidence_level != null);
-        const noVotes = allVotes.filter(v => v.vote === "no" && v.confidence_level != null);
-        if (yesVotes.length > 0) avgConfidenceYes = yesVotes.reduce((s, v) => s + v.confidence_level!, 0) / yesVotes.length;
-        if (noVotes.length > 0) avgConfidenceNo = noVotes.reduce((s, v) => s + v.confidence_level!, 0) / noVotes.length;
+      if (voteStats && voteStats.length > 0) {
+        avgConfidenceYes = voteStats[0].avg_confidence_yes;
+        avgConfidenceNo = voteStats[0].avg_confidence_no;
       }
 
       // Get creator display name
@@ -245,30 +241,24 @@ export function useForecastVoteHistory(forecastId: string | undefined) {
     queryKey: ["forecast-vote-history", forecastId],
     enabled: !!forecastId,
     queryFn: async (): Promise<VoteHistoryEntry[]> => {
-      const { data: votes, error } = await supabase
-        .from("forecast_votes")
-        .select("vote, created_at, confidence_level")
-        .eq("forecast_id", forecastId!)
-        .order("created_at", { ascending: true });
+      const { data: history, error } = await supabase
+        .rpc("get_forecast_vote_history", { p_forecast_id: forecastId! });
       if (error) throw error;
-      if (!votes || votes.length === 0) return [];
+      if (!history || history.length === 0) return [];
 
-      // Build cumulative data points per individual vote for granular trend
+      // Build cumulative data points from daily aggregates
       let cumYes = 0, cumNo = 0;
-      let cumWeightedYes = 0, cumWeightedNo = 0;
-      const points: VoteHistoryEntry[] = votes.map((v: any) => {
-        const conf = v.confidence_level ?? 3;
-        if (v.vote === "yes") { cumYes++; cumWeightedYes += conf; }
-        else { cumNo++; cumWeightedNo += conf; }
-        const d = new Date(v.created_at);
-        const label = d.toLocaleDateString("en-US", { month: "short", day: "numeric" }) +
-          " " + d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
-        const totalW = cumWeightedYes + cumWeightedNo;
+      const points: VoteHistoryEntry[] = history.map((h: any) => {
+        cumYes += Number(h.yes_count);
+        cumNo += Number(h.no_count);
+        const d = new Date(h.vote_date);
+        const label = d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+        const total = cumYes + cumNo;
         return {
           date: label,
           yes_count: cumYes,
           no_count: cumNo,
-          weighted_yes_pct: totalW > 0 ? Math.round((cumWeightedYes / totalW) * 1000) / 10 : 50,
+          weighted_yes_pct: total > 0 ? Math.round((cumYes / total) * 1000) / 10 : 50,
         };
       });
 

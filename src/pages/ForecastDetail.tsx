@@ -173,32 +173,14 @@ const ForecastDetail = () => {
     },
   });
 
-  const { data: allVoters = [] } = useQuery({
-    queryKey: ["forecast-voters", id],
+  const { data: voteStats } = useQuery({
+    queryKey: ["forecast-vote-stats", id],
     enabled: !!id,
     queryFn: async () => {
-      const { data: votes, error } = await supabase
-        .from("forecast_votes")
-        .select("user_id, vote, confidence_level, created_at")
-        .eq("forecast_id", id!)
-        .order("created_at", { ascending: false });
+      const { data, error } = await supabase
+        .rpc("get_forecast_vote_stats", { p_forecast_id: id! });
       if (error) throw error;
-      if (!votes?.length) return [];
-
-      const userIds = [...new Set(votes.map(v => v.user_id))];
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("user_id, display_name, avatar_url")
-        .in("user_id", userIds);
-
-      const profileMap: Record<string, any> = {};
-      (profiles || []).forEach((p: any) => { profileMap[p.user_id] = p; });
-
-      return votes.map((v: any) => ({
-        ...v,
-        display_name: profileMap[v.user_id]?.display_name || "Anonymous",
-        avatar_url: profileMap[v.user_id]?.avatar_url || null,
-      }));
+      return data?.[0] || null;
     },
   });
 
@@ -527,38 +509,39 @@ const ForecastDetail = () => {
                 {/* Votes Tab */}
                 <TabsContent value="votes" className="mt-0">
                   <div className="p-6">
-                    {allVoters.length === 0 ? (
+                    {!voteStats || (Number(voteStats.total_yes) === 0 && Number(voteStats.total_no) === 0) ? (
                       <p className="text-sm text-muted-foreground text-center py-6">No votes yet. Be the first to vote!</p>
                     ) : (
-                      <div className="space-y-2">
-                        {allVoters.map((voter: any, i: number) => (
-                          <div key={i} className="flex items-center justify-between py-2.5 px-3 rounded-xl hover:bg-secondary/30 transition-colors">
-                            <div className="flex items-center gap-2.5">
-                              <UserStatsHoverCard userId={voter.user_id} displayName={voter.display_name} avatarUrl={voter.avatar_url}>
-                                <div className="flex items-center gap-2.5 cursor-pointer">
-                                  <UserAvatar avatarUrl={voter.avatar_url} displayName={voter.display_name} size="sm" />
-                                  <div>
-                                    <p className="text-xs font-semibold text-foreground hover:text-primary transition-colors">{voter.display_name}</p>
-                                    <p className="text-[10px] text-muted-foreground">{format(new Date(voter.created_at), "MMM d, yyyy")}</p>
-                                  </div>
-                                </div>
-                              </UserStatsHoverCard>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              {voter.confidence_level && (
-                                <span className="text-[9px] text-muted-foreground flex items-center gap-0.5">
-                                  <Gauge className="h-2.5 w-2.5" /> {voter.confidence_level}/5
-                                </span>
-                              )}
-                              <Badge
-                                variant={voter.vote === "yes" ? "default" : "destructive"}
-                                className={`text-[10px] ${voter.vote === "yes" ? "bg-primary/10 text-primary border-primary/20 hover:bg-primary/10" : "bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive/10"}`}
-                              >
-                                {voter.vote === "yes" ? yesLabel : noLabel}
-                              </Badge>
-                            </div>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between py-3 px-4 rounded-xl bg-secondary/30">
+                          <div className="flex items-center gap-2">
+                            <ThumbsUp className="h-4 w-4 text-primary" />
+                            <span className="text-sm font-semibold text-foreground">{yesLabel}</span>
                           </div>
-                        ))}
+                          <div className="flex items-center gap-3">
+                            <span className="text-sm text-muted-foreground">{Number(voteStats.total_yes)} votes</span>
+                            {voteStats.avg_confidence_yes && (
+                              <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                                <Gauge className="h-2.5 w-2.5" /> Avg {Number(voteStats.avg_confidence_yes).toFixed(1)}/5
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between py-3 px-4 rounded-xl bg-secondary/30">
+                          <div className="flex items-center gap-2">
+                            <ThumbsDown className="h-4 w-4 text-destructive" />
+                            <span className="text-sm font-semibold text-foreground">{noLabel}</span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="text-sm text-muted-foreground">{Number(voteStats.total_no)} votes</span>
+                            {voteStats.avg_confidence_no && (
+                              <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                                <Gauge className="h-2.5 w-2.5" /> Avg {Number(voteStats.avg_confidence_no).toFixed(1)}/5
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground text-center">Individual votes are kept private to prevent bias</p>
                       </div>
                     )}
                   </div>
