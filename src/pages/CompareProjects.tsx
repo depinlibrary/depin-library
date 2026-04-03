@@ -414,60 +414,62 @@ const CompareProjects = () => {
             ))}
           </div>
 
-          {/* Sidebar header */}
-          <div className="flex items-center px-4 h-10 border-b border-border/50">
-            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Comparison History</span>
-          </div>
+          {user && (
+            <>
+              {/* Sidebar header */}
+              <div className="flex items-center px-4 h-10 border-b border-border/50">
+                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Comparison History</span>
+              </div>
 
-          {/* History list */}
-          <div className="flex-1 overflow-y-auto">
-            {groupedHistory.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 text-center px-4">
-                  <MessageSquare className="h-6 w-6 text-muted-foreground/20 mb-2" />
-                  <p className="text-xs text-muted-foreground">No comparisons yet</p>
-                  <p className="text-[10px] text-muted-foreground/60 mt-1">Select two projects to get started</p>
-                </div>
-              ) : (
-                groupedHistory.map((group) => (
-                  <div key={group.label}>
-                    <div className="px-4 pt-4 pb-1.5">
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">{group.label}</p>
+              {/* History list */}
+              <div className="flex-1 overflow-y-auto">
+                {groupedHistory.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-16 text-center px-4">
+                      <MessageSquare className="h-6 w-6 text-muted-foreground/20 mb-2" />
+                      <p className="text-xs text-muted-foreground">No comparisons yet</p>
+                      <p className="text-[10px] text-muted-foreground/60 mt-1">Select two projects to get started</p>
                     </div>
-                    <div className="px-2 space-y-0.5">
-                      {group.items.map((c: any) => (
-                        <button
-                          key={c.id}
-                          onClick={() => handleHistoryClick(c)}
-                          className={`w-full text-left rounded-lg px-3 py-2.5 transition-all ${
-                            activeHistoryId === c.id
-                              ? "bg-secondary border border-border"
-                              : "hover:bg-secondary/30 border border-transparent"
-                          }`}
-                        >
-                           <div className="flex items-center gap-2">
-                            <div className="flex items-center gap-1 shrink-0">
-                              <div className="h-6 w-6 rounded-md overflow-hidden bg-secondary flex items-center justify-center">
-                                {c.projectA.logo_url ? (
-                                  <img src={c.projectA.logo_url} alt="" className="h-6 w-6 object-contain" />
-                                ) : (
-                                  <span className="text-xs">{c.projectA.logo_emoji}</span>
-                                )}
-                              </div>
-                              <span className="text-[9px] text-muted-foreground/50 font-medium">vs</span>
-                              <div className="h-6 w-6 rounded-md overflow-hidden bg-secondary flex items-center justify-center">
-                                {c.projectB.logo_url ? (
-                                  <img src={c.projectB.logo_url} alt="" className="h-6 w-6 object-contain" />
-                                ) : (
-                                  <span className="text-xs">{c.projectB.logo_emoji}</span>
-                                )}
-                              </div>
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <p className="text-xs font-medium text-foreground truncate leading-tight">
-                                {c.projectA.name} vs {c.projectB.name}
-                              </p>
-                              <p className="text-[10px] text-muted-foreground/50 mt-0.5">
-                                {formatDistanceToNow(new Date(c.created_at), { addSuffix: true })}
+                  ) : (
+                    groupedHistory.map((group) => (
+                      <div key={group.label}>
+                        <div className="px-4 pt-4 pb-1.5">
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">{group.label}</p>
+                        </div>
+                        <div className="px-2 space-y-0.5">
+                          {group.items.map((c: any) => (
+                            <button
+                              key={c.id}
+                              onClick={() => handleHistoryClick(c)}
+                              className={`w-full text-left rounded-lg px-3 py-2.5 transition-all ${
+                                activeHistoryId === c.id
+                                  ? "bg-secondary border border-border"
+                                  : "hover:bg-secondary/30 border border-transparent"
+                              }`}
+                            >
+                               <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1 shrink-0">
+                                  <div className="h-6 w-6 rounded-md overflow-hidden bg-secondary flex items-center justify-center">
+                                    {c.projectA.logo_url ? (
+                                      <img src={c.projectA.logo_url} alt="" className="h-6 w-6 object-contain" />
+                                    ) : (
+                                      <span className="text-xs">{c.projectA.logo_emoji}</span>
+                                    )}
+                                  </div>
+                                  <span className="text-[9px] text-muted-foreground/50 font-medium">vs</span>
+                                  <div className="h-6 w-6 rounded-md overflow-hidden bg-secondary flex items-center justify-center">
+                                    {c.projectB.logo_url ? (
+                                      <img src={c.projectB.logo_url} alt="" className="h-6 w-6 object-contain" />
+                                    ) : (
+                                      <span className="text-xs">{c.projectB.logo_emoji}</span>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-xs font-medium text-foreground truncate leading-tight">
+                                    {c.projectA.name} vs {c.projectB.name}
+                                  </p>
+                                  <p className="text-[10px] text-muted-foreground/50 mt-0.5">
+                                    {formatDistanceToNow(new Date(c.created_at), { addSuffix: true })}
                               </p>
                             </div>
                           </div>

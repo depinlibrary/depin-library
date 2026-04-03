@@ -59,7 +59,7 @@ export default function VoteSection({ forecast, yesPct, noPct, totalVotes, isEnd
 
   const handleVoteClick = (vote: "yes" | "no") => {
     if (!user) { toast.error("Sign in to vote"); return; }
-    if (hasVoted) { toast.error("You have already voted on this prediction."); return; }
+    if (hasVoted) { setAlreadyVotedDialog(true); return; }
     setConfirmDialog({ open: true, vote });
   };
 
