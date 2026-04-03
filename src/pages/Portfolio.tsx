@@ -425,10 +425,6 @@ const Portfolio = () => {
   const notifOptions = [
     { key: "forecast_vote", label: "Prediction votes", desc: "When someone votes on your prediction", icon: TrendingUp },
     { key: "forecast_result", label: "Prediction results", desc: "When a prediction you voted on ends", icon: Crosshair },
-    { key: "forecast_new_comment", label: "New comments", desc: "Comments on your forecasts", icon: Bell },
-    { key: "forecast_comment_reply", label: "Comment replies", desc: "Replies to your comments", icon: Mail },
-    { key: "forecast_comment_like", label: "Comment likes", desc: "When someone likes your comment", icon: Award },
-    { key: "review_like", label: "Review likes", desc: "When someone likes your review", icon: Award },
     { key: "price_alert", label: "Price alerts", desc: "Token price threshold alerts", icon: BarChart3 },
   ];
 
