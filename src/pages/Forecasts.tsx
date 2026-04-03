@@ -186,11 +186,16 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
   );
 };
 // ---- Hero Section — Full-width prediction market showcase ----
-const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap }: {
+const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap, search, setSearch, setPage, navigate, dailyRemaining }: {
   forecasts: Forecast[];
   user: any;
   setShowCreate: (v: boolean) => void;
   heroDimensionsMap: Record<string, string[]>;
+  search: string;
+  setSearch: (v: string) => void;
+  setPage: (v: number) => void;
+  navigate: any;
+  dailyRemaining: number;
 }) => {
   const [activeSlide, setActiveSlide] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
