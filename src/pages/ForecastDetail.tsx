@@ -173,32 +173,14 @@ const ForecastDetail = () => {
     },
   });
 
-  const { data: allVoters = [] } = useQuery({
-    queryKey: ["forecast-voters", id],
+  const { data: voteStats } = useQuery({
+    queryKey: ["forecast-vote-stats", id],
     enabled: !!id,
     queryFn: async () => {
-      const { data: votes, error } = await supabase
-        .from("forecast_votes")
-        .select("user_id, vote, confidence_level, created_at")
-        .eq("forecast_id", id!)
-        .order("created_at", { ascending: false });
+      const { data, error } = await supabase
+        .rpc("get_forecast_vote_stats", { p_forecast_id: id! });
       if (error) throw error;
-      if (!votes?.length) return [];
-
-      const userIds = [...new Set(votes.map(v => v.user_id))];
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("user_id, display_name, avatar_url")
-        .in("user_id", userIds);
-
-      const profileMap: Record<string, any> = {};
-      (profiles || []).forEach((p: any) => { profileMap[p.user_id] = p; });
-
-      return votes.map((v: any) => ({
-        ...v,
-        display_name: profileMap[v.user_id]?.display_name || "Anonymous",
-        avatar_url: profileMap[v.user_id]?.avatar_url || null,
-      }));
+      return data?.[0] || null;
     },
   });
 
