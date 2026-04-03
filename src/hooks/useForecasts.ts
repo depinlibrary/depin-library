@@ -308,15 +308,25 @@ export function useVoteForecast() {
   return useMutation({
     mutationFn: async ({ forecastId, vote, confidenceLevel }: { forecastId: string; vote: "yes" | "no"; confidenceLevel?: number }) => {
       if (!user) throw new Error("Must be logged in");
-      const { error } = await supabase.from("forecast_votes").upsert(
-        {
-          forecast_id: forecastId,
-          user_id: user.id,
-          vote,
-          confidence_level: confidenceLevel ?? null,
-        },
-        { onConflict: "forecast_id,user_id" }
-      );
+
+      // Check if user already voted — votes are permanent
+      const { data: existingVote } = await supabase
+        .from("forecast_votes")
+        .select("id")
+        .eq("forecast_id", forecastId)
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (existingVote) {
+        throw new Error("You have already voted on this prediction. Votes cannot be changed.");
+      }
+
+      const { error } = await supabase.from("forecast_votes").insert({
+        forecast_id: forecastId,
+        user_id: user.id,
+        vote,
+        confidence_level: confidenceLevel ?? null,
+      });
       if (error) throw error;
 
       // Notify forecast creator

@@ -389,17 +389,39 @@ const CompareProjects = () => {
       </header>
 
       <div className="flex flex-1 pt-14">
-        {/* ── Sidebar — fixed, only visible when logged in ── */}
-        {user && (
-          <aside className="hidden md:flex flex-col w-[260px] shrink-0 border-r border-border bg-card/30 fixed top-14 left-0 bottom-0 overflow-hidden">
-            {/* Sidebar header */}
-            <div className="flex items-center px-4 h-12 border-b border-border/50">
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Comparison History</span>
-            </div>
+        {/* ── Sidebar — fixed, visible for all users ── */}
+        <aside className="hidden md:flex flex-col w-[260px] shrink-0 border-r border-border bg-card/30 fixed top-14 left-0 bottom-0 overflow-hidden">
+          {/* Nav links */}
+          <div className="px-3 pt-3 pb-2 space-y-0.5 border-b border-border/50">
+            {[
+              { to: "/", label: "Overview" },
+              { to: "/explore", label: "Explore" },
+              { to: "/forecasts", label: "Predictions" },
+              { to: "/market", label: "Market" },
+              { to: "/compare", label: "Compare" },
+            ].map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                className={`flex items-center rounded-lg px-3 py-2 text-[13px] font-medium transition-all ${
+                  window.location.pathname === link.to
+                    ? "bg-secondary text-foreground"
+                    : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
+                }`}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
 
-            {/* History list */}
-            <div className="flex-1 overflow-y-auto">
-              {groupedHistory.length === 0 ? (
+          {/* Sidebar header */}
+          <div className="flex items-center px-4 h-10 border-b border-border/50">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Comparison History</span>
+          </div>
+
+          {/* History list */}
+          <div className="flex-1 overflow-y-auto">
+            {groupedHistory.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-center px-4">
                   <MessageSquare className="h-6 w-6 text-muted-foreground/20 mb-2" />
                   <p className="text-xs text-muted-foreground">No comparisons yet</p>
@@ -457,10 +479,9 @@ const CompareProjects = () => {
               )}
             </div>
           </aside>
-        )}
 
         {/* ── Main Content ── */}
-        <main className={`flex-1 overflow-y-auto ${user ? 'md:ml-[260px]' : ''}`}>
+        <main className="flex-1 overflow-y-auto md:ml-[260px]">
           <div className="absolute inset-0 bg-grid opacity-15 pointer-events-none" />
           <div className="gradient-radial-top fixed inset-0 pointer-events-none" />
 
