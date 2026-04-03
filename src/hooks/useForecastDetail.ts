@@ -241,30 +241,24 @@ export function useForecastVoteHistory(forecastId: string | undefined) {
     queryKey: ["forecast-vote-history", forecastId],
     enabled: !!forecastId,
     queryFn: async (): Promise<VoteHistoryEntry[]> => {
-      const { data: votes, error } = await supabase
-        .from("forecast_votes")
-        .select("vote, created_at, confidence_level")
-        .eq("forecast_id", forecastId!)
-        .order("created_at", { ascending: true });
+      const { data: history, error } = await supabase
+        .rpc("get_forecast_vote_history", { p_forecast_id: forecastId! });
       if (error) throw error;
-      if (!votes || votes.length === 0) return [];
+      if (!history || history.length === 0) return [];
 
-      // Build cumulative data points per individual vote for granular trend
+      // Build cumulative data points from daily aggregates
       let cumYes = 0, cumNo = 0;
-      let cumWeightedYes = 0, cumWeightedNo = 0;
-      const points: VoteHistoryEntry[] = votes.map((v: any) => {
-        const conf = v.confidence_level ?? 3;
-        if (v.vote === "yes") { cumYes++; cumWeightedYes += conf; }
-        else { cumNo++; cumWeightedNo += conf; }
-        const d = new Date(v.created_at);
-        const label = d.toLocaleDateString("en-US", { month: "short", day: "numeric" }) +
-          " " + d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
-        const totalW = cumWeightedYes + cumWeightedNo;
+      const points: VoteHistoryEntry[] = history.map((h: any) => {
+        cumYes += Number(h.yes_count);
+        cumNo += Number(h.no_count);
+        const d = new Date(h.vote_date);
+        const label = d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+        const total = cumYes + cumNo;
         return {
           date: label,
           yes_count: cumYes,
           no_count: cumNo,
-          weighted_yes_pct: totalW > 0 ? Math.round((cumWeightedYes / totalW) * 1000) / 10 : 50,
+          weighted_yes_pct: total > 0 ? Math.round((cumYes / total) * 1000) / 10 : 50,
         };
       });
 
