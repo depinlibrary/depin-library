@@ -14,8 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useForecasts, useCreateForecast, useVoteForecast, type ForecastSortOption, type ForecastStatusFilter, type Forecast } from "@/hooks/useForecasts";
 import { useProjects } from "@/hooks/useProjects";
-import { useAllTokenMarketData } from "@/hooks/useTokenMarketData";
-import { useForecastVoteHistory } from "@/hooks/useForecastDetail";
+import { useAllTokenMarketData, useTokenMarketData } from "@/hooks/useTokenMarketData";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
