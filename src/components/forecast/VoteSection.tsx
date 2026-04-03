@@ -60,13 +60,22 @@ export default function VoteSection({ forecast, yesPct, noPct, totalVotes, isEnd
   };
 
   const handleVoteClick = (vote: "yes" | "no") => {
-    if (!user) { toast.error("Sign in to vote"); return; }
-    if (hasVoted) { setAlreadyVotedDialog(true); return; }
+    if (!user) {
+      toast.error("Sign in to vote");
+      return;
+    }
+
+    if (hasVoted) {
+      setAlreadyVotedDialog(true);
+      return;
+    }
+
     setConfirmDialog({ open: true, vote });
   };
 
   const handleConfirmVote = () => {
     if (!confirmDialog.vote) return;
+
     const vote = confirmDialog.vote;
     setLocalVote(vote);
     fireConfetti();
@@ -85,7 +94,6 @@ export default function VoteSection({ forecast, yesPct, noPct, totalVotes, isEnd
         transition={{ delay: 0.05 }}
         className="rounded-xl border border-border bg-card overflow-hidden"
       >
-        {/* Stats summary row */}
         <div className="grid grid-cols-3 divide-x divide-border border-b border-border">
           <div className="px-4 py-4 text-center">
             <div className="flex items-center justify-center gap-1.5 mb-1">
@@ -122,7 +130,6 @@ export default function VoteSection({ forecast, yesPct, noPct, totalVotes, isEnd
           </div>
         </div>
 
-        {/* Vote bar */}
         <div className="px-6 py-5">
           <div className="flex items-end justify-between mb-3">
             <div className="flex items-baseline gap-1.5">
@@ -135,7 +142,6 @@ export default function VoteSection({ forecast, yesPct, noPct, totalVotes, isEnd
             </div>
           </div>
 
-          {/* Animated vote bar */}
           <div className="h-4 rounded-full bg-secondary overflow-hidden flex mb-5 relative">
             <motion.div
               initial={{ width: 0 }}
@@ -164,7 +170,6 @@ export default function VoteSection({ forecast, yesPct, noPct, totalVotes, isEnd
             </motion.div>
           </div>
 
-          {/* Confidence slider — only show if not ended AND not already voted */}
           {!isEnded && !hasVoted && (
             <div className="mb-5 rounded-lg bg-secondary/30 border border-border/50 px-4 py-3.5">
               <div className="flex items-center justify-between mb-3">
@@ -194,24 +199,16 @@ export default function VoteSection({ forecast, yesPct, noPct, totalVotes, isEnd
             </div>
           )}
 
-          {/* Vote buttons */}
           {!isEnded ? (
-            hasVoted ? (
-              <div className="space-y-3">
+            <div className="space-y-3">
+              {hasVoted && (
                 <div className="rounded-lg bg-muted/50 border border-border px-4 py-3 text-center">
                   <span className="text-xs font-medium text-muted-foreground">
-                    You voted <span className={`font-semibold ${forecast.user_vote === "yes" ? "text-primary" : "text-destructive"}`}>{forecast.user_vote === "yes" ? "Yes" : "No"}</span> · Votes are final
+                    You voted <span className={`font-semibold ${userVote === "yes" ? "text-primary" : "text-destructive"}`}>{userVote === "yes" ? "Yes" : "No"}</span> · Votes are final
                   </span>
                 </div>
-                <Button
-                  onClick={() => setAlreadyVotedDialog(true)}
-                  variant="outline"
-                  className="w-full h-11 text-sm font-semibold"
-                >
-                  Change vote
-                </Button>
-              </div>
-            ) : (
+              )}
+
               <div className="flex gap-3">
                 <Button
                   onClick={() => handleVoteClick("yes")}
@@ -230,7 +227,7 @@ export default function VoteSection({ forecast, yesPct, noPct, totalVotes, isEnd
                   Vote No
                 </Button>
               </div>
-            )
+            </div>
           ) : (
             <div className="rounded-lg bg-muted/50 border border-border px-4 py-3 text-center">
               <span className="text-xs font-medium text-muted-foreground">
@@ -241,7 +238,6 @@ export default function VoteSection({ forecast, yesPct, noPct, totalVotes, isEnd
         </div>
       </motion.div>
 
-      {/* Confirmation Dialog */}
       <Dialog open={confirmDialog.open} onOpenChange={(open) => !open && setConfirmDialog({ open: false, vote: null })}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -267,7 +263,6 @@ export default function VoteSection({ forecast, yesPct, noPct, totalVotes, isEnd
         </DialogContent>
       </Dialog>
 
-      {/* Already Voted Dialog */}
       <Dialog open={alreadyVotedDialog} onOpenChange={setAlreadyVotedDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -276,7 +271,7 @@ export default function VoteSection({ forecast, yesPct, noPct, totalVotes, isEnd
               Vote Already Cast
             </DialogTitle>
             <DialogDescription>
-              You have already voted <span className={`font-semibold ${forecast.user_vote === "yes" ? "text-primary" : "text-destructive"}`}>{forecast.user_vote === "yes" ? "Yes" : "No"}</span> on this prediction. Votes are permanent and cannot be changed once submitted.
+              You have already voted <span className={`font-semibold ${userVote === "yes" ? "text-primary" : "text-destructive"}`}>{userVote === "yes" ? "Yes" : "No"}</span> on this prediction. Votes are permanent and cannot be changed once submitted.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
