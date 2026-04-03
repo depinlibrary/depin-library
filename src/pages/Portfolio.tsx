@@ -703,7 +703,7 @@ const Portfolio = () => {
     { to: "/", label: "Overview", icon: Home },
     { to: "/explore", label: "Explore", icon: Compass },
     { to: "/market", label: "Market", icon: BarChart3 },
-    { to: "/forecasts", label: "Forecasts", icon: LineChart },
+    { to: "/forecasts", label: "Predictions", icon: LineChart },
     { to: "/compare", label: "Compare", icon: GitCompare },
   ];
 
