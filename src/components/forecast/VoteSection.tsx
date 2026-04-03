@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ThumbsUp, ThumbsDown, Users, TrendingUp, TrendingDown, Gauge, AlertTriangle } from "lucide-react";
+import { ThumbsUp, ThumbsDown, Users, TrendingUp, TrendingDown, Gauge, AlertTriangle, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
@@ -29,6 +29,7 @@ export default function VoteSection({ forecast, yesPct, noPct, totalVotes, isEnd
   const { user } = useAuth();
   const [confidence, setConfidence] = useState(3);
   const [confirmDialog, setConfirmDialog] = useState<{ open: boolean; vote: "yes" | "no" | null }>({ open: false, vote: null });
+  const [alreadyVotedDialog, setAlreadyVotedDialog] = useState(false);
 
   const hasVoted = !!forecast.user_vote;
 
@@ -58,7 +59,7 @@ export default function VoteSection({ forecast, yesPct, noPct, totalVotes, isEnd
 
   const handleVoteClick = (vote: "yes" | "no") => {
     if (!user) { toast.error("Sign in to vote"); return; }
-    if (hasVoted) { toast.error("You have already voted on this prediction."); return; }
+    if (hasVoted) { setAlreadyVotedDialog(true); return; }
     setConfirmDialog({ open: true, vote });
   };
 
@@ -248,6 +249,26 @@ export default function VoteSection({ forecast, yesPct, noPct, totalVotes, isEnd
               onClick={handleConfirmVote}
             >
               {confirmDialog.vote === "yes" ? "Confirm Yes" : "Confirm No"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Already Voted Dialog */}
+      <Dialog open={alreadyVotedDialog} onOpenChange={setAlreadyVotedDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ShieldAlert className="h-5 w-5 text-destructive" />
+              Vote Already Cast
+            </DialogTitle>
+            <DialogDescription>
+              You have already voted <span className={`font-semibold ${forecast.user_vote === "yes" ? "text-primary" : "text-destructive"}`}>{forecast.user_vote === "yes" ? "Yes" : "No"}</span> on this prediction. Votes are permanent and cannot be changed once submitted.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAlreadyVotedDialog(false)}>
+              Got it
             </Button>
           </DialogFooter>
         </DialogContent>
