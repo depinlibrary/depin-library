@@ -8,10 +8,6 @@ import {
 } from "@/components/ui/select";
 
 const notificationTypeLabels: Record<string, string> = {
-  forecast_comment_reply: "Comment Reply",
-  forecast_comment_like: "Comment Like",
-  forecast_new_comment: "New Comment",
-  review_like: "Review Like",
   price_alert: "Price Alert",
   forecast_result: "Forecast Result",
   forecast_vote: "Forecast Vote",

@@ -18,10 +18,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 const PREF_ITEMS = [
   { key: "forecast_result" as const, label: "Forecast Results", desc: "When a forecast you voted on ends and results are available" },
   { key: "forecast_vote" as const, label: "Forecast Votes", desc: "When someone votes on a forecast you created" },
-  { key: "forecast_comment_reply" as const, label: "Comment Replies", desc: "When someone replies to your forecast comment" },
-  { key: "forecast_comment_like" as const, label: "Comment Likes", desc: "When someone likes your forecast comment" },
-  { key: "forecast_new_comment" as const, label: "New Forecast Comments", desc: "When someone comments on a forecast you created" },
-  { key: "review_like" as const, label: "Review Likes", desc: "When someone likes your project review" },
   { key: "price_alert" as const, label: "Price Alerts", desc: "When a token price moves beyond your set threshold" },
 ];
 
