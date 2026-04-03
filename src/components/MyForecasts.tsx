@@ -155,7 +155,7 @@ export default function MyForecasts() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Forecast updated");
+      toast.success("Prediction updated");
       queryClient.invalidateQueries({ queryKey: ["my-forecasts"] });
       queryClient.invalidateQueries({ queryKey: ["forecasts"] });
       setEditForecast(null);

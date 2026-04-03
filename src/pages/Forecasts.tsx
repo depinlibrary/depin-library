@@ -777,7 +777,7 @@ const Forecasts = () => {
     if (!title.trim()) { toast.error("Title required"); return; }
     if (!description.trim()) { toast.error("Description required"); return; }
     if (!projectAId) { toast.error("Select a project"); return; }
-    if (!forecastMarket) { toast.error("Forecast market required"); return; }
+    if (!forecastMarket) { toast.error("Prediction market required"); return; }
     if (!endDate) { toast.error("End date required"); return; }
     if (new Date(endDate) <= new Date()) { toast.error("End date must be in the future"); return; }
 
@@ -1319,7 +1319,7 @@ const Forecasts = () => {
               <div className="space-y-4">
                 <div>
                   <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Title *</label>
-                  <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Forecast title..." className="mt-1.5" />
+                  <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Prediction title..." className="mt-1.5" />
                 </div>
                 <div>
                   <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Description *</label>
