@@ -326,11 +326,18 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap, search
   const cYesLabel = cIsPriceMarket ? "Long" : cIsSentimentDual ? (current.project_a_name || "Yes") : "Yes";
   const cNoLabel = cIsPriceMarket ? "Short" : cIsSentimentDual ? (current.project_b_name || "No") : "No";
   const cStatusLabel = cIsEnded ? "Ended" : "Live";
-  const isPositive = (heroMarketData?.price_change_24h ?? 0) >= 0;
-  const dimLabel = cDims.some(d => d === "market_cap") ? "Market Cap" : "Token Price";
+  const isMarketCapChart = cDims.some(d => d === "market_cap");
+  const dimLabel = isMarketCapChart ? "Market Cap" : "Token Price";
+  const currentValueA = isMarketCapChart ? (heroMarketData?.market_cap_usd ?? null) : (heroMarketData?.price_usd ?? null);
+  const currentValueB = hasTwoProjects
+    ? (isMarketCapChart ? (heroMarketDataB?.market_cap_usd ?? null) : (heroMarketDataB?.price_usd ?? null))
+    : null;
+  const isPositiveA = (heroMarketData?.price_change_24h ?? 0) >= 0;
+  const isPositiveB = (heroMarketDataB?.price_change_24h ?? 0) >= 0;
+  const currentDifference = currentValueA !== null && currentValueB !== null ? currentValueA - currentValueB : null;
 
   const formatChartVal = (v: number) => {
-    if (cDims.some(d => d === "market_cap")) {
+    if (isMarketCapChart) {
       if (v >= 1e9) return `$${(v / 1e9).toFixed(1)}B`;
       if (v >= 1e6) return `$${(v / 1e6).toFixed(1)}M`;
       return `$${v.toLocaleString()}`;
@@ -377,7 +384,7 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap, search
                 }
               }}
               size="sm"
-              className="h-10 gap-1.5 shrink-0 text-xs px-4 rounded-full hover:bg-primary hover:text-primary-foreground"
+              className="h-10 gap-1.5 shrink-0 text-xs px-4 rounded-full !shadow-none !transition-none !hover:bg-primary !hover:text-primary-foreground !hover:shadow-none !hover:translate-y-0"
             >
               <Plus className="h-3.5 w-3.5" /> Create Prediction
             </Button>
@@ -472,18 +479,55 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap, search
                       </span>
                       <span className="text-[10px] text-muted-foreground">CoinGecko</span>
                     </div>
-                    {heroMarketData?.price_usd != null && (
-                      <div className="flex items-center gap-2 mb-3 flex-wrap">
-                        <span className="text-base font-bold text-foreground font-['Space_Grotesk']">
-                          {formatChartVal(cDims.some(d => d === "market_cap") ? (heroMarketData.market_cap_usd || 0) : heroMarketData.price_usd)}
-                        </span>
-                        {heroMarketData.price_change_24h != null && (
-                          <span className={`text-xs font-semibold flex items-center gap-0.5 ${isPositive ? "text-green-500" : "text-destructive"}`}>
-                            {isPositive ? <TrendingUp className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
-                            {isPositive ? "+" : ""}{heroMarketData.price_change_24h.toFixed(2)}%
-                          </span>
+                    {(hasTwoProjects ? currentValueA !== null || currentValueB !== null : currentValueA !== null) && (
+                      <>
+                        <div className={`mb-3 ${hasTwoProjects ? "grid gap-2 sm:grid-cols-2" : "flex items-center gap-2 flex-wrap"}`}>
+                          {currentValueA !== null && (
+                            <div className={hasTwoProjects ? "rounded-xl border border-border bg-secondary/20 px-3 py-2" : "flex items-center gap-2 flex-wrap"}>
+                              {hasTwoProjects && (
+                                <p className="mb-1 text-[10px] font-medium text-muted-foreground">{current.project_a_name || "Project A"}</p>
+                              )}
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-base font-bold text-foreground font-['Space_Grotesk']">
+                                  {formatChartVal(currentValueA)}
+                                </span>
+                                {heroMarketData?.price_change_24h != null && (
+                                  <span className={`text-xs font-semibold flex items-center gap-0.5 ${isPositiveA ? "text-primary" : "text-destructive"}`}>
+                                    {isPositiveA ? <TrendingUp className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+                                    {isPositiveA ? "+" : ""}{heroMarketData.price_change_24h.toFixed(2)}%
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                          {hasTwoProjects && currentValueB !== null && (
+                            <div className="rounded-xl border border-border bg-secondary/20 px-3 py-2">
+                              <p className="mb-1 text-[10px] font-medium text-muted-foreground">{current.project_b_name || "Project B"}</p>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-base font-bold text-foreground font-['Space_Grotesk']">
+                                  {formatChartVal(currentValueB)}
+                                </span>
+                                {heroMarketDataB?.price_change_24h != null && (
+                                  <span className={`text-xs font-semibold flex items-center gap-0.5 ${isPositiveB ? "text-primary" : "text-destructive"}`}>
+                                    {isPositiveB ? <TrendingUp className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+                                    {isPositiveB ? "+" : ""}{heroMarketDataB.price_change_24h.toFixed(2)}%
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        {hasTwoProjects && currentDifference !== null && (
+                          <div className="mb-3 flex items-center justify-between rounded-xl border border-border bg-secondary/20 px-3 py-2 text-[11px]">
+                            <span className="text-muted-foreground">Difference</span>
+                            <span className="font-semibold text-foreground">
+                              {currentDifference === 0
+                                ? "Equal"
+                                : `${currentDifference > 0 ? (current.project_a_name || "Project A") : (current.project_b_name || "Project B")} by ${formatChartVal(Math.abs(currentDifference))}`}
+                            </span>
+                          </div>
                         )}
-                      </div>
+                      </>
                     )}
                     <div className="flex-1 min-h-[200px]">
                       {(hasTwoProjects ? mergedChartData : tokenChartData).length >= 2 ? (
@@ -505,15 +549,43 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap, search
                             <XAxis dataKey="date" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
                             <YAxis tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} tickFormatter={(v: number) => formatChartVal(v)} domain={["auto", "auto"]} width={65} />
                             <Tooltip
-                              contentStyle={{
-                                backgroundColor: "hsl(var(--card))",
-                                border: "1px solid hsl(var(--border))",
-                                borderRadius: "10px",
-                                fontSize: "11px",
-                                padding: "6px 10px",
+                              cursor={{ stroke: "hsl(var(--border))", strokeDasharray: "4 4" }}
+                              content={({ active, payload, label }) => {
+                                if (!active || !payload?.length) return null;
+                                const pointA = payload.find((item: any) => item.dataKey === "value");
+                                const pointB = payload.find((item: any) => item.dataKey === "valueB");
+                                const valueA = typeof pointA?.value === "number" ? pointA.value : null;
+                                const valueB = typeof pointB?.value === "number" ? pointB.value : null;
+                                const difference = valueA !== null && valueB !== null ? valueA - valueB : null;
+
+                                return (
+                                  <div className="rounded-xl border border-border bg-card px-3 py-2 shadow-lg">
+                                    <p className="mb-2 text-[11px] font-semibold text-foreground">{label}</p>
+                                    {valueA !== null && (
+                                      <div className="flex items-center justify-between gap-4 text-[11px]">
+                                        <span className="text-muted-foreground">{current.project_a_name || "Project A"}</span>
+                                        <span className="font-semibold text-foreground">{formatChartVal(valueA)}</span>
+                                      </div>
+                                    )}
+                                    {valueB !== null && (
+                                      <div className="mt-1 flex items-center justify-between gap-4 text-[11px]">
+                                        <span className="text-muted-foreground">{current.project_b_name || "Project B"}</span>
+                                        <span className="font-semibold text-foreground">{formatChartVal(valueB)}</span>
+                                      </div>
+                                    )}
+                                    {difference !== null && (
+                                      <div className="mt-2 flex items-center justify-between gap-4 border-t border-border pt-2 text-[11px]">
+                                        <span className="text-muted-foreground">Difference</span>
+                                        <span className="font-semibold text-foreground">
+                                          {difference === 0
+                                            ? "Equal"
+                                            : `${difference > 0 ? (current.project_a_name || "Project A") : (current.project_b_name || "Project B")} by ${formatChartVal(Math.abs(difference))}`}
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+                                );
                               }}
-                              formatter={(value: number, name: string) => [formatChartVal(value), name === "valueB" ? (current.project_b_name || "Project B") : (current.project_a_name || dimLabel)]}
-                              labelStyle={{ fontWeight: 600, marginBottom: 2, color: "hsl(var(--foreground))" }}
                             />
                             <Area type="monotone" dataKey="value" stroke="hsl(var(--primary))" fill="url(#heroTokenGradA)" strokeWidth={2} dot={false} activeDot={{ r: 4, stroke: "hsl(var(--card))", strokeWidth: 2 }} name={current.project_a_name || "Project A"} />
                             {hasTwoProjects && (
