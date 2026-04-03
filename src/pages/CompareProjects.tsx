@@ -479,10 +479,9 @@ const CompareProjects = () => {
               )}
             </div>
           </aside>
-        )}
 
         {/* ── Main Content ── */}
-        <main className={`flex-1 overflow-y-auto ${user ? 'md:ml-[260px]' : ''}`}>
+        <main className="flex-1 overflow-y-auto md:ml-[260px]">
           <div className="absolute inset-0 bg-grid opacity-15 pointer-events-none" />
           <div className="gradient-radial-top fixed inset-0 pointer-events-none" />
 
