@@ -252,6 +252,24 @@ export default function VoteSection({ forecast, yesPct, noPct, totalVotes, isEnd
             </Button>
           </DialogFooter>
         </DialogContent>
+      {/* Already Voted Dialog */}
+      <Dialog open={alreadyVotedDialog} onOpenChange={setAlreadyVotedDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ShieldAlert className="h-5 w-5 text-destructive" />
+              Vote Already Cast
+            </DialogTitle>
+            <DialogDescription>
+              You have already voted <span className={`font-semibold ${forecast.user_vote === "yes" ? "text-primary" : "text-destructive"}`}>{forecast.user_vote === "yes" ? "Yes" : "No"}</span> on this prediction. Votes are permanent and cannot be changed once submitted.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAlreadyVotedDialog(false)}>
+              Got it
+            </Button>
+          </DialogFooter>
+        </DialogContent>
       </Dialog>
     </>
   );
