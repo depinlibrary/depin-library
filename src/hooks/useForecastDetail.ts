@@ -76,19 +76,15 @@ export function useForecastDetail(forecastId: string | undefined) {
         userVote = vote?.vote || null;
       }
 
-      // Fetch all votes with confidence to compute averages
-      const { data: allVotes } = await supabase
-        .from("forecast_votes")
-        .select("vote, confidence_level")
-        .eq("forecast_id", forecastId!);
+      // Fetch aggregate vote stats via RPC (no individual user exposure)
+      const { data: voteStats } = await supabase
+        .rpc("get_forecast_vote_stats", { p_forecast_id: forecastId! });
 
       let avgConfidenceYes: number | null = null;
       let avgConfidenceNo: number | null = null;
-      if (allVotes && allVotes.length > 0) {
-        const yesVotes = allVotes.filter(v => v.vote === "yes" && v.confidence_level != null);
-        const noVotes = allVotes.filter(v => v.vote === "no" && v.confidence_level != null);
-        if (yesVotes.length > 0) avgConfidenceYes = yesVotes.reduce((s, v) => s + v.confidence_level!, 0) / yesVotes.length;
-        if (noVotes.length > 0) avgConfidenceNo = noVotes.reduce((s, v) => s + v.confidence_level!, 0) / noVotes.length;
+      if (voteStats && voteStats.length > 0) {
+        avgConfidenceYes = voteStats[0].avg_confidence_yes;
+        avgConfidenceNo = voteStats[0].avg_confidence_no;
       }
 
       // Get creator display name
