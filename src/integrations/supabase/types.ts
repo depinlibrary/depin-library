@@ -1154,6 +1154,25 @@ export type Database = {
           similarity_score: number
         }[]
       }
+      get_forecast_vote_history: {
+        Args: { p_forecast_id: string }
+        Returns: {
+          avg_confidence: number
+          no_count: number
+          vote_date: string
+          yes_count: number
+        }[]
+      }
+      get_forecast_vote_stats: {
+        Args: { p_forecast_id: string }
+        Returns: {
+          avg_confidence_all: number
+          avg_confidence_no: number
+          avg_confidence_yes: number
+          total_no: number
+          total_yes: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
