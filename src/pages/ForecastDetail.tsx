@@ -693,7 +693,7 @@ const ForecastDetail = () => {
                       {forecast.user_vote && (
                         <motion.p initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}
                           className="text-[10px] text-muted-foreground text-center mt-3">
-                          You voted <span className={`font-semibold ${forecast.user_vote === "yes" ? "text-primary" : "text-destructive"}`}>{forecast.user_vote === "yes" ? yesLabel : noLabel}</span> · Vote again to change
+                          You voted <span className={`font-semibold ${forecast.user_vote === "yes" ? "text-primary" : "text-destructive"}`}>{forecast.user_vote === "yes" ? yesLabel : noLabel}</span> · Note you can't change vote
                         </motion.p>
                       )}
                     </>
