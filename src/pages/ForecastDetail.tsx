@@ -322,6 +322,10 @@ const ForecastDetail = () => {
   const yesLabel = isPriceMarket ? "Long" : isSentimentWithTwoProjects ? forecast.project_a?.name : "Yes";
   const noLabel = isPriceMarket ? "Short" : isSentimentWithTwoProjects ? forecast.project_b?.name : "No";
 
+  // Token market data for price/market_cap predictions
+  const { data: tokenMarketDataA } = useTokenMarketData(isPriceMarket ? forecast.project_a_id : undefined);
+  const { data: tokenMarketDataB } = useTokenMarketData(isPriceMarket && forecast.project_b_id ? forecast.project_b_id : undefined);
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
