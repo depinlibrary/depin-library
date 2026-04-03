@@ -963,21 +963,10 @@ const Forecasts = () => {
               </button>
             ))}
 
-            {/* Spacer pushes right side */}
+            {/* Spacer pushes filter to right */}
             <div className="flex-1 min-w-0" />
 
-            {/* Search input — compact */}
-            <div className="relative shrink-0 w-[180px]">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60" />
-              <Input
-                placeholder="Search..."
-                value={search}
-                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                className="h-8 w-full text-xs placeholder:text-muted-foreground/50 bg-secondary/40 border-border pl-8 pr-3"
-              />
-            </div>
-
-            {/* Filter toggle button */}
+            {/* Filter toggle button — right-aligned */}
             <button
               onClick={() => setShowFilters(!showFilters)}
               className={`shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
@@ -994,32 +983,6 @@ const Forecasts = () => {
                 </span>
               )}
             </button>
-
-
-            {/* Create Prediction */}
-            <Button
-              onClick={() => {
-                if (user) {
-                  if (dailyRemaining <= 0) {
-                    toast.error("You've reached your daily limit of 5 predictions. Try again tomorrow.");
-                    return;
-                  }
-                  setShowCreate(true);
-                } else {
-                  toast("Please log in to create a prediction", {
-                    action: {
-                      label: "Log in",
-                      onClick: () => navigate("/auth?redirect=/forecasts"),
-                    },
-                  });
-                }
-              }}
-              size="sm"
-              className="h-8 gap-1 shrink-0 text-xs px-3 rounded-full pointer-events-auto hover:bg-primary hover:text-primary-foreground hover:shadow-none hover:opacity-100 hover:scale-100 active:scale-100 transition-none"
-              style={{ transform: 'none' }}
-            >
-              <Plus className="h-3.5 w-3.5" /> Create Prediction
-            </Button>
           </div>
 
           {/* Expandable filter panel */}
