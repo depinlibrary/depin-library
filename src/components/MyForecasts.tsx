@@ -160,7 +160,7 @@ export default function MyForecasts() {
       queryClient.invalidateQueries({ queryKey: ["forecasts"] });
       setEditForecast(null);
     },
-    onError: () => toast.error("Failed to update forecast"),
+    onError: () => toast.error("Failed to update prediction"),
   });
 
   const deletionRequestMutation = useMutation({

@@ -471,11 +471,11 @@ const BillboardHero = ({
                 </div>
               </motion.div>
 
-             {/* ── Top Forecasts — Matching ForecastCard design ── */}
+             {/* ── Top Predictions — Matching ForecastCard design ── */}
              {topForecasts.length > 0 &&
             <motion.div variants={fadeUp} className="col-span-1 sm:col-span-2 lg:col-span-4 rounded-lg border border-border bg-card/40 backdrop-blur-md p-4 sm:p-5">
                  <div className="flex items-center gap-2 mb-4">
-                   <span className="text-sm font-semibold text-foreground">Top Forecasts</span>
+                   <span className="text-sm font-semibold text-foreground">Top Predictions</span>
                    <Link to="/forecasts" className="ml-auto text-xs font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
                      View all <ArrowRight className="h-3.5 w-3.5" />
                    </Link>
