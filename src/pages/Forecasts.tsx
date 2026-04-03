@@ -353,13 +353,13 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap, search
             </button>
           </div>
           <div className="flex items-center gap-2">
-            <div className="relative w-[160px] sm:w-[200px]">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60" />
+            <div className="relative w-[220px] sm:w-[280px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
               <Input
-                placeholder="Search..."
+                placeholder="Search predictions..."
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                className="h-8 w-full text-xs placeholder:text-muted-foreground/50 bg-secondary/40 border-border pl-8 pr-3"
+                className="h-10 w-full text-sm placeholder:text-muted-foreground/50 bg-secondary/40 border-border pl-9 pr-3"
               />
             </div>
             <Button
@@ -377,9 +377,9 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap, search
                 }
               }}
               size="sm"
-              className="h-8 gap-1 shrink-0 text-xs px-3 rounded-full"
+              className="h-10 gap-1.5 shrink-0 text-xs px-4 rounded-full hover:bg-primary hover:text-primary-foreground"
             >
-              <Plus className="h-3.5 w-3.5" /> Create
+              <Plus className="h-3.5 w-3.5" /> Create Prediction
             </Button>
           </div>
         </div>
@@ -467,7 +467,7 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap, search
                   <div className="p-6 sm:p-7 flex flex-col">
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-xs font-semibold text-muted-foreground">
-                        {dimLabel} · 24H
+                        {dimLabel}
                         {hasTwoProjects && current.project_b_name && <span className="ml-1 text-muted-foreground/50">({current.project_a_name} vs {current.project_b_name})</span>}
                       </span>
                       <span className="text-[10px] text-muted-foreground">CoinGecko</span>

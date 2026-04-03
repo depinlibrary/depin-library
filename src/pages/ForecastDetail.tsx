@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { getWeightedChance } from "@/lib/forecastUtils";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Clock, CalendarDays, Timer, Users, ExternalLink, Copy, ArrowUpRight, ArrowDownRight, ThumbsUp, ThumbsDown, Gauge, Target, Zap, CheckCircle2, XCircle, TrendingUp, TrendingDown, Minus, Trophy } from "lucide-react";
+import { ArrowLeft, Clock, CalendarDays, Timer, Users, ExternalLink, Copy, ArrowUpRight, ArrowDownRight, ThumbsUp, ThumbsDown, Gauge, Target, Zap, CheckCircle2, XCircle, TrendingUp, TrendingDown, Minus, Trophy, DollarSign, BarChart3 } from "lucide-react";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -26,6 +26,8 @@ import {
 } from "@/hooks/useForecastDetail";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useTokenMarketData } from "@/hooks/useTokenMarketData";
+import TokenPriceBadge from "@/components/TokenPriceBadge";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import confetti from "canvas-confetti";
@@ -320,6 +322,10 @@ const ForecastDetail = () => {
   const yesLabel = isPriceMarket ? "Long" : isSentimentWithTwoProjects ? forecast.project_a?.name : "Yes";
   const noLabel = isPriceMarket ? "Short" : isSentimentWithTwoProjects ? forecast.project_b?.name : "No";
 
+  // Token market data for price/market_cap predictions
+  const { data: tokenMarketDataA } = useTokenMarketData(isPriceMarket ? forecast.project_a_id : undefined);
+  const { data: tokenMarketDataB } = useTokenMarketData(isPriceMarket && forecast.project_b_id ? forecast.project_b_id : undefined);
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
@@ -408,7 +414,6 @@ const ForecastDetail = () => {
                     <span className="font-['Space_Grotesk'] text-base tabular-nums text-destructive">{noPct.toFixed(0)}%</span>
                   </div>
                 </div>
-                <p className="mt-3 text-[11px] text-muted-foreground">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</p>
               </div>
             </motion.div>
 
@@ -560,7 +565,49 @@ const ForecastDetail = () => {
             {/* Creator Card — compact with countdown */}
             <CreatorCardWithCountdown forecast={forecast} isEnded={isEnded} timeLeft={timeLeft} />
 
-            {/* Prediction Results — shown below creator when ended */}
+            {/* Token Price Section — only for price/market_cap predictions */}
+            {isPriceMarket && tokenMarketDataA && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.02 }}
+                className="rounded-2xl border border-border bg-card overflow-hidden"
+              >
+                <div className="px-5 py-3.5 border-b border-border flex items-center gap-2">
+                  {forecastDimension === "market_cap" ? <BarChart3 className="h-4 w-4 text-primary" /> : <DollarSign className="h-4 w-4 text-primary" />}
+                  <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">
+                    {forecastDimension === "market_cap" ? "Market Cap" : "Token Price"}
+                  </h3>
+                </div>
+                <div className="p-5 space-y-3">
+                  <div className="flex items-center gap-3">
+                    {forecast.project_a?.logo_url ? (
+                      <img src={forecast.project_a.logo_url} alt={forecast.project_a.name} className="w-6 h-6 rounded-lg object-contain bg-secondary" />
+                    ) : (
+                      <span className="w-6 h-6 rounded-lg flex items-center justify-center text-xs bg-secondary">{forecast.project_a?.logo_emoji || "⬡"}</span>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-foreground">{forecast.project_a?.name}</p>
+                    </div>
+                    <TokenPriceBadge data={tokenMarketDataA} compact />
+                  </div>
+                  {forecast.project_b && tokenMarketDataB && (
+                    <div className="flex items-center gap-3">
+                      {forecast.project_b?.logo_url ? (
+                        <img src={forecast.project_b.logo_url} alt={forecast.project_b.name} className="w-6 h-6 rounded-lg object-contain bg-secondary" />
+                      ) : (
+                        <span className="w-6 h-6 rounded-lg flex items-center justify-center text-xs bg-secondary">{forecast.project_b?.logo_emoji || "⬡"}</span>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-foreground">{forecast.project_b?.name}</p>
+                      </div>
+                      <TokenPriceBadge data={tokenMarketDataB} compact />
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+
             {isEnded && (() => {
               const outcomeResult = forecast.outcome
                 ? forecast.outcome
