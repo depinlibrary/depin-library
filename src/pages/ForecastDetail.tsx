@@ -26,6 +26,8 @@ import {
 } from "@/hooks/useForecastDetail";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useTokenMarketData } from "@/hooks/useTokenMarketData";
+import TokenPriceBadge from "@/components/TokenPriceBadge";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import confetti from "canvas-confetti";
