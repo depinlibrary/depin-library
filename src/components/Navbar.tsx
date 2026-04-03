@@ -370,7 +370,7 @@ const Navbar = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className="text-[13px] font-semibold text-foreground">Forecasts</p>
+                          <p className="text-[13px] font-semibold text-foreground">Predictions</p>
                           {location.pathname === "/forecasts" && (
                             <span className="rounded-full bg-primary/15 px-1.5 py-0.5 text-[9px] font-bold text-primary uppercase tracking-wider">Active</span>
                           )}

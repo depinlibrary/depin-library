@@ -96,7 +96,7 @@ const Overview = () => {
   { title: "Explore", description: "Browse the full DePIN project directory.", icon: Layers, to: "/explore", accent: "primary" },
   { title: "Market", description: "Track token prices and market trends.", icon: BarChart3, to: "/market", accent: "primary" },
   { title: "Compare", description: "AI-powered side-by-side comparison.", icon: GitCompare, to: "/compare", accent: "accent" },
-  { title: "Forecasts", description: "Community predictions and voting.", icon: TrendingUp, to: "/forecasts", accent: "accent" },
+  { title: "Predictions", description: "Community predictions and voting.", icon: TrendingUp, to: "/forecasts", accent: "accent" },
   { title: "Portfolio", description: "Track your DePIN holdings.", icon: Briefcase, to: "/portfolio", accent: "primary" }];
 
 
@@ -254,14 +254,14 @@ const Overview = () => {
           <motion.div initial="hidden" animate="visible" variants={stagger}>
             <motion.div variants={fadeUp} className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <h2 className="text-xl font-semibold text-foreground font-['Space_Grotesk']">Forecasts Ending Soon</h2>
+                <h2 className="text-xl font-semibold text-foreground font-['Space_Grotesk']">Predictions Ending Soon</h2>
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-destructive" />
                 </span>
               </div>
               <Link to="/forecasts" className="text-xs font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
-                All forecasts <ArrowRight className="h-3 w-3" />
+                All predictions <ArrowRight className="h-3 w-3" />
               </Link>
             </motion.div>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

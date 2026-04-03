@@ -2,8 +2,6 @@ import { useState, useEffect, useMemo } from "react";
 import { getWeightedChance } from "@/lib/forecastUtils";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Clock, CalendarDays, Timer, Users, ExternalLink, Copy, ArrowUpRight, ArrowDownRight, ThumbsUp, ThumbsDown, Gauge, Target, Zap, CheckCircle2, XCircle, TrendingUp, TrendingDown, Minus, Trophy } from "lucide-react";
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from "recharts";
-import { useTokenMarketData } from "@/hooks/useTokenMarketData";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -25,7 +23,6 @@ import {
   useAddForecastComment,
   useDeleteForecastComment,
   useEditForecastComment,
-  useForecastVoteHistory,
 } from "@/hooks/useForecastDetail";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -104,7 +101,7 @@ function CreatorCardWithCountdown({ forecast, isEnded, timeLeft }: { forecast: a
               <UserAvatar avatarUrl={forecast.creator_avatar_url} displayName={forecast.creator_name} size="md" />
               <div className="flex flex-col">
                 <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{forecast.creator_name}</span>
-                <span className="text-[10px] text-muted-foreground">Forecast Creator</span>
+                <span className="text-[10px] text-muted-foreground">Prediction Creator</span>
               </div>
             </div>
           </UserStatsHoverCard>
@@ -140,14 +137,10 @@ const ForecastDetail = () => {
   const { user } = useAuth();
   const { data: forecast, isLoading } = useForecastDetail(id);
   const { data: comments = [], isLoading: commentsLoading } = useForecastComments(id);
-  const { data: voteHistory = [] } = useForecastVoteHistory(id);
-  const marketDataA = useTokenMarketData(forecast?.project_a_id);
-  const marketDataB = useTokenMarketData(forecast?.project_b_id || undefined);
   const voteForecast = useVoteForecast();
   const addComment = useAddForecastComment();
   const deleteComment = useDeleteForecastComment();
   const editComment = useEditForecastComment();
-  const [heroChartTab, setHeroChartTab] = useState<"probability" | "price">("probability");
   const [commentText, setCommentText] = useState("");
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState("");
@@ -215,7 +208,7 @@ const ForecastDetail = () => {
     const { yesPct: yesPctNum } = getWeightedChance(forecast);
     const yesPct = yesPctNum.toFixed(0);
     const projectNames = [forecast.project_a?.name, forecast.project_b?.name].filter(Boolean).join(" vs ");
-    const title = `${forecast.title} — DePIN Forecast`;
+    const title = `${forecast.title} — DePIN Prediction`;
     const description = `${yesPct}% Yes · ${totalVotes} votes · ${projectNames} — ${forecast.description?.slice(0, 120) || "Community prediction on DePIN projects"}`;
     document.title = title;
     const setMeta = (property: string, content: string, isName = false) => {
@@ -309,8 +302,8 @@ const ForecastDetail = () => {
       <div className="min-h-screen bg-background flex flex-col">
         <Navbar />
         <div className="container mx-auto px-4 pt-28 pb-16 text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-4">Forecast not found</h1>
-          <Link to="/forecasts" className="text-primary hover:underline text-sm">← Back to Forecasts</Link>
+          <h1 className="text-2xl font-bold text-foreground mb-4">Prediction not found</h1>
+          <Link to="/forecasts" className="text-primary hover:underline text-sm">← Back to Predictions</Link>
         </div>
         <Footer />
       </div>
@@ -337,7 +330,7 @@ const ForecastDetail = () => {
           <div className="lg:col-span-2 lg:pt-4 lg:pb-16">
             {/* Breadcrumb */}
             <Link to="/forecasts" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-5">
-              <ArrowLeft className="h-3.5 w-3.5" /> Back to Forecasts
+              <ArrowLeft className="h-3.5 w-3.5" /> Back to Predictions
             </Link>
             <div className="space-y-4">
             {/* Hero Card — compact header with project + title + odds */}
@@ -419,257 +412,6 @@ const ForecastDetail = () => {
               </div>
             </motion.div>
 
-            {/* Charts section — Probability Trend + Token Price */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.05 }}
-              className="rounded-2xl border border-border bg-card overflow-hidden"
-            >
-              <div className="p-6 sm:p-8 flex flex-col">
-                {(() => {
-                  const hasPriceData = (forecastDimension === "token_price" || forecastDimension === "market_cap") && marketDataA.data?.sparkline_7d;
-
-                  return (
-                    <>
-                      {/* Tab switcher */}
-                      {hasPriceData && (
-                        <div className="flex items-center gap-1 bg-secondary/50 rounded-lg p-0.5 mb-4 self-start">
-                          <button
-                            onClick={() => setHeroChartTab("probability")}
-                            className={`px-3 py-1.5 rounded-md text-[11px] font-medium transition-all ${
-                              heroChartTab === "probability"
-                                ? "bg-background text-foreground shadow-sm"
-                                : "text-muted-foreground hover:text-foreground"
-                            }`}
-                          >
-                            Probability
-                          </button>
-                          <button
-                            onClick={() => setHeroChartTab("price")}
-                            className={`px-3 py-1.5 rounded-md text-[11px] font-medium transition-all ${
-                              heroChartTab === "price"
-                                ? "bg-background text-foreground shadow-sm"
-                                : "text-muted-foreground hover:text-foreground"
-                            }`}
-                          >
-                            {forecastDimension === "market_cap" ? "Market Cap" : "Token Price"}
-                          </button>
-                        </div>
-                      )}
-
-                      {/* Probability Trend */}
-                      {heroChartTab === "probability" && (
-                        <>
-                          <div className="flex items-center justify-between mb-3">
-                            <span className="text-xs font-semibold text-muted-foreground">Probability Trend</span>
-                            <div className="flex items-center gap-4 ml-auto">
-                              <span className="flex items-center gap-1.5 text-[11px]">
-                                <span className="w-2 h-2 rounded-full bg-primary" />
-                                <span className="font-medium text-muted-foreground">{yesLabel}</span>
-                                <span className="font-semibold text-primary font-['Space_Grotesk']">{yesPct.toFixed(1)}%</span>
-                              </span>
-                              <span className="flex items-center gap-1.5 text-[11px]">
-                                <span className="w-2 h-2 rounded-full bg-destructive" />
-                                <span className="font-medium text-muted-foreground">{noLabel}</span>
-                                <span className="font-semibold text-destructive font-['Space_Grotesk']">{noPct.toFixed(1)}%</span>
-                              </span>
-                            </div>
-                          </div>
-                          <div className="min-h-[220px]">
-                            {voteHistory.length >= 2 ? (
-                              <ResponsiveContainer width="100%" height={220}>
-                                <AreaChart data={voteHistory.map(v => ({
-                                  ...v,
-                                  yes_pct: v.weighted_yes_pct,
-                                  no_pct: 100 - v.weighted_yes_pct,
-                                }))} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                                  <defs>
-                                    <linearGradient id="detailYesGrad" x1="0" y1="0" x2="0" y2="1">
-                                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
-                                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.01} />
-                                    </linearGradient>
-                                    <linearGradient id="detailNoGrad" x1="0" y1="0" x2="0" y2="1">
-                                      <stop offset="5%" stopColor="hsl(var(--destructive))" stopOpacity={0.15} />
-                                      <stop offset="95%" stopColor="hsl(var(--destructive))" stopOpacity={0.01} />
-                                    </linearGradient>
-                                  </defs>
-                                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} vertical={false} />
-                                  <ReferenceLine y={50} stroke="hsl(var(--muted-foreground))" strokeDasharray="6 4" opacity={0.25} />
-                                  <XAxis dataKey="date" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-                                  <YAxis domain={[0, 100]} tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} tickFormatter={(v: number) => `${v}%`} />
-                                  <Tooltip
-                                    contentStyle={{
-                                      backgroundColor: "hsl(var(--card))",
-                                      border: "1px solid hsl(var(--border))",
-                                      borderRadius: "10px",
-                                      fontSize: "11px",
-                                      padding: "6px 10px",
-                                    }}
-                                    formatter={(value: number, name: string) => [`${value}%`, name === "yes_pct" ? yesLabel : noLabel]}
-                                    labelStyle={{ fontWeight: 600, marginBottom: 2, color: "hsl(var(--foreground))" }}
-                                  />
-                                  <Area type="monotone" dataKey="yes_pct" name="yes_pct" stroke="hsl(var(--primary))" fill="url(#detailYesGrad)" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: "hsl(var(--primary))", stroke: "hsl(var(--card))", strokeWidth: 2 }} />
-                                  <Area type="monotone" dataKey="no_pct" name="no_pct" stroke="hsl(var(--destructive))" fill="url(#detailNoGrad)" strokeWidth={1.5} strokeDasharray="4 2" dot={false} activeDot={{ r: 3, fill: "hsl(var(--destructive))", stroke: "hsl(var(--card))", strokeWidth: 2 }} />
-                                </AreaChart>
-                              </ResponsiveContainer>
-                            ) : (
-                              <div className="flex items-center justify-center h-[220px] text-xs text-muted-foreground">
-                                Not enough votes for a trend chart yet
-                              </div>
-                            )}
-                          </div>
-                        </>
-                      )}
-
-                      {/* Token Price chart */}
-                      {heroChartTab === "price" && hasPriceData && (() => {
-                        const hasTwoProjects = !!forecast.project_b && marketDataB.data?.price_usd != null;
-                        const dimLabel = forecastDimension === "market_cap" ? "Market Cap" : "Token Price";
-                        const priceA = forecastDimension === "market_cap" ? marketDataA.data?.market_cap_usd : marketDataA.data?.price_usd;
-                        const priceB = hasTwoProjects ? (forecastDimension === "market_cap" ? marketDataB.data?.market_cap_usd : marketDataB.data?.price_usd) : null;
-                        const changeA = marketDataA.data?.price_change_24h ?? 0;
-                        const changeB = hasTwoProjects ? (marketDataB.data?.price_change_24h ?? 0) : 0;
-
-                        const buildPricePoints = (currentPrice: number, change24h: number) => {
-                          const startPrice = currentPrice / (1 + change24h / 100);
-                          return Array.from({ length: 12 }, (_, i) => {
-                            const t = i / 11;
-                            const noise = Math.sin(i * 1.5) * 0.003 + Math.cos(i * 2.3) * 0.002;
-                            return startPrice + (currentPrice - startPrice) * t + currentPrice * noise;
-                          });
-                        };
-
-                        const pointsA = priceA ? buildPricePoints(priceA, changeA) : [];
-                        const pointsB = hasTwoProjects && priceB ? buildPricePoints(priceB, changeB) : [];
-
-                        const priceChartData = pointsA.map((pa, i) => ({
-                          t: i === 0 ? "24h ago" : i === 11 ? "Now" : "",
-                          priceA: pa,
-                          ...(hasTwoProjects && pointsB.length > 0 ? { priceB: pointsB[i] } : {}),
-                        }));
-
-                        const formatVal = (v: number) => {
-                          if (forecastDimension === "market_cap") {
-                            if (v >= 1e9) return `$${(v / 1e9).toFixed(1)}B`;
-                            if (v >= 1e6) return `$${(v / 1e6).toFixed(1)}M`;
-                            return `$${v.toLocaleString()}`;
-                          }
-                          return formatTokenPrice(v);
-                        };
-
-                        return (
-                          <>
-                            <div className="flex items-center justify-between mb-3">
-                              <span className="text-xs font-semibold text-muted-foreground">{dimLabel} · 24h</span>
-                              <span className="text-[10px] text-muted-foreground">CoinGecko</span>
-                            </div>
-                            <div className="flex items-center gap-4 mb-3">
-                              <span className="flex items-center gap-1.5 text-[11px]">
-                                <span className="w-2 h-2 rounded-full bg-primary" />
-                                <span className="font-medium text-muted-foreground">{forecast.project_a?.name}</span>
-                                <span className="font-semibold text-foreground font-['Space_Grotesk'] tabular-nums">{priceA ? formatVal(priceA) : "—"}</span>
-                                {changeA !== 0 && (
-                                  <span className={`text-[10px] font-semibold ${changeA >= 0 ? "text-green-500" : "text-destructive"}`}>
-                                    {changeA >= 0 ? "+" : ""}{changeA.toFixed(2)}%
-                                  </span>
-                                )}
-                              </span>
-                              {hasTwoProjects && (
-                                <span className="flex items-center gap-1.5 text-[11px]">
-                                  <span className="w-2 h-2 rounded-full bg-accent" />
-                                  <span className="font-medium text-muted-foreground">{forecast.project_b?.name}</span>
-                                  <span className="font-semibold text-foreground font-['Space_Grotesk'] tabular-nums">{priceB ? formatVal(priceB) : "—"}</span>
-                                  {changeB !== 0 && (
-                                    <span className={`text-[10px] font-semibold ${changeB >= 0 ? "text-green-500" : "text-destructive"}`}>
-                                      {changeB >= 0 ? "+" : ""}{changeB.toFixed(2)}%
-                                    </span>
-                                  )}
-                                </span>
-                              )}
-                            </div>
-                            <div className="min-h-[220px]">
-                              <ResponsiveContainer width="100%" height={220}>
-                                <AreaChart data={priceChartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                                  <defs>
-                                    <linearGradient id="priceGradA" x1="0" y1="0" x2="0" y2="1">
-                                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
-                                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.01} />
-                                    </linearGradient>
-                                    {hasTwoProjects && (
-                                      <linearGradient id="priceGradB" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="hsl(var(--accent))" stopOpacity={0.15} />
-                                        <stop offset="95%" stopColor="hsl(var(--accent))" stopOpacity={0.01} />
-                                      </linearGradient>
-                                    )}
-                                  </defs>
-                                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} vertical={false} />
-                                  <XAxis dataKey="t" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-                                  <YAxis
-                                    tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
-                                    tickLine={false}
-                                    axisLine={false}
-                                    tickFormatter={(v: number) => formatVal(v)}
-                                    {...(hasTwoProjects ? { yAxisId: "left" } : {})}
-                                  />
-                                  {hasTwoProjects && (
-                                    <YAxis
-                                      yAxisId="right"
-                                      orientation="right"
-                                      tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
-                                      tickLine={false}
-                                      axisLine={false}
-                                      tickFormatter={(v: number) => formatVal(v)}
-                                    />
-                                  )}
-                                  <Tooltip
-                                    contentStyle={{
-                                      backgroundColor: "hsl(var(--card))",
-                                      border: "1px solid hsl(var(--border))",
-                                      borderRadius: "10px",
-                                      fontSize: "11px",
-                                      padding: "6px 10px",
-                                    }}
-                                    formatter={(value: number, name: string) => [
-                                      formatVal(value),
-                                      name === "priceA" ? forecast.project_a?.name : forecast.project_b?.name
-                                    ]}
-                                    labelStyle={{ fontWeight: 600, marginBottom: 2, color: "hsl(var(--foreground))" }}
-                                  />
-                                  <Area
-                                    type="monotone"
-                                    dataKey="priceA"
-                                    stroke="hsl(var(--primary))"
-                                    fill="url(#priceGradA)"
-                                    strokeWidth={2}
-                                    dot={false}
-                                    activeDot={{ r: 4, fill: "hsl(var(--primary))", stroke: "hsl(var(--card))", strokeWidth: 2 }}
-                                    {...(hasTwoProjects ? { yAxisId: "left" } : {})}
-                                  />
-                                  {hasTwoProjects && (
-                                    <Area
-                                      type="monotone"
-                                      dataKey="priceB"
-                                      stroke="hsl(var(--accent))"
-                                      fill="url(#priceGradB)"
-                                      strokeWidth={1.5}
-                                      strokeDasharray="4 2"
-                                      dot={false}
-                                      activeDot={{ r: 3, fill: "hsl(var(--accent))", stroke: "hsl(var(--card))", strokeWidth: 2 }}
-                                      yAxisId="right"
-                                    />
-                                  )}
-                                </AreaChart>
-                              </ResponsiveContainer>
-                            </div>
-                          </>
-                        );
-                      })()}
-                    </>
-                  );
-                })()}
-              </div>
-            </motion.div>
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -692,7 +434,7 @@ const ForecastDetail = () => {
 
                 {/* Overview Tab */}
                 <TabsContent value="overview" className="mt-0 p-6">
-                  <h3 className="text-sm font-bold text-foreground mb-3 font-['Space_Grotesk']">About This Forecast</h3>
+                  <h3 className="text-sm font-bold text-foreground mb-3 font-['Space_Grotesk']">About This Prediction</h3>
                   {forecast.description ? (
                     <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{forecast.description}</p>
                   ) : (
@@ -818,7 +560,7 @@ const ForecastDetail = () => {
             {/* Creator Card — compact with countdown */}
             <CreatorCardWithCountdown forecast={forecast} isEnded={isEnded} timeLeft={timeLeft} />
 
-            {/* Forecast Results — shown below creator when ended */}
+            {/* Prediction Results — shown below creator when ended */}
             {isEnded && (() => {
               const outcomeResult = forecast.outcome
                 ? forecast.outcome
@@ -838,7 +580,7 @@ const ForecastDetail = () => {
                 >
                   <div className="px-5 py-3.5 border-b border-border flex items-center gap-2">
                     <Trophy className="h-4 w-4 text-primary" />
-                    <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Forecast Results</h3>
+                    <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Prediction Results</h3>
                   </div>
                   <div className="p-5 space-y-3">
                     {/* Overall result */}
@@ -891,7 +633,7 @@ const ForecastDetail = () => {
                       </div>
                     ) : (
                       <div className="rounded-xl px-4 py-3 bg-secondary/30 border border-border/50 text-xs text-muted-foreground text-center">
-                        You did not vote on this forecast
+                        You did not vote on this prediction
                       </div>
                     )}
                   </div>

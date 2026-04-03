@@ -14,8 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useForecasts, useCreateForecast, useVoteForecast, type ForecastSortOption, type ForecastStatusFilter, type Forecast } from "@/hooks/useForecasts";
 import { useProjects } from "@/hooks/useProjects";
-import { useAllTokenMarketData } from "@/hooks/useTokenMarketData";
-import { useForecastVoteHistory } from "@/hooks/useForecastDetail";
+import { useAllTokenMarketData, useTokenMarketData } from "@/hooks/useTokenMarketData";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -197,20 +196,44 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap }: {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [isPaused, setIsPaused] = useState(false);
 
-  const heroForecasts = useMemo(() => forecasts.slice(0, 6), [forecasts]);
+  // Only show price/market cap predictions in hero, max 8
+  const heroForecasts = useMemo(() => {
+    return forecasts
+      .filter(f => {
+        const dims = heroDimensionsMap[f.id] || [];
+        return dims.some(d => d === "token_price" || d === "market_cap");
+      })
+      .slice(0, 8);
+  }, [forecasts, heroDimensionsMap]);
 
-  // Fetch vote history for the active hero forecast
-  const activeId = heroForecasts[activeSlide]?.id;
-  const { data: heroVoteHistory = [] } = useForecastVoteHistory(activeId);
+  // Clamp activeSlide if list shrinks
+  useEffect(() => {
+    if (activeSlide >= heroForecasts.length && heroForecasts.length > 0) {
+      setActiveSlide(0);
+    }
+  }, [heroForecasts.length, activeSlide]);
 
-  // Build probability chart data from vote history
-  const chartData = useMemo(() => {
-    return heroVoteHistory.map((entry) => ({
-      date: entry.date,
-      yes_pct: entry.weighted_yes_pct,
-      no_pct: Math.round((100 - entry.weighted_yes_pct) * 10) / 10,
-    }));
-  }, [heroVoteHistory]);
+  // Get market data for active prediction's project
+  const activeProjectId = heroForecasts[activeSlide]?.project_a_id;
+  const { data: heroMarketData } = useTokenMarketData(activeProjectId);
+  const cDims = heroDimensionsMap[heroForecasts[activeSlide]?.id] || [];
+
+  const tokenChartData = useMemo(() => {
+    if (!heroMarketData?.sparkline_7d || !Array.isArray(heroMarketData.sparkline_7d)) return [];
+    const prices = heroMarketData.sparkline_7d as number[];
+    const now = Date.now();
+    const interval = (7 * 24 * 60 * 60 * 1000) / prices.length;
+    const dim = cDims.some(d => d === "market_cap") ? "market_cap" : "token_price";
+    return prices.map((price, i) => {
+      const time = new Date(now - (prices.length - 1 - i) * interval);
+      return {
+        date: time.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+        value: dim === "market_cap" && heroMarketData.market_cap_usd && heroMarketData.price_usd
+          ? price * (heroMarketData.market_cap_usd / heroMarketData.price_usd)
+          : price,
+      };
+    });
+  }, [heroMarketData, cDims]);
 
   useEffect(() => {
     if (heroForecasts.length <= 1 || isPaused) return;
@@ -234,12 +257,18 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap }: {
         <div className="absolute inset-0 bg-grid opacity-10" />
         <div className="gradient-radial-top absolute inset-0" />
         <div className="container relative mx-auto px-4">
+          <div className="flex items-center gap-1 mb-4">
+            <button className="px-4 py-2 rounded-lg text-sm font-semibold bg-primary/10 text-primary border border-primary/20">Predictions</button>
+            <button className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground/50 cursor-default" disabled>
+              Leaderboard <span className="ml-1 text-[9px] bg-secondary px-1.5 py-0.5 rounded-full">Soon</span>
+            </button>
+          </div>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl border border-border bg-card p-8 flex flex-col items-center justify-center text-center">
             <BarChart3 className="h-10 w-10 text-muted-foreground/30 mb-3" />
-            <h2 className="text-lg font-bold text-foreground font-['Space_Grotesk'] mb-1">No forecasts yet</h2>
+            <h2 className="text-lg font-bold text-foreground font-['Space_Grotesk'] mb-1">No predictions yet</h2>
             <p className="text-sm text-muted-foreground mb-4">Create the first prediction for the community.</p>
             <Button onClick={() => user ? setShowCreate(true) : (window.location.href = "/auth?redirect=/forecasts")} className="gap-1.5">
-              <Plus className="h-3.5 w-3.5" /> Create Forecast
+              <Plus className="h-3.5 w-3.5" /> Create Prediction
             </Button>
           </motion.div>
         </div>
@@ -251,20 +280,38 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap }: {
   const { yesPct: cYesPct } = getWeightedChance(current);
   const cIsEnded = new Date(current.end_date) <= new Date();
   const cTimeLeft = getTimeRemaining(current.end_date);
-  const cDims = heroDimensionsMap[current.id] || [];
   const cIsPriceMarket = cDims.some(d => d === "token_price" || d === "market_cap");
   const cIsSentimentDual = cDims.some(d => d === "community_sentiment") && !!current.project_b_name;
   const cYesLabel = cIsPriceMarket ? "Long" : cIsSentimentDual ? (current.project_a_name || "Yes") : "Yes";
   const cNoLabel = cIsPriceMarket ? "Short" : cIsSentimentDual ? (current.project_b_name || "No") : "No";
   const cStatusLabel = cIsEnded ? "Ended" : "Live";
+  const isPositive = (heroMarketData?.price_change_24h ?? 0) >= 0;
+  const dimLabel = cDims.some(d => d === "market_cap") ? "Market Cap" : "Token Price";
+
+  const formatChartVal = (v: number) => {
+    if (cDims.some(d => d === "market_cap")) {
+      if (v >= 1e9) return `$${(v / 1e9).toFixed(1)}B`;
+      if (v >= 1e6) return `$${(v / 1e6).toFixed(1)}M`;
+      return `$${v.toLocaleString()}`;
+    }
+    return v >= 1 ? `$${v.toFixed(2)}` : `$${v.toFixed(6)}`;
+  };
 
   return (
-    <section className="relative overflow-hidden pt-24 pb-6">
+    <section className="relative overflow-hidden pt-24 pb-4">
       <div className="absolute inset-0 bg-grid opacity-10" />
       <div className="gradient-radial-top absolute inset-0" />
 
       <div className="container relative mx-auto px-4">
-        {/* Main hero card — full width */}
+        {/* Tabs at top left */}
+        <div className="flex items-center gap-1 mb-4">
+          <button className="px-4 py-2 rounded-lg text-sm font-semibold bg-primary/10 text-primary border border-primary/20">Predictions</button>
+          <button className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground/50 cursor-default" disabled>
+            Leaderboard <span className="ml-1 text-[9px] bg-secondary px-1.5 py-0.5 rounded-full">Soon</span>
+          </button>
+        </div>
+
+        {/* Main hero card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -281,11 +328,10 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap }: {
                 exit={{ opacity: 0, x: -30 }}
                 transition={{ duration: 0.35, ease: "easeInOut" }}
               >
-                <div className="grid grid-cols-1 lg:grid-cols-2 lg:min-h-[440px]">
+                <div className="grid grid-cols-1 lg:grid-cols-2 lg:min-h-[360px]">
                   {/* Left: market info */}
-                  <div className="p-6 sm:p-8 flex flex-col border-b lg:border-b-0 lg:border-r border-border">
-                    {/* Project logos + names */}
-                    <div className="flex items-start gap-3 mb-4">
+                  <div className="p-6 sm:p-7 flex flex-col border-b lg:border-b-0 lg:border-r border-border">
+                    <div className="flex items-start gap-3 mb-3">
                       <div className="flex items-center -space-x-1.5 shrink-0">
                         {current.project_a_logo_url ? (
                           <img src={current.project_a_logo_url} alt={current.project_a_name} className="w-8 h-8 rounded-lg object-contain bg-secondary border border-card relative z-10" />
@@ -320,23 +366,21 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap }: {
                       </div>
                     </div>
 
-                    {/* Title */}
                     <Link to={`/forecasts/${current.id}`}>
-                      <h2 className="text-xl sm:text-2xl font-bold text-foreground leading-tight font-['Space_Grotesk'] tracking-tight hover:underline transition-all line-clamp-2 mb-7">
+                      <h2 className="text-xl sm:text-2xl font-bold text-foreground leading-tight font-['Space_Grotesk'] tracking-tight hover:underline transition-all line-clamp-2 mb-5">
                         {current.title}
                       </h2>
                     </Link>
 
-                    {/* Odds pills — stacked */}
-                    <div className="mt-auto flex flex-col gap-3">
-                      <div className="flex w-full items-center justify-between rounded-xl border border-primary/25 bg-primary/5 px-4 py-3 text-sm font-bold text-foreground">
+                    <div className="mt-auto flex flex-col gap-2.5">
+                      <div className="flex w-full items-center justify-between rounded-xl border border-primary/25 bg-primary/5 px-4 py-2.5 text-sm font-bold text-foreground">
                         <span className="flex items-center gap-2">
                           <span className="w-2 h-2 rounded-full bg-primary" />
                           {cYesLabel}
                         </span>
                         <span className="font-['Space_Grotesk'] text-base tabular-nums text-primary">{cYesPct.toFixed(0)}%</span>
                       </div>
-                      <div className="flex w-full items-center justify-between rounded-xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm font-bold text-foreground">
+                      <div className="flex w-full items-center justify-between rounded-xl border border-destructive/25 bg-destructive/5 px-4 py-2.5 text-sm font-bold text-foreground">
                         <span className="flex items-center gap-2">
                           <span className="w-2 h-2 rounded-full bg-destructive" />
                           {cNoLabel}
@@ -344,60 +388,40 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap }: {
                         <span className="font-['Space_Grotesk'] text-base tabular-nums text-destructive">{(100 - cYesPct).toFixed(0)}%</span>
                       </div>
                     </div>
-
-                    {/* Slide dots — left-aligned */}
-                    {heroForecasts.length > 1 && (
-                      <div className="flex items-center gap-1.5 mt-4">
-                        {heroForecasts.map((_, i) => (
-                          <button
-                            key={i}
-                            onClick={() => goToSlide(i)}
-                            className={`rounded-full transition-all duration-300 ${
-                              i === activeSlide
-                                ? "w-5 h-1.5 bg-primary"
-                                : "w-1.5 h-1.5 bg-muted-foreground/30 hover:bg-muted-foreground/50"
-                            }`}
-                          />
-                        ))}
-                      </div>
-                    )}
                   </div>
 
-                  {/* Right: Probability Trend Chart */}
-                  <div className="p-6 sm:p-8 flex flex-col">
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-xs font-semibold text-muted-foreground">Probability Trend</span>
-                      <div className="flex items-center gap-4">
-                        <span className="flex items-center gap-1.5 text-[11px]">
-                          <span className="w-2 h-2 rounded-full bg-primary" />
-                          <span className="font-medium text-muted-foreground">{cYesLabel}</span>
-                          <span className="font-semibold text-primary font-['Space_Grotesk']">{cYesPct.toFixed(1)}%</span>
-                        </span>
-                        <span className="flex items-center gap-1.5 text-[11px]">
-                          <span className="w-2 h-2 rounded-full bg-destructive" />
-                          <span className="font-medium text-muted-foreground">{cNoLabel}</span>
-                          <span className="font-semibold text-destructive font-['Space_Grotesk']">{(100 - cYesPct).toFixed(1)}%</span>
-                        </span>
-                      </div>
+                  {/* Right: Token Price Chart */}
+                  <div className="p-6 sm:p-7 flex flex-col">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-xs font-semibold text-muted-foreground">{dimLabel} · 7D</span>
+                      <span className="text-[10px] text-muted-foreground">CoinGecko</span>
                     </div>
-                    <div className="flex-1 min-h-[250px] lg:min-h-[280px]">
-                      {chartData.length >= 2 ? (
+                    {heroMarketData?.price_usd != null && (
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-base font-bold text-foreground font-['Space_Grotesk']">
+                          {formatChartVal(cDims.some(d => d === "market_cap") ? (heroMarketData.market_cap_usd || 0) : heroMarketData.price_usd)}
+                        </span>
+                        {heroMarketData.price_change_24h != null && (
+                          <span className={`text-xs font-semibold flex items-center gap-0.5 ${isPositive ? "text-green-500" : "text-destructive"}`}>
+                            {isPositive ? <TrendingUp className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+                            {isPositive ? "+" : ""}{heroMarketData.price_change_24h.toFixed(2)}%
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    <div className="flex-1 min-h-[200px]">
+                      {tokenChartData.length >= 2 ? (
                         <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                          <AreaChart data={tokenChartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
                             <defs>
-                              <linearGradient id="heroYesGrad" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
-                                <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.01} />
-                              </linearGradient>
-                              <linearGradient id="heroNoGrad" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="hsl(var(--destructive))" stopOpacity={0.15} />
-                                <stop offset="95%" stopColor="hsl(var(--destructive))" stopOpacity={0.01} />
+                              <linearGradient id="heroTokenGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor={isPositive ? "hsl(var(--primary))" : "hsl(var(--destructive))"} stopOpacity={0.2} />
+                                <stop offset="95%" stopColor={isPositive ? "hsl(var(--primary))" : "hsl(var(--destructive))"} stopOpacity={0.01} />
                               </linearGradient>
                             </defs>
                             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} vertical={false} />
-                            <ReferenceLine y={50} stroke="hsl(var(--muted-foreground))" strokeDasharray="6 4" opacity={0.25} />
                             <XAxis dataKey="date" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-                            <YAxis domain={[0, 100]} tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} tickFormatter={(v: number) => `${v}%`} />
+                            <YAxis tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} tickFormatter={(v: number) => formatChartVal(v)} domain={["auto", "auto"]} />
                             <Tooltip
                               contentStyle={{
                                 backgroundColor: "hsl(var(--card))",
@@ -406,18 +430,17 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap }: {
                                 fontSize: "11px",
                                 padding: "6px 10px",
                               }}
-                              formatter={(value: number, name: string) => [`${value}%`, name === "yes_pct" ? cYesLabel : cNoLabel]}
+                              formatter={(value: number) => [formatChartVal(value), dimLabel]}
                               labelStyle={{ fontWeight: 600, marginBottom: 2, color: "hsl(var(--foreground))" }}
                             />
-                            <Area type="monotone" dataKey="no_pct" name="no_pct" stroke="hsl(var(--destructive))" fill="url(#heroNoGrad)" strokeWidth={1.5} strokeDasharray="4 2" dot={false} activeDot={{ r: 3, fill: "hsl(var(--destructive))", stroke: "hsl(var(--card))", strokeWidth: 2 }} />
-                            <Area type="monotone" dataKey="yes_pct" name="yes_pct" stroke="hsl(var(--primary))" fill="url(#heroYesGrad)" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: "hsl(var(--primary))", stroke: "hsl(var(--card))", strokeWidth: 2 }} />
+                            <Area type="monotone" dataKey="value" stroke={isPositive ? "hsl(var(--primary))" : "hsl(var(--destructive))"} fill="url(#heroTokenGrad)" strokeWidth={2} dot={false} activeDot={{ r: 4, stroke: "hsl(var(--card))", strokeWidth: 2 }} />
                           </AreaChart>
                         </ResponsiveContainer>
                       ) : (
                         <div className="flex items-center justify-center h-full">
                           <div className="text-center">
                             <BarChart3 className="h-8 w-8 text-muted-foreground/20 mx-auto mb-2" />
-                            <p className="text-xs text-muted-foreground">Not enough votes for a trend chart yet</p>
+                            <p className="text-xs text-muted-foreground">No price data available</p>
                           </div>
                         </div>
                       )}
@@ -426,10 +449,25 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap }: {
                 </div>
               </motion.div>
             </AnimatePresence>
-
-            {/* Dots moved inside left panel */}
           </div>
         </motion.div>
+
+        {/* Slide dots — outside the card, left-aligned */}
+        {heroForecasts.length > 1 && (
+          <div className="flex items-center gap-1.5 mt-3">
+            {heroForecasts.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => goToSlide(i)}
+                className={`rounded-full transition-all duration-300 ${
+                  i === activeSlide
+                    ? "w-5 h-1.5 bg-primary"
+                    : "w-1.5 h-1.5 bg-muted-foreground/30 hover:bg-muted-foreground/50"
+                }`}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
@@ -529,7 +567,7 @@ const Forecasts = () => {
   // Fetch token market data to filter projects with price/market cap
   const { data: allMarketData = {} } = useAllTokenMarketData();
 
-  // Filter projects based on selected forecast market
+  // Filter projects based on selected prediction market
   const filteredProjects = useMemo(() => {
     if (forecastMarket === "token_price" || forecastMarket === "market_cap") {
       return projects.filter(p => {
@@ -739,7 +777,7 @@ const Forecasts = () => {
     if (!title.trim()) { toast.error("Title required"); return; }
     if (!description.trim()) { toast.error("Description required"); return; }
     if (!projectAId) { toast.error("Select a project"); return; }
-    if (!forecastMarket) { toast.error("Forecast market required"); return; }
+    if (!forecastMarket) { toast.error("Prediction market required"); return; }
     if (!endDate) { toast.error("End date required"); return; }
     if (new Date(endDate) <= new Date()) { toast.error("End date must be in the future"); return; }
 
@@ -762,7 +800,7 @@ const Forecasts = () => {
         predictionDirection: isPriceMarket ? predictionDirection : undefined,
         startPrice: currentPrice ?? undefined,
       });
-      toast.success("Forecast created!");
+      toast.success("Prediction created!");
       setShowCreate(false);
       setTitle("");
       setDescription("");
@@ -868,17 +906,17 @@ const Forecasts = () => {
             </button>
 
 
-            {/* Create Forecast */}
+            {/* Create Prediction */}
             <Button
               onClick={() => {
                 if (user) {
                   if (dailyRemaining <= 0) {
-                    toast.error("You've reached your daily limit of 5 forecasts. Try again tomorrow.");
+                    toast.error("You've reached your daily limit of 5 predictions. Try again tomorrow.");
                     return;
                   }
                   setShowCreate(true);
                 } else {
-                  toast("Please log in to create a forecast", {
+                  toast("Please log in to create a prediction", {
                     action: {
                       label: "Log in",
                       onClick: () => navigate("/auth?redirect=/forecasts"),
@@ -890,7 +928,7 @@ const Forecasts = () => {
               className="h-8 gap-1 shrink-0 text-xs px-3 rounded-full pointer-events-auto hover:bg-primary hover:text-primary-foreground hover:shadow-none hover:opacity-100 hover:scale-100 active:scale-100 transition-none"
               style={{ transform: 'none' }}
             >
-              <Plus className="h-3.5 w-3.5" /> Create Forecast
+              <Plus className="h-3.5 w-3.5" /> Create Prediction
             </Button>
           </div>
 
@@ -999,15 +1037,15 @@ const Forecasts = () => {
               <div className="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center mx-auto mb-4">
                 <BarChart3 className="h-7 w-7 text-muted-foreground/40" />
               </div>
-              <h3 className="text-base font-semibold text-foreground mb-1">No forecasts yet</h3>
+              <h3 className="text-base font-semibold text-foreground mb-1">No predictions yet</h3>
               <p className="text-sm text-muted-foreground mb-5 max-w-xs mx-auto">
                 Be the first to create a prediction and let the community vote on it.
               </p>
               <Button onClick={() => {
                 if (user) { setShowCreate(true); }
-                else { toast("Please log in to create a forecast", { action: { label: "Log in", onClick: () => navigate("/auth?redirect=/forecasts") } }); }
+                else { toast("Please log in to create a prediction", { action: { label: "Log in", onClick: () => navigate("/auth?redirect=/forecasts") } }); }
               }} className="gap-1.5">
-                <Plus className="h-3.5 w-3.5" /> Create First Forecast
+                <Plus className="h-3.5 w-3.5" /> Create First Prediction
               </Button>
             </motion.div>
           ) : (
@@ -1070,7 +1108,7 @@ const Forecasts = () => {
           )}
         </section>
 
-        {/* Inline Create Forecast Panel — desktop */}
+        {/* Inline Create Prediction Panel — desktop */}
         <AnimatePresence>
           {showCreate && (
             <motion.aside
@@ -1086,7 +1124,7 @@ const Forecasts = () => {
                   {/* Panel header */}
                   <div className="flex items-center justify-between px-5 py-4 border-b border-border">
                     <div className="flex items-center gap-2">
-                      <h2 className="text-base font-bold text-foreground font-['Space_Grotesk']">Create Forecast</h2>
+                      <h2 className="text-base font-bold text-foreground font-['Space_Grotesk']">Create Prediction</h2>
                       {user && (
                         <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${dailyRemaining === 0 ? 'bg-destructive/10 text-destructive' : 'bg-secondary text-muted-foreground'}`}>
                           {dailyRemaining}/5 today
@@ -1116,10 +1154,10 @@ const Forecasts = () => {
                       <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Additional context about this prediction..." className="mt-1.5 min-h-[80px] resize-y" />
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Forecast Market *</label>
+                      <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Prediction Market *</label>
                       <p className="text-[10px] text-muted-foreground mt-0.5 mb-2">Select the market to track</p>
                       <Select value={forecastMarket} onValueChange={(v) => { setForecastMarket(v); setPredictionDirection(""); setPredictionTarget(""); if (v === "token_price" || v === "market_cap") { setProjectAId(""); setProjectBId(""); } }}>
-                        <SelectTrigger className="mt-1.5 h-9"><SelectValue placeholder="Select forecast market" /></SelectTrigger>
+                        <SelectTrigger className="mt-1.5 h-9"><SelectValue placeholder="Select prediction market" /></SelectTrigger>
                         <SelectContent position="popper" side="bottom" sideOffset={4} avoidCollisions={false} className="max-h-60">
                           {dimensionOptions.map((dim) => (
                             <SelectItem key={dim.value} value={dim.value} disabled={dim.disabled}>
@@ -1262,7 +1300,7 @@ const Forecasts = () => {
                   <div className="flex items-center justify-between gap-3 px-5 py-4 border-t border-border">
                     <Button variant="ghost" onClick={() => setShowCreate(false)} className="text-xs">Cancel</Button>
                     <Button onClick={handleCreate} disabled={createForecast.isPending} className="gap-1.5">
-                      {createForecast.isPending ? "Creating..." : "Create Forecast"}
+                      {createForecast.isPending ? "Creating..." : "Create Prediction"}
                     </Button>
                   </div>
                 </div>
@@ -1276,19 +1314,19 @@ const Forecasts = () => {
           <Dialog open={showCreate} onOpenChange={setShowCreate}>
             <DialogContent className="sm:max-w-lg">
               <DialogHeader>
-                <DialogTitle className="font-['Space_Grotesk']">Create Forecast</DialogTitle>
+                <DialogTitle className="font-['Space_Grotesk']">Create Prediction</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 <div>
                   <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Title *</label>
-                  <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Forecast title..." className="mt-1.5" />
+                  <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Prediction title..." className="mt-1.5" />
                 </div>
                 <div>
                   <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Description *</label>
                   <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Context..." className="mt-1.5 min-h-[80px] resize-y" />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Forecast Market *</label>
+                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Prediction Market *</label>
                   <Select value={forecastMarket} onValueChange={(v) => { setForecastMarket(v); setPredictionDirection(""); setPredictionTarget(""); if (v === "token_price" || v === "market_cap") { setProjectAId(""); setProjectBId(""); } }}>
                     <SelectTrigger className="mt-1.5 h-9"><SelectValue placeholder="Select market" /></SelectTrigger>
                     <SelectContent>{dimensionOptions.map((dim) => (<SelectItem key={dim.value} value={dim.value} disabled={dim.disabled}>{dim.label}</SelectItem>))}</SelectContent>
