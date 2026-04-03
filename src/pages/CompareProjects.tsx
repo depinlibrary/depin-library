@@ -480,7 +480,9 @@ const CompareProjects = () => {
                 ))
               )}
             </div>
-          </aside>
+            </>
+          )}
+        </aside>
 
         {/* ── Main Content ── */}
         <main className="flex-1 overflow-y-auto md:ml-[260px]">
