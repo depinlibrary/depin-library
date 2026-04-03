@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { shouldNotify } from "@/hooks/useNotificationPreferences";
+
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
@@ -165,7 +165,7 @@ export function useDeleteNotification() {
   });
 }
 
-// Helper to create a notification
+// Helper to create a notification (uses edge function for cross-user inserts)
 export async function createNotification({
   userId,
   type,
@@ -181,17 +181,12 @@ export async function createNotification({
   link?: string;
   metadata?: Record<string, any>;
 }) {
-  // Check user preferences before sending
-  const allowed = await shouldNotify(userId, type);
-  if (!allowed) return;
-
-  const { error } = await supabase.from("notifications").insert({
-    user_id: userId,
-    type,
-    title,
-    message,
-    link: link || null,
-    metadata,
-  });
-  if (error) console.error("Failed to create notification:", error);
+  try {
+    const { error } = await supabase.functions.invoke("create-notification", {
+      body: { userId, type, title, message, link, metadata },
+    });
+    if (error) console.error("Failed to create notification:", error);
+  } catch (err) {
+    console.error("Failed to create notification:", err);
+  }
 }
