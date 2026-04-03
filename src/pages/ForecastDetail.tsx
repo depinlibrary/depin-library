@@ -408,7 +408,6 @@ const ForecastDetail = () => {
                     <span className="font-['Space_Grotesk'] text-base tabular-nums text-destructive">{noPct.toFixed(0)}%</span>
                   </div>
                 </div>
-                <p className="mt-3 text-[11px] text-muted-foreground">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</p>
               </div>
             </motion.div>
 

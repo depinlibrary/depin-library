@@ -467,7 +467,7 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap, search
                   <div className="p-6 sm:p-7 flex flex-col">
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-xs font-semibold text-muted-foreground">
-                        {dimLabel} · 24H
+                        {dimLabel}
                         {hasTwoProjects && current.project_b_name && <span className="ml-1 text-muted-foreground/50">({current.project_a_name} vs {current.project_b_name})</span>}
                       </span>
                       <span className="text-[10px] text-muted-foreground">CoinGecko</span>
