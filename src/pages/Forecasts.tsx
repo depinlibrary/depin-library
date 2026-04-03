@@ -567,7 +567,7 @@ const Forecasts = () => {
   // Fetch token market data to filter projects with price/market cap
   const { data: allMarketData = {} } = useAllTokenMarketData();
 
-  // Filter projects based on selected forecast market
+  // Filter projects based on selected prediction market
   const filteredProjects = useMemo(() => {
     if (forecastMarket === "token_price" || forecastMarket === "market_cap") {
       return projects.filter(p => {
@@ -800,7 +800,7 @@ const Forecasts = () => {
         predictionDirection: isPriceMarket ? predictionDirection : undefined,
         startPrice: currentPrice ?? undefined,
       });
-      toast.success("Forecast created!");
+      toast.success("Prediction created!");
       setShowCreate(false);
       setTitle("");
       setDescription("");
@@ -906,17 +906,17 @@ const Forecasts = () => {
             </button>
 
 
-            {/* Create Forecast */}
+            {/* Create Prediction */}
             <Button
               onClick={() => {
                 if (user) {
                   if (dailyRemaining <= 0) {
-                    toast.error("You've reached your daily limit of 5 forecasts. Try again tomorrow.");
+                    toast.error("You've reached your daily limit of 5 predictions. Try again tomorrow.");
                     return;
                   }
                   setShowCreate(true);
                 } else {
-                  toast("Please log in to create a forecast", {
+                  toast("Please log in to create a prediction", {
                     action: {
                       label: "Log in",
                       onClick: () => navigate("/auth?redirect=/forecasts"),
@@ -928,7 +928,7 @@ const Forecasts = () => {
               className="h-8 gap-1 shrink-0 text-xs px-3 rounded-full pointer-events-auto hover:bg-primary hover:text-primary-foreground hover:shadow-none hover:opacity-100 hover:scale-100 active:scale-100 transition-none"
               style={{ transform: 'none' }}
             >
-              <Plus className="h-3.5 w-3.5" /> Create Forecast
+              <Plus className="h-3.5 w-3.5" /> Create Prediction
             </Button>
           </div>
 
@@ -1037,15 +1037,15 @@ const Forecasts = () => {
               <div className="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center mx-auto mb-4">
                 <BarChart3 className="h-7 w-7 text-muted-foreground/40" />
               </div>
-              <h3 className="text-base font-semibold text-foreground mb-1">No forecasts yet</h3>
+              <h3 className="text-base font-semibold text-foreground mb-1">No predictions yet</h3>
               <p className="text-sm text-muted-foreground mb-5 max-w-xs mx-auto">
                 Be the first to create a prediction and let the community vote on it.
               </p>
               <Button onClick={() => {
                 if (user) { setShowCreate(true); }
-                else { toast("Please log in to create a forecast", { action: { label: "Log in", onClick: () => navigate("/auth?redirect=/forecasts") } }); }
+                else { toast("Please log in to create a prediction", { action: { label: "Log in", onClick: () => navigate("/auth?redirect=/forecasts") } }); }
               }} className="gap-1.5">
-                <Plus className="h-3.5 w-3.5" /> Create First Forecast
+                <Plus className="h-3.5 w-3.5" /> Create First Prediction
               </Button>
             </motion.div>
           ) : (
@@ -1108,7 +1108,7 @@ const Forecasts = () => {
           )}
         </section>
 
-        {/* Inline Create Forecast Panel — desktop */}
+        {/* Inline Create Prediction Panel — desktop */}
         <AnimatePresence>
           {showCreate && (
             <motion.aside
@@ -1124,7 +1124,7 @@ const Forecasts = () => {
                   {/* Panel header */}
                   <div className="flex items-center justify-between px-5 py-4 border-b border-border">
                     <div className="flex items-center gap-2">
-                      <h2 className="text-base font-bold text-foreground font-['Space_Grotesk']">Create Forecast</h2>
+                      <h2 className="text-base font-bold text-foreground font-['Space_Grotesk']">Create Prediction</h2>
                       {user && (
                         <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${dailyRemaining === 0 ? 'bg-destructive/10 text-destructive' : 'bg-secondary text-muted-foreground'}`}>
                           {dailyRemaining}/5 today
@@ -1154,10 +1154,10 @@ const Forecasts = () => {
                       <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Additional context about this prediction..." className="mt-1.5 min-h-[80px] resize-y" />
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Forecast Market *</label>
+                      <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Prediction Market *</label>
                       <p className="text-[10px] text-muted-foreground mt-0.5 mb-2">Select the market to track</p>
                       <Select value={forecastMarket} onValueChange={(v) => { setForecastMarket(v); setPredictionDirection(""); setPredictionTarget(""); if (v === "token_price" || v === "market_cap") { setProjectAId(""); setProjectBId(""); } }}>
-                        <SelectTrigger className="mt-1.5 h-9"><SelectValue placeholder="Select forecast market" /></SelectTrigger>
+                        <SelectTrigger className="mt-1.5 h-9"><SelectValue placeholder="Select prediction market" /></SelectTrigger>
                         <SelectContent position="popper" side="bottom" sideOffset={4} avoidCollisions={false} className="max-h-60">
                           {dimensionOptions.map((dim) => (
                             <SelectItem key={dim.value} value={dim.value} disabled={dim.disabled}>
@@ -1300,7 +1300,7 @@ const Forecasts = () => {
                   <div className="flex items-center justify-between gap-3 px-5 py-4 border-t border-border">
                     <Button variant="ghost" onClick={() => setShowCreate(false)} className="text-xs">Cancel</Button>
                     <Button onClick={handleCreate} disabled={createForecast.isPending} className="gap-1.5">
-                      {createForecast.isPending ? "Creating..." : "Create Forecast"}
+                      {createForecast.isPending ? "Creating..." : "Create Prediction"}
                     </Button>
                   </div>
                 </div>
@@ -1314,7 +1314,7 @@ const Forecasts = () => {
           <Dialog open={showCreate} onOpenChange={setShowCreate}>
             <DialogContent className="sm:max-w-lg">
               <DialogHeader>
-                <DialogTitle className="font-['Space_Grotesk']">Create Forecast</DialogTitle>
+                <DialogTitle className="font-['Space_Grotesk']">Create Prediction</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 <div>
@@ -1326,7 +1326,7 @@ const Forecasts = () => {
                   <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Context..." className="mt-1.5 min-h-[80px] resize-y" />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Forecast Market *</label>
+                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Prediction Market *</label>
                   <Select value={forecastMarket} onValueChange={(v) => { setForecastMarket(v); setPredictionDirection(""); setPredictionTarget(""); if (v === "token_price" || v === "market_cap") { setProjectAId(""); setProjectBId(""); } }}>
                     <SelectTrigger className="mt-1.5 h-9"><SelectValue placeholder="Select market" /></SelectTrigger>
                     <SelectContent>{dimensionOptions.map((dim) => (<SelectItem key={dim.value} value={dim.value} disabled={dim.disabled}>{dim.label}</SelectItem>))}</SelectContent>

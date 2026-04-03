@@ -101,7 +101,7 @@ function CreatorCardWithCountdown({ forecast, isEnded, timeLeft }: { forecast: a
               <UserAvatar avatarUrl={forecast.creator_avatar_url} displayName={forecast.creator_name} size="md" />
               <div className="flex flex-col">
                 <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{forecast.creator_name}</span>
-                <span className="text-[10px] text-muted-foreground">Forecast Creator</span>
+                <span className="text-[10px] text-muted-foreground">Prediction Creator</span>
               </div>
             </div>
           </UserStatsHoverCard>
@@ -208,7 +208,7 @@ const ForecastDetail = () => {
     const { yesPct: yesPctNum } = getWeightedChance(forecast);
     const yesPct = yesPctNum.toFixed(0);
     const projectNames = [forecast.project_a?.name, forecast.project_b?.name].filter(Boolean).join(" vs ");
-    const title = `${forecast.title} — DePIN Forecast`;
+    const title = `${forecast.title} — DePIN Prediction`;
     const description = `${yesPct}% Yes · ${totalVotes} votes · ${projectNames} — ${forecast.description?.slice(0, 120) || "Community prediction on DePIN projects"}`;
     document.title = title;
     const setMeta = (property: string, content: string, isName = false) => {
@@ -302,8 +302,8 @@ const ForecastDetail = () => {
       <div className="min-h-screen bg-background flex flex-col">
         <Navbar />
         <div className="container mx-auto px-4 pt-28 pb-16 text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-4">Forecast not found</h1>
-          <Link to="/forecasts" className="text-primary hover:underline text-sm">← Back to Forecasts</Link>
+          <h1 className="text-2xl font-bold text-foreground mb-4">Prediction not found</h1>
+          <Link to="/forecasts" className="text-primary hover:underline text-sm">← Back to Predictions</Link>
         </div>
         <Footer />
       </div>
@@ -330,7 +330,7 @@ const ForecastDetail = () => {
           <div className="lg:col-span-2 lg:pt-4 lg:pb-16">
             {/* Breadcrumb */}
             <Link to="/forecasts" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-5">
-              <ArrowLeft className="h-3.5 w-3.5" /> Back to Forecasts
+              <ArrowLeft className="h-3.5 w-3.5" /> Back to Predictions
             </Link>
             <div className="space-y-4">
             {/* Hero Card — compact header with project + title + odds */}
@@ -434,7 +434,7 @@ const ForecastDetail = () => {
 
                 {/* Overview Tab */}
                 <TabsContent value="overview" className="mt-0 p-6">
-                  <h3 className="text-sm font-bold text-foreground mb-3 font-['Space_Grotesk']">About This Forecast</h3>
+                  <h3 className="text-sm font-bold text-foreground mb-3 font-['Space_Grotesk']">About This Prediction</h3>
                   {forecast.description ? (
                     <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{forecast.description}</p>
                   ) : (
@@ -560,7 +560,7 @@ const ForecastDetail = () => {
             {/* Creator Card — compact with countdown */}
             <CreatorCardWithCountdown forecast={forecast} isEnded={isEnded} timeLeft={timeLeft} />
 
-            {/* Forecast Results — shown below creator when ended */}
+            {/* Prediction Results — shown below creator when ended */}
             {isEnded && (() => {
               const outcomeResult = forecast.outcome
                 ? forecast.outcome
@@ -580,7 +580,7 @@ const ForecastDetail = () => {
                 >
                   <div className="px-5 py-3.5 border-b border-border flex items-center gap-2">
                     <Trophy className="h-4 w-4 text-primary" />
-                    <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Forecast Results</h3>
+                    <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Prediction Results</h3>
                   </div>
                   <div className="p-5 space-y-3">
                     {/* Overall result */}
@@ -633,7 +633,7 @@ const ForecastDetail = () => {
                       </div>
                     ) : (
                       <div className="rounded-xl px-4 py-3 bg-secondary/30 border border-border/50 text-xs text-muted-foreground text-center">
-                        You did not vote on this forecast
+                        You did not vote on this prediction
                       </div>
                     )}
                   </div>

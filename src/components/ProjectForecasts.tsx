@@ -70,9 +70,9 @@ const ProjectForecasts = ({ projectId, projectName }: ProjectForecastsProps) => 
   if (forecasts.length === 0) {
     return (
       <div className="rounded-xl border border-border bg-card p-8 text-center">
-        <p className="text-sm text-muted-foreground">No forecasts have been made about {projectName} yet.</p>
+        <p className="text-sm text-muted-foreground">No predictions have been made about {projectName} yet.</p>
         <Link to="/forecasts?create=true" className="mt-3 inline-block text-sm font-medium text-primary hover:text-primary/80 transition-colors">
-          Create the first forecast →
+          Create the first prediction →
         </Link>
       </div>
     );
