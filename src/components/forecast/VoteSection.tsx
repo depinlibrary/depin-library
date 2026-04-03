@@ -252,6 +252,8 @@ export default function VoteSection({ forecast, yesPct, noPct, totalVotes, isEnd
             </Button>
           </DialogFooter>
         </DialogContent>
+      </Dialog>
+
       {/* Already Voted Dialog */}
       <Dialog open={alreadyVotedDialog} onOpenChange={setAlreadyVotedDialog}>
         <DialogContent className="sm:max-w-md">
