@@ -29,6 +29,7 @@ export default function VoteSection({ forecast, yesPct, noPct, totalVotes, isEnd
   const { user } = useAuth();
   const [confidence, setConfidence] = useState(3);
   const [confirmDialog, setConfirmDialog] = useState<{ open: boolean; vote: "yes" | "no" | null }>({ open: false, vote: null });
+  const [alreadyVotedDialog, setAlreadyVotedDialog] = useState(false);
 
   const hasVoted = !!forecast.user_vote;
 
