@@ -214,26 +214,62 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap }: {
   }, [heroForecasts.length, activeSlide]);
 
   // Get market data for active prediction's project
-  const activeProjectId = heroForecasts[activeSlide]?.project_a_id;
-  const { data: heroMarketData } = useTokenMarketData(activeProjectId);
+  const activeProjectAId = heroForecasts[activeSlide]?.project_a_id;
+  const activeProjectBId = heroForecasts[activeSlide]?.project_b_id;
+  const { data: heroMarketData } = useTokenMarketData(activeProjectAId);
+  const { data: heroMarketDataB } = useTokenMarketData(activeProjectBId || undefined);
   const cDims = heroDimensionsMap[heroForecasts[activeSlide]?.id] || [];
+  const hasTwoProjects = !!heroForecasts[activeSlide]?.project_b_name;
 
   const tokenChartData = useMemo(() => {
     if (!heroMarketData?.sparkline_7d || !Array.isArray(heroMarketData.sparkline_7d)) return [];
     const prices = heroMarketData.sparkline_7d as number[];
+    // Use last ~24h of data (last 24 out of 168 hours = last ~24/168 of datapoints)
+    const h24Count = Math.max(2, Math.round(prices.length * (24 / 168)));
+    const prices24 = prices.slice(-h24Count);
     const now = Date.now();
-    const interval = (7 * 24 * 60 * 60 * 1000) / prices.length;
+    const interval = (24 * 60 * 60 * 1000) / prices24.length;
     const dim = cDims.some(d => d === "market_cap") ? "market_cap" : "token_price";
-    return prices.map((price, i) => {
-      const time = new Date(now - (prices.length - 1 - i) * interval);
+    return prices24.map((price, i) => {
+      const time = new Date(now - (prices24.length - 1 - i) * interval);
       return {
-        date: time.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+        date: time.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
         value: dim === "market_cap" && heroMarketData.market_cap_usd && heroMarketData.price_usd
           ? price * (heroMarketData.market_cap_usd / heroMarketData.price_usd)
           : price,
       };
     });
   }, [heroMarketData, cDims]);
+
+  // Project B chart data for cross-chart
+  const tokenChartDataB = useMemo(() => {
+    if (!hasTwoProjects || !heroMarketDataB?.sparkline_7d || !Array.isArray(heroMarketDataB.sparkline_7d)) return [];
+    const prices = heroMarketDataB.sparkline_7d as number[];
+    const h24Count = Math.max(2, Math.round(prices.length * (24 / 168)));
+    const prices24 = prices.slice(-h24Count);
+    const now = Date.now();
+    const interval = (24 * 60 * 60 * 1000) / prices24.length;
+    const dim = cDims.some(d => d === "market_cap") ? "market_cap" : "token_price";
+    return prices24.map((price, i) => {
+      const time = new Date(now - (prices24.length - 1 - i) * interval);
+      return {
+        date: time.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+        valueB: dim === "market_cap" && heroMarketDataB.market_cap_usd && heroMarketDataB.price_usd
+          ? price * (heroMarketDataB.market_cap_usd / heroMarketDataB.price_usd)
+          : price,
+      };
+    });
+  }, [heroMarketDataB, cDims, hasTwoProjects]);
+
+  // Merge A and B data for cross chart
+  const mergedChartData = useMemo(() => {
+    if (!hasTwoProjects || tokenChartDataB.length === 0) return tokenChartData;
+    const maxLen = Math.min(tokenChartData.length, tokenChartDataB.length);
+    return tokenChartData.slice(-maxLen).map((d, i) => ({
+      ...d,
+      valueB: tokenChartDataB.slice(-maxLen)[i]?.valueB,
+    }));
+  }, [tokenChartData, tokenChartDataB, hasTwoProjects]);
 
   useEffect(() => {
     if (heroForecasts.length <= 1 || isPaused) return;
