@@ -463,14 +463,17 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap, search
                     </div>
                   </div>
 
-                  {/* Right: Token Price Chart */}
+                  {/* Right: Token Price Chart — 24H */}
                   <div className="p-6 sm:p-7 flex flex-col">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs font-semibold text-muted-foreground">{dimLabel} · 7D</span>
+                      <span className="text-xs font-semibold text-muted-foreground">
+                        {dimLabel} · 24H
+                        {hasTwoProjects && current.project_b_name && <span className="ml-1 text-muted-foreground/50">({current.project_a_name} vs {current.project_b_name})</span>}
+                      </span>
                       <span className="text-[10px] text-muted-foreground">CoinGecko</span>
                     </div>
                     {heroMarketData?.price_usd != null && (
-                      <div className="flex items-center gap-2 mb-3">
+                      <div className="flex items-center gap-2 mb-3 flex-wrap">
                         <span className="text-base font-bold text-foreground font-['Space_Grotesk']">
                           {formatChartVal(cDims.some(d => d === "market_cap") ? (heroMarketData.market_cap_usd || 0) : heroMarketData.price_usd)}
                         </span>
@@ -483,18 +486,24 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap, search
                       </div>
                     )}
                     <div className="flex-1 min-h-[200px]">
-                      {tokenChartData.length >= 2 ? (
+                      {(hasTwoProjects ? mergedChartData : tokenChartData).length >= 2 ? (
                         <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart data={tokenChartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                          <AreaChart data={hasTwoProjects ? mergedChartData : tokenChartData} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
                             <defs>
-                              <linearGradient id="heroTokenGrad" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor={isPositive ? "hsl(var(--primary))" : "hsl(var(--destructive))"} stopOpacity={0.2} />
-                                <stop offset="95%" stopColor={isPositive ? "hsl(var(--primary))" : "hsl(var(--destructive))"} stopOpacity={0.01} />
+                              <linearGradient id="heroTokenGradA" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
+                                <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.01} />
                               </linearGradient>
+                              {hasTwoProjects && (
+                                <linearGradient id="heroTokenGradB" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor="hsl(var(--destructive))" stopOpacity={0.15} />
+                                  <stop offset="95%" stopColor="hsl(var(--destructive))" stopOpacity={0.01} />
+                                </linearGradient>
+                              )}
                             </defs>
                             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} vertical={false} />
                             <XAxis dataKey="date" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-                            <YAxis tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} tickFormatter={(v: number) => formatChartVal(v)} domain={["auto", "auto"]} />
+                            <YAxis tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} tickFormatter={(v: number) => formatChartVal(v)} domain={["auto", "auto"]} width={65} />
                             <Tooltip
                               contentStyle={{
                                 backgroundColor: "hsl(var(--card))",
@@ -503,10 +512,13 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap, search
                                 fontSize: "11px",
                                 padding: "6px 10px",
                               }}
-                              formatter={(value: number) => [formatChartVal(value), dimLabel]}
+                              formatter={(value: number, name: string) => [formatChartVal(value), name === "valueB" ? (current.project_b_name || "Project B") : (current.project_a_name || dimLabel)]}
                               labelStyle={{ fontWeight: 600, marginBottom: 2, color: "hsl(var(--foreground))" }}
                             />
-                            <Area type="monotone" dataKey="value" stroke={isPositive ? "hsl(var(--primary))" : "hsl(var(--destructive))"} fill="url(#heroTokenGrad)" strokeWidth={2} dot={false} activeDot={{ r: 4, stroke: "hsl(var(--card))", strokeWidth: 2 }} />
+                            <Area type="monotone" dataKey="value" stroke="hsl(var(--primary))" fill="url(#heroTokenGradA)" strokeWidth={2} dot={false} activeDot={{ r: 4, stroke: "hsl(var(--card))", strokeWidth: 2 }} name={current.project_a_name || "Project A"} />
+                            {hasTwoProjects && (
+                              <Area type="monotone" dataKey="valueB" stroke="hsl(var(--destructive))" fill="url(#heroTokenGradB)" strokeWidth={2} dot={false} activeDot={{ r: 4, stroke: "hsl(var(--card))", strokeWidth: 2 }} name={current.project_b_name || "Project B"} />
+                            )}
                           </AreaChart>
                         </ResponsiveContainer>
                       ) : (
