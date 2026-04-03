@@ -15,7 +15,7 @@ import {
 const navLinks = [
   { label: "Explore", to: "/explore", icon: Layers },
   { label: "Market", to: "/market", icon: BarChart3 },
-  { label: "Forecasts", to: "/forecasts", icon: TrendingUp },
+  { label: "Predictions", to: "/forecasts", icon: TrendingUp },
   { label: "Compare", to: "/compare", icon: GitCompare },
   { label: "Portfolio", to: "/portfolio", icon: Briefcase },
 ];

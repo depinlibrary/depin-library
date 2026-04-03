@@ -702,7 +702,7 @@ const Navbar = () => {
                   }`}
                 >
                   <LineChart className={`h-4 w-4 ${location.pathname === "/forecasts" ? "text-primary" : ""}`} />
-                  Forecasts
+                  Predictions
                   {location.pathname === "/forecasts" && <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />}
                 </Link>
                 <Link

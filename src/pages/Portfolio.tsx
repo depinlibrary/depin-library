@@ -423,8 +423,8 @@ const Portfolio = () => {
   };
 
   const notifOptions = [
-    { key: "forecast_vote", label: "Forecast votes", desc: "When someone votes on your forecast", icon: TrendingUp },
-    { key: "forecast_result", label: "Forecast results", desc: "When a forecast you voted on ends", icon: Crosshair },
+    { key: "forecast_vote", label: "Prediction votes", desc: "When someone votes on your prediction", icon: TrendingUp },
+    { key: "forecast_result", label: "Prediction results", desc: "When a prediction you voted on ends", icon: Crosshair },
     { key: "forecast_new_comment", label: "New comments", desc: "Comments on your forecasts", icon: Bell },
     { key: "forecast_comment_reply", label: "Comment replies", desc: "Replies to your comments", icon: Mail },
     { key: "forecast_comment_like", label: "Comment likes", desc: "When someone likes your comment", icon: Award },
@@ -693,7 +693,7 @@ const Portfolio = () => {
   const sidebarTabs = [
     { key: "dashboard" as const, label: "Dashboard", icon: Layout },
     { key: "alerts" as const, label: "Alerts", icon: Bell },
-    { key: "forecasts" as const, label: "Forecasts", icon: Activity },
+    { key: "forecasts" as const, label: "Predictions", icon: Activity },
     { key: "watchlist" as const, label: "Watchlist", icon: Star },
     { key: "activities" as const, label: "Activities", icon: Clock },
     { key: "profile" as const, label: "Settings", icon: Lock },
@@ -703,7 +703,7 @@ const Portfolio = () => {
     { to: "/", label: "Overview", icon: Home },
     { to: "/explore", label: "Explore", icon: Compass },
     { to: "/market", label: "Market", icon: BarChart3 },
-    { to: "/forecasts", label: "Forecasts", icon: LineChart },
+    { to: "/forecasts", label: "Predictions", icon: LineChart },
     { to: "/compare", label: "Compare", icon: GitCompare },
   ];
 

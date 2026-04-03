@@ -32,7 +32,7 @@ const UserStatsHoverCard = ({ userId, displayName, avatarUrl, children }: UserSt
             <UserAvatar avatarUrl={avatarUrl} displayName={displayName} size="md" />
             <div>
               <p className="text-sm font-medium text-foreground">{displayName}</p>
-              <p className="text-[10px] text-muted-foreground">Forecaster Stats</p>
+              <p className="text-[10px] text-muted-foreground">Prediction Stats</p>
             </div>
           </div>
 

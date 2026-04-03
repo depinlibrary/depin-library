@@ -186,11 +186,16 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
   );
 };
 // ---- Hero Section — Full-width prediction market showcase ----
-const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap }: {
+const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap, search, setSearch, setPage, navigate, dailyRemaining }: {
   forecasts: Forecast[];
   user: any;
   setShowCreate: (v: boolean) => void;
   heroDimensionsMap: Record<string, string[]>;
+  search: string;
+  setSearch: (v: string) => void;
+  setPage: (v: number) => void;
+  navigate: any;
+  dailyRemaining: number;
 }) => {
   const [activeSlide, setActiveSlide] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -214,26 +219,62 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap }: {
   }, [heroForecasts.length, activeSlide]);
 
   // Get market data for active prediction's project
-  const activeProjectId = heroForecasts[activeSlide]?.project_a_id;
-  const { data: heroMarketData } = useTokenMarketData(activeProjectId);
+  const activeProjectAId = heroForecasts[activeSlide]?.project_a_id;
+  const activeProjectBId = heroForecasts[activeSlide]?.project_b_id;
+  const { data: heroMarketData } = useTokenMarketData(activeProjectAId);
+  const { data: heroMarketDataB } = useTokenMarketData(activeProjectBId || undefined);
   const cDims = heroDimensionsMap[heroForecasts[activeSlide]?.id] || [];
+  const hasTwoProjects = !!heroForecasts[activeSlide]?.project_b_name;
 
   const tokenChartData = useMemo(() => {
     if (!heroMarketData?.sparkline_7d || !Array.isArray(heroMarketData.sparkline_7d)) return [];
     const prices = heroMarketData.sparkline_7d as number[];
+    // Use last ~24h of data (last 24 out of 168 hours = last ~24/168 of datapoints)
+    const h24Count = Math.max(2, Math.round(prices.length * (24 / 168)));
+    const prices24 = prices.slice(-h24Count);
     const now = Date.now();
-    const interval = (7 * 24 * 60 * 60 * 1000) / prices.length;
+    const interval = (24 * 60 * 60 * 1000) / prices24.length;
     const dim = cDims.some(d => d === "market_cap") ? "market_cap" : "token_price";
-    return prices.map((price, i) => {
-      const time = new Date(now - (prices.length - 1 - i) * interval);
+    return prices24.map((price, i) => {
+      const time = new Date(now - (prices24.length - 1 - i) * interval);
       return {
-        date: time.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+        date: time.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
         value: dim === "market_cap" && heroMarketData.market_cap_usd && heroMarketData.price_usd
           ? price * (heroMarketData.market_cap_usd / heroMarketData.price_usd)
           : price,
       };
     });
   }, [heroMarketData, cDims]);
+
+  // Project B chart data for cross-chart
+  const tokenChartDataB = useMemo(() => {
+    if (!hasTwoProjects || !heroMarketDataB?.sparkline_7d || !Array.isArray(heroMarketDataB.sparkline_7d)) return [];
+    const prices = heroMarketDataB.sparkline_7d as number[];
+    const h24Count = Math.max(2, Math.round(prices.length * (24 / 168)));
+    const prices24 = prices.slice(-h24Count);
+    const now = Date.now();
+    const interval = (24 * 60 * 60 * 1000) / prices24.length;
+    const dim = cDims.some(d => d === "market_cap") ? "market_cap" : "token_price";
+    return prices24.map((price, i) => {
+      const time = new Date(now - (prices24.length - 1 - i) * interval);
+      return {
+        date: time.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+        valueB: dim === "market_cap" && heroMarketDataB.market_cap_usd && heroMarketDataB.price_usd
+          ? price * (heroMarketDataB.market_cap_usd / heroMarketDataB.price_usd)
+          : price,
+      };
+    });
+  }, [heroMarketDataB, cDims, hasTwoProjects]);
+
+  // Merge A and B data for cross chart
+  const mergedChartData = useMemo(() => {
+    if (!hasTwoProjects || tokenChartDataB.length === 0) return tokenChartData;
+    const maxLen = Math.min(tokenChartData.length, tokenChartDataB.length);
+    return tokenChartData.slice(-maxLen).map((d, i) => ({
+      ...d,
+      valueB: tokenChartDataB.slice(-maxLen)[i]?.valueB,
+    }));
+  }, [tokenChartData, tokenChartDataB, hasTwoProjects]);
 
   useEffect(() => {
     if (heroForecasts.length <= 1 || isPaused) return;
@@ -303,12 +344,44 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap }: {
       <div className="gradient-radial-top absolute inset-0" />
 
       <div className="container relative mx-auto px-4">
-        {/* Tabs at top left */}
-        <div className="flex items-center gap-1 mb-4">
-          <button className="px-4 py-2 rounded-lg text-sm font-semibold bg-primary/10 text-primary border border-primary/20">Predictions</button>
-          <button className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground/50 cursor-default" disabled>
-            Leaderboard <span className="ml-1 text-[9px] bg-secondary px-1.5 py-0.5 rounded-full">Soon</span>
-          </button>
+        {/* Tabs at top left + search/create at right */}
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <div className="flex items-center gap-1">
+            <button className="px-4 py-2 rounded-lg text-sm font-semibold bg-primary/10 text-primary border border-primary/20">Predictions</button>
+            <button className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground/50 cursor-default" disabled>
+              Leaderboard <span className="ml-1 text-[9px] bg-secondary px-1.5 py-0.5 rounded-full">Soon</span>
+            </button>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="relative w-[160px] sm:w-[200px]">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60" />
+              <Input
+                placeholder="Search..."
+                value={search}
+                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                className="h-8 w-full text-xs placeholder:text-muted-foreground/50 bg-secondary/40 border-border pl-8 pr-3"
+              />
+            </div>
+            <Button
+              onClick={() => {
+                if (user) {
+                  if (dailyRemaining <= 0) {
+                    toast.error("You've reached your daily limit of 5 predictions. Try again tomorrow.");
+                    return;
+                  }
+                  setShowCreate(true);
+                } else {
+                  toast("Please log in to create a prediction", {
+                    action: { label: "Log in", onClick: () => navigate("/auth?redirect=/forecasts") },
+                  });
+                }
+              }}
+              size="sm"
+              className="h-8 gap-1 shrink-0 text-xs px-3 rounded-full"
+            >
+              <Plus className="h-3.5 w-3.5" /> Create
+            </Button>
+          </div>
         </div>
 
         {/* Main hero card */}
@@ -390,14 +463,17 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap }: {
                     </div>
                   </div>
 
-                  {/* Right: Token Price Chart */}
+                  {/* Right: Token Price Chart — 24H */}
                   <div className="p-6 sm:p-7 flex flex-col">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs font-semibold text-muted-foreground">{dimLabel} · 7D</span>
+                      <span className="text-xs font-semibold text-muted-foreground">
+                        {dimLabel} · 24H
+                        {hasTwoProjects && current.project_b_name && <span className="ml-1 text-muted-foreground/50">({current.project_a_name} vs {current.project_b_name})</span>}
+                      </span>
                       <span className="text-[10px] text-muted-foreground">CoinGecko</span>
                     </div>
                     {heroMarketData?.price_usd != null && (
-                      <div className="flex items-center gap-2 mb-3">
+                      <div className="flex items-center gap-2 mb-3 flex-wrap">
                         <span className="text-base font-bold text-foreground font-['Space_Grotesk']">
                           {formatChartVal(cDims.some(d => d === "market_cap") ? (heroMarketData.market_cap_usd || 0) : heroMarketData.price_usd)}
                         </span>
@@ -410,18 +486,24 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap }: {
                       </div>
                     )}
                     <div className="flex-1 min-h-[200px]">
-                      {tokenChartData.length >= 2 ? (
+                      {(hasTwoProjects ? mergedChartData : tokenChartData).length >= 2 ? (
                         <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart data={tokenChartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                          <AreaChart data={hasTwoProjects ? mergedChartData : tokenChartData} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
                             <defs>
-                              <linearGradient id="heroTokenGrad" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor={isPositive ? "hsl(var(--primary))" : "hsl(var(--destructive))"} stopOpacity={0.2} />
-                                <stop offset="95%" stopColor={isPositive ? "hsl(var(--primary))" : "hsl(var(--destructive))"} stopOpacity={0.01} />
+                              <linearGradient id="heroTokenGradA" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
+                                <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.01} />
                               </linearGradient>
+                              {hasTwoProjects && (
+                                <linearGradient id="heroTokenGradB" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor="hsl(var(--destructive))" stopOpacity={0.15} />
+                                  <stop offset="95%" stopColor="hsl(var(--destructive))" stopOpacity={0.01} />
+                                </linearGradient>
+                              )}
                             </defs>
                             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} vertical={false} />
                             <XAxis dataKey="date" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-                            <YAxis tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} tickFormatter={(v: number) => formatChartVal(v)} domain={["auto", "auto"]} />
+                            <YAxis tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} tickFormatter={(v: number) => formatChartVal(v)} domain={["auto", "auto"]} width={65} />
                             <Tooltip
                               contentStyle={{
                                 backgroundColor: "hsl(var(--card))",
@@ -430,10 +512,13 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap }: {
                                 fontSize: "11px",
                                 padding: "6px 10px",
                               }}
-                              formatter={(value: number) => [formatChartVal(value), dimLabel]}
+                              formatter={(value: number, name: string) => [formatChartVal(value), name === "valueB" ? (current.project_b_name || "Project B") : (current.project_a_name || dimLabel)]}
                               labelStyle={{ fontWeight: 600, marginBottom: 2, color: "hsl(var(--foreground))" }}
                             />
-                            <Area type="monotone" dataKey="value" stroke={isPositive ? "hsl(var(--primary))" : "hsl(var(--destructive))"} fill="url(#heroTokenGrad)" strokeWidth={2} dot={false} activeDot={{ r: 4, stroke: "hsl(var(--card))", strokeWidth: 2 }} />
+                            <Area type="monotone" dataKey="value" stroke="hsl(var(--primary))" fill="url(#heroTokenGradA)" strokeWidth={2} dot={false} activeDot={{ r: 4, stroke: "hsl(var(--card))", strokeWidth: 2 }} name={current.project_a_name || "Project A"} />
+                            {hasTwoProjects && (
+                              <Area type="monotone" dataKey="valueB" stroke="hsl(var(--destructive))" fill="url(#heroTokenGradB)" strokeWidth={2} dot={false} activeDot={{ r: 4, stroke: "hsl(var(--card))", strokeWidth: 2 }} name={current.project_b_name || "Project B"} />
+                            )}
                           </AreaChart>
                         </ResponsiveContainer>
                       ) : (
@@ -826,6 +911,11 @@ const Forecasts = () => {
         user={user}
         setShowCreate={setShowCreate}
         heroDimensionsMap={heroDimensionsMap as Record<string, string[]>}
+        search={search}
+        setSearch={setSearch}
+        setPage={setPage}
+        navigate={navigate}
+        dailyRemaining={dailyRemaining}
       />
 
       {/* Controls — Polymarket-style single row */}
@@ -873,21 +963,10 @@ const Forecasts = () => {
               </button>
             ))}
 
-            {/* Spacer pushes right side */}
+            {/* Spacer pushes filter to right */}
             <div className="flex-1 min-w-0" />
 
-            {/* Search input — compact */}
-            <div className="relative shrink-0 w-[180px]">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60" />
-              <Input
-                placeholder="Search..."
-                value={search}
-                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                className="h-8 w-full text-xs placeholder:text-muted-foreground/50 bg-secondary/40 border-border pl-8 pr-3"
-              />
-            </div>
-
-            {/* Filter toggle button */}
+            {/* Filter toggle button — right-aligned */}
             <button
               onClick={() => setShowFilters(!showFilters)}
               className={`shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
@@ -904,32 +983,6 @@ const Forecasts = () => {
                 </span>
               )}
             </button>
-
-
-            {/* Create Prediction */}
-            <Button
-              onClick={() => {
-                if (user) {
-                  if (dailyRemaining <= 0) {
-                    toast.error("You've reached your daily limit of 5 predictions. Try again tomorrow.");
-                    return;
-                  }
-                  setShowCreate(true);
-                } else {
-                  toast("Please log in to create a prediction", {
-                    action: {
-                      label: "Log in",
-                      onClick: () => navigate("/auth?redirect=/forecasts"),
-                    },
-                  });
-                }
-              }}
-              size="sm"
-              className="h-8 gap-1 shrink-0 text-xs px-3 rounded-full pointer-events-auto hover:bg-primary hover:text-primary-foreground hover:shadow-none hover:opacity-100 hover:scale-100 active:scale-100 transition-none"
-              style={{ transform: 'none' }}
-            >
-              <Plus className="h-3.5 w-3.5" /> Create Prediction
-            </Button>
           </div>
 
           {/* Expandable filter panel */}
