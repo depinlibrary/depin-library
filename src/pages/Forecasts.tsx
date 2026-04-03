@@ -867,6 +867,11 @@ const Forecasts = () => {
         user={user}
         setShowCreate={setShowCreate}
         heroDimensionsMap={heroDimensionsMap as Record<string, string[]>}
+        search={search}
+        setSearch={setSearch}
+        setPage={setPage}
+        navigate={navigate}
+        dailyRemaining={dailyRemaining}
       />
 
       {/* Controls — Polymarket-style single row */}
