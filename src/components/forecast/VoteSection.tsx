@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ThumbsUp, ThumbsDown, Users, TrendingUp, TrendingDown, Gauge, AlertTriangle } from "lucide-react";
+import { ThumbsUp, ThumbsDown, Users, TrendingUp, TrendingDown, Gauge, AlertTriangle, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
