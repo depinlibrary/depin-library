@@ -208,7 +208,7 @@ const BillboardHero = ({
                   DePIN Ecosystem <span className="text-primary">Billboard</span>
                 </h1>
                 <p className="mt-1 text-[11px] sm:text-xs text-muted-foreground max-w-md">
-                  Track, compare & forecast the top DePIN projects — all in one place.
+                  Track, compare & predict the top DePIN projects — all in one place.
                 </p>
               </div>
 
