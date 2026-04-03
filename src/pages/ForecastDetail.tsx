@@ -137,14 +137,10 @@ const ForecastDetail = () => {
   const { user } = useAuth();
   const { data: forecast, isLoading } = useForecastDetail(id);
   const { data: comments = [], isLoading: commentsLoading } = useForecastComments(id);
-  const { data: voteHistory = [] } = useForecastVoteHistory(id);
-  const marketDataA = useTokenMarketData(forecast?.project_a_id);
-  const marketDataB = useTokenMarketData(forecast?.project_b_id || undefined);
   const voteForecast = useVoteForecast();
   const addComment = useAddForecastComment();
   const deleteComment = useDeleteForecastComment();
   const editComment = useEditForecastComment();
-  const [heroChartTab, setHeroChartTab] = useState<"probability" | "price">("probability");
   const [commentText, setCommentText] = useState("");
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState("");
