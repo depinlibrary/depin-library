@@ -30,8 +30,10 @@ export default function VoteSection({ forecast, yesPct, noPct, totalVotes, isEnd
   const [confidence, setConfidence] = useState(3);
   const [confirmDialog, setConfirmDialog] = useState<{ open: boolean; vote: "yes" | "no" | null }>({ open: false, vote: null });
   const [alreadyVotedDialog, setAlreadyVotedDialog] = useState(false);
+  const [localVote, setLocalVote] = useState<"yes" | "no" | null>(null);
 
-  const hasVoted = !!forecast.user_vote;
+  const userVote = localVote ?? forecast.user_vote ?? null;
+  const hasVoted = !!userVote;
 
   const fireConfetti = () => {
     const duration = 1500;
@@ -65,9 +67,11 @@ export default function VoteSection({ forecast, yesPct, noPct, totalVotes, isEnd
 
   const handleConfirmVote = () => {
     if (!confirmDialog.vote) return;
+    const vote = confirmDialog.vote;
+    setLocalVote(vote);
     fireConfetti();
     toast.success("🎉 Vote cast! Nice prediction.");
-    onVote(confirmDialog.vote, confidence);
+    onVote(vote, confidence);
     setConfirmDialog({ open: false, vote: null });
   };
 
