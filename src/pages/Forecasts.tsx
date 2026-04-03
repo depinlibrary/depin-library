@@ -344,12 +344,44 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap, search
       <div className="gradient-radial-top absolute inset-0" />
 
       <div className="container relative mx-auto px-4">
-        {/* Tabs at top left */}
-        <div className="flex items-center gap-1 mb-4">
-          <button className="px-4 py-2 rounded-lg text-sm font-semibold bg-primary/10 text-primary border border-primary/20">Predictions</button>
-          <button className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground/50 cursor-default" disabled>
-            Leaderboard <span className="ml-1 text-[9px] bg-secondary px-1.5 py-0.5 rounded-full">Soon</span>
-          </button>
+        {/* Tabs at top left + search/create at right */}
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <div className="flex items-center gap-1">
+            <button className="px-4 py-2 rounded-lg text-sm font-semibold bg-primary/10 text-primary border border-primary/20">Predictions</button>
+            <button className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground/50 cursor-default" disabled>
+              Leaderboard <span className="ml-1 text-[9px] bg-secondary px-1.5 py-0.5 rounded-full">Soon</span>
+            </button>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="relative w-[160px] sm:w-[200px]">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60" />
+              <Input
+                placeholder="Search..."
+                value={search}
+                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                className="h-8 w-full text-xs placeholder:text-muted-foreground/50 bg-secondary/40 border-border pl-8 pr-3"
+              />
+            </div>
+            <Button
+              onClick={() => {
+                if (user) {
+                  if (dailyRemaining <= 0) {
+                    toast.error("You've reached your daily limit of 5 predictions. Try again tomorrow.");
+                    return;
+                  }
+                  setShowCreate(true);
+                } else {
+                  toast("Please log in to create a prediction", {
+                    action: { label: "Log in", onClick: () => navigate("/auth?redirect=/forecasts") },
+                  });
+                }
+              }}
+              size="sm"
+              className="h-8 gap-1 shrink-0 text-xs px-3 rounded-full"
+            >
+              <Plus className="h-3.5 w-3.5" /> Create
+            </Button>
+          </div>
         </div>
 
         {/* Main hero card */}
