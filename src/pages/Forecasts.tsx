@@ -1335,21 +1335,28 @@ const Forecasts = () => {
                 <AnimatePresence mode="popLayout">
                   {(() => {
                     const now = new Date();
-                    const sorted = [...allForecasts].sort((a, b) => {
+                    // Show hourly round cards first (unless filtering by non-hourly topic)
+                    const showHourly = topicFilter === "" || topicFilter === "hourly";
+                    const hideRegular = topicFilter === "hourly";
+                    const hourlyCards = showHourly ? hourlyRounds.map((round, i) => (
+                      <HourlyRoundCard key={`hourly-${round.id}`} round={round} index={i} />
+                    )) : [];
+                    const sorted = hideRegular ? [] : [...allForecasts].sort((a, b) => {
                       const aActive = new Date(a.end_date) > now ? 0 : 1;
                       const bActive = new Date(b.end_date) > now ? 0 : 1;
                       return aActive - bActive;
                     });
-                    return sorted.map((forecast, i) => (
+                    const regularCards = sorted.map((forecast, i) => (
                       <ForecastCard
                         key={forecast.id}
                         forecast={forecast}
                         onVote={handleVote}
                         isAuthenticated={!!user}
-                        index={i}
+                        index={hourlyCards.length + i}
                         dimensions={forecastTargetsMap[forecast.id] || []}
                       />
                     ));
+                    return [...hourlyCards, ...regularCards];
                   })()}
                 </AnimatePresence>
               </div>
