@@ -484,7 +484,6 @@ export default function ForecastAnalysis({
             );
           })()}
         {targets.map((target: any) => {
-          const isSentiment = target.dimension === "community_sentiment";
           const meta = dimensionMeta[target.dimension] || {
             label: target.dimension,
             icon: Activity,
@@ -493,107 +492,6 @@ export default function ForecastAnalysis({
           const Icon = meta.icon;
           const source = getSource(target.dimension);
           const badge = sourceBadges[source] || sourceBadges.pending;
-
-          if (isSentiment) {
-            const total = totalVotesYes + totalVotesNo;
-            const yesPct = total > 0 ? (totalVotesYes / total) * 100 : 0;
-            const noPct = total > 0 ? (totalVotesNo / total) * 100 : 0;
-            const result = isEnded ? (yesPct >= 50 ? "Yes" : "No") : null;
-            const leading = yesPct >= noPct ? "Yes" : "No";
-
-            return (
-              <div key={target.id} className="px-6 py-5">
-                {/* Header */}
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-xl bg-purple-500/10 flex items-center justify-center">
-                      <Icon className="h-4.5 w-4.5 text-purple-500" />
-                    </div>
-                    <div>
-                      <span className="text-xs font-semibold text-foreground block">{meta.label}</span>
-                      <span className="text-[10px] text-muted-foreground">Based on community votes</span>
-                    </div>
-                  </div>
-                  {isEnded && result && (
-                    <span
-                      className={`text-xs font-bold px-2.5 py-1 rounded-lg ${result === "Yes" ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"}`}
-                    >
-                      Result: {result}
-                    </span>
-                  )}
-                </div>
-
-                {/* Vote distribution */}
-                {total > 0 ? (
-                  <>
-                    <div className="flex items-end justify-between mb-2">
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-2xl font-bold text-foreground font-['Space_Grotesk']">
-                          {yesPct.toFixed(0)}%
-                        </span>
-                        <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">Yes</span>
-                      </div>
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-[10px] font-semibold text-destructive uppercase tracking-wider">No</span>
-                        <span className="text-2xl font-bold text-foreground font-['Space_Grotesk']">
-                          {noPct.toFixed(0)}%
-                        </span>
-                      </div>
-                    </div>
-                    <div className="h-3 rounded-full bg-secondary overflow-hidden flex mb-3">
-                      <div
-                        className="h-full rounded-l-full bg-primary transition-all duration-500"
-                        style={{ width: `${yesPct}%` }}
-                      />
-                      <div
-                        className="h-full rounded-r-full bg-destructive/60 transition-all duration-500"
-                        style={{ width: `${noPct}%` }}
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="rounded-xl bg-primary/5 border border-primary/10 px-3 py-2.5 text-center">
-                        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-0.5">
-                          Yes Votes
-                        </p>
-                        <p className="text-sm font-bold text-primary font-['Space_Grotesk']">
-                          {totalVotesYes.toLocaleString()}
-                        </p>
-                      </div>
-                      <div className="rounded-xl bg-destructive/5 border border-destructive/10 px-3 py-2.5 text-center">
-                        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-0.5">
-                          No Votes
-                        </p>
-                        <p className="text-sm font-bold text-destructive font-['Space_Grotesk']">
-                          {totalVotesNo.toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="mt-3 flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground">
-                      <Users className="h-3 w-3" />
-                      <span>
-                        {total.toLocaleString()} total vote{total !== 1 ? "s" : ""}
-                      </span>
-                      {!isEnded && (
-                        <>
-                          <span className="text-muted-foreground/30">·</span>
-                          <span
-                            className={leading === "Yes" ? "text-primary font-medium" : "text-destructive font-medium"}
-                          >
-                            {leading} leading
-                          </span>
-                        </>
-                      )}
-                    </div>
-                  </>
-                ) : (
-                  <div className="rounded-xl bg-muted/50 border border-border px-4 py-6 text-center">
-                    <Users className="h-5 w-5 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-xs text-muted-foreground">No votes yet</p>
-                  </div>
-                )}
-              </div>
-            );
-          }
 
           const startVal = getSnapshot(target.dimension, "start");
           const endSnapVal = getSnapshot(target.dimension, "end");
