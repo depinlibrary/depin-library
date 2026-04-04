@@ -6,7 +6,7 @@ import { Timer, ThumbsUp, ThumbsDown, Plus, TrendingUp, Clock, Flame, ChevronLef
 
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
-import HourlyPredictions from "@/components/HourlyPredictions";
+import { useActiveHourlyRounds, useRealtimeHourlyRounds, useVoteHourlyRound, type HourlyRound } from "@/hooks/useHourlyForecasts";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
