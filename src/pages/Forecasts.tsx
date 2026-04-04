@@ -712,16 +712,6 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap, search
                                         <span className="font-semibold text-foreground">{formatChartVal(valueB)}</span>
                                       </div>
                                     )}
-                                    {difference !== null && (
-                                      <div className="mt-2 flex items-center justify-between gap-4 border-t border-border pt-2 text-[11px]">
-                                        <span className="text-muted-foreground">Difference</span>
-                                        <span className="font-semibold text-foreground">
-                                          {difference === 0
-                                            ? "Equal"
-                                            : `${difference > 0 ? (current.project_a_name || "Project A") : (current.project_b_name || "Project B")} by ${formatChartVal(Math.abs(difference))}`}
-                                        </span>
-                                      </div>
-                                    )}
                                   </div>
                                 );
                               }}
