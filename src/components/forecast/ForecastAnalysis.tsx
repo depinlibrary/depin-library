@@ -38,11 +38,6 @@ const dimensionMeta: Record<string, { label: string; icon: typeof TrendingUp; fo
               ? `$${(v / 1e6).toFixed(2)}M`
               : `$${v.toLocaleString()}`,
     },
-    community_sentiment: {
-      label: "Community Sentiment",
-      icon: Users,
-      format: (v) => (v == null ? "N/A" : `${v.toFixed(1)}% Yes`),
-    },
     active_nodes: {
       label: "Active Nodes",
       icon: Server,
