@@ -69,9 +69,8 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
   const timeLeft = getTimeRemaining(forecast.end_date);
   const finalResult = isEnded ? (forecast.outcome || (yesPct >= 50 ? "yes" : "no")) : null;
   const isPriceMarket = dimensions.some(d => d === "token_price" || d === "market_cap");
-  const isSentimentWithTwoProjects = dimensions.some(d => d === "community_sentiment") && !!forecast.project_b_name;
-  const yesLabel = isPriceMarket ? "Long" : isSentimentWithTwoProjects ? (forecast.project_a_name || "Yes") : "Yes";
-  const noLabel = isPriceMarket ? "Short" : isSentimentWithTwoProjects ? (forecast.project_b_name || "No") : "No";
+  const yesLabel = isPriceMarket ? "Long" : "Yes";
+  const noLabel = isPriceMarket ? "Short" : "No";
 
   return (
     <motion.div
