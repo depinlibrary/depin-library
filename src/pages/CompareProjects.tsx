@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Bot, ArrowRightLeft, Sparkles, Database, AlertTriangle, Shield, TrendingUp, Zap, Loader2, Flame, LogIn, Plus, Clock, MessageSquare, Sun, Moon, User, Bell, Camera, Pencil, Check, LogOut, Briefcase } from "lucide-react";
 import logoImg from "@/assets/logo.png";
 import { useNavigate, Link } from "react-router-dom";
-import SentimentBadge from "@/components/SentimentBadge";
+
 import NotificationDropdown from "@/components/NotificationDropdown";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAvatar } from "@/hooks/useAvatar";
