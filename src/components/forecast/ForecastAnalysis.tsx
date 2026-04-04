@@ -657,7 +657,7 @@ export default function ForecastAnalysis({
         })}
       </div>
 
-      {!isEnded && targets.some((t: any) => t.dimension !== "community_sentiment") && (
+      {!isEnded && targets.length > 0 && (
         <div className="px-6 py-3 border-t border-border bg-secondary/20">
           <p className="text-[10px] text-muted-foreground text-center">
             Metrics are snapshotted at creation and compared when the forecast ends. Data from CoinGecko.

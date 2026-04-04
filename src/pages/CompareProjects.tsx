@@ -761,12 +761,6 @@ const CompareProjects = () => {
                     <p className="text-sm text-secondary-foreground leading-relaxed">{result.conclusion}</p>
                   </div>
 
-                  {projectA && projectB && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <SentimentBadge projectId={projectA.id} projectName={projectA.name} />
-                      <SentimentBadge projectId={projectB.id} projectName={projectB.name} />
-                    </div>
-                  )}
 
                   {user && projectA && projectB && (
                     <div className="rounded-2xl border border-primary/20 bg-primary/5 p-6 text-center">

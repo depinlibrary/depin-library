@@ -486,9 +486,8 @@ const BillboardHero = ({
                   const yesPercent = totalVotes > 0 ? (() => { const wy = Number((f as any).weighted_votes_yes) || 0; const wn = Number((f as any).weighted_votes_no) || 0; const wt = wy + wn; return wt > 0 ? (wy / wt) * 100 : (f.total_votes_yes / totalVotes) * 100; })() : 50;
                    const isEnded = f.status === "ended" || new Date(f.end_date) <= new Date();
                    const isPriceMarket = f.dimension === "token_price" || f.dimension === "market_cap";
-                   const isSentimentDual = f.dimension === "community_sentiment" && !!f.project_b_name;
-                   const yesLabel = isPriceMarket ? "Long" : isSentimentDual ? (f.project_a_name || "Yes") : "Yes";
-                   const noLabel = isPriceMarket ? "Short" : isSentimentDual ? (f.project_b_name || "No") : "No";
+                   const yesLabel = isPriceMarket ? "Long" : "Yes";
+                   const noLabel = isPriceMarket ? "Short" : "No";
                    const timeLeft = (() => {
                      const diff = new Date(f.end_date).getTime() - Date.now();
                      if (diff <= 0) return "Ended";

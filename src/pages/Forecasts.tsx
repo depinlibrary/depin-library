@@ -1003,7 +1003,7 @@ const Forecasts = () => {
               { value: "", label: "All" },
               { value: "token_price", label: "Token Price", comingSoon: false },
               { value: "market_cap", label: "Market Cap", comingSoon: false },
-              { value: "community_sentiment", label: "Community Sentiment", comingSoon: false },
+              
               { value: "revenue", label: "Revenue", comingSoon: true },
               { value: "node", label: "Nodes", comingSoon: true },
               { value: "infrastructure", label: "Infrastructure", comingSoon: true },

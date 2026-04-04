@@ -83,9 +83,8 @@ const ProjectForecasts = ({ projectId, projectName }: ProjectForecastsProps) => 
       {forecasts.map((forecast: any) => {
         const dimension = (dimensionsMap as Record<string, string>)[forecast.id];
         const isPriceMarket = dimension === "token_price" || dimension === "market_cap";
-        const isSentimentDual = dimension === "community_sentiment" && !!forecast.project_b;
-        const yesLabel = isPriceMarket ? "Long" : isSentimentDual ? forecast.project_a?.name : "Yes";
-        const noLabel = isPriceMarket ? "Short" : isSentimentDual ? forecast.project_b?.name : "No";
+        const yesLabel = isPriceMarket ? "Long" : "Yes";
+        const noLabel = isPriceMarket ? "Short" : "No";
         const totalVotes = forecast.total_votes_yes + forecast.total_votes_no;
         const yesPct = (() => { const wy = Number(forecast.weighted_votes_yes) || 0; const wn = Number(forecast.weighted_votes_no) || 0; const wt = wy + wn; return wt > 0 ? (wy / wt) * 100 : totalVotes > 0 ? (forecast.total_votes_yes / totalVotes) * 100 : 50; })();
         const isEnded = forecast.status === "ended" || new Date(forecast.end_date) <= new Date();

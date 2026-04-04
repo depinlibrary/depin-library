@@ -266,10 +266,6 @@ const ProjectDetail = () => {
                 </motion.div>
               )}
 
-              {/* Sentiment */}
-              <motion.div {...fadeUp} transition={{ delay: 0.2 }}>
-                <SentimentBadge projectId={project.id} projectName={project.name} />
-              </motion.div>
 
               {/* Related */}
               <motion.div {...fadeUp} transition={{ delay: 0.25 }}>
