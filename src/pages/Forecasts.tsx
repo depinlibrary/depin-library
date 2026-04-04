@@ -311,10 +311,10 @@ const HourlyRoundCard = ({ round, index }: { round: HourlyRound; index: number }
           ) : (
             <div className="flex gap-2">
               <button onClick={() => handleVote("up")} disabled={voteHourly.isPending} className="flex-1 rounded-lg py-2 text-xs font-bold text-center bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
-                <TrendingUp className="h-3.5 w-3.5 inline mr-1" />Up
+                Up
               </button>
               <button onClick={() => handleVote("down")} disabled={voteHourly.isPending} className="flex-1 rounded-lg py-2 text-xs font-bold text-center bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors">
-                <TrendingDown className="h-3.5 w-3.5 inline mr-1" />Down
+                Down
               </button>
             </div>
           )
