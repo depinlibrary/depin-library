@@ -691,7 +691,7 @@ const Forecasts = () => {
   const dimensionOptions = [
     { value: "token_price", label: "Token Price", disabled: false },
     { value: "market_cap", label: "Market Cap", disabled: false },
-    { value: "community_sentiment", label: "Community Sentiment", disabled: false },
+    
     { value: "node", label: "Node", disabled: true },
     { value: "revenue", label: "Revenue", disabled: true },
     { value: "infrastructure", label: "Infrastructure", disabled: true },
