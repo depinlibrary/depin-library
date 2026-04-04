@@ -23,7 +23,7 @@ import { toast } from "sonner";
 const dimensionIconMap: Record<string, typeof DollarSign> = {
   token_price: DollarSign,
   market_cap: BarChart3,
-  community_sentiment: Users,
+  
   active_nodes: Server,
   revenue: Activity,
 };
@@ -31,7 +31,7 @@ const dimensionIconMap: Record<string, typeof DollarSign> = {
 const dimensionLabelMap: Record<string, string> = {
   token_price: "Price",
   market_cap: "MCap",
-  community_sentiment: "Sentiment",
+  
   active_nodes: "Nodes",
   revenue: "Revenue",
 };
@@ -69,9 +69,8 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
   const timeLeft = getTimeRemaining(forecast.end_date);
   const finalResult = isEnded ? (forecast.outcome || (yesPct >= 50 ? "yes" : "no")) : null;
   const isPriceMarket = dimensions.some(d => d === "token_price" || d === "market_cap");
-  const isSentimentWithTwoProjects = dimensions.some(d => d === "community_sentiment") && !!forecast.project_b_name;
-  const yesLabel = isPriceMarket ? "Long" : isSentimentWithTwoProjects ? (forecast.project_a_name || "Yes") : "Yes";
-  const noLabel = isPriceMarket ? "Short" : isSentimentWithTwoProjects ? (forecast.project_b_name || "No") : "No";
+  const yesLabel = isPriceMarket ? "Long" : "Yes";
+  const noLabel = isPriceMarket ? "Short" : "No";
 
   return (
     <motion.div
@@ -322,9 +321,8 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap, search
   const cIsEnded = new Date(current.end_date) <= new Date();
   const cTimeLeft = getTimeRemaining(current.end_date);
   const cIsPriceMarket = cDims.some(d => d === "token_price" || d === "market_cap");
-  const cIsSentimentDual = cDims.some(d => d === "community_sentiment") && !!current.project_b_name;
-  const cYesLabel = cIsPriceMarket ? "Long" : cIsSentimentDual ? (current.project_a_name || "Yes") : "Yes";
-  const cNoLabel = cIsPriceMarket ? "Short" : cIsSentimentDual ? (current.project_b_name || "No") : "No";
+  const cYesLabel = cIsPriceMarket ? "Long" : "Yes";
+  const cNoLabel = cIsPriceMarket ? "Short" : "No";
   const cStatusLabel = cIsEnded ? "Ended" : "Live";
   const isMarketCapChart = cDims.some(d => d === "market_cap");
   const dimLabel = isMarketCapChart ? "Market Cap" : "Token Price";
@@ -693,7 +691,7 @@ const Forecasts = () => {
   const dimensionOptions = [
     { value: "token_price", label: "Token Price", disabled: false },
     { value: "market_cap", label: "Market Cap", disabled: false },
-    { value: "community_sentiment", label: "Community Sentiment", disabled: false },
+    
     { value: "node", label: "Node", disabled: true },
     { value: "revenue", label: "Revenue", disabled: true },
     { value: "infrastructure", label: "Infrastructure", disabled: true },
@@ -1005,7 +1003,7 @@ const Forecasts = () => {
               { value: "", label: "All" },
               { value: "token_price", label: "Token Price", comingSoon: false },
               { value: "market_cap", label: "Market Cap", comingSoon: false },
-              { value: "community_sentiment", label: "Community Sentiment", comingSoon: false },
+              
               { value: "revenue", label: "Revenue", comingSoon: true },
               { value: "node", label: "Nodes", comingSoon: true },
               { value: "infrastructure", label: "Infrastructure", comingSoon: true },

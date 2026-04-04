@@ -6,7 +6,7 @@ import { useProject } from "@/hooks/useProjects";
 import ProjectRatings from "@/components/ProjectRatings";
 import ReviewSection from "@/components/ReviewSection";
 import ProjectForecasts from "@/components/ProjectForecasts";
-import SentimentBadge from "@/components/SentimentBadge";
+
 import ProjectLogo from "@/components/ProjectLogo";
 import TokenPriceBadge from "@/components/TokenPriceBadge";
 import ShareButtons from "@/components/ShareButtons";
@@ -266,10 +266,6 @@ const ProjectDetail = () => {
                 </motion.div>
               )}
 
-              {/* Sentiment */}
-              <motion.div {...fadeUp} transition={{ delay: 0.2 }}>
-                <SentimentBadge projectId={project.id} projectName={project.name} />
-              </motion.div>
 
               {/* Related */}
               <motion.div {...fadeUp} transition={{ delay: 0.25 }}>

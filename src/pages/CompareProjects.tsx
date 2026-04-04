@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Bot, ArrowRightLeft, Sparkles, Database, AlertTriangle, Shield, TrendingUp, Zap, Loader2, Flame, LogIn, Plus, Clock, MessageSquare, Sun, Moon, User, Bell, Camera, Pencil, Check, LogOut, Briefcase } from "lucide-react";
 import logoImg from "@/assets/logo.png";
 import { useNavigate, Link } from "react-router-dom";
-import SentimentBadge from "@/components/SentimentBadge";
+
 import NotificationDropdown from "@/components/NotificationDropdown";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAvatar } from "@/hooks/useAvatar";
@@ -761,12 +761,6 @@ const CompareProjects = () => {
                     <p className="text-sm text-secondary-foreground leading-relaxed">{result.conclusion}</p>
                   </div>
 
-                  {projectA && projectB && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <SentimentBadge projectId={projectA.id} projectName={projectA.name} />
-                      <SentimentBadge projectId={projectB.id} projectName={projectB.name} />
-                    </div>
-                  )}
 
                   {user && projectA && projectB && (
                     <div className="rounded-2xl border border-primary/20 bg-primary/5 p-6 text-center">

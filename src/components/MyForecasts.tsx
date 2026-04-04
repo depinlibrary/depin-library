@@ -218,9 +218,8 @@ export default function MyForecasts() {
     const finalResult = isEnded ? (f.outcome || (yesPct >= 50 ? "yes" : "no")) : null;
     const dims = (dimensionsMap as Record<string, string[]>)[f.id] || [];
     const isPriceMarket = dims.some(d => d === "token_price" || d === "market_cap");
-    const isSentimentDual = dims.some(d => d === "community_sentiment") && !!projB;
-    const yesLabel = isPriceMarket ? "Long" : isSentimentDual ? (projA?.name || "Yes") : "Yes";
-    const noLabel = isPriceMarket ? "Short" : isSentimentDual ? (projB?.name || "No") : "No";
+    const yesLabel = isPriceMarket ? "Long" : "Yes";
+    const noLabel = isPriceMarket ? "Short" : "No";
 
     const userVote = isVotedView ? f.user_vote : null;
     const userCorrect = isVotedView && isEnded && finalResult ? finalResult === userVote : null;
