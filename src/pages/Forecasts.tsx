@@ -31,7 +31,7 @@ const dimensionIconMap: Record<string, typeof DollarSign> = {
 const dimensionLabelMap: Record<string, string> = {
   token_price: "Price",
   market_cap: "MCap",
-  community_sentiment: "Sentiment",
+  
   active_nodes: "Nodes",
   revenue: "Revenue",
 };
