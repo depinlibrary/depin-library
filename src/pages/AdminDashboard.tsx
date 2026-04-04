@@ -603,6 +603,12 @@ const AdminDashboard = () => {
                 <ManageSpotlight />
               </div>
             )}
+
+            {tab === "hourly" && (
+              <div className="rounded-xl border border-border bg-card p-5">
+                <ManageHourlyForecasts />
+              </div>
+            )}
           </motion.div>
         </div>
       </div>
