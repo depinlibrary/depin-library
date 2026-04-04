@@ -446,6 +446,139 @@ export type Database = {
           },
         ]
       }
+      hourly_forecast_config: {
+        Row: {
+          cooldown_minutes: number
+          created_at: string
+          id: string
+          is_enabled: boolean
+          project_id: string
+          updated_at: string
+        }
+        Insert: {
+          cooldown_minutes?: number
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          project_id: string
+          updated_at?: string
+        }
+        Update: {
+          cooldown_minutes?: number
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          project_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hourly_forecast_config_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hourly_forecast_rounds: {
+        Row: {
+          config_id: string
+          cooldown_end: string | null
+          created_at: string
+          end_price: number | null
+          end_time: string
+          id: string
+          outcome: string | null
+          project_id: string
+          round_number: number
+          start_price: number | null
+          start_time: string
+          status: string
+          total_votes_down: number
+          total_votes_up: number
+        }
+        Insert: {
+          config_id: string
+          cooldown_end?: string | null
+          created_at?: string
+          end_price?: number | null
+          end_time: string
+          id?: string
+          outcome?: string | null
+          project_id: string
+          round_number?: number
+          start_price?: number | null
+          start_time?: string
+          status?: string
+          total_votes_down?: number
+          total_votes_up?: number
+        }
+        Update: {
+          config_id?: string
+          cooldown_end?: string | null
+          created_at?: string
+          end_price?: number | null
+          end_time?: string
+          id?: string
+          outcome?: string | null
+          project_id?: string
+          round_number?: number
+          start_price?: number | null
+          start_time?: string
+          status?: string
+          total_votes_down?: number
+          total_votes_up?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hourly_forecast_rounds_config_id_fkey"
+            columns: ["config_id"]
+            isOneToOne: false
+            referencedRelation: "hourly_forecast_config"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hourly_forecast_rounds_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hourly_forecast_votes: {
+        Row: {
+          created_at: string
+          id: string
+          round_id: string
+          user_id: string
+          vote: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          round_id: string
+          user_id: string
+          vote: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          round_id?: string
+          user_id?: string
+          vote?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hourly_forecast_votes_round_id_fkey"
+            columns: ["round_id"]
+            isOneToOne: false
+            referencedRelation: "hourly_forecast_rounds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_preferences: {
         Row: {
           created_at: string

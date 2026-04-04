@@ -18,6 +18,7 @@ import UsersList from "@/components/admin/UsersList";
 import DeletionRequests from "@/components/admin/DeletionRequests";
 import ManageSpotlight from "@/components/admin/ManageSpotlight";
 import ManageForecasts from "@/components/admin/ManageForecasts";
+import ManageHourlyForecasts from "@/components/admin/ManageHourlyForecasts";
 
 import { useDynamicOptions } from "@/hooks/useDynamicOptions";
 
@@ -63,7 +64,7 @@ const AdminDashboard = () => {
   const { categories: CATEGORIES, blockchains: BLOCKCHAINS } = useDynamicOptions();
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<"projects" | "submissions" | "categories" | "users" | "deletion-requests" | "spotlight" | "forecasts">("projects");
+  const [tab, setTab] = useState<"projects" | "submissions" | "categories" | "users" | "deletion-requests" | "spotlight" | "forecasts" | "hourly">("projects");
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [filter, setFilter] = useState<"pending" | "approved" | "rejected">("pending");
   const [projects, setProjects] = useState<Project[]>([]);
@@ -293,6 +294,7 @@ const AdminDashboard = () => {
                 { key: "projects", label: `All Projects (${projects.length})` },
                 { key: "submissions", label: "Submissions" },
                 { key: "forecasts", label: "Predictions" },
+                { key: "hourly", label: "Hourly Predictions" },
                 { key: "spotlight", label: "Spotlight" },
                 { key: "deletion-requests", label: "Deletion Requests" },
                 { key: "categories", label: "Categories & Blockchains" },
@@ -599,6 +601,12 @@ const AdminDashboard = () => {
               <div className="rounded-xl border border-border bg-card p-5">
                 <h3 className="mb-4 text-lg font-semibold text-foreground">Manage Spotlight Projects</h3>
                 <ManageSpotlight />
+              </div>
+            )}
+
+            {tab === "hourly" && (
+              <div className="rounded-xl border border-border bg-card p-5">
+                <ManageHourlyForecasts />
               </div>
             )}
           </motion.div>
