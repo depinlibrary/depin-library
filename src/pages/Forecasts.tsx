@@ -253,7 +253,7 @@ const HourlyRoundCard = ({ round, index }: { round: HourlyRound; index: number }
             <Link to={`/project/${round.project_slug}`} className="text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors">{round.project_name}</Link>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-accent text-accent-foreground">HOURLY</span>
+            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-primary/15 text-primary">HOURLY</span>
             {isActive && (
               <span className="flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-green-500/10 text-green-600 dark:text-green-400">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
@@ -276,24 +276,18 @@ const HourlyRoundCard = ({ round, index }: { round: HourlyRound; index: number }
           </h3>
         </Link>
 
-        {/* Countdown + votes */}
-        <div className="mt-3 flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <Timer className="h-3 w-3 text-muted-foreground" />
-            <span className="text-xs font-mono font-bold text-foreground tabular-nums">
-              {isActive ? countdown : isInCooldown ? `Next ${countdown}` : "—"}
-            </span>
-          </div>
-          <span className="text-[10px] text-muted-foreground">{totalVotes} vote{totalVotes !== 1 ? "s" : ""}</span>
+        {/* Percentage + votes — same style as regular cards */}
+        <div className="mt-4 flex items-end justify-between">
+          <span className="text-lg font-bold text-foreground tabular-nums">{upPct.toFixed(0)}%<span className="text-xs font-normal text-muted-foreground ml-1">chance Up</span></span>
+          <span className="text-[10px] text-muted-foreground">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</span>
         </div>
 
-        {/* Vote bar */}
-        <div className="mt-2 relative h-1.5 rounded-full bg-secondary overflow-hidden">
-          <motion.div className="absolute inset-y-0 left-0 rounded-full bg-primary" initial={{ width: "50%" }} animate={{ width: `${upPct}%` }} transition={{ duration: 0.5 }} />
-        </div>
-        <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
-          <span className="text-primary font-semibold">{upPct.toFixed(0)}% Up</span>
-          <span className="text-destructive font-semibold">{(100 - upPct).toFixed(0)}% Down</span>
+        {/* Countdown */}
+        <div className="mt-1.5 flex items-center gap-1.5">
+          <Timer className="h-3 w-3 text-muted-foreground" />
+          <span className="text-[10px] font-mono font-semibold text-muted-foreground tabular-nums">
+            {isActive ? countdown : isInCooldown ? `Next ${countdown}` : "—"}
+          </span>
         </div>
 
         {/* Result for resolved */}
@@ -317,10 +311,10 @@ const HourlyRoundCard = ({ round, index }: { round: HourlyRound; index: number }
           ) : (
             <div className="flex gap-2">
               <button onClick={() => handleVote("up")} disabled={voteHourly.isPending} className="flex-1 rounded-lg py-2 text-xs font-bold text-center bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
-                <TrendingUp className="h-3.5 w-3.5 inline mr-1" />Up
+                Up
               </button>
               <button onClick={() => handleVote("down")} disabled={voteHourly.isPending} className="flex-1 rounded-lg py-2 text-xs font-bold text-center bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors">
-                <TrendingDown className="h-3.5 w-3.5 inline mr-1" />Down
+                Down
               </button>
             </div>
           )
@@ -666,16 +660,6 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap, search
                             </div>
                           )}
                         </div>
-                        {hasTwoProjects && currentDifference !== null && (
-                          <div className="mb-3 flex items-center justify-between rounded-xl border border-border bg-secondary/20 px-3 py-2 text-[11px]">
-                            <span className="text-muted-foreground">Difference</span>
-                            <span className="font-semibold text-foreground">
-                              {currentDifference === 0
-                                ? "Equal"
-                                : `${currentDifference > 0 ? (current.project_a_name || "Project A") : (current.project_b_name || "Project B")} by ${formatChartVal(Math.abs(currentDifference))}`}
-                            </span>
-                          </div>
-                        )}
                       </>
                     )}
                     <div className="flex-1 min-h-[200px]">
@@ -720,16 +704,6 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap, search
                                       <div className="mt-1 flex items-center justify-between gap-4 text-[11px]">
                                         <span className="text-muted-foreground">{current.project_b_name || "Project B"}</span>
                                         <span className="font-semibold text-foreground">{formatChartVal(valueB)}</span>
-                                      </div>
-                                    )}
-                                    {difference !== null && (
-                                      <div className="mt-2 flex items-center justify-between gap-4 border-t border-border pt-2 text-[11px]">
-                                        <span className="text-muted-foreground">Difference</span>
-                                        <span className="font-semibold text-foreground">
-                                          {difference === 0
-                                            ? "Equal"
-                                            : `${difference > 0 ? (current.project_a_name || "Project A") : (current.project_b_name || "Project B")} by ${formatChartVal(Math.abs(difference))}`}
-                                        </span>
                                       </div>
                                     )}
                                   </div>
@@ -1158,7 +1132,7 @@ const Forecasts = () => {
             {/* Topic chips */}
             {[
               { value: "", label: "All" },
-              { value: "hourly", label: "Hourly", comingSoon: false },
+              
               { value: "token_price", label: "Token Price", comingSoon: false },
               { value: "market_cap", label: "Market Cap", comingSoon: false },
               
