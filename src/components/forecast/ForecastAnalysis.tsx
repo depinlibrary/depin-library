@@ -158,11 +158,6 @@ export default function ForecastAnalysis({
   if (targets.length === 0) return null;
 
   const getSnapshot = (dim: string, type: string) => {
-    if (dim === "community_sentiment") {
-      const total = totalVotesYes + totalVotesNo;
-      if (total === 0) return null;
-      return (totalVotesYes / total) * 100;
-    }
     const s = snapshots.find((s: any) => s.dimension === dim && s.snapshot_type === type);
     if (s?.value != null) return s.value;
 
