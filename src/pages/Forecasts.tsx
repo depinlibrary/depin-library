@@ -276,24 +276,18 @@ const HourlyRoundCard = ({ round, index }: { round: HourlyRound; index: number }
           </h3>
         </Link>
 
-        {/* Countdown + votes */}
-        <div className="mt-3 flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <Timer className="h-3 w-3 text-muted-foreground" />
-            <span className="text-xs font-mono font-bold text-foreground tabular-nums">
-              {isActive ? countdown : isInCooldown ? `Next ${countdown}` : "—"}
-            </span>
-          </div>
-          <span className="text-[10px] text-muted-foreground">{totalVotes} vote{totalVotes !== 1 ? "s" : ""}</span>
+        {/* Percentage + votes — same style as regular cards */}
+        <div className="mt-4 flex items-end justify-between">
+          <span className="text-lg font-bold text-foreground tabular-nums">{upPct.toFixed(0)}%<span className="text-xs font-normal text-muted-foreground ml-1">chance Up</span></span>
+          <span className="text-[10px] text-muted-foreground">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</span>
         </div>
 
-        {/* Vote bar */}
-        <div className="mt-2 relative h-1.5 rounded-full bg-secondary overflow-hidden">
-          <motion.div className="absolute inset-y-0 left-0 rounded-full bg-primary" initial={{ width: "50%" }} animate={{ width: `${upPct}%` }} transition={{ duration: 0.5 }} />
-        </div>
-        <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
-          <span className="text-primary font-semibold">{upPct.toFixed(0)}% Up</span>
-          <span className="text-destructive font-semibold">{(100 - upPct).toFixed(0)}% Down</span>
+        {/* Countdown */}
+        <div className="mt-1.5 flex items-center gap-1.5">
+          <Timer className="h-3 w-3 text-muted-foreground" />
+          <span className="text-[10px] font-mono font-semibold text-muted-foreground tabular-nums">
+            {isActive ? countdown : isInCooldown ? `Next ${countdown}` : "—"}
+          </span>
         </div>
 
         {/* Result for resolved */}
