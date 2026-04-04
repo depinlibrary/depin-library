@@ -21,6 +21,7 @@ import MarketOverview from "./pages/MarketOverview";
 import CompareProjects from "./pages/CompareProjects";
 import Forecasts from "./pages/Forecasts";
 import ForecastDetail from "./pages/ForecastDetail";
+import HourlyForecastDetail from "./pages/HourlyForecastDetail";
 import Notifications from "./pages/Notifications";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
@@ -51,6 +52,7 @@ const AnimatedRoutes = () => {
         <Route path="/admin" element={<PageTransition><AdminDashboard /></PageTransition>} />
         <Route path="/compare" element={<PageTransition><CompareProjects /></PageTransition>} />
         <Route path="/forecasts" element={<PageTransition><Forecasts /></PageTransition>} />
+        <Route path="/forecasts/hourly/:roundId" element={<PageTransition><HourlyForecastDetail /></PageTransition>} />
         <Route path="/forecasts/:id" element={<PageTransition><ForecastDetail /></PageTransition>} />
         <Route path="/notifications" element={<PageTransition><Notifications /></PageTransition>} />
         <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
