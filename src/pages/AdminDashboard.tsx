@@ -18,6 +18,7 @@ import UsersList from "@/components/admin/UsersList";
 import DeletionRequests from "@/components/admin/DeletionRequests";
 import ManageSpotlight from "@/components/admin/ManageSpotlight";
 import ManageForecasts from "@/components/admin/ManageForecasts";
+import ManageHourlyForecasts from "@/components/admin/ManageHourlyForecasts";
 
 import { useDynamicOptions } from "@/hooks/useDynamicOptions";
 
