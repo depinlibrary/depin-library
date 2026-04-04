@@ -666,16 +666,6 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap, search
                             </div>
                           )}
                         </div>
-                        {hasTwoProjects && currentDifference !== null && (
-                          <div className="mb-3 flex items-center justify-between rounded-xl border border-border bg-secondary/20 px-3 py-2 text-[11px]">
-                            <span className="text-muted-foreground">Difference</span>
-                            <span className="font-semibold text-foreground">
-                              {currentDifference === 0
-                                ? "Equal"
-                                : `${currentDifference > 0 ? (current.project_a_name || "Project A") : (current.project_b_name || "Project B")} by ${formatChartVal(Math.abs(currentDifference))}`}
-                            </span>
-                          </div>
-                        )}
                       </>
                     )}
                     <div className="flex-1 min-h-[200px]">
