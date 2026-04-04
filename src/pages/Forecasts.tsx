@@ -185,6 +185,156 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
     </motion.div>
   );
 };
+
+// ---- Hourly Round Card (integrated into main grid) ----
+function useHourlyCountdown(targetDate: string | null) {
+  const [timeLeft, setTimeLeft] = useState("");
+  useEffect(() => {
+    if (!targetDate) { setTimeLeft(""); return; }
+    const update = () => {
+      const diff = new Date(targetDate).getTime() - Date.now();
+      if (diff <= 0) { setTimeLeft("00:00"); return; }
+      const m = Math.floor(diff / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      setTimeLeft(`${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`);
+    };
+    update();
+    const iv = setInterval(update, 1000);
+    return () => clearInterval(iv);
+  }, [targetDate]);
+  return timeLeft;
+}
+
+const HourlyRoundCard = ({ round, index }: { round: HourlyRound; index: number }) => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const voteHourly = useVoteHourlyRound();
+  const isActive = round.status === "active" && new Date(round.end_time) > new Date();
+  const isInCooldown = round.status === "resolved" && round.cooldown_end && new Date(round.cooldown_end) > new Date();
+  const countdown = useHourlyCountdown(isActive ? round.end_time : isInCooldown ? round.cooldown_end : null);
+  const totalVotes = round.total_votes_up + round.total_votes_down;
+  const upPct = totalVotes > 0 ? (round.total_votes_up / totalVotes) * 100 : 50;
+
+  const handleVote = (vote: "up" | "down") => {
+    if (!user) {
+      toast("Please log in to vote", { action: { label: "Log in", onClick: () => navigate("/auth?redirect=/forecasts") } });
+      return;
+    }
+    if (round.user_vote) {
+      toast.info("You already voted on this round.");
+      return;
+    }
+    if (!isActive) {
+      toast.info("This round has ended.");
+      return;
+    }
+    voteHourly.mutate({ roundId: round.id, vote }, {
+      onError: (e: any) => toast.error(e.message),
+      onSuccess: () => toast.success(`Voted ${vote === "up" ? "Up" : "Down"}!`),
+    });
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05, duration: 0.4 }}
+      className="group relative rounded-xl border border-border bg-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20 h-full flex flex-col"
+    >
+      <div className="p-4 flex-1 flex flex-col">
+        {/* Header row: logo + status */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            {round.project_logo_url ? (
+              <img src={round.project_logo_url} alt={round.project_name} className="w-7 h-7 rounded-lg object-contain border border-card bg-secondary" />
+            ) : (
+              <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs border border-card bg-secondary">{round.project_logo_emoji}</span>
+            )}
+            <Link to={`/project/${round.project_slug}`} className="text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors">{round.project_name}</Link>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-accent text-accent-foreground">HOURLY</span>
+            {isActive && (
+              <span className="flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-green-500/10 text-green-600 dark:text-green-400">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                LIVE
+              </span>
+            )}
+            {isInCooldown && (
+              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400">Cooldown</span>
+            )}
+            {!isActive && !isInCooldown && round.status === "resolved" && (
+              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">Resolved</span>
+            )}
+          </div>
+        </div>
+
+        {/* Title */}
+        <Link to={`/forecasts/hourly/${round.id}`} className="block mb-auto">
+          <h3 className="text-[13px] font-semibold text-foreground leading-snug line-clamp-2 group-hover:underline transition-all duration-200">
+            {round.project_name} up or down in 1 hour
+          </h3>
+        </Link>
+
+        {/* Countdown + votes */}
+        <div className="mt-3 flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <Timer className="h-3 w-3 text-muted-foreground" />
+            <span className="text-xs font-mono font-bold text-foreground tabular-nums">
+              {isActive ? countdown : isInCooldown ? `Next ${countdown}` : "—"}
+            </span>
+          </div>
+          <span className="text-[10px] text-muted-foreground">{totalVotes} vote{totalVotes !== 1 ? "s" : ""}</span>
+        </div>
+
+        {/* Vote bar */}
+        <div className="mt-2 relative h-1.5 rounded-full bg-secondary overflow-hidden">
+          <motion.div className="absolute inset-y-0 left-0 rounded-full bg-primary" initial={{ width: "50%" }} animate={{ width: `${upPct}%` }} transition={{ duration: 0.5 }} />
+        </div>
+        <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+          <span className="text-primary font-semibold">{upPct.toFixed(0)}% Up</span>
+          <span className="text-destructive font-semibold">{(100 - upPct).toFixed(0)}% Down</span>
+        </div>
+
+        {/* Result for resolved */}
+        {round.status === "resolved" && round.outcome && !isInCooldown && (
+          <div className={`mt-2 flex items-center gap-1.5 text-xs font-semibold ${
+            round.outcome === "up" ? "text-primary" : round.outcome === "down" ? "text-destructive" : "text-muted-foreground"
+          }`}>
+            {round.outcome === "up" ? <TrendingUp className="h-3.5 w-3.5" /> : round.outcome === "down" ? <TrendingDown className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
+            Price went {round.outcome === "up" ? "UP" : round.outcome === "down" ? "DOWN" : "FLAT"}
+          </div>
+        )}
+      </div>
+
+      {/* Vote buttons */}
+      <div className="px-4 pb-4">
+        {isActive ? (
+          round.user_vote ? (
+            <div className="text-center text-[10px] text-muted-foreground py-2">
+              You voted <span className={`font-semibold ${round.user_vote === "up" ? "text-primary" : "text-destructive"}`}>{round.user_vote === "up" ? "Up" : "Down"}</span> · Note you can't change vote
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <button onClick={() => handleVote("up")} disabled={voteHourly.isPending} className="flex-1 rounded-lg py-2 text-xs font-bold text-center bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
+                <TrendingUp className="h-3.5 w-3.5 inline mr-1" />Up
+              </button>
+              <button onClick={() => handleVote("down")} disabled={voteHourly.isPending} className="flex-1 rounded-lg py-2 text-xs font-bold text-center bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors">
+                <TrendingDown className="h-3.5 w-3.5 inline mr-1" />Down
+              </button>
+            </div>
+          )
+        ) : (
+          <div className="flex gap-2">
+            <span className="flex-1 rounded-lg py-2 text-xs font-bold text-center bg-secondary text-muted-foreground opacity-60">Up</span>
+            <span className="flex-1 rounded-lg py-2 text-xs font-bold text-center bg-secondary text-muted-foreground opacity-60">Down</span>
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+};
+
 // ---- Hero Section — Full-width prediction market showcase ----
 const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap, search, setSearch, setPage, navigate, dailyRemaining }: {
   forecasts: Forecast[];
