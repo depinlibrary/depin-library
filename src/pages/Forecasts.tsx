@@ -989,6 +989,9 @@ const Forecasts = () => {
         dailyRemaining={dailyRemaining}
       />
 
+      {/* Hourly Predictions — featured section */}
+      <HourlyPredictions />
+
       {/* Controls — Polymarket-style single row */}
       <section className="sticky top-16 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
         <div className="container mx-auto px-4 py-2.5">
