@@ -23,7 +23,7 @@ import { toast } from "sonner";
 const dimensionIconMap: Record<string, typeof DollarSign> = {
   token_price: DollarSign,
   market_cap: BarChart3,
-  community_sentiment: Users,
+  
   active_nodes: Server,
   revenue: Activity,
 };
