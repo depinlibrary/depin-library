@@ -67,7 +67,7 @@ Deno.serve(async (req) => {
         outcome = await determinePriceOutcome(supabase, forecast, dimensions);
       }
 
-      // For non-price forecasts (sentiment etc.), fall back to vote majority
+      // For non-price forecasts, fall back to vote majority
       if (!outcome && !isPriceMarket) {
         const totalVotes = forecast.total_votes_yes + forecast.total_votes_no;
         const yesPct = totalVotes > 0 ? (forecast.total_votes_yes / totalVotes) * 100 : 50;
