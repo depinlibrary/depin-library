@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback, useRef, useSyncExternalStore
 import { getWeightedChance } from "@/lib/forecastUtils";
 import { motion, AnimatePresence } from "framer-motion";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from "recharts";
-import { Timer, ThumbsUp, ThumbsDown, Plus, TrendingUp, Clock, Flame, ChevronLeft, ChevronRight, LogIn, Users, BarChart3, Zap, X, Filter, Trophy, CheckCircle, CheckCircle2, Circle, RotateCcw, DollarSign, Server, Activity, ArrowUpRight, ArrowDownRight, Copy, ChevronRight as ChevronRightIcon, Search, XCircle } from "lucide-react";
+import { Timer, ThumbsUp, ThumbsDown, Plus, TrendingUp, TrendingDown, Clock, Flame, ChevronLeft, ChevronRight, LogIn, Users, BarChart3, Zap, X, Filter, Trophy, CheckCircle, CheckCircle2, Circle, RotateCcw, DollarSign, Server, Activity, ArrowUpRight, ArrowDownRight, Copy, ChevronRight as ChevronRightIcon, Search, XCircle, Minus } from "lucide-react";
 
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
