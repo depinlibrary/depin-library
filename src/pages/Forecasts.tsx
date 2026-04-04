@@ -253,7 +253,7 @@ const HourlyRoundCard = ({ round, index }: { round: HourlyRound; index: number }
             <Link to={`/project/${round.project_slug}`} className="text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors">{round.project_name}</Link>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-accent text-accent-foreground">HOURLY</span>
+            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-primary/15 text-primary">HOURLY</span>
             {isActive && (
               <span className="flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-green-500/10 text-green-600 dark:text-green-400">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
