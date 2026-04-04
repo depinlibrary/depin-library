@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Timer, TrendingUp, TrendingDown, Minus, Clock, History, ArrowLeft, ChevronRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -44,7 +44,6 @@ export default function HourlyForecastDetail() {
   const navigate = useNavigate();
   const voteHourly = useVoteHourlyRound();
 
-  // Fetch round data
   const { data: round, isLoading } = useQuery({
     queryKey: ["hourly-round-detail", roundId],
     queryFn: async () => {
@@ -60,7 +59,6 @@ export default function HourlyForecastDetail() {
     refetchInterval: 15_000,
   });
 
-  // Fetch project data
   const { data: project } = useQuery({
     queryKey: ["hourly-round-project", round?.project_id],
     queryFn: async () => {
@@ -75,7 +73,6 @@ export default function HourlyForecastDetail() {
     enabled: !!round?.project_id,
   });
 
-  // Fetch user vote
   const { data: userVote } = useQuery({
     queryKey: ["hourly-round-user-vote", roundId, user?.id],
     queryFn: async () => {
@@ -90,10 +87,7 @@ export default function HourlyForecastDetail() {
     enabled: !!roundId && !!user,
   });
 
-  // Market data
   const { data: marketData } = useTokenMarketData(round?.project_id);
-
-  // History
   const { data: history = [] } = useHourlyRoundHistory(round?.project_id);
 
   const isActive = round?.status === "active" && new Date(round.end_time) > new Date();
@@ -102,7 +96,6 @@ export default function HourlyForecastDetail() {
   const totalVotes = (round?.total_votes_up || 0) + (round?.total_votes_down || 0);
   const upPct = totalVotes > 0 ? ((round?.total_votes_up || 0) / totalVotes) * 100 : 50;
 
-  // Sparkline chart data
   const chartData = useMemo(() => {
     if (!marketData?.sparkline_7d || !Array.isArray(marketData.sparkline_7d)) return [];
     const prices = marketData.sparkline_7d as number[];
@@ -143,7 +136,7 @@ export default function HourlyForecastDetail() {
       <div className="min-h-screen bg-background flex flex-col">
         <Navbar />
         <div className="container mx-auto px-4 pt-24 pb-12 flex-1">
-          <div className="max-w-3xl mx-auto space-y-6">
+          <div className="space-y-6">
             {[1, 2, 3].map(i => <div key={i} className="h-40 rounded-xl bg-secondary/30 animate-pulse" />)}
           </div>
         </div>
@@ -173,15 +166,17 @@ export default function HourlyForecastDetail() {
       <Navbar />
 
       <div className="container mx-auto px-4 pt-24 pb-12 flex-1">
-        <div className="max-w-3xl mx-auto">
-          {/* Back */}
-          <Link to="/forecasts" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6">
-            <ArrowLeft className="h-4 w-4" /> Back to Predictions
-          </Link>
+        {/* Back */}
+        <Link to="/forecasts" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6">
+          <ArrowLeft className="h-4 w-4" /> Back to Predictions
+        </Link>
 
-          {/* Header card */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl border border-border bg-card overflow-hidden mb-6">
-            <div className="p-6">
+        {/* Full-width header card — Polymarket style */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl border border-border bg-card overflow-hidden mb-6">
+          <div className="h-1 w-full bg-gradient-to-r from-primary via-primary/80 to-accent" />
+          <div className="grid grid-cols-1 lg:grid-cols-2">
+            {/* Left: Info + Vote */}
+            <div className="p-6 sm:p-8 flex flex-col border-b lg:border-b-0 lg:border-r border-border">
               {/* Project + status */}
               <div className="flex items-center justify-between mb-4">
                 <Link to={`/project/${project?.slug}`} className="flex items-center gap-3 group">
@@ -196,6 +191,7 @@ export default function HourlyForecastDetail() {
                   </div>
                 </Link>
                 <div className="flex items-center gap-2">
+                  <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-primary/15 text-primary">HOURLY</span>
                   {isActive && (
                     <span className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-green-500/10 text-green-600 dark:text-green-400">
                       <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
@@ -214,39 +210,42 @@ export default function HourlyForecastDetail() {
               </div>
 
               {/* Title */}
-              <h1 className="text-2xl font-bold text-foreground font-['Space_Grotesk'] mb-2">
+              <h1 className="text-xl sm:text-2xl font-bold text-foreground font-['Space_Grotesk'] tracking-tight mb-2">
                 {projectName} up or down in 1 hour
               </h1>
-              <p className="text-sm text-muted-foreground mb-4">
+              <p className="text-sm text-muted-foreground mb-5">
                 Round #{round.round_number} · Auto-recurring hourly prediction
               </p>
 
+              {/* Odds pills — Polymarket style */}
+              <div className="flex flex-col gap-2.5 mb-5">
+                <div className="flex w-full items-center justify-between rounded-xl border border-primary/25 bg-primary/5 px-4 py-2.5 text-sm font-bold text-foreground">
+                  <span className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-primary" />
+                    Up
+                  </span>
+                  <span className="font-['Space_Grotesk'] text-base tabular-nums text-primary">{upPct.toFixed(0)}%</span>
+                </div>
+                <div className="flex w-full items-center justify-between rounded-xl border border-destructive/25 bg-destructive/5 px-4 py-2.5 text-sm font-bold text-foreground">
+                  <span className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-destructive" />
+                    Down
+                  </span>
+                  <span className="font-['Space_Grotesk'] text-base tabular-nums text-destructive">{(100 - upPct).toFixed(0)}%</span>
+                </div>
+              </div>
+
               {/* Countdown */}
-              <div className="flex items-center gap-3 mb-6">
+              <div className="flex items-center gap-3 mb-5">
                 <Timer className="h-5 w-5 text-muted-foreground" />
                 <span className="text-2xl font-mono font-bold text-foreground tabular-nums">
                   {isActive ? countdown : isInCooldown ? `Next in ${countdown}` : "—"}
                 </span>
-              </div>
-
-              {/* Vote bar */}
-              <div className="space-y-3">
-                <div className="relative h-3 rounded-full bg-secondary overflow-hidden">
-                  <motion.div
-                    className="absolute inset-y-0 left-0 rounded-full bg-primary"
-                    initial={{ width: "50%" }}
-                    animate={{ width: `${upPct}%` }}
-                    transition={{ duration: 0.5 }}
-                  />
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-primary font-bold">{upPct.toFixed(0)}% Up <span className="text-muted-foreground font-normal">({round.total_votes_up})</span></span>
-                  <span className="text-destructive font-bold">{(100 - upPct).toFixed(0)}% Down <span className="text-muted-foreground font-normal">({round.total_votes_down})</span></span>
-                </div>
+                <span className="text-xs text-muted-foreground">{totalVotes} vote{totalVotes !== 1 ? "s" : ""}</span>
               </div>
 
               {/* Vote buttons */}
-              <div className="mt-6">
+              <div className="mt-auto">
                 {isActive ? (
                   userVote ? (
                     <div className="text-center text-sm text-muted-foreground py-3 rounded-xl bg-secondary/50">
@@ -260,7 +259,7 @@ export default function HourlyForecastDetail() {
                         variant="outline"
                         className="h-12 text-sm font-bold bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
                       >
-                        <TrendingUp className="h-4 w-4 mr-2" /> Vote Up
+                        Up
                       </Button>
                       <Button
                         onClick={() => handleVote("down")}
@@ -268,7 +267,7 @@ export default function HourlyForecastDetail() {
                         variant="outline"
                         className="h-12 text-sm font-bold bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive/20"
                       >
-                        <TrendingDown className="h-4 w-4 mr-2" /> Vote Down
+                        Down
                       </Button>
                     </div>
                   )
@@ -295,63 +294,56 @@ export default function HourlyForecastDetail() {
                 </div>
               )}
             </div>
-          </motion.div>
 
-          {/* Price info + chart */}
-          <div className="grid gap-6 md:grid-cols-2 mb-6">
-            {/* Current price card */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="rounded-2xl border border-border bg-card p-6">
-              <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-4">Current Price</h3>
-              {marketData?.price_usd != null ? (
-                <div>
-                  <span className="text-3xl font-bold text-foreground font-['Space_Grotesk']">{formatPrice(marketData.price_usd)}</span>
-                  {marketData.price_change_24h != null && (
-                    <span className={`ml-3 text-sm font-semibold ${isPositive ? "text-primary" : "text-destructive"}`}>
-                      {isPositive ? "+" : ""}{marketData.price_change_24h.toFixed(2)}%
-                    </span>
-                  )}
-                  {marketData.market_cap_usd != null && (
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Market Cap: {marketData.market_cap_usd >= 1e9 ? `$${(marketData.market_cap_usd / 1e9).toFixed(2)}B` : marketData.market_cap_usd >= 1e6 ? `$${(marketData.market_cap_usd / 1e6).toFixed(2)}M` : `$${marketData.market_cap_usd.toLocaleString()}`}
-                    </p>
-                  )}
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">No price data available</p>
-              )}
+            {/* Right: Price + Chart */}
+            <div className="p-6 sm:p-8 flex flex-col">
+              {/* Current price */}
+              <div className="mb-4">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Current Price</span>
+                {marketData?.price_usd != null ? (
+                  <div className="mt-2">
+                    <span className="text-3xl font-bold text-foreground font-['Space_Grotesk']">{formatPrice(marketData.price_usd)}</span>
+                    {marketData.price_change_24h != null && (
+                      <span className={`ml-3 text-sm font-semibold ${isPositive ? "text-primary" : "text-destructive"}`}>
+                        {isPositive ? "+" : ""}{marketData.price_change_24h.toFixed(2)}%
+                      </span>
+                    )}
+                    {marketData.market_cap_usd != null && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        MCap: {marketData.market_cap_usd >= 1e9 ? `$${(marketData.market_cap_usd / 1e9).toFixed(2)}B` : marketData.market_cap_usd >= 1e6 ? `$${(marketData.market_cap_usd / 1e6).toFixed(2)}M` : `$${marketData.market_cap_usd.toLocaleString()}`}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground mt-2">No price data</p>
+                )}
+              </div>
 
               {/* Round prices */}
               {(round.start_price != null || round.end_price != null) && (
-                <div className="mt-4 pt-4 border-t border-border space-y-2">
+                <div className="mb-4 grid grid-cols-2 gap-3">
                   {round.start_price != null && (
-                    <div className="flex justify-between text-xs">
-                      <span className="text-muted-foreground">Round Start Price</span>
-                      <span className="font-semibold text-foreground">{formatPrice(round.start_price)}</span>
+                    <div className="rounded-xl border border-border bg-secondary/20 px-3 py-2">
+                      <p className="text-[10px] text-muted-foreground mb-1">Round Start</p>
+                      <p className="text-sm font-semibold text-foreground">{formatPrice(round.start_price)}</p>
                     </div>
                   )}
                   {round.end_price != null && (
-                    <div className="flex justify-between text-xs">
-                      <span className="text-muted-foreground">Round End Price</span>
-                      <span className="font-semibold text-foreground">{formatPrice(round.end_price)}</span>
-                    </div>
-                  )}
-                  {round.start_price != null && round.end_price != null && (
-                    <div className="flex justify-between text-xs">
-                      <span className="text-muted-foreground">Change</span>
-                      <span className={`font-semibold ${round.end_price >= round.start_price ? "text-primary" : "text-destructive"}`}>
-                        {((round.end_price - round.start_price) / round.start_price * 100).toFixed(4)}%
-                      </span>
+                    <div className="rounded-xl border border-border bg-secondary/20 px-3 py-2">
+                      <p className="text-[10px] text-muted-foreground mb-1">Round End</p>
+                      <p className="text-sm font-semibold text-foreground">{formatPrice(round.end_price)}</p>
                     </div>
                   )}
                 </div>
               )}
-            </motion.div>
 
-            {/* 24h chart */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="rounded-2xl border border-border bg-card p-6">
-              <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-4">24H Price Chart</h3>
-              {chartData.length >= 2 ? (
-                <div className="h-48">
+              {/* 24h chart */}
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-semibold text-muted-foreground">24H Price Chart</span>
+                <span className="text-[10px] text-muted-foreground">CoinGecko</span>
+              </div>
+              <div className="flex-1 min-h-[200px]">
+                {chartData.length >= 2 ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={chartData} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
                       <defs>
@@ -377,71 +369,71 @@ export default function HourlyForecastDetail() {
                       <Area type="monotone" dataKey="value" stroke="hsl(var(--primary))" fill="url(#hourlyGrad)" strokeWidth={2} dot={false} />
                     </AreaChart>
                   </ResponsiveContainer>
-                </div>
-              ) : (
-                <div className="h-48 flex items-center justify-center text-sm text-muted-foreground">No chart data available</div>
-              )}
-            </motion.div>
-          </div>
-
-          {/* Round info */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="rounded-2xl border border-border bg-card p-6 mb-6">
-            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-4">Round Details</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div>
-                <p className="text-[10px] text-muted-foreground mb-1">Round</p>
-                <p className="text-sm font-semibold text-foreground">#{round.round_number}</p>
-              </div>
-              <div>
-                <p className="text-[10px] text-muted-foreground mb-1">Total Votes</p>
-                <p className="text-sm font-semibold text-foreground">{totalVotes}</p>
-              </div>
-              <div>
-                <p className="text-[10px] text-muted-foreground mb-1">Started</p>
-                <p className="text-sm font-semibold text-foreground">{new Date(round.start_time).toLocaleTimeString()}</p>
-              </div>
-              <div>
-                <p className="text-[10px] text-muted-foreground mb-1">Ends</p>
-                <p className="text-sm font-semibold text-foreground">{new Date(round.end_time).toLocaleTimeString()}</p>
+                ) : (
+                  <div className="h-full flex items-center justify-center text-sm text-muted-foreground">No chart data available</div>
+                )}
               </div>
             </div>
-          </motion.div>
+          </div>
+        </motion.div>
 
-          {/* History */}
-          {history.length > 0 && (
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="rounded-2xl border border-border bg-card overflow-hidden">
-              <div className="px-6 py-4 border-b border-border">
-                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
-                  <History className="h-3.5 w-3.5" /> Past Rounds
-                </h3>
-              </div>
-              <div className="max-h-72 overflow-y-auto">
-                {history.map((r: any) => {
-                  const rTotal = r.total_votes_up + r.total_votes_down;
-                  return (
-                    <Link
-                      key={r.id}
-                      to={`/forecasts/hourly/${r.id}`}
-                      className={`flex items-center justify-between px-6 py-3 text-xs border-b border-border/50 last:border-b-0 hover:bg-secondary/30 transition-colors ${r.id === roundId ? 'bg-primary/5' : ''}`}
-                    >
-                      <span className="text-muted-foreground font-medium">Round #{r.round_number}</span>
-                      <div className="flex items-center gap-4">
-                        <span className="text-muted-foreground">{rTotal} votes</span>
-                        {r.start_price != null && r.end_price != null && (
-                          <span className="text-muted-foreground">{formatPrice(r.start_price)} → {formatPrice(r.end_price)}</span>
-                        )}
-                        <span className={`font-semibold ${r.outcome === "up" ? "text-primary" : r.outcome === "down" ? "text-destructive" : "text-muted-foreground"}`}>
-                          {r.outcome === "up" ? "↑ Up" : r.outcome === "down" ? "↓ Down" : "— Flat"}
-                        </span>
-                        <ChevronRight className="h-3 w-3 text-muted-foreground" />
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            </motion.div>
-          )}
-        </div>
+        {/* Round details */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="rounded-2xl border border-border bg-card p-6 mb-6">
+          <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-4">Round Details</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div>
+              <p className="text-[10px] text-muted-foreground mb-1">Round</p>
+              <p className="text-sm font-semibold text-foreground">#{round.round_number}</p>
+            </div>
+            <div>
+              <p className="text-[10px] text-muted-foreground mb-1">Total Votes</p>
+              <p className="text-sm font-semibold text-foreground">{totalVotes}</p>
+            </div>
+            <div>
+              <p className="text-[10px] text-muted-foreground mb-1">Started</p>
+              <p className="text-sm font-semibold text-foreground">{new Date(round.start_time).toLocaleTimeString()}</p>
+            </div>
+            <div>
+              <p className="text-[10px] text-muted-foreground mb-1">Ends</p>
+              <p className="text-sm font-semibold text-foreground">{new Date(round.end_time).toLocaleTimeString()}</p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* History */}
+        {history.length > 0 && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="rounded-2xl border border-border bg-card overflow-hidden">
+            <div className="px-6 py-4 border-b border-border">
+              <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+                <History className="h-3.5 w-3.5" /> Past Rounds
+              </h3>
+            </div>
+            <div className="max-h-72 overflow-y-auto">
+              {history.map((r: any) => {
+                const rTotal = r.total_votes_up + r.total_votes_down;
+                return (
+                  <Link
+                    key={r.id}
+                    to={`/forecasts/hourly/${r.id}`}
+                    className={`flex items-center justify-between px-6 py-3 text-xs border-b border-border/50 last:border-b-0 hover:bg-secondary/30 transition-colors ${r.id === roundId ? 'bg-primary/5' : ''}`}
+                  >
+                    <span className="text-muted-foreground font-medium">Round #{r.round_number}</span>
+                    <div className="flex items-center gap-4">
+                      <span className="text-muted-foreground">{rTotal} votes</span>
+                      {r.start_price != null && r.end_price != null && (
+                        <span className="text-muted-foreground">{formatPrice(r.start_price)} → {formatPrice(r.end_price)}</span>
+                      )}
+                      <span className={`font-semibold ${r.outcome === "up" ? "text-primary" : r.outcome === "down" ? "text-destructive" : "text-muted-foreground"}`}>
+                        {r.outcome === "up" ? "↑ Up" : r.outcome === "down" ? "↓ Down" : "— Flat"}
+                      </span>
+                      <ChevronRight className="h-3 w-3 text-muted-foreground" />
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
       </div>
 
       <Footer />

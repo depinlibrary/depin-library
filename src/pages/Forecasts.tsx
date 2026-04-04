@@ -1132,7 +1132,7 @@ const Forecasts = () => {
             {/* Topic chips */}
             {[
               { value: "", label: "All" },
-              { value: "hourly", label: "Hourly", comingSoon: false },
+              
               { value: "token_price", label: "Token Price", comingSoon: false },
               { value: "market_cap", label: "Market Cap", comingSoon: false },
               
