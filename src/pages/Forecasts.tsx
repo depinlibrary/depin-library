@@ -989,8 +989,7 @@ const Forecasts = () => {
         dailyRemaining={dailyRemaining}
       />
 
-      {/* Hourly Predictions — featured section */}
-      <HourlyPredictions />
+      {/* Hourly predictions are now integrated into the main grid below */}
 
       {/* Controls — Polymarket-style single row */}
       <section className="sticky top-16 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
