@@ -21,6 +21,7 @@ import MarketOverview from "./pages/MarketOverview";
 import CompareProjects from "./pages/CompareProjects";
 import Forecasts from "./pages/Forecasts";
 import ForecastDetail from "./pages/ForecastDetail";
+import HourlyForecastDetail from "./pages/HourlyForecastDetail";
 import Notifications from "./pages/Notifications";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
