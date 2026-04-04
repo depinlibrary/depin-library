@@ -321,9 +321,8 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap, search
   const cIsEnded = new Date(current.end_date) <= new Date();
   const cTimeLeft = getTimeRemaining(current.end_date);
   const cIsPriceMarket = cDims.some(d => d === "token_price" || d === "market_cap");
-  const cIsSentimentDual = cDims.some(d => d === "community_sentiment") && !!current.project_b_name;
-  const cYesLabel = cIsPriceMarket ? "Long" : cIsSentimentDual ? (current.project_a_name || "Yes") : "Yes";
-  const cNoLabel = cIsPriceMarket ? "Short" : cIsSentimentDual ? (current.project_b_name || "No") : "No";
+  const cYesLabel = cIsPriceMarket ? "Long" : "Yes";
+  const cNoLabel = cIsPriceMarket ? "Short" : "No";
   const cStatusLabel = cIsEnded ? "Ended" : "Live";
   const isMarketCapChart = cDims.some(d => d === "market_cap");
   const dimLabel = isMarketCapChart ? "Market Cap" : "Token Price";
