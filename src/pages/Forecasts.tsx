@@ -795,6 +795,10 @@ const Forecasts = () => {
   const voteForecast = useVoteForecast();
   const [showCreate, setShowCreate] = useState(false);
 
+  // Hourly predictions data
+  useRealtimeHourlyRounds();
+  const { data: hourlyRounds = [] } = useActiveHourlyRounds();
+
   // Create form state
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
