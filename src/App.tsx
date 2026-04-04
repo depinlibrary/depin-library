@@ -52,6 +52,7 @@ const AnimatedRoutes = () => {
         <Route path="/admin" element={<PageTransition><AdminDashboard /></PageTransition>} />
         <Route path="/compare" element={<PageTransition><CompareProjects /></PageTransition>} />
         <Route path="/forecasts" element={<PageTransition><Forecasts /></PageTransition>} />
+        <Route path="/forecasts/hourly/:roundId" element={<PageTransition><HourlyForecastDetail /></PageTransition>} />
         <Route path="/forecasts/:id" element={<PageTransition><ForecastDetail /></PageTransition>} />
         <Route path="/notifications" element={<PageTransition><Notifications /></PageTransition>} />
         <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
