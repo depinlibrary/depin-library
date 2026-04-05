@@ -955,7 +955,7 @@ const Predictions = () => {
       if (page === 1) return forecasts;
       // Dedupe by id
       const existingIds = new Set(prev.map(f => f.id));
-      const newItems = predictions.filter(f => !existingIds.has(f.id));
+      const newItems = forecasts.filter(f => !existingIds.has(f.id));
       return [...prev, ...newItems];
     });
   }, [forecasts, page]);
