@@ -253,8 +253,28 @@ export default function HourlyForecastDetail() {
               <div className="mt-auto">
                 {isActive && votingOpen ? (
                   userVote ? (
-                    <div className="text-center text-sm text-muted-foreground py-3 rounded-xl bg-secondary/50">
-                      You voted <span className={`font-semibold ${userVote === "up" ? "text-primary" : "text-destructive"}`}>{userVote === "up" ? "Up" : "Down"}</span> · Waiting for result
+                    <div className="space-y-3">
+                      <div className="text-center text-sm text-muted-foreground">
+                        You voted <span className={`font-semibold ${userVote === "up" ? "text-primary" : "text-destructive"}`}>{userVote === "up" ? "Up" : "Down"}</span> · Tap to switch
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <Button
+                          onClick={() => handleVote("up")}
+                          disabled={voteHourly.isPending}
+                          variant="outline"
+                          className={`h-12 text-sm font-bold ${userVote === "up" ? "bg-primary text-primary-foreground border-primary hover:bg-primary/90" : "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"}`}
+                        >
+                          Up
+                        </Button>
+                        <Button
+                          onClick={() => handleVote("down")}
+                          disabled={voteHourly.isPending}
+                          variant="outline"
+                          className={`h-12 text-sm font-bold ${userVote === "down" ? "bg-destructive text-destructive-foreground border-destructive hover:bg-destructive/90" : "bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive/20"}`}
+                        >
+                          Down
+                        </Button>
+                      </div>
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 gap-3">
