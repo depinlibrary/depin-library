@@ -74,19 +74,6 @@ export default function ManageHourlyForecasts() {
     },
   });
 
-  const updateCooldown = useMutation({
-    mutationFn: async ({ id, minutes }: { id: string; minutes: number }) => {
-      const { error } = await supabase
-        .from("hourly_forecast_config")
-        .update({ cooldown_minutes: minutes })
-        .eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-hourly"] });
-      toast.success("Cooldown updated");
-    },
-  });
 
   const deleteConfig = useMutation({
     mutationFn: async (id: string) => {
