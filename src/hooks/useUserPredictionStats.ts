@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export type VoteHistoryItem = {
-  prediction_id: string;
+  forecast_id: string;
   prediction_title: string;
   project_name: string;
   project_logo_emoji: string;
@@ -54,7 +54,7 @@ export function useUserPredictionStats(userId: string | undefined) {
       }
 
       // Get the forecasts for these votes
-      const predictionIds = [...new Set(votes.map((v) => v.prediction_id))];
+      const predictionIds = [...new Set(votes.map((v) => v.forecast_id))];
       const { data: forecasts, error: fError } = await supabase
         .from("forecasts")
         .select("id, title, end_date, total_votes_yes, total_votes_no, project_a_id")
@@ -78,7 +78,7 @@ export function useUserPredictionStats(userId: string | undefined) {
       let pending = 0;
 
       const history: VoteHistoryItem[] = votes.map((v) => {
-        const f = predictionMap[v.prediction_id];
+        const f = predictionMap[v.forecast_id];
         const isEnded = f ? new Date(f.end_date) <= now : false;
         const totalVotes = f ? f.total_votes_yes + f.total_votes_no : 0;
         const yesPct = totalVotes > 0 ? (f.total_votes_yes / totalVotes) * 100 : 50;
@@ -92,7 +92,7 @@ export function useUserPredictionStats(userId: string | undefined) {
         const project = f ? projectMap[f.project_a_id] : null;
 
         return {
-          prediction_id: v.prediction_id,
+          forecast_id: v.forecast_id,
           prediction_title: f?.title || "Unknown",
           project_name: project?.name || "Unknown",
           project_logo_emoji: project?.logo_emoji || "⬡",

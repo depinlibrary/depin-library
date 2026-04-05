@@ -5,24 +5,24 @@ import { useAuth } from "@/contexts/AuthContext";
 export type NotificationPreferences = {
   id: string;
   user_id: string;
-  prediction_comment_reply: boolean;
-  prediction_comment_like: boolean;
-  prediction_new_comment: boolean;
+  forecast_comment_reply: boolean;
+  forecast_comment_like: boolean;
+  forecast_new_comment: boolean;
   review_like: boolean;
-  prediction_vote: boolean;
-  prediction_result: boolean;
+  forecast_vote: boolean;
+  forecast_result: boolean;
   price_alert: boolean;
   created_at: string;
   updated_at: string;
 };
 
 const DEFAULT_PREFS = {
-  prediction_comment_reply: true,
-  prediction_comment_like: true,
-  prediction_new_comment: true,
+  forecast_comment_reply: true,
+  forecast_comment_like: true,
+  forecast_new_comment: true,
   review_like: true,
-  prediction_vote: true,
-  prediction_result: true,
+  forecast_vote: true,
+  forecast_result: true,
   price_alert: true,
 };
 

@@ -6,7 +6,7 @@ import { createNotification } from "@/hooks/useNotifications";
 
 export type PredictionComment = {
   id: string;
-  prediction_id: string;
+  forecast_id: string;
   user_id: string;
   comment_text: string;
   created_at: string;
@@ -78,7 +78,7 @@ export function usePredictionDetail(predictionId: string | undefined) {
 
       // Fetch aggregate vote stats via RPC (no individual user exposure)
       const { data: voteStats } = await supabase
-        .rpc("get_forecast_vote_stats", { p_prediction_id: predictionId! });
+        .rpc("get_forecast_vote_stats", { p_forecast_id: predictionId! });
 
       let avgConfidenceYes: number | null = null;
       let avgConfidenceNo: number | null = null;
@@ -165,7 +165,7 @@ export function useAddPredictionComment() {
     mutationFn: async ({ predictionId, commentText }: { predictionId: string; commentText: string }) => {
       if (!user) throw new Error("Must be logged in");
       const { error } = await supabase.from("forecast_comments").insert({
-        prediction_id: predictionId,
+        forecast_id: predictionId,
         user_id: user.id,
         comment_text: commentText,
       });
@@ -242,7 +242,7 @@ export function usePredictionVoteHistory(predictionId: string | undefined) {
     enabled: !!predictionId,
     queryFn: async (): Promise<VoteHistoryEntry[]> => {
       const { data: history, error } = await supabase
-        .rpc("get_forecast_vote_history", { p_prediction_id: predictionId! });
+        .rpc("get_forecast_vote_history", { p_forecast_id: predictionId! });
       if (error) throw error;
       if (!history || history.length === 0) return [];
 

@@ -178,7 +178,7 @@ const PredictionDetail = () => {
     enabled: !!id,
     queryFn: async () => {
       const { data, error } = await supabase
-        .rpc("get_forecast_vote_stats", { p_prediction_id: id! });
+        .rpc("get_forecast_vote_stats", { p_forecast_id: id! });
       if (error) throw error;
       return data?.[0] || null;
     },

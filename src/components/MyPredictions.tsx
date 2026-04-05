@@ -92,7 +92,7 @@ export default function MyPredictions() {
       if (votesError) throw votesError;
       if (!votes || votes.length === 0) return [];
 
-      const predictionIds = votes.map(v => v.prediction_id);
+      const predictionIds = votes.map(v => v.forecast_id);
       const { data: fData, error: fError } = await supabase
         .from("forecasts")
         .select("*")
@@ -100,7 +100,7 @@ export default function MyPredictions() {
       if (fError) throw fError;
 
       const voteMap: Record<string, { vote: string; created_at: string }> = {};
-      votes.forEach(v => { voteMap[v.prediction_id] = { vote: v.vote, created_at: v.created_at }; });
+      votes.forEach(v => { voteMap[v.forecast_id] = { vote: v.vote, created_at: v.created_at }; });
 
       return (fData || []).map((f: any) => ({
         ...f,
@@ -124,8 +124,8 @@ export default function MyPredictions() {
       if (error) throw error;
       const map: Record<string, string[]> = {};
       (data || []).forEach((d: any) => {
-        if (!map[d.prediction_id]) map[d.prediction_id] = [];
-        map[d.prediction_id].push(d.dimension);
+        if (!map[d.forecast_id]) map[d.forecast_id] = [];
+        map[d.forecast_id].push(d.dimension);
       });
       return map;
     },
@@ -167,7 +167,7 @@ export default function MyPredictions() {
     mutationFn: async ({ predictionId, reason }: { predictionId: string; reason: string }) => {
       const { error } = await supabase
         .from("forecast_deletion_requests")
-        .insert({ prediction_id: predictionId, user_id: user!.id, reason });
+        .insert({ forecast_id: predictionId, user_id: user!.id, reason });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -180,7 +180,7 @@ export default function MyPredictions() {
   });
 
   const projectMap = new Map((projects as any[]).map((p) => [p.id, p]));
-  const getDeletionStatus = (predictionId: string) => deletionRequests.find((r: any) => r.prediction_id === predictionId);
+  const getDeletionStatus = (predictionId: string) => deletionRequests.find((r: any) => r.forecast_id === predictionId);
 
   const filterAndSort = (list: any[]) => {
     return list

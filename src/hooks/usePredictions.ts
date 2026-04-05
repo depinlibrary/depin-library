@@ -22,7 +22,7 @@ export function useRealtimePredictions() {
         "postgres_changes",
         { event: "*", schema: "public", table: "forecast_votes" },
         (payload: any) => {
-          const predictionId = payload.new?.prediction_id || payload.old?.prediction_id;
+          const predictionId = payload.new?.forecast_id || payload.old?.forecast_id;
           queryClient.invalidateQueries({ queryKey: ["forecasts"] });
           if (predictionId) {
             queryClient.invalidateQueries({ queryKey: ["prediction-detail", predictionId] });
@@ -80,7 +80,7 @@ export function usePredictions(sort: PredictionSortOption = "newest", page = 1, 
           .from("forecast_targets")
           .select("forecast_id")
           .eq("dimension", dimensionFilter);
-        dimensionPredictionIds = (targets || []).map((t: any) => t.prediction_id);
+        dimensionPredictionIds = (targets || []).map((t: any) => t.forecast_id);
         if (dimensionPredictionIds.length === 0) {
           return { forecasts: [], total: 0 };
         }
@@ -177,7 +177,7 @@ export function usePredictions(sort: PredictionSortOption = "newest", page = 1, 
             .eq("user_id", session.user.id)
             .in("forecast_id", predictionIds);
           (votes || []).forEach((v: any) => {
-            userVotes[v.prediction_id] = v.vote;
+            userVotes[v.forecast_id] = v.vote;
           });
         }
       }
@@ -276,7 +276,7 @@ export function useCreatePrediction() {
       // Insert analysis dimensions
       if (analysisDimensions.length > 0 && prediction) {
         const targets = analysisDimensions.map(dim => ({
-          prediction_id: prediction.id,
+          forecast_id: prediction.id,
           dimension: dim,
         }));
         await supabase.from("forecast_targets").insert(targets);
@@ -289,7 +289,7 @@ export function useCreatePrediction() {
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ prediction_id: prediction.id, snapshot_type: "start" }),
+              body: JSON.stringify({ forecast_id: prediction.id, snapshot_type: "start" }),
             }
           );
         } catch {}
@@ -322,7 +322,7 @@ export function useVotePrediction() {
       }
 
       const { error } = await supabase.from("forecast_votes").insert({
-        prediction_id: predictionId,
+        forecast_id: predictionId,
         user_id: user.id,
         vote,
         confidence_level: confidenceLevel ?? null,
