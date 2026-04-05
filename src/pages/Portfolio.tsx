@@ -370,7 +370,7 @@ const Portfolio = () => {
   const [sortBy, setSortBy] = useState<"value" | "change" | "name">("value");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [perfRange, setPerfRange] = useState<"1D" | "7D" | "30D" | "90D">("7D");
-  const [activeTab, setActiveTab] = useState<"dashboard" | "forecasts" | "alerts" | "watchlist" | "profile" | "activities">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "predictions" | "alerts" | "watchlist" | "profile" | "activities">("dashboard");
 
   // Profile & Activities hooks
   const { data: predictionStats, isLoading: statsLoading } = useUserPredictionStats(user?.id);
@@ -689,7 +689,7 @@ const Portfolio = () => {
   const sidebarTabs = [
     { key: "dashboard" as const, label: "Dashboard", icon: Layout },
     { key: "alerts" as const, label: "Alerts", icon: Bell },
-    { key: "forecasts" as const, label: "Predictions", icon: Activity },
+    { key: "predictions" as const, label: "Predictions", icon: Activity },
     { key: "watchlist" as const, label: "Watchlist", icon: Star },
     { key: "activities" as const, label: "Activities", icon: Clock },
     { key: "profile" as const, label: "Settings", icon: Lock },
@@ -1631,9 +1631,9 @@ const Portfolio = () => {
             )}
 
             {/* ── Predictions Tab ── */}
-            {activeTab === "forecasts" && (
+            {activeTab === "predictions" && (
               <motion.div
-                key="forecasts"
+                key="predictions"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
@@ -1747,7 +1747,7 @@ const Portfolio = () => {
                       <div className="text-center py-8">
                         <HelpCircle className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
                         <p className="text-sm text-muted-foreground">No prediction activity yet</p>
-                        <button onClick={() => setActiveTab("forecasts")} className="text-xs text-primary hover:underline mt-1 inline-block">Browse forecasts →</button>
+                        <button onClick={() => setActiveTab("predictions")} className="text-xs text-primary hover:underline mt-1 inline-block">Browse predictions →</button>
                       </div>
                     ) : (
                       <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
@@ -1892,7 +1892,7 @@ const Portfolio = () => {
                           <AlertDialogHeader>
                             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                             <AlertDialogDescription className="space-y-3">
-                              <span className="block">This will permanently delete your account including all your reviews, forecasts, votes, bookmarks, and portfolio data.</span>
+                              <span className="block">This will permanently delete your account including all your reviews, predictions, votes, bookmarks, and portfolio data.</span>
                               <span className="block text-sm font-medium text-foreground">Type <span className="font-mono text-destructive">DELETE</span> to confirm:</span>
                               <Input value={confirmText} onChange={(e) => setConfirmText(e.target.value)} placeholder="Type DELETE" className="font-mono" />
                             </AlertDialogDescription>

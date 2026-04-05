@@ -49,12 +49,12 @@ const Overview = () => {
   const { data: marketData = {}, isRefetching } = useAllTokenMarketData(30 * 1000);
   const { data: predictionData } = usePredictions("votes", 1, 4);
   const { data: endingSoonData } = usePredictions("ending_soon", 1, 4, undefined, undefined, "active");
-  const topPredictionsRaw = predictionData?.forecasts || [];
-  const endingSoon = endingSoonData?.forecasts || [];
+  const topPredictionsRaw = predictionData?.predictions || [];
+  const endingSoon = endingSoonData?.predictions || [];
   const allPredictionIds = [...topPredictionsRaw, ...endingSoon].map((f) => f.id);
   const { data: trendingProjects = [] } = useTrendingProjects(5);
 
-  // Fetch dimensions for all forecasts (top + ending soon)
+  // Fetch dimensions for all predictions (top + ending soon)
   const { data: predictionDimensionsMap = {} } = useQuery({
     queryKey: ["prediction-dimensions-overview", allPredictionIds],
     enabled: allPredictionIds.length > 0,

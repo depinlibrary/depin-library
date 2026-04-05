@@ -280,7 +280,7 @@ const Profile = () => {
                     <HelpCircle className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
                     <p className="text-sm text-muted-foreground">No prediction activity yet</p>
                     <Link to="/predictions" className="text-xs text-primary hover:underline mt-1 inline-block">
-                      Browse forecasts →
+                      Browse predictions →
                     </Link>
                   </div>
                 ) : (
@@ -445,7 +445,7 @@ const Profile = () => {
                         <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                         <AlertDialogDescription className="space-y-3">
                           <span className="block">
-                            This will permanently delete your account including all your reviews, forecasts, votes, bookmarks, and portfolio data. This action cannot be undone.
+                            This will permanently delete your account including all your reviews, predictions, votes, bookmarks, and portfolio data. This action cannot be undone.
                           </span>
                           <span className="block text-sm font-medium text-foreground">
                             Type <span className="font-mono text-destructive">DELETE</span> to confirm:

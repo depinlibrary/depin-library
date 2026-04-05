@@ -64,7 +64,7 @@ const AdminDashboard = () => {
   const { categories: CATEGORIES, blockchains: BLOCKCHAINS } = useDynamicOptions();
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<"projects" | "submissions" | "categories" | "users" | "deletion-requests" | "spotlight" | "forecasts" | "hourly">("projects");
+  const [tab, setTab] = useState<"projects" | "submissions" | "categories" | "users" | "deletion-requests" | "spotlight" | "predictions" | "hourly">("projects");
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [filter, setFilter] = useState<"pending" | "approved" | "rejected">("pending");
   const [projects, setProjects] = useState<Project[]>([]);
@@ -293,7 +293,7 @@ const AdminDashboard = () => {
               {([
                 { key: "projects", label: `All Projects (${projects.length})` },
                 { key: "submissions", label: "Submissions" },
-                { key: "forecasts", label: "Predictions" },
+                { key: "predictions", label: "Predictions" },
                 { key: "hourly", label: "Hourly Predictions" },
                 { key: "spotlight", label: "Spotlight" },
                 { key: "deletion-requests", label: "Deletion Requests" },
@@ -590,7 +590,7 @@ const AdminDashboard = () => {
               </div>
             )}
 
-            {tab === "forecasts" && (
+            {tab === "predictions" && (
               <div className="rounded-xl border border-border bg-card p-5">
                 <h3 className="mb-4 text-lg font-semibold text-foreground">Manage Predictions</h3>
                 <ManagePredictions />
