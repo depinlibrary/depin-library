@@ -157,7 +157,7 @@ const ProjectDetail = () => {
                   <TabsList className="mb-4 w-full justify-start bg-card border border-border">
                     <TabsTrigger value="ratings">Ratings</TabsTrigger>
                     <TabsTrigger value="reviews">Reviews</TabsTrigger>
-                    <TabsTrigger value="forecasts">Predictions</TabsTrigger>
+                    <TabsTrigger value="predictions">Predictions</TabsTrigger>
                   </TabsList>
                   <TabsContent value="ratings">
                     <ProjectRatings projectId={project.id} projectName={project.name} />
@@ -165,7 +165,7 @@ const ProjectDetail = () => {
                   <TabsContent value="reviews">
                     <ReviewSection projectId={project.id} projectName={project.name} projectSlug={project.slug} />
                   </TabsContent>
-                  <TabsContent value="forecasts">
+                  <TabsContent value="predictions">
                     <ProjectPredictions projectId={project.id} projectName={project.name} />
                   </TabsContent>
                 </Tabs>
