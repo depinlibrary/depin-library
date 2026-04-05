@@ -79,26 +79,34 @@ export default function HourlyPredictionDetail() {
     refetchInterval: 10_000,
   });
 
-  // Auto-redirect: when viewing a round that just got resolved and a new live round exists, navigate to it
-  const hasAutoRedirected = useRef(false);
+  // Track whether the round was active when the user first loaded this page
+  // Only auto-redirect if the round transitions from active → resolved while the user is watching
+  const wasActiveOnLoad = useRef<boolean | null>(null);
+  useEffect(() => {
+    if (round && wasActiveOnLoad.current === null) {
+      wasActiveOnLoad.current = round.status === "active";
+    }
+  }, [round]);
+
+  // Reset tracking when roundId changes (user navigated to a different round)
+  useEffect(() => {
+    wasActiveOnLoad.current = null;
+  }, [roundId]);
+
+  // Auto-redirect: only when the user was watching an active round that just resolved
   useEffect(() => {
     if (
+      wasActiveOnLoad.current === true &&
       round?.status === "resolved" &&
       liveRound &&
       liveRound.id !== roundId &&
-      new Date(liveRound.end_time) > new Date() &&
-      !hasAutoRedirected.current
+      new Date(liveRound.end_time) > new Date()
     ) {
-      hasAutoRedirected.current = true;
+      wasActiveOnLoad.current = false; // prevent repeated redirects
       toast.success("Round resolved! Switching to the new live round.");
       navigate(`/predictions/hourly/${liveRound.id}`, { replace: true });
     }
   }, [round?.status, liveRound, roundId, navigate]);
-
-  // Reset redirect flag when roundId changes
-  useEffect(() => {
-    hasAutoRedirected.current = false;
-  }, [roundId]);
 
   const { data: project } = useQuery({
     queryKey: ["hourly-round-project", round?.project_id],
