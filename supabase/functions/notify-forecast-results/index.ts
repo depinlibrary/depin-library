@@ -115,7 +115,7 @@ Deno.serve(async (req) => {
             type: "forecast_result",
             title: "Prediction ended",
             message: `"${prediction.title.slice(0, 50)}${prediction.title.length > 50 ? "..." : ""}" ended. Result: ${resultLabel}. ${userCorrect ? "Your prediction was correct! 🎯" : "Better luck next time!"}`,
-            link: `/forecasts/${prediction.id}`,
+            link: `/predictions/${prediction.id}`,
             metadata: { predictionId: prediction.id, result: outcome, userVote, userCorrect },
           });
           notificationsSent++;

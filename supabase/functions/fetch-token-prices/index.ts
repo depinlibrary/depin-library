@@ -299,7 +299,7 @@ Deno.serve(async (req) => {
                     type: "forecast_result",
                     title: "Prediction target hit!",
                     message: `"${prediction.title.slice(0, 50)}${prediction.title.length > 50 ? "..." : ""}" ${notifMessage}. ${userWon ? "Your prediction was correct! 🎯" : ""}`,
-                    link: `/forecasts/${prediction.id}`,
+                    link: `/predictions/${prediction.id}`,
                     metadata: { predictionId: prediction.id, result: resolvedOutcome, userVote, targetHit: true },
                   });
                 }

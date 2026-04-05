@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
         status: 302,
         headers: {
           ...corsHeaders,
-          Location: `${siteUrl}/forecasts/${predictionId}`,
+          Location: `${siteUrl}/predictions/${predictionId}`,
         },
       });
     }
@@ -105,7 +105,7 @@ Deno.serve(async (req) => {
       prediction.description ? " — " + prediction.description.slice(0, 140) : ""
     }`;
     const ogImage = projectMap[prediction.project_a_id]?.logo_url || `${siteUrl}/favicon.ico`;
-    const canonicalUrl = `${siteUrl}/forecasts/${predictionId}`;
+    const canonicalUrl = `${siteUrl}/predictions/${predictionId}`;
 
     const html = `<!DOCTYPE html>
 <html lang="en">
