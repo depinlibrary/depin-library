@@ -12,7 +12,7 @@ import UserAvatar from "@/components/UserAvatar";
 
 type DeletionRequest = {
   id: string;
-  prediction_id: string;
+  forecast_id: string;
   user_id: string;
   reason: string;
   status: string;
@@ -41,7 +41,7 @@ export default function DeletionRequests() {
       if (error) throw error;
 
       // Enrich with prediction titles and user names
-      const predictionIds = [...new Set((data || []).map((r: any) => r.prediction_id))];
+      const predictionIds = [...new Set((data || []).map((r: any) => r.forecast_id))];
       const userIds = [...new Set((data || []).map((r: any) => r.user_id))];
 
       const [{ data: predictions }, { data: profiles }] = await Promise.all([
@@ -54,7 +54,7 @@ export default function DeletionRequests() {
 
       return (data || []).map((r: any) => ({
         ...r,
-        prediction_title: predictionMap.get(r.prediction_id) || "Unknown",
+        prediction_title: predictionMap.get(r.forecast_id) || "Unknown",
         user_display_name: profileMap.get(r.user_id)?.name || "Unknown",
         user_avatar_url: profileMap.get(r.user_id)?.avatar || null,
       })) as DeletionRequest[];
@@ -195,7 +195,7 @@ export default function DeletionRequests() {
                 status: action,
                 response: adminResponse,
                 userId: respondTo.user_id,
-                predictionId: respondTo.prediction_id,
+                predictionId: respondTo.forecast_id,
                 predictionTitle: respondTo.prediction_title || "Unknown",
               })}
               disabled={respondMutation.isPending}

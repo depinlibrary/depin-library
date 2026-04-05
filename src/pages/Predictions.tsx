@@ -384,13 +384,13 @@ const HeroSection = ({ predictions, user, setShowCreate, heroDimensionsMap, sear
 
   // Only show price/market cap predictions in hero, max 8
   const heroPredictions = useMemo(() => {
-    return forecasts
+    return predictions
       .filter(f => {
         const dims = heroDimensionsMap[f.id] || [];
         return dims.some(d => d === "token_price" || d === "market_cap");
       })
       .slice(0, 8);
-  }, [forecasts, heroDimensionsMap]);
+  }, [predictions, heroDimensionsMap]);
 
   // Clamp activeSlide if list shrinks
   useEffect(() => {
@@ -950,12 +950,12 @@ const Predictions = () => {
 
   // Append new page data
   useEffect(() => {
-    if (!predictions.length) return;
+    if (!forecasts.length) return;
     setAllPredictions(prev => {
       if (page === 1) return forecasts;
       // Dedupe by id
       const existingIds = new Set(prev.map(f => f.id));
-      const newItems = predictions.filter(f => !existingIds.has(f.id));
+      const newItems = forecasts.filter(f => !existingIds.has(f.id));
       return [...prev, ...newItems];
     });
   }, [forecasts, page]);
@@ -967,7 +967,7 @@ const Predictions = () => {
   }, [isFetching]);
 
   const total = totalCount;
-  const hasMorePages = allPredictions.length < totalCount && predictions.length > 0;
+  const hasMorePages = allPredictions.length < totalCount && forecasts.length > 0;
   const isInitialLoading = isLoading && allPredictions.length === 0;
   const isFetchingMore = isFetching && allPredictions.length > 0;
 
@@ -1001,8 +1001,8 @@ const Predictions = () => {
         .in("forecast_id", predictionIds);
       const map: Record<string, string[]> = {};
       (data || []).forEach((t: any) => {
-        if (!map[t.prediction_id]) map[t.prediction_id] = [];
-        map[t.prediction_id].push(t.dimension);
+        if (!map[t.forecast_id]) map[t.forecast_id] = [];
+        map[t.forecast_id].push(t.dimension);
       });
       return map;
     },
@@ -1073,8 +1073,8 @@ const Predictions = () => {
         .in("forecast_id", heroPredictionIds);
       const map: Record<string, string[]> = {};
       (data || []).forEach((t: any) => {
-        if (!map[t.prediction_id]) map[t.prediction_id] = [];
-        map[t.prediction_id].push(t.dimension);
+        if (!map[t.forecast_id]) map[t.forecast_id] = [];
+        map[t.forecast_id].push(t.dimension);
       });
       return map;
     },
@@ -1085,7 +1085,7 @@ const Predictions = () => {
   // Stats
   const stats = useMemo(() => {
     const totalVotes = forecasts.reduce((sum, f) => sum + f.total_votes_yes + f.total_votes_no, 0);
-    const activeCount = predictions.filter(f => new Date(f.end_date) > new Date()).length;
+    const activeCount = forecasts.filter(f => new Date(f.end_date) > new Date()).length;
     return { total, totalVotes, activeCount };
   }, [forecasts, total]);
 
@@ -1143,7 +1143,7 @@ const Predictions = () => {
 
       {/* Polymarket-style Hero with Auto-Slide — uses unfiltered data */}
       <HeroSection
-        forecasts={heroAllPredictions}
+        predictions={heroAllPredictions}
         user={user}
         setShowCreate={setShowCreate}
         heroDimensionsMap={heroDimensionsMap as Record<string, string[]>}

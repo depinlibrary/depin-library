@@ -119,7 +119,7 @@ export default function HourlyPredictionDetail() {
 
   const handleVote = (vote: "up" | "down") => {
     if (!user) {
-      toast("Please log in to vote", { action: { label: "Log in", onClick: () => navigate("/auth?redirect=/forecasts") } });
+      toast("Please log in to vote", { action: { label: "Log in", onClick: () => navigate("/auth?redirect=/predictions") } });
       return;
     }
     if (userVote === vote) {
