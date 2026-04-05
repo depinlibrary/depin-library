@@ -213,7 +213,7 @@ const HourlyRoundCard = ({ round, index }: { round: HourlyRound; index: number }
   const isResolved = round.status === "resolved";
   const votingOpen = isVotingOpen(round);
   const votingDeadline = getVotingDeadline(round.start_time, round.end_time);
-  const countdown = useHourlyCountdown(isActive ? round.end_time : isInCooldown ? round.cooldown_end : null);
+  const countdown = useHourlyCountdown(isActive ? round.end_time : null);
   const votingCountdown = useHourlyCountdown(votingOpen ? votingDeadline.toISOString() : null);
   const totalVotes = round.total_votes_up + round.total_votes_down;
   const upPct = totalVotes > 0 ? (round.total_votes_up / totalVotes) * 100 : 50;
