@@ -139,6 +139,23 @@ export default function HourlyPredictionDetail() {
   const { data: marketData } = useTokenMarketData(round?.project_id);
   const { data: history = [] } = useHourlyRoundHistory(round?.project_id);
 
+  // Fetch user votes for all history rounds to show correct/wrong indicators
+  const historyRoundIds = useMemo(() => history.map((r: any) => r.id), [history]);
+  const { data: historyVotes = {} } = useQuery({
+    queryKey: ["hourly-history-user-votes", round?.project_id, user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("hourly_forecast_votes")
+        .select("round_id, vote")
+        .eq("user_id", user!.id)
+        .in("round_id", historyRoundIds);
+      const map: Record<string, string> = {};
+      (data || []).forEach((v: any) => { map[v.round_id] = v.vote; });
+      return map;
+    },
+    enabled: !!user && historyRoundIds.length > 0,
+  });
+
   const isActive = round?.status === "active" && new Date(round.end_time) > new Date();
   const isResolved = round?.status === "resolved";
   const votingOpen = round ? isVotingOpen(round) : false;
@@ -522,13 +539,32 @@ export default function HourlyPredictionDetail() {
             <div className="max-h-72 overflow-y-auto">
               {history.map((r: any) => {
                 const rTotal = r.total_votes_up + r.total_votes_down;
+                const histVote = historyVotes[r.id] || null;
+                const histOutcome = getUserOutcome(histVote, r.outcome);
                 return (
                   <Link
                     key={r.id}
                     to={`/predictions/hourly/${r.id}`}
                     className={`flex items-center justify-between px-6 py-3 text-xs border-b border-border/50 last:border-b-0 hover:bg-secondary/30 transition-colors ${r.id === roundId ? 'bg-primary/5' : ''}`}
                   >
-                    <span className="text-muted-foreground font-medium">Round #{r.round_number}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground font-medium">Round #{r.round_number}</span>
+                      {histOutcome === "correct" && (
+                        <span className="flex items-center gap-1 text-[10px] font-semibold text-green-600 dark:text-green-400 bg-green-500/10 px-1.5 py-0.5 rounded-full">
+                          <CheckCircle2 className="h-3 w-3" /> Correct
+                        </span>
+                      )}
+                      {histOutcome === "wrong" && (
+                        <span className="flex items-center gap-1 text-[10px] font-semibold text-destructive bg-destructive/10 px-1.5 py-0.5 rounded-full">
+                          <XCircle className="h-3 w-3" /> Wrong
+                        </span>
+                      )}
+                      {histVote && !histOutcome && (
+                        <span className="text-[10px] text-muted-foreground">
+                          Voted {histVote === "up" ? "↑" : "↓"}
+                        </span>
+                      )}
+                    </div>
                     <div className="flex items-center gap-4">
                       <span className="text-muted-foreground">{rTotal} votes</span>
                       {r.start_price != null && r.end_price != null && (
