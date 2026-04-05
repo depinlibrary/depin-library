@@ -1,11 +1,11 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Timer, TrendingUp, TrendingDown, Minus, Clock, History, ArrowLeft, ChevronRight } from "lucide-react";
+import { Timer, TrendingUp, TrendingDown, Minus, Clock, History, ArrowLeft, ChevronRight, CheckCircle2, XCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useVoteHourlyRound, useHourlyRoundHistory } from "@/hooks/useHourlyForecasts";
+import { useVoteHourlyRound, useHourlyRoundHistory, useRealtimeHourlyRounds, isVotingOpen, getVotingDeadline, getUserOutcome } from "@/hooks/useHourlyForecasts";
 import { useTokenMarketData } from "@/hooks/useTokenMarketData";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import Navbar from "@/components/Navbar";
