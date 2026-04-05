@@ -292,7 +292,7 @@ const HourlyRoundCard = ({ round, index }: { round: HourlyRound; index: number }
         <div className="mt-1.5 flex items-center gap-1.5">
           <Timer className="h-3 w-3 text-muted-foreground" />
           <span className="text-[10px] font-mono font-semibold text-muted-foreground tabular-nums">
-            {isActive && votingOpen ? `Voting closes ${votingCountdown}` : isActive ? `Resolves ${countdown}` : isInCooldown ? `Next ${countdown}` : "—"}
+            {isActive && votingOpen ? `Voting closes ${votingCountdown}` : isActive ? `Resolves ${countdown}` : "—"}
           </span>
         </div>
 
