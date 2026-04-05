@@ -92,7 +92,7 @@ export default function HourlyForecastDetail() {
   const { data: history = [] } = useHourlyRoundHistory(round?.project_id);
 
   const isActive = round?.status === "active" && new Date(round.end_time) > new Date();
-  const isInCooldown = round?.status === "resolved" && round.cooldown_end && new Date(round.cooldown_end) > new Date();
+  const isResolved = round?.status === "resolved";
   const votingOpen = round ? isVotingOpen(round) : false;
   const votingDeadline = round ? getVotingDeadline(round.start_time, round.end_time) : null;
   const countdown = useCountdown(isActive ? round?.end_time ?? null : isInCooldown ? round?.cooldown_end ?? null : null);
