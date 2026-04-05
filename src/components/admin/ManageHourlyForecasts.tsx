@@ -74,19 +74,6 @@ export default function ManageHourlyForecasts() {
     },
   });
 
-  const updateCooldown = useMutation({
-    mutationFn: async ({ id, minutes }: { id: string; minutes: number }) => {
-      const { error } = await supabase
-        .from("hourly_forecast_config")
-        .update({ cooldown_minutes: minutes })
-        .eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-hourly"] });
-      toast.success("Cooldown updated");
-    },
-  });
 
   const deleteConfig = useMutation({
     mutationFn: async (id: string) => {
@@ -183,23 +170,7 @@ export default function ManageHourlyForecasts() {
                 )}
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">{config.project?.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    <Clock className="h-3 w-3 inline mr-0.5" />
-                    {config.cooldown_minutes}min cooldown
-                  </p>
                 </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Input
-                  type="number"
-                  min={1}
-                  max={60}
-                  value={config.cooldown_minutes}
-                  onChange={(e) => updateCooldown.mutate({ id: config.id, minutes: parseInt(e.target.value) || 10 })}
-                  className="w-16 h-8 text-xs"
-                />
-                <span className="text-xs text-muted-foreground">min</span>
               </div>
 
               <Switch

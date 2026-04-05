@@ -178,7 +178,7 @@ export default function HourlyForecastDetail() {
 
         {/* Full-width header card — Polymarket style */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl border border-border bg-card overflow-hidden mb-6">
-          <div className="h-1 w-full bg-gradient-to-r from-primary via-primary/80 to-accent" />
+          
           <div className="grid grid-cols-1 lg:grid-cols-2">
             {/* Left: Info + Vote */}
             <div className="p-6 sm:p-8 flex flex-col border-b lg:border-b-0 lg:border-r border-border">
