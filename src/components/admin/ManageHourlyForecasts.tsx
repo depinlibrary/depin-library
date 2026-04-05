@@ -170,6 +170,8 @@ export default function ManageHourlyForecasts() {
                 )}
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">{config.project?.name}</p>
+                </div>
+              </div>
 
               <Switch
                 checked={config.is_enabled}
