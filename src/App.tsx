@@ -31,6 +31,7 @@ import ScrollToTop from "./components/ScrollToTop";
 /** Activates global realtime subscriptions */
 function RealtimeProvider({ children }: { children: React.ReactNode }) {
   useRealtimeForecasts();
+  useRealtimeHourlyRounds();
   useRealtimeTokenMarketData();
   return <>{children}</>;
 }
