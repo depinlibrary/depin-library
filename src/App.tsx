@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import PageTransition from "@/components/PageTransition";
 import { useRealtimeForecasts } from "@/hooks/useForecasts";
+import { useRealtimeHourlyRounds } from "@/hooks/useHourlyForecasts";
 import { useRealtimeTokenMarketData } from "@/hooks/useTokenMarketData";
 import Overview from "./pages/Overview";
 import Explore from "./pages/Explore";
