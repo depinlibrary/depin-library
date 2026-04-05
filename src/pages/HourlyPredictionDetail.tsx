@@ -592,7 +592,8 @@ export default function HourlyPredictionDetail() {
               })}
             </div>
           </motion.div>
-        )}
+          );
+        })()}
       </div>
 
       <Footer />
