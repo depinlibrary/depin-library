@@ -118,7 +118,7 @@ export function usePredictionComments(predictionId: string | undefined) {
       .channel(`prediction-comments-${predictionId}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "forecast_comments", filter: `prediction_id=eq.${predictionId}` },
+        { event: "*", schema: "public", table: "forecast_comments", filter: `forecast_id=eq.${predictionId}` },
         () => {
           queryClient.invalidateQueries({ queryKey: ["prediction-comments", predictionId] });
         }
