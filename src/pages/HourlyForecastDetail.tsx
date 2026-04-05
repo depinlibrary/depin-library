@@ -95,7 +95,7 @@ export default function HourlyForecastDetail() {
   const isResolved = round?.status === "resolved";
   const votingOpen = round ? isVotingOpen(round) : false;
   const votingDeadline = round ? getVotingDeadline(round.start_time, round.end_time) : null;
-  const countdown = useCountdown(isActive ? round?.end_time ?? null : isInCooldown ? round?.cooldown_end ?? null : null);
+  const countdown = useCountdown(isActive ? round?.end_time ?? null : null);
   const votingCountdown = useCountdown(votingOpen && votingDeadline ? votingDeadline.toISOString() : null);
   const totalVotes = (round?.total_votes_up || 0) + (round?.total_votes_down || 0);
   const upPct = totalVotes > 0 ? ((round?.total_votes_up || 0) / totalVotes) * 100 : 50;
