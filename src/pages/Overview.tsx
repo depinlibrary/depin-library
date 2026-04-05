@@ -65,7 +65,7 @@ const Overview = () => {
         .in("forecast_id", allPredictionIds);
       if (error) throw error;
       const map: Record<string, string> = {};
-      (data || []).forEach((d: any) => { map[d.prediction_id] = d.dimension; });
+      (data || []).forEach((d: any) => { map[d.forecast_id] = d.dimension; });
       return map;
     },
   });

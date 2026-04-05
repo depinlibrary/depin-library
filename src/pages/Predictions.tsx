@@ -1001,8 +1001,8 @@ const Predictions = () => {
         .in("forecast_id", predictionIds);
       const map: Record<string, string[]> = {};
       (data || []).forEach((t: any) => {
-        if (!map[t.prediction_id]) map[t.prediction_id] = [];
-        map[t.prediction_id].push(t.dimension);
+        if (!map[t.forecast_id]) map[t.forecast_id] = [];
+        map[t.forecast_id].push(t.dimension);
       });
       return map;
     },
@@ -1073,8 +1073,8 @@ const Predictions = () => {
         .in("forecast_id", heroPredictionIds);
       const map: Record<string, string[]> = {};
       (data || []).forEach((t: any) => {
-        if (!map[t.prediction_id]) map[t.prediction_id] = [];
-        map[t.prediction_id].push(t.dimension);
+        if (!map[t.forecast_id]) map[t.forecast_id] = [];
+        map[t.forecast_id].push(t.dimension);
       });
       return map;
     },

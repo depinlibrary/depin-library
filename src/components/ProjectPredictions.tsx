@@ -52,7 +52,7 @@ const ProjectPredictions = ({ projectId, projectName }: ProjectPredictionsProps)
         .in("forecast_id", predictionIds);
       if (error) throw error;
       const map: Record<string, string> = {};
-      (data || []).forEach((d: any) => { map[d.prediction_id] = d.dimension; });
+      (data || []).forEach((d: any) => { map[d.forecast_id] = d.dimension; });
       return map;
     },
   });
