@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Timer, TrendingUp, TrendingDown, Minus, Clock, History, ArrowLeft, ChevronRight, CheckCircle2, XCircle } from "lucide-react";
