@@ -92,10 +92,10 @@ export default function HourlyForecastDetail() {
   const { data: history = [] } = useHourlyRoundHistory(round?.project_id);
 
   const isActive = round?.status === "active" && new Date(round.end_time) > new Date();
-  const isInCooldown = round?.status === "resolved" && round.cooldown_end && new Date(round.cooldown_end) > new Date();
+  const isResolved = round?.status === "resolved";
   const votingOpen = round ? isVotingOpen(round) : false;
   const votingDeadline = round ? getVotingDeadline(round.start_time, round.end_time) : null;
-  const countdown = useCountdown(isActive ? round?.end_time ?? null : isInCooldown ? round?.cooldown_end ?? null : null);
+  const countdown = useCountdown(isActive ? round?.end_time ?? null : null);
   const votingCountdown = useCountdown(votingOpen && votingDeadline ? votingDeadline.toISOString() : null);
   const totalVotes = (round?.total_votes_up || 0) + (round?.total_votes_down || 0);
   const upPct = totalVotes > 0 ? ((round?.total_votes_up || 0) / totalVotes) * 100 : 50;
@@ -122,8 +122,8 @@ export default function HourlyForecastDetail() {
       toast("Please log in to vote", { action: { label: "Log in", onClick: () => navigate("/auth?redirect=/forecasts") } });
       return;
     }
-    if (userVote) {
-      toast.info("You already voted on this round.");
+    if (userVote === vote) {
+      toast.info("You already voted " + (vote === "up" ? "Up" : "Down"));
       return;
     }
     if (!votingOpen) {
@@ -132,7 +132,7 @@ export default function HourlyForecastDetail() {
     }
     voteHourly.mutate({ roundId: roundId!, vote }, {
       onError: (e: any) => toast.error(e.message),
-      onSuccess: () => toast.success(`Voted ${vote === "up" ? "Up" : "Down"}!`),
+      onSuccess: () => toast.success(userVote ? `Switched to ${vote === "up" ? "Up" : "Down"}!` : `Voted ${vote === "up" ? "Up" : "Down"}!`),
     });
   };
 
@@ -208,12 +208,7 @@ export default function HourlyForecastDetail() {
                       PREDICTING
                     </span>
                   )}
-                  {isInCooldown && (
-                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400">
-                      <Clock className="h-3 w-3 inline mr-1" />Cooldown
-                    </span>
-                  )}
-                  {!isActive && !isInCooldown && round.status === "resolved" && (
+                  {isResolved && (
                     <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-muted text-muted-foreground">Resolved</span>
                   )}
                 </div>
@@ -249,7 +244,7 @@ export default function HourlyForecastDetail() {
               <div className="flex items-center gap-3 mb-5">
                 <Timer className="h-5 w-5 text-muted-foreground" />
                 <span className="text-2xl font-mono font-bold text-foreground tabular-nums">
-                  {isActive && votingOpen ? `Voting closes ${votingCountdown}` : isActive ? `Resolves ${countdown}` : isInCooldown ? `Next in ${countdown}` : "—"}
+                  {isActive && votingOpen ? `Voting closes ${votingCountdown}` : isActive ? `Resolves ${countdown}` : "—"}
                 </span>
                 <span className="text-xs text-muted-foreground">{totalVotes} vote{totalVotes !== 1 ? "s" : ""}</span>
               </div>
@@ -258,8 +253,28 @@ export default function HourlyForecastDetail() {
               <div className="mt-auto">
                 {isActive && votingOpen ? (
                   userVote ? (
-                    <div className="text-center text-sm text-muted-foreground py-3 rounded-xl bg-secondary/50">
-                      You voted <span className={`font-semibold ${userVote === "up" ? "text-primary" : "text-destructive"}`}>{userVote === "up" ? "Up" : "Down"}</span> · Waiting for result
+                    <div className="space-y-3">
+                      <div className="text-center text-sm text-muted-foreground">
+                        You voted <span className={`font-semibold ${userVote === "up" ? "text-primary" : "text-destructive"}`}>{userVote === "up" ? "Up" : "Down"}</span> · Tap to switch
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <Button
+                          onClick={() => handleVote("up")}
+                          disabled={voteHourly.isPending}
+                          variant="outline"
+                          className={`h-12 text-sm font-bold ${userVote === "up" ? "bg-primary text-primary-foreground border-primary hover:bg-primary/90" : "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"}`}
+                        >
+                          Up
+                        </Button>
+                        <Button
+                          onClick={() => handleVote("down")}
+                          disabled={voteHourly.isPending}
+                          variant="outline"
+                          className={`h-12 text-sm font-bold ${userVote === "down" ? "bg-destructive text-destructive-foreground border-destructive hover:bg-destructive/90" : "bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive/20"}`}
+                        >
+                          Down
+                        </Button>
+                      </div>
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 gap-3">
@@ -304,7 +319,7 @@ export default function HourlyForecastDetail() {
               </div>
 
               {/* Result + user outcome for resolved */}
-              {round.status === "resolved" && round.outcome && !isInCooldown && (
+              {round.status === "resolved" && round.outcome && (
                 <div className="mt-4 space-y-2">
                   <div className={`flex items-center gap-2 text-sm font-semibold rounded-xl px-4 py-3 ${
                     round.outcome === "up" ? "bg-primary/10 text-primary" : round.outcome === "down" ? "bg-destructive/10 text-destructive" : "bg-secondary text-muted-foreground"

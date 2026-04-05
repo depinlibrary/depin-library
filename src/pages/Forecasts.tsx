@@ -210,10 +210,10 @@ const HourlyRoundCard = ({ round, index }: { round: HourlyRound; index: number }
   const navigate = useNavigate();
   const voteHourly = useVoteHourlyRound();
   const isActive = round.status === "active" && new Date(round.end_time) > new Date();
-  const isInCooldown = round.status === "resolved" && round.cooldown_end && new Date(round.cooldown_end) > new Date();
+  const isResolved = round.status === "resolved";
   const votingOpen = isVotingOpen(round);
   const votingDeadline = getVotingDeadline(round.start_time, round.end_time);
-  const countdown = useHourlyCountdown(isActive ? round.end_time : isInCooldown ? round.cooldown_end : null);
+  const countdown = useHourlyCountdown(isActive ? round.end_time : null);
   const votingCountdown = useHourlyCountdown(votingOpen ? votingDeadline.toISOString() : null);
   const totalVotes = round.total_votes_up + round.total_votes_down;
   const upPct = totalVotes > 0 ? (round.total_votes_up / totalVotes) * 100 : 50;
@@ -224,8 +224,8 @@ const HourlyRoundCard = ({ round, index }: { round: HourlyRound; index: number }
       toast("Please log in to vote", { action: { label: "Log in", onClick: () => navigate("/auth?redirect=/forecasts") } });
       return;
     }
-    if (round.user_vote) {
-      toast.info("You already voted on this round.");
+    if (round.user_vote === vote) {
+      toast.info("You already voted " + (vote === "up" ? "Up" : "Down"));
       return;
     }
     if (!votingOpen) {
@@ -234,7 +234,7 @@ const HourlyRoundCard = ({ round, index }: { round: HourlyRound; index: number }
     }
     voteHourly.mutate({ roundId: round.id, vote }, {
       onError: (e: any) => toast.error(e.message),
-      onSuccess: () => toast.success(`Voted ${vote === "up" ? "Up" : "Down"}!`),
+      onSuccess: () => toast.success(round.user_vote ? `Switched to ${vote === "up" ? "Up" : "Down"}!` : `Voted ${vote === "up" ? "Up" : "Down"}!`),
     });
   };
 
@@ -269,10 +269,7 @@ const HourlyRoundCard = ({ round, index }: { round: HourlyRound; index: number }
                 PREDICTING
               </span>
             )}
-            {isInCooldown && (
-              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400">Cooldown</span>
-            )}
-            {!isActive && !isInCooldown && round.status === "resolved" && (
+            {isResolved && (
               <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">Resolved</span>
             )}
           </div>
@@ -295,12 +292,12 @@ const HourlyRoundCard = ({ round, index }: { round: HourlyRound; index: number }
         <div className="mt-1.5 flex items-center gap-1.5">
           <Timer className="h-3 w-3 text-muted-foreground" />
           <span className="text-[10px] font-mono font-semibold text-muted-foreground tabular-nums">
-            {isActive && votingOpen ? `Voting closes ${votingCountdown}` : isActive ? `Resolves ${countdown}` : isInCooldown ? `Next ${countdown}` : "—"}
+            {isActive && votingOpen ? `Voting closes ${votingCountdown}` : isActive ? `Resolves ${countdown}` : "—"}
           </span>
         </div>
 
         {/* User outcome for resolved rounds */}
-        {round.status === "resolved" && round.outcome && !isInCooldown && (
+        {round.status === "resolved" && round.outcome && (
           <>
             <div className={`mt-2 flex items-center gap-1.5 text-xs font-semibold ${
               round.outcome === "up" ? "text-primary" : round.outcome === "down" ? "text-destructive" : "text-muted-foreground"
@@ -324,8 +321,18 @@ const HourlyRoundCard = ({ round, index }: { round: HourlyRound; index: number }
       <div className="px-4 pb-4">
         {isActive && votingOpen ? (
           round.user_vote ? (
-            <div className="text-center text-[10px] text-muted-foreground py-2">
-              You voted <span className={`font-semibold ${round.user_vote === "up" ? "text-primary" : "text-destructive"}`}>{round.user_vote === "up" ? "Up" : "Down"}</span> · Waiting for result
+            <div className="space-y-2">
+              <div className="text-center text-[10px] text-muted-foreground py-1">
+                You voted <span className={`font-semibold ${round.user_vote === "up" ? "text-primary" : "text-destructive"}`}>{round.user_vote === "up" ? "Up" : "Down"}</span> · Tap to switch
+              </div>
+              <div className="flex gap-2">
+                <button onClick={() => handleVote("up")} disabled={voteHourly.isPending} className={`flex-1 rounded-lg py-2 text-xs font-bold text-center transition-colors ${round.user_vote === "up" ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary hover:bg-primary/20"}`}>
+                  Up
+                </button>
+                <button onClick={() => handleVote("down")} disabled={voteHourly.isPending} className={`flex-1 rounded-lg py-2 text-xs font-bold text-center transition-colors ${round.user_vote === "down" ? "bg-destructive text-destructive-foreground" : "bg-destructive/10 text-destructive hover:bg-destructive/20"}`}>
+                  Down
+                </button>
+              </div>
             </div>
           ) : (
             <div className="flex gap-2">

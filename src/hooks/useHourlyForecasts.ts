@@ -156,14 +156,32 @@ export function useVoteHourlyRound() {
     mutationFn: async ({ roundId, vote }: { roundId: string; vote: "up" | "down" }) => {
       if (!user) throw new Error("Must be logged in");
 
-      const { error } = await supabase.from("hourly_forecast_votes").insert({
-        round_id: roundId,
-        user_id: user.id,
-        vote,
-      });
-      if (error) {
-        if (error.code === "23505") throw new Error("You already voted on this round.");
-        throw error;
+      // Check if user already voted on this round
+      const { data: existing } = await supabase
+        .from("hourly_forecast_votes")
+        .select("id, vote")
+        .eq("round_id", roundId)
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (existing) {
+        // Update existing vote
+        const { error } = await supabase
+          .from("hourly_forecast_votes")
+          .update({ vote })
+          .eq("id", existing.id);
+        if (error) throw error;
+      } else {
+        // Insert new vote
+        const { error } = await supabase.from("hourly_forecast_votes").insert({
+          round_id: roundId,
+          user_id: user.id,
+          vote,
+        });
+        if (error) {
+          if (error.code === "23505") throw new Error("You already voted on this round.");
+          throw error;
+        }
       }
     },
     onSuccess: () => {
