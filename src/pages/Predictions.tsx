@@ -384,13 +384,13 @@ const HeroSection = ({ predictions, user, setShowCreate, heroDimensionsMap, sear
 
   // Only show price/market cap predictions in hero, max 8
   const heroPredictions = useMemo(() => {
-    return forecasts
+    return predictions
       .filter(f => {
         const dims = heroDimensionsMap[f.id] || [];
         return dims.some(d => d === "token_price" || d === "market_cap");
       })
       .slice(0, 8);
-  }, [forecasts, heroDimensionsMap]);
+  }, [predictions, heroDimensionsMap]);
 
   // Clamp activeSlide if list shrinks
   useEffect(() => {
