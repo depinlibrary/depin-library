@@ -4,9 +4,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useEffect } from "react";
 import { createNotification } from "@/hooks/useNotifications";
 
-export type ForecastComment = {
+export type PredictionComment = {
   id: string;
-  forecast_id: string;
+  prediction_id: string;
   user_id: string;
   comment_text: string;
   created_at: string;
@@ -21,39 +21,39 @@ export type VoteHistoryEntry = {
   weighted_yes_pct: number;
 };
 
-export function useForecastDetail(forecastId: string | undefined) {
+export function usePredictionDetail(predictionId: string | undefined) {
   const queryClient = useQueryClient();
 
-  // Realtime: re-fetch when this forecast row changes (votes, status, outcome)
+  // Realtime: re-fetch when this prediction row changes (votes, status, outcome)
   useEffect(() => {
-    if (!forecastId) return;
+    if (!predictionId) return;
     const channel = supabase
-      .channel(`forecast-detail-${forecastId}`)
+      .channel(`prediction-detail-${predictionId}`)
       .on(
         "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "forecasts", filter: `id=eq.${forecastId}` },
+        { event: "UPDATE", schema: "public", table: "forecasts", filter: `id=eq.${predictionId}` },
         () => {
-          queryClient.invalidateQueries({ queryKey: ["forecast-detail", forecastId] });
+          queryClient.invalidateQueries({ queryKey: ["prediction-detail", predictionId] });
         }
       )
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [forecastId, queryClient]);
+  }, [predictionId, queryClient]);
 
   return useQuery({
-    queryKey: ["forecast-detail", forecastId],
-    enabled: !!forecastId,
+    queryKey: ["prediction-detail", predictionId],
+    enabled: !!predictionId,
     queryFn: async () => {
-      const { data: forecast, error } = await supabase
+      const { data: prediction, error } = await supabase
         .from("forecasts")
         .select("*")
-        .eq("id", forecastId!)
+        .eq("id", predictionId!)
         .single();
       if (error) throw error;
 
       // Fetch project details
-      const projectIds = [forecast.project_a_id];
-      if (forecast.project_b_id) projectIds.push(forecast.project_b_id);
+      const projectIds = [prediction.project_a_id];
+      if (prediction.project_b_id) projectIds.push(prediction.project_b_id);
 
       const { data: projects } = await supabase
         .from("projects")
@@ -70,7 +70,7 @@ export function useForecastDetail(forecastId: string | undefined) {
         const { data: vote } = await supabase
           .from("forecast_votes")
           .select("vote")
-          .eq("forecast_id", forecastId!)
+          .eq("forecast_id", predictionId!)
           .eq("user_id", session.user.id)
           .maybeSingle();
         userVote = vote?.vote || null;
@@ -78,7 +78,7 @@ export function useForecastDetail(forecastId: string | undefined) {
 
       // Fetch aggregate vote stats via RPC (no individual user exposure)
       const { data: voteStats } = await supabase
-        .rpc("get_forecast_vote_stats", { p_forecast_id: forecastId! });
+        .rpc("get_forecast_vote_stats", { p_prediction_id: predictionId! });
 
       let avgConfidenceYes: number | null = null;
       let avgConfidenceNo: number | null = null;
@@ -91,13 +91,13 @@ export function useForecastDetail(forecastId: string | undefined) {
       const { data: creatorProfile } = await supabase
         .from("profiles")
         .select("display_name, avatar_url")
-        .eq("user_id", forecast.creator_user_id)
+        .eq("user_id", prediction.creator_user_id)
         .maybeSingle();
 
       return {
-        ...forecast,
-        project_a: projectMap[forecast.project_a_id] || null,
-        project_b: forecast.project_b_id ? projectMap[forecast.project_b_id] || null : null,
+        ...prediction,
+        project_a: projectMap[prediction.project_a_id] || null,
+        project_b: prediction.project_b_id ? projectMap[prediction.project_b_id] || null : null,
         user_vote: userVote,
         creator_name: creatorProfile?.display_name || "Anonymous",
         creator_avatar_url: (creatorProfile as any)?.avatar_url ?? null,
@@ -108,33 +108,33 @@ export function useForecastDetail(forecastId: string | undefined) {
   });
 }
 
-export function useForecastComments(forecastId: string | undefined) {
+export function usePredictionComments(predictionId: string | undefined) {
   const queryClient = useQueryClient();
 
   // Realtime subscription
   useEffect(() => {
-    if (!forecastId) return;
+    if (!predictionId) return;
     const channel = supabase
-      .channel(`forecast-comments-${forecastId}`)
+      .channel(`prediction-comments-${predictionId}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "forecast_comments", filter: `forecast_id=eq.${forecastId}` },
+        { event: "*", schema: "public", table: "forecast_comments", filter: `prediction_id=eq.${predictionId}` },
         () => {
-          queryClient.invalidateQueries({ queryKey: ["forecast-comments", forecastId] });
+          queryClient.invalidateQueries({ queryKey: ["prediction-comments", predictionId] });
         }
       )
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [forecastId, queryClient]);
+  }, [predictionId, queryClient]);
 
   return useQuery({
-    queryKey: ["forecast-comments", forecastId],
-    enabled: !!forecastId,
+    queryKey: ["prediction-comments", predictionId],
+    enabled: !!predictionId,
     queryFn: async () => {
       const { data: comments, error } = await supabase
         .from("forecast_comments")
         .select("*")
-        .eq("forecast_id", forecastId!)
+        .eq("forecast_id", predictionId!)
         .order("created_at", { ascending: true });
       if (error) throw error;
 
@@ -152,33 +152,33 @@ export function useForecastComments(forecastId: string | undefined) {
         ...c,
         display_name: profileMap[c.user_id]?.name || "Anonymous",
         avatar_url: profileMap[c.user_id]?.avatar || null,
-      })) as ForecastComment[];
+      })) as PredictionComment[];
     },
   });
 }
 
-export function useAddForecastComment() {
+export function useAddPredictionComment() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async ({ forecastId, commentText }: { forecastId: string; commentText: string }) => {
+    mutationFn: async ({ predictionId, commentText }: { predictionId: string; commentText: string }) => {
       if (!user) throw new Error("Must be logged in");
       const { error } = await supabase.from("forecast_comments").insert({
-        forecast_id: forecastId,
+        prediction_id: predictionId,
         user_id: user.id,
         comment_text: commentText,
       });
       if (error) throw error;
 
-      // Notify forecast creator
-      const { data: forecast } = await supabase
+      // Notify prediction creator
+      const { data: prediction } = await supabase
         .from("forecasts")
         .select("creator_user_id, title")
-        .eq("id", forecastId)
+        .eq("id", predictionId)
         .single();
 
-      if (forecast && forecast.creator_user_id !== user.id) {
+      if (prediction && prediction.creator_user_id !== user.id) {
         const { data: profile } = await supabase
           .from("profiles")
           .select("display_name")
@@ -188,61 +188,61 @@ export function useAddForecastComment() {
         const commenterName = profile?.display_name || "Someone";
 
         await createNotification({
-          userId: forecast.creator_user_id,
+          userId: prediction.creator_user_id,
           type: "forecast_new_comment",
-          title: "New comment on your forecast",
+          title: "New comment on your prediction",
           message: `${commenterName} commented: "${commentText.slice(0, 80)}${commentText.length > 80 ? "..." : ""}"`,
-          link: `/forecasts/${forecastId}`,
-          metadata: { forecastId },
+          link: `/forecasts/${predictionId}`,
+          metadata: { predictionId },
         });
       }
     },
     onSuccess: (_, vars) => {
-      queryClient.invalidateQueries({ queryKey: ["forecast-comments", vars.forecastId] });
+      queryClient.invalidateQueries({ queryKey: ["prediction-comments", vars.predictionId] });
     },
   });
 }
 
-export function useEditForecastComment() {
+export function useEditPredictionComment() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ commentId, forecastId, commentText }: { commentId: string; forecastId: string; commentText: string }) => {
+    mutationFn: async ({ commentId, predictionId, commentText }: { commentId: string; predictionId: string; commentText: string }) => {
       const { error } = await supabase
         .from("forecast_comments")
         .update({ comment_text: commentText, updated_at: new Date().toISOString() })
         .eq("id", commentId);
       if (error) throw error;
-      return forecastId;
+      return predictionId;
     },
-    onSuccess: (forecastId) => {
-      queryClient.invalidateQueries({ queryKey: ["forecast-comments", forecastId] });
+    onSuccess: (predictionId) => {
+      queryClient.invalidateQueries({ queryKey: ["prediction-comments", predictionId] });
     },
   });
 }
 
-export function useDeleteForecastComment() {
+export function useDeletePredictionComment() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ commentId, forecastId }: { commentId: string; forecastId: string }) => {
+    mutationFn: async ({ commentId, predictionId }: { commentId: string; predictionId: string }) => {
       const { error } = await supabase.from("forecast_comments").delete().eq("id", commentId);
       if (error) throw error;
-      return forecastId;
+      return predictionId;
     },
-    onSuccess: (forecastId) => {
-      queryClient.invalidateQueries({ queryKey: ["forecast-comments", forecastId] });
+    onSuccess: (predictionId) => {
+      queryClient.invalidateQueries({ queryKey: ["prediction-comments", predictionId] });
     },
   });
 }
 
-export function useForecastVoteHistory(forecastId: string | undefined) {
+export function usePredictionVoteHistory(predictionId: string | undefined) {
   return useQuery({
-    queryKey: ["forecast-vote-history", forecastId],
-    enabled: !!forecastId,
+    queryKey: ["prediction-vote-history", predictionId],
+    enabled: !!predictionId,
     queryFn: async (): Promise<VoteHistoryEntry[]> => {
       const { data: history, error } = await supabase
-        .rpc("get_forecast_vote_history", { p_forecast_id: forecastId! });
+        .rpc("get_forecast_vote_history", { p_prediction_id: predictionId! });
       if (error) throw error;
       if (!history || history.length === 0) return [];
 
@@ -267,10 +267,10 @@ export function useForecastVoteHistory(forecastId: string | undefined) {
   });
 }
 
-export function useRelatedForecasts(forecastId: string | undefined, projectAId: string | undefined, projectBId: string | null | undefined) {
+export function useRelatedPredictions(predictionId: string | undefined, projectAId: string | undefined, projectBId: string | null | undefined) {
   return useQuery({
-    queryKey: ["related-forecasts", forecastId, projectAId, projectBId],
-    enabled: !!forecastId && !!projectAId,
+    queryKey: ["related-forecasts", predictionId, projectAId, projectBId],
+    enabled: !!predictionId && !!projectAId,
     queryFn: async () => {
       const projectIds = [projectAId!];
       if (projectBId) projectIds.push(projectBId);
@@ -281,7 +281,7 @@ export function useRelatedForecasts(forecastId: string | undefined, projectAId: 
         .from("forecasts")
         .select("*")
         .or(orFilter)
-        .neq("id", forecastId!)
+        .neq("id", predictionId!)
         .order("total_votes_yes", { ascending: false })
         .limit(4);
       if (error) throw error;

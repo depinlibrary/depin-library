@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from "recharts";
-import type { VoteHistoryEntry } from "@/hooks/useForecastDetail";
+import type { VoteHistoryEntry } from "@/hooks/usePredictionDetail";
 
 interface VoteHistoryChartProps {
   voteHistory: VoteHistoryEntry[];

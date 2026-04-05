@@ -5,7 +5,7 @@ import CompareWithButton from "@/components/CompareWithButton";
 import { useProject } from "@/hooks/useProjects";
 import ProjectRatings from "@/components/ProjectRatings";
 import ReviewSection from "@/components/ReviewSection";
-import ProjectForecasts from "@/components/ProjectForecasts";
+import ProjectPredictions from "@/components/ProjectPredictions";
 
 import ProjectLogo from "@/components/ProjectLogo";
 import TokenPriceBadge from "@/components/TokenPriceBadge";
@@ -166,7 +166,7 @@ const ProjectDetail = () => {
                     <ReviewSection projectId={project.id} projectName={project.name} projectSlug={project.slug} />
                   </TabsContent>
                   <TabsContent value="forecasts">
-                    <ProjectForecasts projectId={project.id} projectName={project.name} />
+                    <ProjectPredictions projectId={project.id} projectName={project.name} />
                   </TabsContent>
                 </Tabs>
               </motion.div>

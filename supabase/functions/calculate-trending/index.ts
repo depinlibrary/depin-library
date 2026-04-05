@@ -48,31 +48,31 @@ serve(async (req) => {
       comparisonMap[c.project_b_id] = (comparisonMap[c.project_b_id] || 0) + 1;
     });
 
-    // Get forecast counts per project
+    // Get prediction counts per project
     const { data: forecasts } = await supabase
       .from("forecasts")
       .select("project_a_id, project_b_id");
 
-    const forecastMap: Record<string, number> = {};
+    const predictionMap: Record<string, number> = {};
     (forecasts || []).forEach((f: any) => {
-      forecastMap[f.project_a_id] = (forecastMap[f.project_a_id] || 0) + 1;
-      if (f.project_b_id) forecastMap[f.project_b_id] = (forecastMap[f.project_b_id] || 0) + 1;
+      predictionMap[f.project_a_id] = (predictionMap[f.project_a_id] || 0) + 1;
+      if (f.project_b_id) predictionMap[f.project_b_id] = (predictionMap[f.project_b_id] || 0) + 1;
     });
 
-    // Get forecast vote counts per project
+    // Get prediction vote counts per project
     const { data: votes } = await supabase
       .from("forecast_votes")
       .select("forecast_id");
 
     // Map votes to projects via forecasts
-    const votesByForecast: Record<string, number> = {};
+    const votesByPrediction: Record<string, number> = {};
     (votes || []).forEach((v: any) => {
-      votesByForecast[v.forecast_id] = (votesByForecast[v.forecast_id] || 0) + 1;
+      votesByPrediction[v.prediction_id] = (votesByPrediction[v.prediction_id] || 0) + 1;
     });
 
     const voteMap: Record<string, number> = {};
     (forecasts || []).forEach((f: any) => {
-      const count = votesByForecast[f.id] || 0;
+      const count = votesByPrediction[f.id] || 0;
       voteMap[f.project_a_id] = (voteMap[f.project_a_id] || 0) + count;
       if (f.project_b_id) voteMap[f.project_b_id] = (voteMap[f.project_b_id] || 0) + count;
     });
@@ -81,7 +81,7 @@ serve(async (req) => {
     const scores = projectIds.map((id: string) => {
       const ratings = ratingsMap[id] || 0;
       const comps = comparisonMap[id] || 0;
-      const fcs = forecastMap[id] || 0;
+      const fcs = predictionMap[id] || 0;
       const fv = voteMap[id] || 0;
 
       // Score formula (views not tracked yet, so redistribute weight)

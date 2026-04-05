@@ -3,7 +3,7 @@ import { Navigate, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAvatar } from "@/hooks/useAvatar";
-import { useUserForecastStats } from "@/hooks/useUserForecastStats";
+import { useUserPredictionStats } from "@/hooks/useUserPredictionStats";
 import { useBookmarks } from "@/hooks/useBookmarks";
 import { useNotificationPreferences, useUpdateNotificationPreferences } from "@/hooks/useNotificationPreferences";
 import { supabase } from "@/integrations/supabase/client";
@@ -34,7 +34,7 @@ const Profile = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading, signOut } = useAuth();
   const { avatarUrl, displayName, uploading, uploadAvatar, updateDisplayName } = useAvatar();
-  const { data: forecastStats, isLoading: statsLoading } = useUserForecastStats(user?.id);
+  const { data: predictionStats, isLoading: statsLoading } = useUserPredictionStats(user?.id);
   const { data: bookmarks } = useBookmarks();
   const { data: notifPrefs, isLoading: prefsLoading } = useNotificationPreferences();
   const updatePrefs = useUpdateNotificationPreferences();
@@ -132,8 +132,8 @@ const Profile = () => {
   };
 
   const notifOptions = [
-    { key: "forecast_vote", label: "Forecast votes", desc: "When someone votes on your forecast", icon: TrendingUp },
-    { key: "forecast_result", label: "Forecast results", desc: "When a forecast you voted on ends", icon: Crosshair },
+    { key: "forecast_vote", label: "Prediction votes", desc: "When someone votes on your prediction", icon: TrendingUp },
+    { key: "forecast_result", label: "Prediction results", desc: "When a prediction you voted on ends", icon: Crosshair },
     { key: "price_alert", label: "Price alerts", desc: "Token price threshold alerts", icon: BarChart3 },
   ];
 
@@ -220,10 +220,10 @@ const Profile = () => {
                 Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)
               ) : (
                 <>
-                  <StatCard icon={TrendingUp} label="Total Votes" value={forecastStats?.totalVotes ?? 0} color="text-primary" />
-                  <StatCard icon={CheckCircle2} label="Correct" value={forecastStats?.correctVotes ?? 0} color="text-primary" />
-                  <StatCard icon={XCircle} label="Incorrect" value={forecastStats?.incorrectVotes ?? 0} color="text-primary" />
-                  <StatCard icon={Crosshair} label="Accuracy" value={`${forecastStats?.accuracy ?? 0}%`} color="text-primary" />
+                  <StatCard icon={TrendingUp} label="Total Votes" value={predictionStats?.totalVotes ?? 0} color="text-primary" />
+                  <StatCard icon={CheckCircle2} label="Correct" value={predictionStats?.correctVotes ?? 0} color="text-primary" />
+                  <StatCard icon={XCircle} label="Incorrect" value={predictionStats?.incorrectVotes ?? 0} color="text-primary" />
+                  <StatCard icon={Crosshair} label="Accuracy" value={`${predictionStats?.accuracy ?? 0}%`} color="text-primary" />
                 </>
               )}
             </div>
@@ -247,27 +247,27 @@ const Profile = () => {
                     <Clock className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-foreground">{forecastStats?.pendingVotes ?? 0}</p>
-                    <p className="text-xs text-muted-foreground">Pending Forecasts</p>
+                    <p className="text-2xl font-bold text-foreground">{predictionStats?.pendingVotes ?? 0}</p>
+                    <p className="text-xs text-muted-foreground">Pending Predictions</p>
                   </div>
                 </CardContent>
               </Card>
             </div>
 
             {/* Charts */}
-            {!statsLoading && forecastStats && forecastStats.totalVotes > 0 && (
+            {!statsLoading && predictionStats && predictionStats.totalVotes > 0 && (
               <ProfileActivityCharts
-                history={forecastStats.history}
-                totalVotes={forecastStats.totalVotes}
-                correctVotes={forecastStats.correctVotes}
-                incorrectVotes={forecastStats.incorrectVotes}
+                history={predictionStats.history}
+                totalVotes={predictionStats.totalVotes}
+                correctVotes={predictionStats.correctVotes}
+                incorrectVotes={predictionStats.incorrectVotes}
               />
             )}
 
-            {/* Recent Forecast Activity */}
+            {/* Recent Prediction Activity */}
             <Card className="border-border/50">
               <CardHeader>
-                <CardTitle className="text-base">Recent Forecast Activity</CardTitle>
+                <CardTitle className="text-base">Recent Prediction Activity</CardTitle>
                 <CardDescription>Your latest votes and their outcomes</CardDescription>
               </CardHeader>
               <CardContent>
@@ -275,20 +275,20 @@ const Profile = () => {
                   <div className="space-y-3">
                     {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-14 rounded-lg" />)}
                   </div>
-                ) : !forecastStats?.history?.length ? (
+                ) : !predictionStats?.history?.length ? (
                   <div className="text-center py-8">
                     <HelpCircle className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">No forecast activity yet</p>
+                    <p className="text-sm text-muted-foreground">No prediction activity yet</p>
                     <Link to="/forecasts" className="text-xs text-primary hover:underline mt-1 inline-block">
                       Browse forecasts →
                     </Link>
                   </div>
                 ) : (
                   <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
-                    {forecastStats.history.slice(0, 15).map((item) => (
+                    {predictionStats.history.slice(0, 15).map((item) => (
                       <Link
-                        key={item.forecast_id + item.voted_at}
-                        to={`/forecasts/${item.forecast_id}`}
+                        key={item.prediction_id + item.voted_at}
+                        to={`/forecasts/${item.prediction_id}`}
                         className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 transition-colors group"
                       >
                         {item.project_logo_url ? (
@@ -298,7 +298,7 @@ const Profile = () => {
                         )}
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-foreground truncate transition-colors">
-                            {item.forecast_title}
+                            {item.prediction_title}
                           </p>
                           <p className="text-xs text-muted-foreground">
                             Voted <Badge variant={item.vote === "yes" ? "default" : "destructive"} className="text-[10px] px-1.5 py-0 ml-1">{item.vote.toUpperCase()}</Badge>

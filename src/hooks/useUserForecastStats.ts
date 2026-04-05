@@ -2,8 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export type VoteHistoryItem = {
-  forecast_id: string;
-  forecast_title: string;
+  prediction_id: string;
+  prediction_title: string;
   project_name: string;
   project_logo_emoji: string;
   project_logo_url: string | null;
@@ -17,23 +17,23 @@ export type VoteHistoryItem = {
   was_correct: boolean | null;
 };
 
-export type UserForecastStats = {
+export type UserPredictionStats = {
   totalVotes: number;
   correctVotes: number;
   incorrectVotes: number;
   pendingVotes: number;
   accuracy: number;
-  forecastsCreated: number;
+  predictionsCreated: number;
   history: VoteHistoryItem[];
 };
 
-export function useUserForecastStats(userId: string | undefined) {
+export function useUserPredictionStats(userId: string | undefined) {
   return useQuery({
-    queryKey: ["user-forecast-stats", userId],
+    queryKey: ["user-prediction-stats", userId],
     enabled: !!userId,
     staleTime: 5 * 60 * 1000, // 5 minutes - won't refetch if data is fresh
     gcTime: 10 * 60 * 1000, // 10 minutes - keep in cache even when unused
-    queryFn: async (): Promise<UserForecastStats> => {
+    queryFn: async (): Promise<UserPredictionStats> => {
       // Get all votes by this user
       const { data: votes, error: votesError } = await supabase
         .from("forecast_votes")
@@ -50,15 +50,15 @@ export function useUserForecastStats(userId: string | undefined) {
         .eq("creator_user_id", userId!);
 
       if (!votes?.length) {
-        return { totalVotes: 0, correctVotes: 0, incorrectVotes: 0, pendingVotes: 0, accuracy: 0, forecastsCreated: createdCount || 0, history: [] };
+        return { totalVotes: 0, correctVotes: 0, incorrectVotes: 0, pendingVotes: 0, accuracy: 0, predictionsCreated: createdCount || 0, history: [] };
       }
 
       // Get the forecasts for these votes
-      const forecastIds = [...new Set(votes.map((v) => v.forecast_id))];
+      const predictionIds = [...new Set(votes.map((v) => v.prediction_id))];
       const { data: forecasts, error: fError } = await supabase
         .from("forecasts")
         .select("id, title, end_date, total_votes_yes, total_votes_no, project_a_id")
-        .in("id", forecastIds);
+        .in("id", predictionIds);
 
       if (fError) throw fError;
 
@@ -70,7 +70,7 @@ export function useUserForecastStats(userId: string | undefined) {
         .in("id", projectIds);
 
       const projectMap = Object.fromEntries((projects || []).map((p) => [p.id, p]));
-      const forecastMap = Object.fromEntries((forecasts || []).map((f) => [f.id, f]));
+      const predictionMap = Object.fromEntries((forecasts || []).map((f) => [f.id, f]));
 
       const now = new Date();
       let correct = 0;
@@ -78,7 +78,7 @@ export function useUserForecastStats(userId: string | undefined) {
       let pending = 0;
 
       const history: VoteHistoryItem[] = votes.map((v) => {
-        const f = forecastMap[v.forecast_id];
+        const f = predictionMap[v.prediction_id];
         const isEnded = f ? new Date(f.end_date) <= now : false;
         const totalVotes = f ? f.total_votes_yes + f.total_votes_no : 0;
         const yesPct = totalVotes > 0 ? (f.total_votes_yes / totalVotes) * 100 : 50;
@@ -92,8 +92,8 @@ export function useUserForecastStats(userId: string | undefined) {
         const project = f ? projectMap[f.project_a_id] : null;
 
         return {
-          forecast_id: v.forecast_id,
-          forecast_title: f?.title || "Unknown",
+          prediction_id: v.prediction_id,
+          prediction_title: f?.title || "Unknown",
           project_name: project?.name || "Unknown",
           project_logo_emoji: project?.logo_emoji || "⬡",
           project_logo_url: project?.logo_url || null,
@@ -114,7 +114,7 @@ export function useUserForecastStats(userId: string | undefined) {
         incorrectVotes: incorrect,
         pendingVotes: pending,
         accuracy: correct + incorrect > 0 ? Math.round((correct / (correct + incorrect)) * 100) : 0,
-        forecastsCreated: createdCount || 0,
+        predictionsCreated: createdCount || 0,
         history,
       };
     },

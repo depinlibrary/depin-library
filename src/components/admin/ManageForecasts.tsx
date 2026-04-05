@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
 
-type Forecast = {
+type Prediction = {
   id: string;
   title: string;
   description: string;
@@ -25,11 +25,11 @@ type Forecast = {
   project_b: { name: string; slug: string } | null;
 };
 
-export default function ManageForecasts() {
+export default function ManagePredictions() {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
-  const [editingForecast, setEditingForecast] = useState<Forecast | null>(null);
-  const [editForm, setEditForm] = useState<Partial<Forecast>>({});
+  const [editingPrediction, setEditingPrediction] = useState<Prediction | null>(null);
+  const [editForm, setEditForm] = useState<Partial<Prediction>>({});
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const { data: forecasts = [], isLoading } = useQuery({
@@ -39,8 +39,8 @@ export default function ManageForecasts() {
         .from("forecasts")
         .select(`
           *,
-          project_a:projects!forecasts_project_a_id_fkey(name, slug),
-          project_b:projects!forecasts_project_b_id_fkey(name, slug)
+          project_a:projects!predictions_project_a_id_fkey(name, slug),
+          project_b:projects!predictions_project_b_id_fkey(name, slug)
         `)
         .order("created_at", { ascending: false });
 
@@ -56,12 +56,12 @@ export default function ManageForecasts() {
         ...f,
         project_a: Array.isArray(f.project_a) ? f.project_a[0] : f.project_a,
         project_b: Array.isArray(f.project_b) ? f.project_b[0] : f.project_b,
-      })) as Forecast[];
+      })) as Prediction[];
     },
   });
 
   const updateMutation = useMutation({
-    mutationFn: async (updated: Partial<Forecast> & { id: string }) => {
+    mutationFn: async (updated: Partial<Prediction> & { id: string }) => {
       const { error } = await supabase
         .from("forecasts")
         .update({
@@ -74,12 +74,12 @@ export default function ManageForecasts() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Forecast updated successfully");
+      toast.success("Prediction updated successfully");
       queryClient.invalidateQueries({ queryKey: ["admin-forecasts"] });
-      setEditingForecast(null);
+      setEditingPrediction(null);
     },
     onError: (error) => {
-      toast.error(`Failed to update forecast: ${error.message}`);
+      toast.error(`Failed to update prediction: ${error.message}`);
     },
   });
 
@@ -89,20 +89,20 @@ export default function ManageForecasts() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Forecast deleted permanently");
+      toast.success("Prediction deleted permanently");
       queryClient.invalidateQueries({ queryKey: ["admin-forecasts"] });
       setDeletingId(null);
     },
     onError: (error) => {
-      toast.error(`Failed to delete forecast: ${error.message}`);
+      toast.error(`Failed to delete prediction: ${error.message}`);
       setDeletingId(null);
     },
   });
 
   const handleEditSave = () => {
-    if (!editingForecast) return;
+    if (!editingPrediction) return;
     updateMutation.mutate({
-      id: editingForecast.id,
+      id: editingPrediction.id,
       ...editForm,
     });
   };
@@ -131,32 +131,32 @@ export default function ManageForecasts() {
         </p>
       ) : (
         <div className="space-y-4">
-          {forecasts.map((forecast) => (
-            <div key={forecast.id} className="flex flex-col gap-4 rounded-xl border border-border bg-card p-5 sm:flex-row sm:items-start sm:justify-between">
+          {forecasts.map((prediction) => (
+            <div key={prediction.id} className="flex flex-col gap-4 rounded-xl border border-border bg-card p-5 sm:flex-row sm:items-start sm:justify-between">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <h4 className="font-semibold text-foreground truncate">{forecast.title}</h4>
-                  <Link to={`/forecasts/${forecast.id}`} target="_blank" className="text-muted-foreground hover:text-primary shrink-0">
+                  <h4 className="font-semibold text-foreground truncate">{prediction.title}</h4>
+                  <Link to={`/forecasts/${prediction.id}`} target="_blank" className="text-muted-foreground hover:text-primary shrink-0">
                     <ExternalLink className="h-3.5 w-3.5" />
                   </Link>
                 </div>
-                <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{forecast.description}</p>
+                <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{prediction.description}</p>
                 
                 <div className="flex flex-wrap items-center gap-3 text-xs">
-                  <span className={`px-2 py-0.5 rounded-full font-medium ${forecast.status === 'active' ? 'bg-green-500/10 text-green-500' : 'bg-muted text-muted-foreground'}`}>
-                    {forecast.status === 'active' ? 'Active' : 'Ended'}
+                  <span className={`px-2 py-0.5 rounded-full font-medium ${prediction.status === 'active' ? 'bg-green-500/10 text-green-500' : 'bg-muted text-muted-foreground'}`}>
+                    {prediction.status === 'active' ? 'Active' : 'Ended'}
                   </span>
                   <span className="text-muted-foreground">
-                    Ends: {format(new Date(forecast.end_date), "MMM d, yyyy")}
+                    Ends: {format(new Date(prediction.end_date), "MMM d, yyyy")}
                   </span>
                   <span className="text-muted-foreground">
-                    Votes: {forecast.total_votes_yes + forecast.total_votes_no} ({forecast.total_votes_yes} Y / {forecast.total_votes_no} N)
+                    Votes: {prediction.total_votes_yes + prediction.total_votes_no} ({prediction.total_votes_yes} Y / {prediction.total_votes_no} N)
                   </span>
                   <div className="flex items-center gap-1 text-muted-foreground">
                     Projects: 
-                    <span className="font-medium text-foreground">{forecast.project_a?.name || "Unknown"}</span>
-                    {forecast.project_b && (
-                      <> vs <span className="font-medium text-foreground">{forecast.project_b.name}</span></>
+                    <span className="font-medium text-foreground">{prediction.project_a?.name || "Unknown"}</span>
+                    {prediction.project_b && (
+                      <> vs <span className="font-medium text-foreground">{prediction.project_b.name}</span></>
                     )}
                   </div>
                 </div>
@@ -167,12 +167,12 @@ export default function ManageForecasts() {
                   size="sm"
                   variant="outline"
                   onClick={() => {
-                    setEditingForecast(forecast);
+                    setEditingPrediction(prediction);
                     setEditForm({
-                      title: forecast.title,
-                      description: forecast.description,
-                      end_date: forecast.end_date.split('T')[0], // Extract just the date part for the input
-                      status: forecast.status,
+                      title: prediction.title,
+                      description: prediction.description,
+                      end_date: prediction.end_date.split('T')[0], // Extract just the date part for the input
+                      status: prediction.status,
                     });
                   }}
                 >
@@ -182,7 +182,7 @@ export default function ManageForecasts() {
                   size="sm"
                   variant="outline"
                   className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                  onClick={() => setDeletingId(forecast.id)}
+                  onClick={() => setDeletingId(prediction.id)}
                 >
                   <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Delete
                 </Button>
@@ -193,10 +193,10 @@ export default function ManageForecasts() {
       )}
 
       {/* Edit Dialog */}
-      <Dialog open={!!editingForecast} onOpenChange={(open) => !open && setEditingForecast(null)}>
+      <Dialog open={!!editingPrediction} onOpenChange={(open) => !open && setEditingPrediction(null)}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Edit Forecast</DialogTitle>
+            <DialogTitle>Edit Prediction</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
@@ -241,7 +241,7 @@ export default function ManageForecasts() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditingForecast(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setEditingPrediction(null)}>Cancel</Button>
             <Button onClick={handleEditSave} disabled={updateMutation.isPending}>
               {updateMutation.isPending ? "Saving..." : "Save Changes"}
             </Button>
@@ -253,9 +253,9 @@ export default function ManageForecasts() {
       <Dialog open={!!deletingId} onOpenChange={(open) => !open && setDeletingId(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Forecast</DialogTitle>
+            <DialogTitle>Delete Prediction</DialogTitle>
             <DialogDescription>
-              Are you sure you want to permanently delete this forecast? This action cannot be undone and will remove all associated votes and comments.
+              Are you sure you want to permanently delete this prediction? This action cannot be undone and will remove all associated votes and comments.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

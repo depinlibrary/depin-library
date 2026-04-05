@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import confetti from "canvas-confetti";
 
 interface VoteSectionProps {
-  forecast: any;
+  prediction: any;
   yesPct: number;
   noPct: number;
   totalVotes: number;
@@ -25,14 +25,14 @@ const confidenceLabels: Record<number, { label: string; color: string }> = {
   5: { label: "Maximum", color: "text-accent" },
 };
 
-export default function VoteSection({ forecast, yesPct, noPct, totalVotes, isEnded, onVote }: VoteSectionProps) {
+export default function VoteSection({ prediction, yesPct, noPct, totalVotes, isEnded, onVote }: VoteSectionProps) {
   const { user } = useAuth();
   const [confidence, setConfidence] = useState(3);
   const [confirmDialog, setConfirmDialog] = useState<{ open: boolean; vote: "yes" | "no" | null }>({ open: false, vote: null });
   const [alreadyVotedDialog, setAlreadyVotedDialog] = useState(false);
   const [localVote, setLocalVote] = useState<"yes" | "no" | null>(null);
 
-  const userVote = localVote ?? forecast.user_vote ?? null;
+  const userVote = localVote ?? prediction.user_vote ?? null;
   const hasVoted = !!userVote;
 
   const fireConfetti = () => {
@@ -100,11 +100,11 @@ export default function VoteSection({ forecast, yesPct, noPct, totalVotes, isEnd
               <TrendingUp className="h-3.5 w-3.5 text-primary" />
               <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Yes</span>
             </div>
-            <span className="text-xl font-bold text-foreground font-['Space_Grotesk']">{forecast.total_votes_yes}</span>
-            {forecast.avg_confidence_yes != null && (
+            <span className="text-xl font-bold text-foreground font-['Space_Grotesk']">{prediction.total_votes_yes}</span>
+            {prediction.avg_confidence_yes != null && (
               <div className="flex items-center justify-center gap-1 mt-1">
                 <Gauge className="h-3 w-3 text-primary/60" />
-                <span className="text-[10px] text-primary/70 font-medium">{forecast.avg_confidence_yes.toFixed(1)}/5</span>
+                <span className="text-[10px] text-primary/70 font-medium">{prediction.avg_confidence_yes.toFixed(1)}/5</span>
               </div>
             )}
           </div>
@@ -120,11 +120,11 @@ export default function VoteSection({ forecast, yesPct, noPct, totalVotes, isEnd
               <TrendingDown className="h-3.5 w-3.5 text-destructive" />
               <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">No</span>
             </div>
-            <span className="text-xl font-bold text-foreground font-['Space_Grotesk']">{forecast.total_votes_no}</span>
-            {forecast.avg_confidence_no != null && (
+            <span className="text-xl font-bold text-foreground font-['Space_Grotesk']">{prediction.total_votes_no}</span>
+            {prediction.avg_confidence_no != null && (
               <div className="flex items-center justify-center gap-1 mt-1">
                 <Gauge className="h-3 w-3 text-destructive/60" />
-                <span className="text-[10px] text-destructive/70 font-medium">{forecast.avg_confidence_no.toFixed(1)}/5</span>
+                <span className="text-[10px] text-destructive/70 font-medium">{prediction.avg_confidence_no.toFixed(1)}/5</span>
               </div>
             )}
           </div>

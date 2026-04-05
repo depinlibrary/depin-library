@@ -15,12 +15,12 @@ function getTimeLeft(endDate: string) {
   return `${minutes}m`;
 }
 
-interface ProjectForecastsProps {
+interface ProjectPredictionsProps {
   projectId: string;
   projectName: string;
 }
 
-const ProjectForecasts = ({ projectId, projectName }: ProjectForecastsProps) => {
+const ProjectPredictions = ({ projectId, projectName }: ProjectPredictionsProps) => {
   const { data: forecasts = [], isLoading } = useQuery({
     queryKey: ["project-forecasts", projectId],
     queryFn: async () => {
@@ -29,8 +29,8 @@ const ProjectForecasts = ({ projectId, projectName }: ProjectForecastsProps) => 
         .select(`
           id, title, description, status, end_date,
           total_votes_yes, total_votes_no, weighted_votes_yes, weighted_votes_no, outcome, created_at,
-          project_a:projects!forecasts_project_a_id_fkey(id, name, slug, logo_url, logo_emoji),
-          project_b:projects!forecasts_project_b_id_fkey(id, name, slug, logo_url, logo_emoji)
+          project_a:projects!predictions_project_a_id_fkey(id, name, slug, logo_url, logo_emoji),
+          project_b:projects!predictions_project_b_id_fkey(id, name, slug, logo_url, logo_emoji)
         `)
         .or(`project_a_id.eq.${projectId},project_b_id.eq.${projectId}`)
         .order("created_at", { ascending: false })
@@ -41,18 +41,18 @@ const ProjectForecasts = ({ projectId, projectName }: ProjectForecastsProps) => 
     enabled: !!projectId,
   });
 
-  const forecastIds = forecasts.map((f: any) => f.id);
+  const predictionIds = forecasts.map((f: any) => f.id);
   const { data: dimensionsMap = {} } = useQuery({
-    queryKey: ["project-forecast-dimensions", projectId, forecastIds],
-    enabled: forecastIds.length > 0,
+    queryKey: ["project-prediction-dimensions", projectId, predictionIds],
+    enabled: predictionIds.length > 0,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("forecast_targets")
         .select("forecast_id, dimension")
-        .in("forecast_id", forecastIds);
+        .in("forecast_id", predictionIds);
       if (error) throw error;
       const map: Record<string, string> = {};
-      (data || []).forEach((d: any) => { map[d.forecast_id] = d.dimension; });
+      (data || []).forEach((d: any) => { map[d.prediction_id] = d.dimension; });
       return map;
     },
   });
@@ -80,22 +80,22 @@ const ProjectForecasts = ({ projectId, projectName }: ProjectForecastsProps) => 
 
   return (
     <div className="grid gap-3 sm:grid-cols-2">
-      {forecasts.map((forecast: any) => {
-        const dimension = (dimensionsMap as Record<string, string>)[forecast.id];
+      {forecasts.map((prediction: any) => {
+        const dimension = (dimensionsMap as Record<string, string>)[prediction.id];
         const isPriceMarket = dimension === "token_price" || dimension === "market_cap";
         const yesLabel = isPriceMarket ? "Long" : "Yes";
         const noLabel = isPriceMarket ? "Short" : "No";
-        const totalVotes = forecast.total_votes_yes + forecast.total_votes_no;
-        const yesPct = (() => { const wy = Number(forecast.weighted_votes_yes) || 0; const wn = Number(forecast.weighted_votes_no) || 0; const wt = wy + wn; return wt > 0 ? (wy / wt) * 100 : totalVotes > 0 ? (forecast.total_votes_yes / totalVotes) * 100 : 50; })();
-        const isEnded = forecast.status === "ended" || new Date(forecast.end_date) <= new Date();
-        const timeLeft = getTimeLeft(forecast.end_date);
-        const projectA = forecast.project_a;
-        const projectB = forecast.project_b;
+        const totalVotes = prediction.total_votes_yes + prediction.total_votes_no;
+        const yesPct = (() => { const wy = Number(prediction.weighted_votes_yes) || 0; const wn = Number(prediction.weighted_votes_no) || 0; const wt = wy + wn; return wt > 0 ? (wy / wt) * 100 : totalVotes > 0 ? (prediction.total_votes_yes / totalVotes) * 100 : 50; })();
+        const isEnded = prediction.status === "ended" || new Date(prediction.end_date) <= new Date();
+        const timeLeft = getTimeLeft(prediction.end_date);
+        const projectA = prediction.project_a;
+        const projectB = prediction.project_b;
 
         return (
           <Link
-            key={forecast.id}
-            to={`/forecasts/${forecast.id}`}
+            key={prediction.id}
+            to={`/forecasts/${prediction.id}`}
             className="group relative flex flex-col rounded-xl border border-border bg-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20 h-full"
           >
             <div className="p-4 flex-1 flex flex-col">
@@ -133,7 +133,7 @@ const ProjectForecasts = ({ projectId, projectName }: ProjectForecastsProps) => 
 
               {/* Title */}
               <h3 className="text-[13px] font-semibold text-foreground leading-snug line-clamp-2 group-hover:underline transition-all duration-200 mb-auto">
-                {forecast.title}
+                {prediction.title}
               </h3>
 
               {/* Percentage + votes */}
@@ -161,4 +161,4 @@ const ProjectForecasts = ({ projectId, projectName }: ProjectForecastsProps) => 
   );
 };
 
-export default ProjectForecasts;
+export default ProjectPredictions;

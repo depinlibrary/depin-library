@@ -19,36 +19,36 @@ import {
 import UserStatsHoverCard from "@/components/UserStatsHoverCard";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-  useForecastCommentLikes,
-  useToggleForecastCommentLike,
-  useForecastCommentReplies,
-  useCreateForecastCommentReply,
-  useDeleteForecastCommentReply,
-  useForecastReplyLikes,
-  useToggleForecastReplyLike,
-} from "@/hooks/useForecastCommentInteractions";
-import type { ForecastComment } from "@/hooks/useForecastDetail";
+  usePredictionCommentLikes,
+  useTogglePredictionCommentLike,
+  usePredictionCommentReplies,
+  useCreatePredictionCommentReply,
+  useDeletePredictionCommentReply,
+  usePredictionReplyLikes,
+  useTogglePredictionReplyLike,
+} from "@/hooks/usePredictionCommentInteractions";
+import type { PredictionComment } from "@/hooks/usePredictionDetail";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 
 // ── Reply Thread (Polymarket-style) ──
-const CommentReplyThread = ({ commentId, forecastId, showReplyInput, onToggleReplyInput }: { commentId: string; forecastId: string; showReplyInput: boolean; onToggleReplyInput: () => void }) => {
+const CommentReplyThread = ({ commentId, predictionId, showReplyInput, onToggleReplyInput }: { commentId: string; predictionId: string; showReplyInput: boolean; onToggleReplyInput: () => void }) => {
   const { user } = useAuth();
-  const { data: replies = [] } = useForecastCommentReplies(commentId);
-  const createReply = useCreateForecastCommentReply();
-  const deleteReply = useDeleteForecastCommentReply();
+  const { data: replies = [] } = usePredictionCommentReplies(commentId);
+  const createReply = useCreatePredictionCommentReply();
+  const deleteReply = useDeletePredictionCommentReply();
   const [replyText, setReplyText] = useState("");
   const [showReplies, setShowReplies] = useState(false);
 
   const replyIds = useMemo(() => replies.map((r) => r.id), [replies]);
-  const { data: replyLikesMap = {} } = useForecastReplyLikes(replyIds);
-  const toggleReplyLike = useToggleForecastReplyLike();
+  const { data: replyLikesMap = {} } = usePredictionReplyLikes(replyIds);
+  const toggleReplyLike = useTogglePredictionReplyLike();
 
   const handleSubmit = async () => {
     if (!replyText.trim()) return;
     if (!user) { toast.error("Sign in to reply"); return; }
     try {
-      await createReply.mutateAsync({ commentId, replyText: replyText.trim(), forecastId });
+      await createReply.mutateAsync({ commentId, replyText: replyText.trim(), predictionId });
       setReplyText("");
       onToggleReplyInput();
       setShowReplies(true);
@@ -96,7 +96,7 @@ const CommentReplyThread = ({ commentId, forecastId, showReplyInput, onToggleRep
                     <button
                       onClick={() => {
                         if (!user) { toast.error("Sign in to like"); return; }
-                        toggleReplyLike.mutate({ replyId: reply.id, isLiked: likeInfo.userLiked, forecastId });
+                        toggleReplyLike.mutate({ replyId: reply.id, isLiked: likeInfo.userLiked, predictionId });
                       }}
                       className={`flex items-center gap-1 text-[11px] transition-colors ${
                         likeInfo.userLiked ? "text-red-500" : "text-muted-foreground hover:text-foreground"
@@ -155,8 +155,8 @@ const CommentReplyThread = ({ commentId, forecastId, showReplyInput, onToggleRep
 
 // ── Main Discussion Section (Polymarket-style) ──
 interface DiscussionSectionProps {
-  forecastId: string;
-  comments: ForecastComment[];
+  predictionId: string;
+  comments: PredictionComment[];
   commentsLoading: boolean;
   onAddComment: () => void;
   commentText: string;
@@ -166,13 +166,13 @@ interface DiscussionSectionProps {
   setEditingCommentId: (id: string | null) => void;
   editingText: string;
   setEditingText: (text: string) => void;
-  onEditComment: (commentId: string, forecastId: string, text: string) => void;
+  onEditComment: (commentId: string, predictionId: string, text: string) => void;
   editCommentPending: boolean;
-  onDeleteComment: (commentId: string, forecastId: string) => void;
+  onDeleteComment: (commentId: string, predictionId: string) => void;
 }
 
 export default function DiscussionSection({
-  forecastId,
+  predictionId,
   comments,
   commentsLoading,
   onAddComment,
@@ -189,8 +189,8 @@ export default function DiscussionSection({
 }: DiscussionSectionProps) {
   const { user } = useAuth();
   const commentIds = useMemo(() => comments.map((c) => c.id), [comments]);
-  const { data: likesMap = {} } = useForecastCommentLikes(commentIds);
-  const toggleLike = useToggleForecastCommentLike();
+  const { data: likesMap = {} } = usePredictionCommentLikes(commentIds);
+  const toggleLike = useTogglePredictionCommentLike();
   const [replyOpenFor, setReplyOpenFor] = useState<string | null>(null);
 
   const handleReport = (commentId: string) => {
@@ -287,7 +287,7 @@ export default function DiscussionSection({
                                   <Pencil className="h-3 w-3" /> Edit
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                  onClick={() => onDeleteComment(comment.id, forecastId)}
+                                  onClick={() => onDeleteComment(comment.id, predictionId)}
                                   className="text-xs gap-2 text-destructive focus:text-destructive"
                                 >
                                   <Trash2 className="h-3 w-3" /> Delete
@@ -315,7 +315,7 @@ export default function DiscussionSection({
                           autoFocus
                           onKeyDown={(e) => {
                             if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && editingText.trim()) {
-                              onEditComment(comment.id, forecastId, editingText.trim());
+                              onEditComment(comment.id, predictionId, editingText.trim());
                               setEditingCommentId(null);
                             }
                             if (e.key === "Escape") setEditingCommentId(null);
@@ -330,7 +330,7 @@ export default function DiscussionSection({
                             className="h-7 text-xs rounded-lg"
                             disabled={!editingText.trim() || editCommentPending}
                             onClick={() => {
-                              onEditComment(comment.id, forecastId, editingText.trim());
+                              onEditComment(comment.id, predictionId, editingText.trim());
                               setEditingCommentId(null);
                             }}
                           >
@@ -347,7 +347,7 @@ export default function DiscussionSection({
                           <button
                             onClick={() => {
                               if (!user) { toast.error("Sign in to like"); return; }
-                              toggleLike.mutate({ commentId: comment.id, isLiked: likeInfo.userLiked, forecastId });
+                              toggleLike.mutate({ commentId: comment.id, isLiked: likeInfo.userLiked, predictionId });
                             }}
                             className={`flex items-center gap-1.5 text-[11px] font-medium transition-colors ${
                               likeInfo.userLiked ? "text-red-500" : "text-muted-foreground/60 hover:text-foreground"
@@ -369,7 +369,7 @@ export default function DiscussionSection({
                     )}
 
                     {/* Reply thread */}
-                    <CommentReplyThread commentId={comment.id} forecastId={forecastId} showReplyInput={replyOpenFor === comment.id} onToggleReplyInput={() => setReplyOpenFor(replyOpenFor === comment.id ? null : comment.id)} />
+                    <CommentReplyThread commentId={comment.id} predictionId={predictionId} showReplyInput={replyOpenFor === comment.id} onToggleReplyInput={() => setReplyOpenFor(replyOpenFor === comment.id ? null : comment.id)} />
                   </div>
                 </div>
               </div>

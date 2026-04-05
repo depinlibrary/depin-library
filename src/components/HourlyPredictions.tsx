@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { Timer, TrendingUp, TrendingDown, ChevronRight, Minus, Clock, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useActiveHourlyRounds, useVoteHourlyRound, useRealtimeHourlyRounds, useHourlyRoundHistory, type HourlyRound } from "@/hooks/useHourlyForecasts";
+import { useActiveHourlyRounds, useVoteHourlyRound, useRealtimeHourlyRounds, useHourlyRoundHistory, type HourlyRound } from "@/hooks/useHourlyPredictions";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 

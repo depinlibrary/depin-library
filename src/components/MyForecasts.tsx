@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import { Pencil, Trash2, Clock, AlertTriangle, CheckCircle, XCircle, BarChart3, Users, Trophy, Activity, TrendingUp, ArrowDownRight, CheckCircle2, Vote } from "lucide-react";
 
-type UserForecast = {
+type UserPrediction = {
   id: string;
   title: string;
   description: string;
@@ -49,14 +49,14 @@ function getTimeRemaining(endDate: string): string {
   return `${hours}h left`;
 }
 
-export default function MyForecasts() {
+export default function MyPredictions() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const { data: projects = [] } = useProjects();
-  const [editForecast, setEditForecast] = useState<UserForecast | null>(null);
+  const [editPrediction, setEditPrediction] = useState<UserPrediction | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
-  const [deleteRequestForecast, setDeleteRequestForecast] = useState<UserForecast | null>(null);
+  const [deleteRequestPrediction, setDeleteRequestPrediction] = useState<UserPrediction | null>(null);
   const [deleteReason, setDeleteReason] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "ended">("all");
   const [sortBy, setSortBy] = useState<"newest" | "votes" | "ending">("newest");
@@ -73,13 +73,13 @@ export default function MyForecasts() {
         .eq("creator_user_id", user.id)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data as UserForecast[];
+      return data as UserPrediction[];
     },
     enabled: !!user,
   });
 
   // Voted-on forecasts
-  const { data: votedForecasts = [], isLoading: votedLoading } = useQuery({
+  const { data: votedPredictions = [], isLoading: votedLoading } = useQuery({
     queryKey: ["my-voted-forecasts", user?.id],
     queryFn: async () => {
       if (!user) return [];
@@ -92,15 +92,15 @@ export default function MyForecasts() {
       if (votesError) throw votesError;
       if (!votes || votes.length === 0) return [];
 
-      const forecastIds = votes.map(v => v.forecast_id);
+      const predictionIds = votes.map(v => v.prediction_id);
       const { data: fData, error: fError } = await supabase
         .from("forecasts")
         .select("*")
-        .in("id", forecastIds);
+        .in("id", predictionIds);
       if (fError) throw fError;
 
       const voteMap: Record<string, { vote: string; created_at: string }> = {};
-      votes.forEach(v => { voteMap[v.forecast_id] = { vote: v.vote, created_at: v.created_at }; });
+      votes.forEach(v => { voteMap[v.prediction_id] = { vote: v.vote, created_at: v.created_at }; });
 
       return (fData || []).map((f: any) => ({
         ...f,
@@ -112,20 +112,20 @@ export default function MyForecasts() {
   });
 
   // Fetch dimensions for all user forecasts
-  const allForecastIds = [...forecasts.map(f => f.id), ...votedForecasts.map((f: any) => f.id)];
+  const allPredictionIds = [...forecasts.map(f => f.id), ...votedPredictions.map((f: any) => f.id)];
   const { data: dimensionsMap = {} } = useQuery({
-    queryKey: ["my-forecast-dimensions", allForecastIds],
-    enabled: allForecastIds.length > 0,
+    queryKey: ["my-prediction-dimensions", allPredictionIds],
+    enabled: allPredictionIds.length > 0,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("forecast_targets")
         .select("forecast_id, dimension")
-        .in("forecast_id", allForecastIds);
+        .in("forecast_id", allPredictionIds);
       if (error) throw error;
       const map: Record<string, string[]> = {};
       (data || []).forEach((d: any) => {
-        if (!map[d.forecast_id]) map[d.forecast_id] = [];
-        map[d.forecast_id].push(d.dimension);
+        if (!map[d.prediction_id]) map[d.prediction_id] = [];
+        map[d.prediction_id].push(d.dimension);
       });
       return map;
     },
@@ -158,29 +158,29 @@ export default function MyForecasts() {
       toast.success("Prediction updated");
       queryClient.invalidateQueries({ queryKey: ["my-forecasts"] });
       queryClient.invalidateQueries({ queryKey: ["forecasts"] });
-      setEditForecast(null);
+      setEditPrediction(null);
     },
     onError: () => toast.error("Failed to update prediction"),
   });
 
   const deletionRequestMutation = useMutation({
-    mutationFn: async ({ forecastId, reason }: { forecastId: string; reason: string }) => {
+    mutationFn: async ({ predictionId, reason }: { predictionId: string; reason: string }) => {
       const { error } = await supabase
         .from("forecast_deletion_requests")
-        .insert({ forecast_id: forecastId, user_id: user!.id, reason });
+        .insert({ prediction_id: predictionId, user_id: user!.id, reason });
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success("Deletion request submitted for admin review");
       queryClient.invalidateQueries({ queryKey: ["my-deletion-requests"] });
-      setDeleteRequestForecast(null);
+      setDeleteRequestPrediction(null);
       setDeleteReason("");
     },
     onError: () => toast.error("Failed to submit deletion request"),
   });
 
   const projectMap = new Map((projects as any[]).map((p) => [p.id, p]));
-  const getDeletionStatus = (forecastId: string) => deletionRequests.find((r: any) => r.forecast_id === forecastId);
+  const getDeletionStatus = (predictionId: string) => deletionRequests.find((r: any) => r.prediction_id === predictionId);
 
   const filterAndSort = (list: any[]) => {
     return list
@@ -197,14 +197,14 @@ export default function MyForecasts() {
   };
 
   const filteredCreated = filterAndSort(forecasts);
-  const filteredVoted = filterAndSort(votedForecasts.filter((vf: any) => !forecasts.some(cf => cf.id === vf.id)));
+  const filteredVoted = filterAndSort(votedPredictions.filter((vf: any) => !forecasts.some(cf => cf.id === vf.id)));
 
   const activeCreated = forecasts.filter((f) => new Date(f.end_date) > new Date()).length;
-  const votedCount = votedForecasts.filter((vf: any) => !forecasts.some(cf => cf.id === vf.id)).length;
+  const votedCount = votedPredictions.filter((vf: any) => !forecasts.some(cf => cf.id === vf.id)).length;
 
   if (!user) return null;
 
-  const renderForecastCard = (f: any, i: number, isVotedView: boolean) => {
+  const renderPredictionCard = (f: any, i: number, isVotedView: boolean) => {
     const projA = projectMap.get(f.project_a_id) as any;
     const projB = f.project_b_id ? (projectMap.get(f.project_b_id) as any) : null;
     const canEdit = !isVotedView && isWithin24Hours(f.created_at);
@@ -352,7 +352,7 @@ export default function MyForecasts() {
               {canEdit ? (
                 <button
                   onClick={() => {
-                    setEditForecast(f);
+                    setEditPrediction(f);
                     setEditTitle(f.title);
                     setEditDescription(f.description);
                   }}
@@ -363,7 +363,7 @@ export default function MyForecasts() {
               ) : !deletionReq ? (
                 <button
                   onClick={() => {
-                    setDeleteRequestForecast(f);
+                    setDeleteRequestPrediction(f);
                     setDeleteReason("");
                   }}
                   className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[11px] font-medium text-muted-foreground hover:text-destructive transition-all"
@@ -393,7 +393,7 @@ export default function MyForecasts() {
   const currentLoading = viewTab === "created" ? isLoading : votedLoading;
 
   // Stats for voted tab
-  const votedEnded = votedForecasts.filter((vf: any) => !forecasts.some(cf => cf.id === vf.id) && new Date(vf.end_date) <= new Date());
+  const votedEnded = votedPredictions.filter((vf: any) => !forecasts.some(cf => cf.id === vf.id) && new Date(vf.end_date) <= new Date());
   const votedCorrect = votedEnded.filter((vf: any) => {
     const totalVotes = vf.total_votes_yes + vf.total_votes_no;
     const wy = Number(vf.weighted_votes_yes) || 0;
@@ -416,7 +416,7 @@ export default function MyForecasts() {
             <Activity className="h-3.5 w-3.5 text-primary" />
           </div>
           <div>
-            <h2 className="text-sm font-semibold text-foreground">My Forecasts</h2>
+            <h2 className="text-sm font-semibold text-foreground">My Predictions</h2>
             <p className="text-[10px] text-muted-foreground">
               {forecasts.length} created · {votedCount} voted on
               {votedEnded.length > 0 && ` · ${accuracy}% accuracy`}
@@ -481,7 +481,7 @@ export default function MyForecasts() {
           <Link to="/forecasts?create=true">
             <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs">
               <BarChart3 className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">New Forecast</span>
+              <span className="hidden sm:inline">New Prediction</span>
             </Button>
           </Link>
         </div>
@@ -521,7 +521,7 @@ export default function MyForecasts() {
           </p>
           <Link to="/forecasts">
             <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs">
-              {viewTab === "created" ? "Create Forecast" : "Browse Forecasts"}
+              {viewTab === "created" ? "Create Prediction" : "Browse Predictions"}
             </Button>
           </Link>
         </div>
@@ -529,18 +529,18 @@ export default function MyForecasts() {
         <div className="px-4 pb-4 md:px-5 md:pb-5">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <AnimatePresence>
-              {currentList.map((f, i) => renderForecastCard(f, i, viewTab === "voted"))}
+              {currentList.map((f, i) => renderPredictionCard(f, i, viewTab === "voted"))}
             </AnimatePresence>
           </div>
         </div>
       )}
 
       {/* Edit Dialog */}
-      <Dialog open={!!editForecast} onOpenChange={(open) => !open && setEditForecast(null)}>
+      <Dialog open={!!editPrediction} onOpenChange={(open) => !open && setEditPrediction(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit Forecast</DialogTitle>
-            <DialogDescription>Update the title and description of your forecast.</DialogDescription>
+            <DialogTitle>Edit Prediction</DialogTitle>
+            <DialogDescription>Update the title and description of your prediction.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -553,9 +553,9 @@ export default function MyForecasts() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditForecast(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setEditPrediction(null)}>Cancel</Button>
             <Button
-              onClick={() => editForecast && editMutation.mutate({ id: editForecast.id, title: editTitle, description: editDescription })}
+              onClick={() => editPrediction && editMutation.mutate({ id: editPrediction.id, title: editTitle, description: editDescription })}
               disabled={!editTitle.trim() || editMutation.isPending}
             >
               {editMutation.isPending ? "Saving..." : "Save Changes"}
@@ -565,12 +565,12 @@ export default function MyForecasts() {
       </Dialog>
 
       {/* Deletion Request Dialog */}
-      <Dialog open={!!deleteRequestForecast} onOpenChange={(open) => !open && setDeleteRequestForecast(null)}>
+      <Dialog open={!!deleteRequestPrediction} onOpenChange={(open) => !open && setDeleteRequestPrediction(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Request Forecast Deletion</DialogTitle>
+            <DialogTitle>Request Prediction Deletion</DialogTitle>
             <DialogDescription>
-              This forecast is past the 24-hour edit window. Please provide a reason for deletion. An admin will review your request.
+              This prediction is past the 24-hour edit window. Please provide a reason for deletion. An admin will review your request.
             </DialogDescription>
           </DialogHeader>
           <div>
@@ -578,16 +578,16 @@ export default function MyForecasts() {
             <Textarea
               value={deleteReason}
               onChange={(e) => setDeleteReason(e.target.value)}
-              placeholder="Explain why this forecast should be deleted..."
+              placeholder="Explain why this prediction should be deleted..."
               className="mt-1"
               rows={3}
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteRequestForecast(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setDeleteRequestPrediction(null)}>Cancel</Button>
             <Button
               variant="destructive"
-              onClick={() => deleteRequestForecast && deletionRequestMutation.mutate({ forecastId: deleteRequestForecast.id, reason: deleteReason })}
+              onClick={() => deleteRequestPrediction && deletionRequestMutation.mutate({ predictionId: deleteRequestPrediction.id, reason: deleteReason })}
               disabled={!deleteReason.trim() || deletionRequestMutation.isPending}
             >
               {deletionRequestMutation.isPending ? "Submitting..." : "Submit Request"}

@@ -19,7 +19,7 @@ import BillboardHero from "@/components/BillboardHero";
 import { useProjects } from "@/hooks/useProjects";
 import { useAllTokenMarketData } from "@/hooks/useTokenMarketData";
 import { useTrendingProjects } from "@/hooks/useSentiment";
-import { useForecasts } from "@/hooks/useForecasts";
+import { usePredictions } from "@/hooks/usePredictions";
 import { useSpotlightProjects } from "@/hooks/useSpotlightProjects";
 
 
@@ -47,30 +47,30 @@ function getTimeLeft(endDate: string) {
 const Overview = () => {
   const { data: projects = [] } = useProjects();
   const { data: marketData = {}, isRefetching } = useAllTokenMarketData(30 * 1000);
-  const { data: forecastData } = useForecasts("votes", 1, 4);
-  const { data: endingSoonData } = useForecasts("ending_soon", 1, 4, undefined, undefined, "active");
-  const topForecastsRaw = forecastData?.forecasts || [];
+  const { data: predictionData } = usePredictions("votes", 1, 4);
+  const { data: endingSoonData } = usePredictions("ending_soon", 1, 4, undefined, undefined, "active");
+  const topPredictionsRaw = predictionData?.forecasts || [];
   const endingSoon = endingSoonData?.forecasts || [];
-  const allForecastIds = [...topForecastsRaw, ...endingSoon].map((f) => f.id);
+  const allPredictionIds = [...topPredictionsRaw, ...endingSoon].map((f) => f.id);
   const { data: trendingProjects = [] } = useTrendingProjects(5);
 
   // Fetch dimensions for all forecasts (top + ending soon)
-  const { data: forecastDimensionsMap = {} } = useQuery({
-    queryKey: ["forecast-dimensions-overview", allForecastIds],
-    enabled: allForecastIds.length > 0,
+  const { data: predictionDimensionsMap = {} } = useQuery({
+    queryKey: ["prediction-dimensions-overview", allPredictionIds],
+    enabled: allPredictionIds.length > 0,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("forecast_targets")
         .select("forecast_id, dimension")
-        .in("forecast_id", allForecastIds);
+        .in("forecast_id", allPredictionIds);
       if (error) throw error;
       const map: Record<string, string> = {};
-      (data || []).forEach((d: any) => { map[d.forecast_id] = d.dimension; });
+      (data || []).forEach((d: any) => { map[d.prediction_id] = d.dimension; });
       return map;
     },
   });
 
-  const topForecasts = topForecastsRaw.map((f) => ({
+  const topPredictions = topPredictionsRaw.map((f) => ({
     id: f.id,
     title: f.title,
     total_votes_yes: f.total_votes_yes,
@@ -83,7 +83,7 @@ const Overview = () => {
     project_b_logo_url: f.project_b_logo_url,
     project_b_logo_emoji: f.project_b_logo_emoji,
     project_b_name: f.project_b_name,
-    dimension: (forecastDimensionsMap as Record<string, string>)[f.id] || undefined,
+    dimension: (predictionDimensionsMap as Record<string, string>)[f.id] || undefined,
   }));
   const endingSoonIds = endingSoon.map((f) => f.id);
   const { data: spotlightEntries = [] } = useSpotlightProjects();
@@ -126,7 +126,7 @@ const Overview = () => {
         projects={projects}
         isRefetching={isRefetching}
         marketData={marketData}
-        topForecasts={topForecasts}
+        topPredictions={topPredictions}
         trendingProjects={trendingProjects}
         totalCategories={totalCategories}
         totalBlockchains={totalBlockchains} />
@@ -265,45 +265,45 @@ const Overview = () => {
               </Link>
             </motion.div>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {endingSoon.map((forecast, i) => {
-              const dimension = (forecastDimensionsMap as Record<string, string>)[forecast.id];
+              {endingSoon.map((prediction, i) => {
+              const dimension = (predictionDimensionsMap as Record<string, string>)[prediction.id];
               const isPriceMarket = dimension === "token_price" || dimension === "market_cap";
-              const isSentimentDual = dimension === "community_sentiment" && !!forecast.project_b_name;
-              const yesLabel = isPriceMarket ? "Long" : isSentimentDual ? (forecast.project_a_name || "Yes") : "Yes";
-              const noLabel = isPriceMarket ? "Short" : isSentimentDual ? (forecast.project_b_name || "No") : "No";
-              const totalVotes = forecast.total_votes_yes + forecast.total_votes_no;
-              const yesPct = (() => { const wy = Number((forecast as any).weighted_votes_yes) || 0; const wn = Number((forecast as any).weighted_votes_no) || 0; const wt = wy + wn; return wt > 0 ? (wy / wt) * 100 : totalVotes > 0 ? (forecast.total_votes_yes / totalVotes) * 100 : 50; })();
-              const isEnded = new Date(forecast.end_date) <= new Date();
-              const timeLeft = getTimeLeft(forecast.end_date);
+              const isSentimentDual = dimension === "community_sentiment" && !!prediction.project_b_name;
+              const yesLabel = isPriceMarket ? "Long" : isSentimentDual ? (prediction.project_a_name || "Yes") : "Yes";
+              const noLabel = isPriceMarket ? "Short" : isSentimentDual ? (prediction.project_b_name || "No") : "No";
+              const totalVotes = prediction.total_votes_yes + prediction.total_votes_no;
+              const yesPct = (() => { const wy = Number((prediction as any).weighted_votes_yes) || 0; const wn = Number((prediction as any).weighted_votes_no) || 0; const wt = wy + wn; return wt > 0 ? (wy / wt) * 100 : totalVotes > 0 ? (prediction.total_votes_yes / totalVotes) * 100 : 50; })();
+              const isEnded = new Date(prediction.end_date) <= new Date();
+              const timeLeft = getTimeLeft(prediction.end_date);
               return (
-                <motion.div key={forecast.id} variants={fadeUp} className="h-full">
+                <motion.div key={prediction.id} variants={fadeUp} className="h-full">
                   <Link
-                    to={`/forecasts/${forecast.id}`}
+                    to={`/forecasts/${prediction.id}`}
                     className="group relative flex flex-col rounded-xl border border-border bg-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20 h-full">
                     <div className="p-4 flex-1 flex flex-col">
                       {/* Header: logos + status */}
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
                           <div className="flex items-center -space-x-1.5">
-                            {forecast.project_a_logo_url ? (
-                              <img src={forecast.project_a_logo_url} alt={forecast.project_a_name} className="w-7 h-7 rounded-lg object-contain border border-card bg-secondary relative z-10" />
+                            {prediction.project_a_logo_url ? (
+                              <img src={prediction.project_a_logo_url} alt={prediction.project_a_name} className="w-7 h-7 rounded-lg object-contain border border-card bg-secondary relative z-10" />
                             ) : (
-                              <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs border border-card bg-secondary relative z-10">{forecast.project_a_logo_emoji || "⬡"}</span>
+                              <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs border border-card bg-secondary relative z-10">{prediction.project_a_logo_emoji || "⬡"}</span>
                             )}
-                            {forecast.project_b_name && (
-                              forecast.project_b_logo_url ? (
-                                <img src={forecast.project_b_logo_url} alt={forecast.project_b_name} className="w-7 h-7 rounded-lg object-contain border border-card bg-secondary relative z-0" />
+                            {prediction.project_b_name && (
+                              prediction.project_b_logo_url ? (
+                                <img src={prediction.project_b_logo_url} alt={prediction.project_b_name} className="w-7 h-7 rounded-lg object-contain border border-card bg-secondary relative z-0" />
                               ) : (
-                                <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs border border-card bg-secondary relative z-0">{forecast.project_b_logo_emoji || "⬡"}</span>
+                                <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs border border-card bg-secondary relative z-0">{prediction.project_b_logo_emoji || "⬡"}</span>
                               )
                             )}
                           </div>
                           <div className="flex items-center gap-1">
-                            <span className="text-[11px] font-medium text-muted-foreground">{forecast.project_a_name}</span>
-                            {forecast.project_b_name && (
+                            <span className="text-[11px] font-medium text-muted-foreground">{prediction.project_a_name}</span>
+                            {prediction.project_b_name && (
                               <>
                                 <span className="text-muted-foreground/40 text-[9px]">vs</span>
-                                <span className="text-[11px] font-medium text-muted-foreground">{forecast.project_b_name}</span>
+                                <span className="text-[11px] font-medium text-muted-foreground">{prediction.project_b_name}</span>
                               </>
                             )}
                           </div>
@@ -315,7 +315,7 @@ const Overview = () => {
 
                       {/* Title */}
                       <h3 className="text-[13px] font-semibold text-foreground leading-snug line-clamp-2 group-hover:underline transition-all duration-200 mb-auto">
-                        {forecast.title}
+                        {prediction.title}
                       </h3>
 
                       {/* Percentage + votes */}

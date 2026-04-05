@@ -5,7 +5,7 @@ import { Timer, TrendingUp, TrendingDown, Minus, Clock, History, ArrowLeft, Chev
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useVoteHourlyRound, useHourlyRoundHistory, useRealtimeHourlyRounds, isVotingOpen, getVotingDeadline, getUserOutcome } from "@/hooks/useHourlyForecasts";
+import { useVoteHourlyRound, useHourlyRoundHistory, useRealtimeHourlyRounds, isVotingOpen, getVotingDeadline, getUserOutcome } from "@/hooks/useHourlyPredictions";
 import { useTokenMarketData } from "@/hooks/useTokenMarketData";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import Navbar from "@/components/Navbar";
@@ -38,7 +38,7 @@ function formatPrice(price: number | null | undefined): string {
   return `$${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-export default function HourlyForecastDetail() {
+export default function HourlyPredictionDetail() {
   const { roundId } = useParams<{ roundId: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();

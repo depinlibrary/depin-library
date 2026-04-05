@@ -766,7 +766,7 @@ const CompareProjects = () => {
                     <div className="rounded-2xl border border-primary/20 bg-primary/5 p-6 text-center">
                       <h3 className="text-sm font-semibold text-foreground mb-2">Have a prediction based on this analysis?</h3>
                       <p className="text-xs text-muted-foreground mb-4 max-w-md mx-auto">
-                        Create a community forecast about {projectA.name} vs {projectB.name} and let others vote on the outcome.
+                        Create a community prediction about {projectA.name} vs {projectB.name} and let others vote on the outcome.
                       </p>
                       <Button
                         onClick={() => {
@@ -777,7 +777,7 @@ const CompareProjects = () => {
                         }}
                         className="gap-2"
                       >
-                        <TrendingUp className="w-4 h-4" /> Create Forecast
+                        <TrendingUp className="w-4 h-4" /> Create Prediction
                       </Button>
                     </div>
                   )}

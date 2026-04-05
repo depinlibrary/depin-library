@@ -8,8 +8,8 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import PageTransition from "@/components/PageTransition";
-import { useRealtimeForecasts } from "@/hooks/useForecasts";
-import { useRealtimeHourlyRounds } from "@/hooks/useHourlyForecasts";
+import { useRealtimePredictions } from "@/hooks/usePredictions";
+import { useRealtimeHourlyRounds } from "@/hooks/useHourlyPredictions";
 import { useRealtimeTokenMarketData } from "@/hooks/useTokenMarketData";
 import Overview from "./pages/Overview";
 import Explore from "./pages/Explore";
@@ -20,9 +20,9 @@ import AdminDashboard from "./pages/AdminDashboard";
 import Portfolio from "./pages/Portfolio";
 import MarketOverview from "./pages/MarketOverview";
 import CompareProjects from "./pages/CompareProjects";
-import Forecasts from "./pages/Forecasts";
-import ForecastDetail from "./pages/ForecastDetail";
-import HourlyForecastDetail from "./pages/HourlyForecastDetail";
+import Predictions from "./pages/Predictions";
+import PredictionDetail from "./pages/PredictionDetail";
+import HourlyPredictionDetail from "./pages/HourlyPredictionDetail";
 import Notifications from "./pages/Notifications";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
@@ -30,7 +30,7 @@ import ScrollToTop from "./components/ScrollToTop";
 
 /** Activates global realtime subscriptions */
 function RealtimeProvider({ children }: { children: React.ReactNode }) {
-  useRealtimeForecasts();
+  useRealtimePredictions();
   useRealtimeHourlyRounds();
   useRealtimeTokenMarketData();
   return <>{children}</>;
@@ -53,9 +53,9 @@ const AnimatedRoutes = () => {
         <Route path="/market" element={<PageTransition><MarketOverview /></PageTransition>} />
         <Route path="/admin" element={<PageTransition><AdminDashboard /></PageTransition>} />
         <Route path="/compare" element={<PageTransition><CompareProjects /></PageTransition>} />
-        <Route path="/forecasts" element={<PageTransition><Forecasts /></PageTransition>} />
-        <Route path="/forecasts/hourly/:roundId" element={<PageTransition><HourlyForecastDetail /></PageTransition>} />
-        <Route path="/forecasts/:id" element={<PageTransition><ForecastDetail /></PageTransition>} />
+        <Route path="/forecasts" element={<PageTransition><Predictions /></PageTransition>} />
+        <Route path="/forecasts/hourly/:roundId" element={<PageTransition><HourlyPredictionDetail /></PageTransition>} />
+        <Route path="/forecasts/:id" element={<PageTransition><PredictionDetail /></PageTransition>} />
         <Route path="/notifications" element={<PageTransition><Notifications /></PageTransition>} />
         <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />

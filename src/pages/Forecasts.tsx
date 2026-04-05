@@ -1,19 +1,19 @@
 import { useState, useEffect, useMemo, useCallback, useRef, useSyncExternalStore } from "react";
-import { getWeightedChance } from "@/lib/forecastUtils";
+import { getWeightedChance } from "@/lib/predictionUtils";
 import { motion, AnimatePresence } from "framer-motion";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from "recharts";
 import { Timer, ThumbsUp, ThumbsDown, Plus, TrendingUp, TrendingDown, Clock, Flame, ChevronLeft, ChevronRight, LogIn, Users, BarChart3, Zap, X, Filter, Trophy, CheckCircle, CheckCircle2, Circle, RotateCcw, DollarSign, Server, Activity, ArrowUpRight, ArrowDownRight, Copy, ChevronRight as ChevronRightIcon, Search, XCircle, Minus } from "lucide-react";
 
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
-import { useActiveHourlyRounds, useRealtimeHourlyRounds, useVoteHourlyRound, isVotingOpen, getVotingDeadline, getUserOutcome, type HourlyRound } from "@/hooks/useHourlyForecasts";
+import { useActiveHourlyRounds, useRealtimeHourlyRounds, useVoteHourlyRound, isVotingOpen, getVotingDeadline, getUserOutcome, type HourlyRound } from "@/hooks/useHourlyPredictions";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { useForecasts, useCreateForecast, useVoteForecast, type ForecastSortOption, type ForecastStatusFilter, type Forecast } from "@/hooks/useForecasts";
+import { usePredictions, useCreatePrediction, useVotePrediction, type PredictionSortOption, type PredictionStatusFilter, type Prediction } from "@/hooks/usePredictions";
 import { useProjects } from "@/hooks/useProjects";
 import { useAllTokenMarketData, useTokenMarketData } from "@/hooks/useTokenMarketData";
 import { useAuth } from "@/contexts/AuthContext";
@@ -39,7 +39,7 @@ const dimensionLabelMap: Record<string, string> = {
 
 const PAGE_SIZE = 12;
 
-const sortOptions: { value: ForecastSortOption; label: string; icon: typeof Flame }[] = [
+const sortOptions: { value: PredictionSortOption; label: string; icon: typeof Flame }[] = [
   { value: "votes", label: "Most Votes", icon: Flame },
   { value: "newest", label: "Newest", icon: Clock },
   { value: "ending_soon", label: "Ending Soon", icon: Timer },
@@ -57,18 +57,18 @@ function getTimeRemaining(endDate: string): string {
   return `${hours}h left`;
 }
 
-const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [] }: {
-  forecast: Forecast;
+const PredictionCard = ({ prediction, onVote, isAuthenticated, index, dimensions = [] }: {
+  prediction: Prediction;
   onVote: (id: string, vote: "yes" | "no") => void;
   isAuthenticated: boolean;
   index: number;
   dimensions?: string[];
 }) => {
-  const totalVotes = forecast.total_votes_yes + forecast.total_votes_no;
-  const { yesPct, noPct } = getWeightedChance(forecast);
-  const isEnded = new Date(forecast.end_date) <= new Date();
-  const timeLeft = getTimeRemaining(forecast.end_date);
-  const finalResult = isEnded ? (forecast.outcome || (yesPct >= 50 ? "yes" : "no")) : null;
+  const totalVotes = prediction.total_votes_yes + prediction.total_votes_no;
+  const { yesPct, noPct } = getWeightedChance(prediction);
+  const isEnded = new Date(prediction.end_date) <= new Date();
+  const timeLeft = getTimeRemaining(prediction.end_date);
+  const finalResult = isEnded ? (prediction.outcome || (yesPct >= 50 ? "yes" : "no")) : null;
   const isPriceMarket = dimensions.some(d => d === "token_price" || d === "market_cap");
   const yesLabel = isPriceMarket ? "Long" : "Yes";
   const noLabel = isPriceMarket ? "Short" : "No";
@@ -85,25 +85,25 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <div className="flex items-center -space-x-1.5">
-              {forecast.project_a_logo_url ? (
-                <img src={forecast.project_a_logo_url} alt={forecast.project_a_name} className="w-7 h-7 rounded-lg object-contain border border-card bg-secondary relative z-10" />
+              {prediction.project_a_logo_url ? (
+                <img src={prediction.project_a_logo_url} alt={prediction.project_a_name} className="w-7 h-7 rounded-lg object-contain border border-card bg-secondary relative z-10" />
               ) : (
-                <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs border border-card bg-secondary relative z-10">{forecast.project_a_logo_emoji || "⬡"}</span>
+                <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs border border-card bg-secondary relative z-10">{prediction.project_a_logo_emoji || "⬡"}</span>
               )}
-              {forecast.project_b_name && (
-                forecast.project_b_logo_url ? (
-                  <img src={forecast.project_b_logo_url} alt={forecast.project_b_name} className="w-7 h-7 rounded-lg object-contain border border-card bg-secondary relative z-0" />
+              {prediction.project_b_name && (
+                prediction.project_b_logo_url ? (
+                  <img src={prediction.project_b_logo_url} alt={prediction.project_b_name} className="w-7 h-7 rounded-lg object-contain border border-card bg-secondary relative z-0" />
                 ) : (
-                  <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs border border-card bg-secondary relative z-0">{forecast.project_b_logo_emoji || "⬡"}</span>
+                  <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs border border-card bg-secondary relative z-0">{prediction.project_b_logo_emoji || "⬡"}</span>
                 )
               )}
             </div>
             <div className="flex items-center gap-1">
-              <Link to={`/project/${forecast.project_a_slug}`} className="text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors">{forecast.project_a_name}</Link>
-              {forecast.project_b_name && (
+              <Link to={`/project/${prediction.project_a_slug}`} className="text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors">{prediction.project_a_name}</Link>
+              {prediction.project_b_name && (
                 <>
                   <span className="text-muted-foreground/40 text-[9px]">vs</span>
-                  <Link to={`/project/${forecast.project_b_slug}`} className="text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors">{forecast.project_b_name}</Link>
+                  <Link to={`/project/${prediction.project_b_slug}`} className="text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors">{prediction.project_b_name}</Link>
                 </>
               )}
             </div>
@@ -114,9 +114,9 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
         </div>
 
         {/* Title */}
-        <Link to={`/forecasts/${forecast.id}`} className="block mb-auto">
+        <Link to={`/forecasts/${prediction.id}`} className="block mb-auto">
           <h3 className="text-[13px] font-semibold text-foreground leading-snug line-clamp-2 group-hover:underline transition-all duration-200">
-            {forecast.title}
+            {prediction.title}
           </h3>
         </Link>
 
@@ -129,10 +129,10 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
 
       {/* Bottom section — compact Polymarket-style */}
       <div className="px-4 pb-4">
-        {isEnded && forecast.user_vote ? (() => {
+        {isEnded && prediction.user_vote ? (() => {
           const outcomeResult = finalResult;
-          const userCorrect = outcomeResult === forecast.user_vote;
-          const userVoteLabel = forecast.user_vote === "yes" ? yesLabel : noLabel;
+          const userCorrect = outcomeResult === prediction.user_vote;
+          const userVoteLabel = prediction.user_vote === "yes" ? yesLabel : noLabel;
           const resultLabel = outcomeResult === "yes" ? yesLabel : noLabel;
           return (
             <div className={`flex items-center justify-between rounded-lg px-2.5 py-2 text-[10px] font-semibold mb-2 ${
@@ -155,12 +155,12 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
         {/* Vote buttons — inline Polymarket style */}
         <div className="flex gap-2">
           <button
-            onClick={() => !isEnded ? (isAuthenticated ? onVote(forecast.id, "yes") : toast.error("Sign in to vote")) : undefined}
+            onClick={() => !isEnded ? (isAuthenticated ? onVote(prediction.id, "yes") : toast.error("Sign in to vote")) : undefined}
             disabled={isEnded}
             className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all duration-200 ${
               isEnded
                 ? "bg-secondary text-muted-foreground cursor-not-allowed opacity-60"
-                : forecast.user_vote === "yes"
+                : prediction.user_vote === "yes"
                   ? "bg-primary text-primary-foreground"
                   : "bg-primary/10 text-primary hover:bg-primary/20"
             }`}
@@ -168,12 +168,12 @@ const ForecastCard = ({ forecast, onVote, isAuthenticated, index, dimensions = [
             {yesLabel}
           </button>
           <button
-            onClick={() => !isEnded ? (isAuthenticated ? onVote(forecast.id, "no") : toast.error("Sign in to vote")) : undefined}
+            onClick={() => !isEnded ? (isAuthenticated ? onVote(prediction.id, "no") : toast.error("Sign in to vote")) : undefined}
             disabled={isEnded}
             className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all duration-200 ${
               isEnded
                 ? "bg-secondary text-muted-foreground cursor-not-allowed opacity-60"
-                : forecast.user_vote === "no"
+                : prediction.user_vote === "no"
                   ? "bg-destructive text-destructive-foreground"
                   : "bg-destructive/10 text-destructive hover:bg-destructive/20"
             }`}
@@ -368,7 +368,7 @@ const HourlyRoundCard = ({ round, index }: { round: HourlyRound; index: number }
 
 // ---- Hero Section — Full-width prediction market showcase ----
 const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap, search, setSearch, setPage, navigate, dailyRemaining }: {
-  forecasts: Forecast[];
+  forecasts: Prediction[];
   user: any;
   setShowCreate: (v: boolean) => void;
   heroDimensionsMap: Record<string, string[]>;
@@ -383,7 +383,7 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap, search
   const [isPaused, setIsPaused] = useState(false);
 
   // Only show price/market cap predictions in hero, max 8
-  const heroForecasts = useMemo(() => {
+  const heroPredictions = useMemo(() => {
     return forecasts
       .filter(f => {
         const dims = heroDimensionsMap[f.id] || [];
@@ -394,18 +394,18 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap, search
 
   // Clamp activeSlide if list shrinks
   useEffect(() => {
-    if (activeSlide >= heroForecasts.length && heroForecasts.length > 0) {
+    if (activeSlide >= heroPredictions.length && heroPredictions.length > 0) {
       setActiveSlide(0);
     }
-  }, [heroForecasts.length, activeSlide]);
+  }, [heroPredictions.length, activeSlide]);
 
   // Get market data for active prediction's project
-  const activeProjectAId = heroForecasts[activeSlide]?.project_a_id;
-  const activeProjectBId = heroForecasts[activeSlide]?.project_b_id;
+  const activeProjectAId = heroPredictions[activeSlide]?.project_a_id;
+  const activeProjectBId = heroPredictions[activeSlide]?.project_b_id;
   const { data: heroMarketData } = useTokenMarketData(activeProjectAId);
   const { data: heroMarketDataB } = useTokenMarketData(activeProjectBId || undefined);
-  const cDims = heroDimensionsMap[heroForecasts[activeSlide]?.id] || [];
-  const hasTwoProjects = !!heroForecasts[activeSlide]?.project_b_name;
+  const cDims = heroDimensionsMap[heroPredictions[activeSlide]?.id] || [];
+  const hasTwoProjects = !!heroPredictions[activeSlide]?.project_b_name;
 
   const tokenChartData = useMemo(() => {
     if (!heroMarketData?.sparkline_7d || !Array.isArray(heroMarketData.sparkline_7d)) return [];
@@ -458,22 +458,22 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap, search
   }, [tokenChartData, tokenChartDataB, hasTwoProjects]);
 
   useEffect(() => {
-    if (heroForecasts.length <= 1 || isPaused) return;
+    if (heroPredictions.length <= 1 || isPaused) return;
     intervalRef.current = setInterval(() => {
-      setActiveSlide(prev => (prev + 1) % heroForecasts.length);
+      setActiveSlide(prev => (prev + 1) % heroPredictions.length);
     }, 10000);
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [heroForecasts.length, isPaused]);
+  }, [heroPredictions.length, isPaused]);
 
   const goToSlide = useCallback((index: number) => {
     setActiveSlide(index);
     if (intervalRef.current) clearInterval(intervalRef.current);
     intervalRef.current = setInterval(() => {
-      setActiveSlide(prev => (prev + 1) % heroForecasts.length);
+      setActiveSlide(prev => (prev + 1) % heroPredictions.length);
     }, 10000);
-  }, [heroForecasts.length]);
+  }, [heroPredictions.length]);
 
-  if (heroForecasts.length === 0) {
+  if (heroPredictions.length === 0) {
     return (
       <section className="relative overflow-hidden pt-24 pb-8">
         <div className="absolute inset-0 bg-grid opacity-10" />
@@ -498,7 +498,7 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap, search
     );
   }
 
-  const current = heroForecasts[activeSlide];
+  const current = heroPredictions[activeSlide];
   const { yesPct: cYesPct } = getWeightedChance(current);
   const cIsEnded = new Date(current.end_date) <= new Date();
   const cTimeLeft = getTimeRemaining(current.end_date);
@@ -770,9 +770,9 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap, search
         </motion.div>
 
         {/* Slide dots — outside the card, left-aligned */}
-        {heroForecasts.length > 1 && (
+        {heroPredictions.length > 1 && (
           <div className="flex items-center gap-1.5 mt-3">
-            {heroForecasts.map((_, i) => (
+            {heroPredictions.map((_, i) => (
               <button
                 key={i}
                 onClick={() => goToSlide(i)}
@@ -789,21 +789,21 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap, search
     </section>
   );
 };
-const Forecasts = () => {
+const Predictions = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { data: projects = [] } = useProjects();
-  const [sort, setSort] = useState<ForecastSortOption>("newest");
+  const [sort, setSort] = useState<PredictionSortOption>("newest");
   const [page, setPage] = useState(1);
   const [projectFilter, setProjectFilter] = useState<string>("");
   const [search, setSearch] = useState<string>("");
-  const [statusFilter, setStatusFilter] = useState<ForecastStatusFilter>("all");
+  const [statusFilter, setStatusFilter] = useState<PredictionStatusFilter>("all");
   const [topicFilter, setTopicFilter] = useState<string>("");
   const [showFilters, setShowFilters] = useState(false);
-  const { data, isLoading, isFetching } = useForecasts(sort, page, PAGE_SIZE, projectFilter || undefined, search || undefined, statusFilter, topicFilter || undefined);
-  const createForecast = useCreateForecast();
-  const voteForecast = useVoteForecast();
+  const { data, isLoading, isFetching } = usePredictions(sort, page, PAGE_SIZE, projectFilter || undefined, search || undefined, statusFilter, topicFilter || undefined);
+  const createPrediction = useCreatePrediction();
+  const votePrediction = useVotePrediction();
   const [showCreate, setShowCreate] = useState(false);
 
   // Hourly predictions data
@@ -827,9 +827,9 @@ const Forecasts = () => {
     () => true
   );
 
-  // Query user's daily forecast count for rate limit display
-  const { data: dailyForecastCount = 0 } = useQuery({
-    queryKey: ["daily-forecast-count", user?.id],
+  // Query user's daily prediction count for rate limit display
+  const { data: dailyPredictionCount = 0 } = useQuery({
+    queryKey: ["daily-prediction-count", user?.id],
     queryFn: async () => {
       if (!user) return 0;
       const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
@@ -843,7 +843,7 @@ const Forecasts = () => {
     enabled: !!user,
     staleTime: 30_000,
   });
-  const dailyRemaining = Math.max(0, 5 - dailyForecastCount);
+  const dailyRemaining = Math.max(0, 5 - dailyPredictionCount);
 
 
   const timePresets = [
@@ -883,24 +883,24 @@ const Forecasts = () => {
     }
   };
 
-  const [forecastMarket, setForecastMarket] = useState<string>("");
+  const [predictionMarket, setPredictionMarket] = useState<string>("");
 
   // Fetch token market data to filter projects with price/market cap
   const { data: allMarketData = {} } = useAllTokenMarketData();
 
   // Filter projects based on selected prediction market
   const filteredProjects = useMemo(() => {
-    if (forecastMarket === "token_price" || forecastMarket === "market_cap") {
+    if (predictionMarket === "token_price" || predictionMarket === "market_cap") {
       return projects.filter(p => {
         const md = allMarketData[p.id];
         if (!md) return false;
-        if (forecastMarket === "token_price") return md.price_usd != null && md.price_usd > 0;
-        if (forecastMarket === "market_cap") return md.market_cap_usd != null && md.market_cap_usd > 0;
+        if (predictionMarket === "token_price") return md.price_usd != null && md.price_usd > 0;
+        if (predictionMarket === "market_cap") return md.market_cap_usd != null && md.market_cap_usd > 0;
         return true;
       });
     }
     return projects;
-  }, [projects, forecastMarket, allMarketData]);
+  }, [projects, predictionMarket, allMarketData]);
 
   // Auto-open create dialog from compare page
   useEffect(() => {
@@ -929,14 +929,14 @@ const Forecasts = () => {
   const forecasts = data?.forecasts || [];
 
   // Accumulate forecasts for infinite scroll
-  const [allForecasts, setAllForecasts] = useState<Forecast[]>([]);
+  const [allPredictions, setAllPredictions] = useState<Prediction[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const isPagingRef = useRef(false);
 
   // Reset accumulated forecasts when filters/sort change
   useEffect(() => {
-    setAllForecasts([]);
+    setAllPredictions([]);
     setTotalCount(0);
     setPage(1);
     isPagingRef.current = false;
@@ -951,7 +951,7 @@ const Forecasts = () => {
   // Append new page data
   useEffect(() => {
     if (!forecasts.length) return;
-    setAllForecasts(prev => {
+    setAllPredictions(prev => {
       if (page === 1) return forecasts;
       // Dedupe by id
       const existingIds = new Set(prev.map(f => f.id));
@@ -967,9 +967,9 @@ const Forecasts = () => {
   }, [isFetching]);
 
   const total = totalCount;
-  const hasMorePages = allForecasts.length < totalCount && forecasts.length > 0;
-  const isInitialLoading = isLoading && allForecasts.length === 0;
-  const isFetchingMore = isFetching && allForecasts.length > 0;
+  const hasMorePages = allPredictions.length < totalCount && forecasts.length > 0;
+  const isInitialLoading = isLoading && allPredictions.length === 0;
+  const isFetchingMore = isFetching && allPredictions.length > 0;
 
   // Infinite scroll observer
   useEffect(() => {
@@ -989,43 +989,43 @@ const Forecasts = () => {
     return () => observer.disconnect();
   }, [hasMorePages, isFetching]);
 
-  // Fetch forecast targets (dimensions) for displayed forecasts
-  const forecastIds = useMemo(() => allForecasts.map(f => f.id), [allForecasts]);
-  const { data: forecastTargetsMap = {} } = useQuery({
-    queryKey: ["forecast-targets-batch", forecastIds],
+  // Fetch prediction targets (dimensions) for displayed forecasts
+  const predictionIds = useMemo(() => allPredictions.map(f => f.id), [allPredictions]);
+  const { data: predictionTargetsMap = {} } = useQuery({
+    queryKey: ["prediction-targets-batch", predictionIds],
     queryFn: async () => {
-      if (forecastIds.length === 0) return {};
+      if (predictionIds.length === 0) return {};
       const { data } = await supabase
         .from("forecast_targets")
         .select("forecast_id, dimension")
-        .in("forecast_id", forecastIds);
+        .in("forecast_id", predictionIds);
       const map: Record<string, string[]> = {};
       (data || []).forEach((t: any) => {
-        if (!map[t.forecast_id]) map[t.forecast_id] = [];
-        map[t.forecast_id].push(t.dimension);
+        if (!map[t.prediction_id]) map[t.prediction_id] = [];
+        map[t.prediction_id].push(t.dimension);
       });
       return map;
     },
-    enabled: forecastIds.length > 0,
+    enabled: predictionIds.length > 0,
     staleTime: 60_000,
   });
 
-  // Trending projects by forecast vote activity
+  // Trending projects by prediction vote activity
   const { data: trendingTopics = [] } = useQuery({
-    queryKey: ["trending-forecast-projects"],
+    queryKey: ["trending-prediction-projects"],
     queryFn: async () => {
       // Get projects with most total votes across forecasts
-      const { data: topForecasts } = await supabase
+      const { data: topPredictions } = await supabase
         .from("forecasts")
         .select("project_a_id, total_votes_yes, total_votes_no")
         .order("total_votes_yes", { ascending: false })
         .limit(50);
 
-      if (!topForecasts || topForecasts.length === 0) return [];
+      if (!topPredictions || topPredictions.length === 0) return [];
 
       // Aggregate votes per project
       const projectVotes: Record<string, number> = {};
-      topForecasts.forEach((f: any) => {
+      topPredictions.forEach((f: any) => {
         const votes = (f.total_votes_yes || 0) + (f.total_votes_no || 0);
         projectVotes[f.project_a_id] = (projectVotes[f.project_a_id] || 0) + votes;
       });
@@ -1055,30 +1055,30 @@ const Forecasts = () => {
   });
 
   // Unfiltered forecasts for hero carousel — fetch ALL (up to 50)
-  const { data: heroDataAll } = useForecasts("newest", 1, 50, undefined, undefined, "all");
+  const { data: heroDataAll } = usePredictions("newest", 1, 50, undefined, undefined, "all");
   // Separate: top live forecasts for sidebar (highest votes, active only)
-  const { data: heroDataTopLive } = useForecasts("votes", 1, 5, undefined, undefined, "active");
-  const heroAllForecasts = useMemo(() => heroDataAll?.forecasts || [], [heroDataAll]);
-  const heroTopLiveForecasts = useMemo(() => heroDataTopLive?.forecasts || [], [heroDataTopLive]);
+  const { data: heroDataTopLive } = usePredictions("votes", 1, 5, undefined, undefined, "active");
+  const heroAllPredictions = useMemo(() => heroDataAll?.forecasts || [], [heroDataAll]);
+  const heroTopLivePredictions = useMemo(() => heroDataTopLive?.forecasts || [], [heroDataTopLive]);
 
   // Fetch dimensions for hero forecasts
-  const heroForecastIds = useMemo(() => heroAllForecasts.map(f => f.id), [heroAllForecasts]);
+  const heroPredictionIds = useMemo(() => heroAllPredictions.map(f => f.id), [heroAllPredictions]);
   const { data: heroDimensionsMap = {} } = useQuery({
-    queryKey: ["hero-forecast-dimensions", heroForecastIds],
+    queryKey: ["hero-prediction-dimensions", heroPredictionIds],
     queryFn: async () => {
-      if (heroForecastIds.length === 0) return {};
+      if (heroPredictionIds.length === 0) return {};
       const { data } = await supabase
         .from("forecast_targets")
         .select("forecast_id, dimension")
-        .in("forecast_id", heroForecastIds);
+        .in("forecast_id", heroPredictionIds);
       const map: Record<string, string[]> = {};
       (data || []).forEach((t: any) => {
-        if (!map[t.forecast_id]) map[t.forecast_id] = [];
-        map[t.forecast_id].push(t.dimension);
+        if (!map[t.prediction_id]) map[t.prediction_id] = [];
+        map[t.prediction_id].push(t.dimension);
       });
       return map;
     },
-    enabled: heroForecastIds.length > 0,
+    enabled: heroPredictionIds.length > 0,
     staleTime: 60_000,
   });
 
@@ -1089,8 +1089,8 @@ const Forecasts = () => {
     return { total, totalVotes, activeCount };
   }, [forecasts, total]);
 
-  const handleVote = (forecastId: string, vote: "yes" | "no") => {
-    voteForecast.mutate({ forecastId, vote });
+  const handleVote = (predictionId: string, vote: "yes" | "no") => {
+    votePrediction.mutate({ predictionId, vote });
   };
 
   const hasTwoProjectsForCreate = projectBId && projectBId !== "none";
@@ -1098,25 +1098,25 @@ const Forecasts = () => {
     if (!title.trim()) { toast.error("Title required"); return; }
     if (!description.trim()) { toast.error("Description required"); return; }
     if (!projectAId) { toast.error("Select a project"); return; }
-    if (!forecastMarket) { toast.error("Prediction market required"); return; }
+    if (!predictionMarket) { toast.error("Prediction market required"); return; }
     if (!endDate) { toast.error("End date required"); return; }
     if (new Date(endDate) <= new Date()) { toast.error("End date must be in the future"); return; }
 
     // Validate prediction direction and target for price-based markets
-    const isPriceMarket = forecastMarket === "token_price" || forecastMarket === "market_cap";
+    const isPriceMarket = predictionMarket === "token_price" || predictionMarket === "market_cap";
     if (isPriceMarket && !predictionDirection) { toast.error("Select Long or Short"); return; }
     if (isPriceMarket && !predictionTarget) { toast.error(hasTwoProjectsForCreate ? "Enter a target percentage" : "Enter a target price"); return; }
 
-    const currentPrice = isPriceMarket && projectAId ? (forecastMarket === "token_price" ? allMarketData[projectAId]?.price_usd : allMarketData[projectAId]?.market_cap_usd) : undefined;
+    const currentPrice = isPriceMarket && projectAId ? (predictionMarket === "token_price" ? allMarketData[projectAId]?.price_usd : allMarketData[projectAId]?.market_cap_usd) : undefined;
 
     try {
-      await createForecast.mutateAsync({
+      await createPrediction.mutateAsync({
         title: title.trim(),
         description: description.trim(),
         projectAId,
         projectBId: projectBId && projectBId !== "none" ? projectBId : undefined,
         endDate: new Date(endDate).toISOString(),
-        analysisDimensions: [forecastMarket],
+        analysisDimensions: [predictionMarket],
         predictionTarget: isPriceMarket ? parseFloat(predictionTarget) : undefined,
         predictionDirection: isPriceMarket ? predictionDirection : undefined,
         startPrice: currentPrice ?? undefined,
@@ -1129,11 +1129,11 @@ const Forecasts = () => {
       setProjectBId("");
       setEndDate("");
       setTimePreset("");
-      setForecastMarket("");
+      setPredictionMarket("");
       setPredictionDirection("");
       setPredictionTarget("");
     } catch (err: any) {
-      toast.error(err.message || "Failed to create forecast");
+      toast.error(err.message || "Failed to create prediction");
     }
   };
 
@@ -1143,7 +1143,7 @@ const Forecasts = () => {
 
       {/* Polymarket-style Hero with Auto-Slide — uses unfiltered data */}
       <HeroSection
-        forecasts={heroAllForecasts}
+        forecasts={heroAllPredictions}
         user={user}
         setShowCreate={setShowCreate}
         heroDimensionsMap={heroDimensionsMap as Record<string, string[]>}
@@ -1235,7 +1235,7 @@ const Forecasts = () => {
                 className="overflow-hidden"
               >
                 <div className="flex items-center gap-2 pt-2.5 pb-1 flex-wrap">
-                  <Select value={sort} onValueChange={(v) => { setSort(v as ForecastSortOption); setPage(1); }}>
+                  <Select value={sort} onValueChange={(v) => { setSort(v as PredictionSortOption); setPage(1); }}>
                     <SelectTrigger className="h-8 w-[130px] text-xs bg-secondary/50 border-border rounded-full">
                       <SelectValue placeholder="Sort by" />
                     </SelectTrigger>
@@ -1245,7 +1245,7 @@ const Forecasts = () => {
                       ))}
                     </SelectContent>
                   </Select>
-                  <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v as ForecastStatusFilter); setPage(1); }}>
+                  <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v as PredictionStatusFilter); setPage(1); }}>
                     <SelectTrigger className="h-8 w-[110px] text-xs bg-secondary/50 border-border rounded-full">
                       <SelectValue placeholder="Status" />
                     </SelectTrigger>
@@ -1299,7 +1299,7 @@ const Forecasts = () => {
         </div>
       </section>
 
-      {/* Forecast Grid + Create Panel */}
+      {/* Prediction Grid + Create Panel */}
       <div className="container mx-auto px-4 py-8 flex-1 flex gap-6">
         {/* Main content */}
         <section className={`flex-1 min-w-0 transition-all duration-300`}>
@@ -1320,7 +1320,7 @@ const Forecasts = () => {
                 </div>
               ))}
             </div>
-          ) : allForecasts.length === 0 && !isLoading ? (
+          ) : allPredictions.length === 0 && !isLoading ? (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -1352,19 +1352,19 @@ const Forecasts = () => {
                     const hourlyCards = showHourly ? hourlyRounds.map((round, i) => (
                       <HourlyRoundCard key={`hourly-${round.id}`} round={round} index={i} />
                     )) : [];
-                    const sorted = hideRegular ? [] : [...allForecasts].sort((a, b) => {
+                    const sorted = hideRegular ? [] : [...allPredictions].sort((a, b) => {
                       const aActive = new Date(a.end_date) > now ? 0 : 1;
                       const bActive = new Date(b.end_date) > now ? 0 : 1;
                       return aActive - bActive;
                     });
-                    const regularCards = sorted.map((forecast, i) => (
-                      <ForecastCard
-                        key={forecast.id}
-                        forecast={forecast}
+                    const regularCards = sorted.map((prediction, i) => (
+                      <PredictionCard
+                        key={prediction.id}
+                        prediction={prediction}
                         onVote={handleVote}
                         isAuthenticated={!!user}
                         index={hourlyCards.length + i}
-                        dimensions={forecastTargetsMap[forecast.id] || []}
+                        dimensions={predictionTargetsMap[prediction.id] || []}
                       />
                     ));
                     return [...hourlyCards, ...regularCards];
@@ -1455,7 +1455,7 @@ const Forecasts = () => {
                     <div>
                       <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Prediction Market *</label>
                       <p className="text-[10px] text-muted-foreground mt-0.5 mb-2">Select the market to track</p>
-                      <Select value={forecastMarket} onValueChange={(v) => { setForecastMarket(v); setPredictionDirection(""); setPredictionTarget(""); if (v === "token_price" || v === "market_cap") { setProjectAId(""); setProjectBId(""); } }}>
+                      <Select value={predictionMarket} onValueChange={(v) => { setPredictionMarket(v); setPredictionDirection(""); setPredictionTarget(""); if (v === "token_price" || v === "market_cap") { setProjectAId(""); setProjectBId(""); } }}>
                         <SelectTrigger className="mt-1.5 h-9"><SelectValue placeholder="Select prediction market" /></SelectTrigger>
                         <SelectContent position="popper" side="bottom" sideOffset={4} avoidCollisions={false} className="max-h-60">
                           {dimensionOptions.map((dim) => (
@@ -1466,7 +1466,7 @@ const Forecasts = () => {
                         </SelectContent>
                       </Select>
                     </div>
-                    {(forecastMarket === "token_price" || forecastMarket === "market_cap") && (
+                    {(predictionMarket === "token_price" || predictionMarket === "market_cap") && (
                       <div className="rounded-xl border border-border bg-secondary/20 p-4 space-y-3">
                         <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Position Direction *</label>
                         <div className="grid grid-cols-2 gap-2">
@@ -1479,15 +1479,15 @@ const Forecasts = () => {
                         </div>
                         {predictionDirection && projectAId && (() => {
                           const mdA = allMarketData[projectAId];
-                          const currentPriceA = forecastMarket === "token_price" ? mdA?.price_usd : mdA?.market_cap_usd;
+                          const currentPriceA = predictionMarket === "token_price" ? mdA?.price_usd : mdA?.market_cap_usd;
                           const hasTwoProjects = projectBId && projectBId !== "none";
                           const mdB = hasTwoProjects ? allMarketData[projectBId] : null;
-                          const currentPriceB = mdB ? (forecastMarket === "token_price" ? mdB.price_usd : mdB.market_cap_usd) : null;
+                          const currentPriceB = mdB ? (predictionMarket === "token_price" ? mdB.price_usd : mdB.market_cap_usd) : null;
                           const projectAName = filteredProjects.find(p => p.id === projectAId)?.name || "Project A";
                           const projectBName = hasTwoProjects ? (filteredProjects.find(p => p.id === projectBId)?.name || "Project B") : null;
                           const formatVal = (v: number | null | undefined) => {
                             if (v == null) return "—";
-                            if (forecastMarket === "market_cap") { if (v >= 1e9) return `$${(v / 1e9).toFixed(2)}B`; if (v >= 1e6) return `$${(v / 1e6).toFixed(2)}M`; return `$${v.toLocaleString()}`; }
+                            if (predictionMarket === "market_cap") { if (v >= 1e9) return `$${(v / 1e9).toFixed(2)}B`; if (v >= 1e6) return `$${(v / 1e6).toFixed(2)}M`; return `$${v.toLocaleString()}`; }
                             return v < 0.01 ? `$${v.toFixed(6)}` : v < 1 ? `$${v.toFixed(4)}` : `$${v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
                           };
                           if (hasTwoProjects) {
@@ -1516,9 +1516,9 @@ const Forecasts = () => {
                           const pctChange = currentPriceA && targetNum ? (((targetNum - currentPriceA) / currentPriceA) * 100) : null;
                           return (
                             <div className="space-y-3">
-                              <div className="flex items-center justify-between text-xs"><span className="text-muted-foreground">Current {forecastMarket === "token_price" ? "Price" : "Market Cap"}</span><span className="font-semibold text-foreground">{formatVal(currentPriceA)}</span></div>
+                              <div className="flex items-center justify-between text-xs"><span className="text-muted-foreground">Current {predictionMarket === "token_price" ? "Price" : "Market Cap"}</span><span className="font-semibold text-foreground">{formatVal(currentPriceA)}</span></div>
                               <div>
-                                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Target {forecastMarket === "token_price" ? "Price" : "Market Cap"} *</label>
+                                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Target {predictionMarket === "token_price" ? "Price" : "Market Cap"} *</label>
                                 <div className="relative mt-1.5"><span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">$</span><Input type="number" step="any" value={predictionTarget} onChange={(e) => setPredictionTarget(e.target.value)} placeholder="0.00" className="pl-7 h-9" /></div>
                               </div>
                               {pctChange != null && !isNaN(pctChange) && (
@@ -1598,8 +1598,8 @@ const Forecasts = () => {
                   {/* Panel footer */}
                   <div className="flex items-center justify-between gap-3 px-5 py-4 border-t border-border">
                     <Button variant="ghost" onClick={() => setShowCreate(false)} className="text-xs">Cancel</Button>
-                    <Button onClick={handleCreate} disabled={createForecast.isPending} className="gap-1.5">
-                      {createForecast.isPending ? "Creating..." : "Create Prediction"}
+                    <Button onClick={handleCreate} disabled={createPrediction.isPending} className="gap-1.5">
+                      {createPrediction.isPending ? "Creating..." : "Create Prediction"}
                     </Button>
                   </div>
                 </div>
@@ -1626,7 +1626,7 @@ const Forecasts = () => {
                 </div>
                 <div>
                   <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Prediction Market *</label>
-                  <Select value={forecastMarket} onValueChange={(v) => { setForecastMarket(v); setPredictionDirection(""); setPredictionTarget(""); if (v === "token_price" || v === "market_cap") { setProjectAId(""); setProjectBId(""); } }}>
+                  <Select value={predictionMarket} onValueChange={(v) => { setPredictionMarket(v); setPredictionDirection(""); setPredictionTarget(""); if (v === "token_price" || v === "market_cap") { setProjectAId(""); setProjectBId(""); } }}>
                     <SelectTrigger className="mt-1.5 h-9"><SelectValue placeholder="Select market" /></SelectTrigger>
                     <SelectContent>{dimensionOptions.map((dim) => (<SelectItem key={dim.value} value={dim.value} disabled={dim.disabled}>{dim.label}</SelectItem>))}</SelectContent>
                   </Select>
@@ -1690,7 +1690,7 @@ const Forecasts = () => {
               </div>
               <DialogFooter>
                 <Button variant="ghost" onClick={() => setShowCreate(false)}>Cancel</Button>
-                <Button onClick={handleCreate} disabled={createForecast.isPending}>{createForecast.isPending ? "Creating..." : "Create"}</Button>
+                <Button onClick={handleCreate} disabled={createPrediction.isPending}>{createPrediction.isPending ? "Creating..." : "Create"}</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -1702,4 +1702,4 @@ const Forecasts = () => {
   );
 };
 
-export default Forecasts;
+export default Predictions;

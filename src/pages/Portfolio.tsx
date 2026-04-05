@@ -16,13 +16,13 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Link, Navigate } from "react-router-dom";
 import logoImg from "@/assets/logo.png";
-import MyForecasts from "@/components/MyForecasts";
+import MyPredictions from "@/components/MyPredictions";
 import PriceAlertsManager from "@/components/PriceAlertsManager";
 import NotificationDropdown from "@/components/NotificationDropdown";
 import { useBookmarks, useToggleBookmark } from "@/hooks/useBookmarks";
 import { useUpsertPriceAlert } from "@/hooks/usePriceAlerts";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { useUserForecastStats } from "@/hooks/useUserForecastStats";
+import { useUserPredictionStats } from "@/hooks/useUserPredictionStats";
 import { useNotificationPreferences, useUpdateNotificationPreferences } from "@/hooks/useNotificationPreferences";
 import ProfileActivityCharts from "@/components/ProfileActivityCharts";
 import UserAvatar from "@/components/UserAvatar";
@@ -373,7 +373,7 @@ const Portfolio = () => {
   const [activeTab, setActiveTab] = useState<"dashboard" | "forecasts" | "alerts" | "watchlist" | "profile" | "activities">("dashboard");
 
   // Profile & Activities hooks
-  const { data: forecastStats, isLoading: statsLoading } = useUserForecastStats(user?.id);
+  const { data: predictionStats, isLoading: statsLoading } = useUserPredictionStats(user?.id);
   const { data: bookmarks } = useBookmarks();
   const { data: notifPrefs, isLoading: prefsLoading } = useNotificationPreferences();
   const updatePrefs = useUpdateNotificationPreferences();
@@ -1630,7 +1630,7 @@ const Portfolio = () => {
               </motion.div>
             )}
 
-            {/* ── Forecasts Tab ── */}
+            {/* ── Predictions Tab ── */}
             {activeTab === "forecasts" && (
               <motion.div
                 key="forecasts"
@@ -1645,11 +1645,11 @@ const Portfolio = () => {
                     <Activity className="h-4 w-4 text-primary" />
                   </div>
                   <div>
-                    <h2 className="text-sm font-semibold text-foreground">My Forecasts</h2>
+                    <h2 className="text-sm font-semibold text-foreground">My Predictions</h2>
                     <p className="text-xs text-muted-foreground">Manage and track your community predictions</p>
                   </div>
                 </div>
-                <MyForecasts />
+                <MyPredictions />
               </motion.div>
             )}
 
@@ -1700,10 +1700,10 @@ const Portfolio = () => {
                     Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)
                   ) : (
                     <>
-                      <Card className="border-border/50"><CardContent className="p-4 text-center"><TrendingUp className="h-5 w-5 mx-auto mb-2 text-primary" /><p className="text-2xl font-bold text-foreground">{forecastStats?.totalVotes ?? 0}</p><p className="text-[11px] text-muted-foreground mt-0.5">Total Votes</p></CardContent></Card>
-                      <Card className="border-border/50"><CardContent className="p-4 text-center"><CheckCircle2 className="h-5 w-5 mx-auto mb-2 text-primary" /><p className="text-2xl font-bold text-foreground">{forecastStats?.correctVotes ?? 0}</p><p className="text-[11px] text-muted-foreground mt-0.5">Correct</p></CardContent></Card>
-                      <Card className="border-border/50"><CardContent className="p-4 text-center"><XCircle className="h-5 w-5 mx-auto mb-2 text-primary" /><p className="text-2xl font-bold text-foreground">{forecastStats?.incorrectVotes ?? 0}</p><p className="text-[11px] text-muted-foreground mt-0.5">Incorrect</p></CardContent></Card>
-                      <Card className="border-border/50"><CardContent className="p-4 text-center"><Crosshair className="h-5 w-5 mx-auto mb-2 text-primary" /><p className="text-2xl font-bold text-foreground">{`${forecastStats?.accuracy ?? 0}%`}</p><p className="text-[11px] text-muted-foreground mt-0.5">Accuracy</p></CardContent></Card>
+                      <Card className="border-border/50"><CardContent className="p-4 text-center"><TrendingUp className="h-5 w-5 mx-auto mb-2 text-primary" /><p className="text-2xl font-bold text-foreground">{predictionStats?.totalVotes ?? 0}</p><p className="text-[11px] text-muted-foreground mt-0.5">Total Votes</p></CardContent></Card>
+                      <Card className="border-border/50"><CardContent className="p-4 text-center"><CheckCircle2 className="h-5 w-5 mx-auto mb-2 text-primary" /><p className="text-2xl font-bold text-foreground">{predictionStats?.correctVotes ?? 0}</p><p className="text-[11px] text-muted-foreground mt-0.5">Correct</p></CardContent></Card>
+                      <Card className="border-border/50"><CardContent className="p-4 text-center"><XCircle className="h-5 w-5 mx-auto mb-2 text-primary" /><p className="text-2xl font-bold text-foreground">{predictionStats?.incorrectVotes ?? 0}</p><p className="text-[11px] text-muted-foreground mt-0.5">Incorrect</p></CardContent></Card>
+                      <Card className="border-border/50"><CardContent className="p-4 text-center"><Crosshair className="h-5 w-5 mx-auto mb-2 text-primary" /><p className="text-2xl font-bold text-foreground">{`${predictionStats?.accuracy ?? 0}%`}</p><p className="text-[11px] text-muted-foreground mt-0.5">Accuracy</p></CardContent></Card>
                     </>
                   )}
                 </div>
@@ -1719,42 +1719,42 @@ const Portfolio = () => {
                   <Card className="border-border/50">
                     <CardContent className="p-4 flex items-center gap-3">
                       <div className="h-10 w-10 rounded-lg bg-accent/10 flex items-center justify-center"><Clock className="h-5 w-5 text-primary" /></div>
-                      <div><p className="text-2xl font-bold text-foreground">{forecastStats?.pendingVotes ?? 0}</p><p className="text-xs text-muted-foreground">Pending Forecasts</p></div>
+                      <div><p className="text-2xl font-bold text-foreground">{predictionStats?.pendingVotes ?? 0}</p><p className="text-xs text-muted-foreground">Pending Predictions</p></div>
                     </CardContent>
                   </Card>
                 </div>
 
                 {/* Charts */}
-                {!statsLoading && forecastStats && forecastStats.totalVotes > 0 && (
+                {!statsLoading && predictionStats && predictionStats.totalVotes > 0 && (
                   <ProfileActivityCharts
-                    history={forecastStats.history}
-                    totalVotes={forecastStats.totalVotes}
-                    correctVotes={forecastStats.correctVotes}
-                    incorrectVotes={forecastStats.incorrectVotes}
+                    history={predictionStats.history}
+                    totalVotes={predictionStats.totalVotes}
+                    correctVotes={predictionStats.correctVotes}
+                    incorrectVotes={predictionStats.incorrectVotes}
                   />
                 )}
 
-                {/* Recent Forecast Activity */}
+                {/* Recent Prediction Activity */}
                 <Card className="border-border/50">
                   <CardHeader>
-                    <CardTitle className="text-base">Recent Forecast Activity</CardTitle>
+                    <CardTitle className="text-base">Recent Prediction Activity</CardTitle>
                     <CardDescription>Your latest votes and their outcomes</CardDescription>
                   </CardHeader>
                   <CardContent>
                     {statsLoading ? (
                       <div className="space-y-3">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-14 rounded-lg" />)}</div>
-                    ) : !forecastStats?.history?.length ? (
+                    ) : !predictionStats?.history?.length ? (
                       <div className="text-center py-8">
                         <HelpCircle className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
-                        <p className="text-sm text-muted-foreground">No forecast activity yet</p>
+                        <p className="text-sm text-muted-foreground">No prediction activity yet</p>
                         <button onClick={() => setActiveTab("forecasts")} className="text-xs text-primary hover:underline mt-1 inline-block">Browse forecasts →</button>
                       </div>
                     ) : (
                       <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
-                        {forecastStats.history.slice(0, 15).map((item) => (
+                        {predictionStats.history.slice(0, 15).map((item) => (
                           <Link
-                            key={item.forecast_id + item.voted_at}
-                            to={`/forecasts/${item.forecast_id}`}
+                            key={item.prediction_id + item.voted_at}
+                            to={`/forecasts/${item.prediction_id}`}
                             className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 transition-colors group"
                           >
                             {item.project_logo_url ? (
@@ -1763,7 +1763,7 @@ const Portfolio = () => {
                               <span className="w-8 h-8 rounded-lg flex items-center justify-center text-base bg-secondary shrink-0">{item.project_logo_emoji}</span>
                             )}
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-foreground truncate">{item.forecast_title}</p>
+                              <p className="text-sm font-medium text-foreground truncate">{item.prediction_title}</p>
                               <p className="text-xs text-muted-foreground">
                                 Voted <Badge variant={item.vote === "yes" ? "default" : "destructive"} className="text-[10px] px-1.5 py-0 ml-1">{item.vote.toUpperCase()}</Badge>
                                 <span className="ml-2">{formatDistanceToNow(new Date(item.voted_at), { addSuffix: true })}</span>

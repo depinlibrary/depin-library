@@ -14,11 +14,11 @@ function getTimeRemaining(endDate: string): string {
   return `${hours}h left`;
 }
 
-interface RelatedForecastsProps {
+interface RelatedPredictionsProps {
   forecasts: any[];
 }
 
-export default function RelatedForecastsList({ forecasts }: RelatedForecastsProps) {
+export default function RelatedPredictionsList({ forecasts }: RelatedPredictionsProps) {
   if (forecasts.length === 0) return null;
 
   return (
@@ -30,7 +30,7 @@ export default function RelatedForecastsList({ forecasts }: RelatedForecastsProp
       
       <div className="px-5 py-3.5 border-b border-border flex items-center gap-2">
         
-        <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Related Forecasts</h3>
+        <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Related Predictions</h3>
       </div>
       <div className="divide-y divide-border">
         {forecasts.map((rf: any) => {

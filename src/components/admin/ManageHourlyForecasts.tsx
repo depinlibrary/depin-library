@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { Plus, Trash2, Clock, Zap } from "lucide-react";
 import ProjectLogo from "@/components/ProjectLogo";
 
-export default function ManageHourlyForecasts() {
+export default function ManageHourlyPredictions() {
   const queryClient = useQueryClient();
   const [selectedProjectId, setSelectedProjectId] = useState("");
 

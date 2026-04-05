@@ -20,7 +20,7 @@ import type { Project } from "@/hooks/useProjects";
 import type { TokenMarketData } from "@/hooks/useTokenMarketData";
 import { useEffect, useState, useRef } from "react";
 
-interface TopForecast {
+interface TopPrediction {
   id: string;
   title: string;
   total_votes_yes: number;
@@ -39,7 +39,7 @@ interface TopForecast {
 interface BillboardHeroProps {
   projects: Project[];
   marketData: Record<string, TokenMarketData>;
-  topForecasts: TopForecast[];
+  topPredictions: TopPrediction[];
   trendingProjects: any[];
   totalCategories: number;
   totalBlockchains: number;
@@ -118,7 +118,7 @@ const MiniSparkline = ({ data, positive }: {data: number[] | null;positive: bool
 const BillboardHero = ({
   projects,
   marketData,
-  topForecasts,
+  topPredictions,
   trendingProjects,
   totalCategories,
   totalBlockchains,
@@ -471,8 +471,8 @@ const BillboardHero = ({
                 </div>
               </motion.div>
 
-             {/* ── Top Predictions — Matching ForecastCard design ── */}
-             {topForecasts.length > 0 &&
+             {/* ── Top Predictions — Matching PredictionCard design ── */}
+             {topPredictions.length > 0 &&
             <motion.div variants={fadeUp} className="col-span-1 sm:col-span-2 lg:col-span-4 rounded-lg border border-border bg-card/40 backdrop-blur-md p-4 sm:p-5">
                  <div className="flex items-center gap-2 mb-4">
                    <span className="text-sm font-semibold text-foreground">Top Predictions</span>
@@ -481,7 +481,7 @@ const BillboardHero = ({
                    </Link>
                  </div>
                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                   {topForecasts.slice(0, 4).map((f) => {
+                   {topPredictions.slice(0, 4).map((f) => {
                   const totalVotes = f.total_votes_yes + f.total_votes_no;
                   const yesPercent = totalVotes > 0 ? (() => { const wy = Number((f as any).weighted_votes_yes) || 0; const wn = Number((f as any).weighted_votes_no) || 0; const wt = wy + wn; return wt > 0 ? (wy / wt) * 100 : (f.total_votes_yes / totalVotes) * 100; })() : 50;
                    const isEnded = f.status === "ended" || new Date(f.end_date) <= new Date();
