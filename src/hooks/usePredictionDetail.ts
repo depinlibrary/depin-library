@@ -31,7 +31,7 @@ export function usePredictionDetail(predictionId: string | undefined) {
       .channel(`prediction-detail-${predictionId}`)
       .on(
         "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "predictions", filter: `id=eq.${predictionId}` },
+        { event: "UPDATE", schema: "public", table: "forecasts", filter: `id=eq.${predictionId}` },
         () => {
           queryClient.invalidateQueries({ queryKey: ["prediction-detail", predictionId] });
         }

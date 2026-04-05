@@ -226,8 +226,14 @@ const PredictionDetail = () => {
   const handleVote = (vote: "yes" | "no") => {
     if (!user) { toast.error("Sign in to vote"); return; }
     if (!id) return;
-    if (!prediction?.user_vote) { fireConfetti(); toast.success("🎉 Vote cast! Nice prediction."); }
-    votePrediction.mutate({ predictionId: id, vote, confidenceLevel: confidence });
+    if (prediction?.user_vote) { toast.error("You have already voted on this prediction."); return; }
+    votePrediction.mutate(
+      { predictionId: id, vote, confidenceLevel: confidence },
+      {
+        onSuccess: () => { fireConfetti(); toast.success("🎉 Vote cast! Nice prediction."); },
+        onError: (err: any) => { toast.error(err?.message || "Failed to cast vote"); },
+      }
+    );
   };
 
   const handleAddComment = async () => {

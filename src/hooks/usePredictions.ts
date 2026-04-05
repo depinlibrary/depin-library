@@ -13,7 +13,7 @@ export function useRealtimePredictions() {
       .channel("realtime-predictions")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "predictions" },
+        { event: "*", schema: "public", table: "forecasts" },
         () => {
           queryClient.invalidateQueries({ queryKey: ["predictions"] });
         }
