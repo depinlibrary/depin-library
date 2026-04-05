@@ -18,7 +18,7 @@ Deno.serve(async (req) => {
 
     const now = new Date().toISOString();
     // Only process forecasts that haven't been notified AND are still active/ended (not already resolved by auto-resolve)
-    const { data: endedForecasts, error: fetchError } = await supabase
+    const { data: endedPredictions, error: fetchError } = await supabase
       .from("forecasts")
       .select("id, title, total_votes_yes, total_votes_no, end_date, project_a_id, project_b_id, status, prediction_direction, prediction_target, start_price, outcome")
       .eq("end_notifications_sent", false)
@@ -33,7 +33,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (!endedForecasts || endedForecasts.length === 0) {
+    if (!endedPredictions || endedPredictions.length === 0) {
       return new Response(JSON.stringify({ message: "No ended forecasts to process" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -42,53 +42,53 @@ Deno.serve(async (req) => {
     let notificationsSent = 0;
     let snapshotsCaptured = 0;
 
-    for (const forecast of endedForecasts) {
+    for (const prediction of endedPredictions) {
       // --- CAPTURE END SNAPSHOTS ---
       try {
-        const endSnapshots = await captureEndSnapshots(supabase, forecast);
+        const endSnapshots = await captureEndSnapshots(supabase, prediction);
         snapshotsCaptured += endSnapshots;
       } catch (snapErr) {
-        console.error(`Error capturing end snapshots for ${forecast.id}:`, snapErr);
+        console.error(`Error capturing end snapshots for ${prediction.id}:`, snapErr);
       }
 
       // --- DETERMINE OUTCOME ---
-      // Get forecast dimension
+      // Get prediction dimension
       const { data: targets } = await supabase
         .from("forecast_targets")
         .select("dimension")
-        .eq("forecast_id", forecast.id);
+        .eq("forecast_id", prediction.id);
 
       const dimensions = (targets || []).map((t: any) => t.dimension);
       const isPriceMarket = dimensions.some((d: string) => d === "token_price" || d === "market_cap");
 
-      let outcome: string | null = forecast.outcome; // use existing if already set (e.g. auto-resolved)
+      let outcome: string | null = prediction.outcome; // use existing if already set (e.g. auto-resolved)
 
       if (!outcome && isPriceMarket) {
-        outcome = await determinePriceOutcome(supabase, forecast, dimensions);
+        outcome = await determinePriceOutcome(supabase, prediction, dimensions);
       }
 
       // For non-price forecasts, fall back to vote majority
       if (!outcome && !isPriceMarket) {
-        const totalVotes = forecast.total_votes_yes + forecast.total_votes_no;
-        const yesPct = totalVotes > 0 ? (forecast.total_votes_yes / totalVotes) * 100 : 50;
+        const totalVotes = prediction.total_votes_yes + prediction.total_votes_no;
+        const yesPct = totalVotes > 0 ? (prediction.total_votes_yes / totalVotes) * 100 : 50;
         outcome = yesPct >= 50 ? "yes" : "no";
       }
 
       // --- UPDATE STATUS + OUTCOME ---
       const updates: any = { end_notifications_sent: true };
-      if (forecast.status === "active") updates.status = "ended";
+      if (prediction.status === "active") updates.status = "ended";
       if (outcome) updates.outcome = outcome;
 
-      await supabase.from("forecasts").update(updates).eq("id", forecast.id);
+      await supabase.from("forecasts").update(updates).eq("id", prediction.id);
 
       // --- SEND NOTIFICATIONS ---
       const { data: votes, error: votesError } = await supabase
         .from("forecast_votes")
         .select("user_id, vote")
-        .eq("forecast_id", forecast.id);
+        .eq("forecast_id", prediction.id);
 
       if (votesError) {
-        console.error(`Error fetching votes for forecast ${forecast.id}:`, votesError);
+        console.error(`Error fetching votes for prediction ${prediction.id}:`, votesError);
         continue;
       }
 
@@ -104,7 +104,7 @@ Deno.serve(async (req) => {
           .eq("user_id", userId)
           .maybeSingle();
 
-        const shouldNotify = prefs?.forecast_result !== false;
+        const shouldNotify = prefs?.prediction_result !== false;
 
         if (shouldNotify) {
           const userVote = votes.find((v: any) => v.user_id === userId)?.vote;
@@ -113,10 +113,10 @@ Deno.serve(async (req) => {
           await supabase.from("notifications").insert({
             user_id: userId,
             type: "forecast_result",
-            title: "Forecast ended",
-            message: `"${forecast.title.slice(0, 50)}${forecast.title.length > 50 ? "..." : ""}" ended. Result: ${resultLabel}. ${userCorrect ? "Your prediction was correct! 🎯" : "Better luck next time!"}`,
-            link: `/forecasts/${forecast.id}`,
-            metadata: { forecastId: forecast.id, result: outcome, userVote, userCorrect },
+            title: "Prediction ended",
+            message: `"${prediction.title.slice(0, 50)}${prediction.title.length > 50 ? "..." : ""}" ended. Result: ${resultLabel}. ${userCorrect ? "Your prediction was correct! 🎯" : "Better luck next time!"}`,
+            link: `/predictions/${prediction.id}`,
+            metadata: { predictionId: prediction.id, result: outcome, userVote, userCorrect },
           });
           notificationsSent++;
         }
@@ -125,12 +125,12 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({
-        message: `Processed ${endedForecasts.length} forecasts, sent ${notificationsSent} notifications, captured ${snapshotsCaptured} end snapshots`,
+        message: `Processed ${endedPredictions.length} forecasts, sent ${notificationsSent} notifications, captured ${snapshotsCaptured} end snapshots`,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
-    console.error("Error in notify-forecast-results:", err);
+    console.error("Error in notify-prediction-results:", err);
     return new Response(JSON.stringify({ error: String(err) }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -139,12 +139,12 @@ Deno.serve(async (req) => {
 });
 
 /**
- * Determines the outcome for a price/market_cap forecast based on actual price movement.
+ * Determines the outcome for a price/market_cap prediction based on actual price movement.
  * Returns "yes" (Long wins) or "no" (Short wins).
  */
 async function determinePriceOutcome(
   supabase: any,
-  forecast: { id: string; project_a_id: string; project_b_id: string | null; prediction_direction: string | null; prediction_target: number | null; start_price: number | null },
+  prediction: { id: string; project_a_id: string; project_b_id: string | null; prediction_direction: string | null; prediction_target: number | null; start_price: number | null },
   dimensions: string[]
 ): Promise<string | null> {
   const dim = dimensions.find((d: string) => d === "token_price" || d === "market_cap");
@@ -154,7 +154,7 @@ async function determinePriceOutcome(
   const { data: snaps } = await supabase
     .from("forecast_metric_snapshots")
     .select("dimension, snapshot_type, value")
-    .eq("forecast_id", forecast.id);
+    .eq("forecast_id", prediction.id);
 
   if (!snaps || snaps.length === 0) return null;
 
@@ -163,9 +163,9 @@ async function determinePriceOutcome(
     return s?.value != null ? Number(s.value) : null;
   };
 
-  if (forecast.project_b_id) {
+  if (prediction.project_b_id) {
     // --- DUAL-PROJECT COMPARISON ---
-    const startA = forecast.start_price != null ? Number(forecast.start_price) : getSnap(dim, "start");
+    const startA = prediction.start_price != null ? Number(prediction.start_price) : getSnap(dim, "start");
     const endA = getSnap(dim, "end");
     const startB = getSnap(`${dim}_b`, "start");
     const endB = getSnap(`${dim}_b`, "end");
@@ -177,30 +177,30 @@ async function determinePriceOutcome(
     const outperformance = changeA - changeB;
 
     // If there's a target, check if outperformance met it
-      if (forecast.prediction_target != null) {
-        const targetMet = forecast.prediction_direction === "long"
-          ? outperformance >= forecast.prediction_target
-          : outperformance <= -forecast.prediction_target;
+      if (prediction.prediction_target != null) {
+        const targetMet = prediction.prediction_direction === "long"
+          ? outperformance >= prediction.prediction_target
+          : outperformance <= -prediction.prediction_target;
         // If target met, the prediction direction wins: long→"yes", short→"no"
         if (targetMet) {
-          return forecast.prediction_direction === "long" ? "yes" : "no";
+          return prediction.prediction_direction === "long" ? "yes" : "no";
         }
-        return forecast.prediction_direction === "long" ? "no" : "yes";
+        return prediction.prediction_direction === "long" ? "no" : "yes";
       }
 
     // No specific target: Long wins if A outperformed B
     return outperformance > 0 ? "yes" : "no";
   } else {
     // --- SINGLE-PROJECT ---
-    const startVal = forecast.start_price != null ? Number(forecast.start_price) : getSnap(dim, "start");
+    const startVal = prediction.start_price != null ? Number(prediction.start_price) : getSnap(dim, "start");
     const endVal = getSnap(dim, "end");
 
     if (startVal == null || endVal == null) return null;
 
     // If there's a target price, check if it was reached
-    if (forecast.prediction_target != null) {
-      const target = Number(forecast.prediction_target);
-      if (forecast.prediction_direction === "long") {
+    if (prediction.prediction_target != null) {
+      const target = Number(prediction.prediction_target);
+      if (prediction.prediction_direction === "long") {
         // Long target met → Long wins ("yes"), not met → Short wins ("no")
         return endVal >= target ? "yes" : "no";
       } else {
@@ -216,23 +216,23 @@ async function determinePriceOutcome(
 }
 
 /**
- * Captures end snapshots for a concluded forecast by reading current market data.
+ * Captures end snapshots for a concluded prediction by reading current market data.
  */
 async function captureEndSnapshots(
   supabase: any,
-  forecast: { id: string; project_a_id: string; project_b_id: string | null }
+  prediction: { id: string; project_a_id: string; project_b_id: string | null }
 ): Promise<number> {
   const { data: targets } = await supabase
     .from("forecast_targets")
     .select("dimension")
-    .eq("forecast_id", forecast.id);
+    .eq("forecast_id", prediction.id);
 
   if (!targets || targets.length === 0) return 0;
 
   const { data: existingSnaps } = await supabase
     .from("forecast_metric_snapshots")
     .select("dimension")
-    .eq("forecast_id", forecast.id)
+    .eq("forecast_id", prediction.id)
     .eq("snapshot_type", "end");
 
   const existingDims = new Set((existingSnaps || []).map((s: any) => s.dimension));
@@ -240,15 +240,15 @@ async function captureEndSnapshots(
   const { data: marketA } = await supabase
     .from("token_market_data")
     .select("price_usd, market_cap_usd")
-    .eq("project_id", forecast.project_a_id)
+    .eq("project_id", prediction.project_a_id)
     .single();
 
   let marketB: any = null;
-  if (forecast.project_b_id) {
+  if (prediction.project_b_id) {
     const { data: mb } = await supabase
       .from("token_market_data")
       .select("price_usd, market_cap_usd")
-      .eq("project_id", forecast.project_b_id)
+      .eq("project_id", prediction.project_b_id)
       .single();
     marketB = mb;
   }
@@ -272,7 +272,7 @@ async function captureEndSnapshots(
     }
 
     snapshots.push({
-      forecast_id: forecast.id,
+      prediction_id: prediction.id,
       dimension: dim,
       snapshot_type: "end",
       value,
@@ -280,7 +280,7 @@ async function captureEndSnapshots(
       captured_at: nowStr,
     });
 
-    if (forecast.project_b_id && (dim === "token_price" || dim === "market_cap")) {
+    if (prediction.project_b_id && (dim === "token_price" || dim === "market_cap")) {
       const bDim = `${dim}_b`;
       if (!existingDims.has(bDim)) {
         let valueB: number | null = null;
@@ -293,7 +293,7 @@ async function captureEndSnapshots(
           sourceB = "coingecko";
         }
         snapshots.push({
-          forecast_id: forecast.id,
+          prediction_id: prediction.id,
           dimension: bDim,
           snapshot_type: "end",
           value: valueB,
@@ -308,13 +308,13 @@ async function captureEndSnapshots(
 
   const { error } = await supabase
     .from("forecast_metric_snapshots")
-    .upsert(snapshots, { onConflict: "forecast_id,dimension,snapshot_type" });
+    .upsert(snapshots, { onConflict: "prediction_id,dimension,snapshot_type" });
 
   if (error) {
-    console.error(`Error inserting end snapshots for ${forecast.id}:`, error);
+    console.error(`Error inserting end snapshots for ${prediction.id}:`, error);
     return 0;
   }
 
-  console.log(`Captured ${snapshots.length} end snapshots for forecast ${forecast.id}`);
+  console.log(`Captured ${snapshots.length} end snapshots for prediction ${prediction.id}`);
   return snapshots.length;
 }

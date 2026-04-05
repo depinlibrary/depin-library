@@ -37,10 +37,10 @@ Deno.serve(async (req) => {
 
   try {
     const url = new URL(req.url);
-    const forecastId = url.searchParams.get("id");
+    const predictionId = url.searchParams.get("id");
 
-    if (!forecastId) {
-      return new Response("Missing forecast id", { status: 400, headers: corsHeaders });
+    if (!predictionId) {
+      return new Response("Missing prediction id", { status: 400, headers: corsHeaders });
     }
 
     const userAgent = req.headers.get("user-agent") || "";
@@ -54,27 +54,27 @@ Deno.serve(async (req) => {
         status: 302,
         headers: {
           ...corsHeaders,
-          Location: `${siteUrl}/forecasts/${forecastId}`,
+          Location: `${siteUrl}/predictions/${predictionId}`,
         },
       });
     }
 
-    // Fetch forecast data for bots
+    // Fetch prediction data for bots
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { data: forecast, error } = await supabase
+    const { data: prediction, error } = await supabase
       .from("forecasts")
       .select("*")
-      .eq("id", forecastId)
+      .eq("id", predictionId)
       .single();
 
-    if (error || !forecast) {
-      return new Response("Forecast not found", { status: 404, headers: corsHeaders });
+    if (error || !prediction) {
+      return new Response("Prediction not found", { status: 404, headers: corsHeaders });
     }
 
     // Fetch project names
-    const projectIds = [forecast.project_a_id];
-    if (forecast.project_b_id) projectIds.push(forecast.project_b_id);
+    const projectIds = [prediction.project_a_id];
+    if (prediction.project_b_id) projectIds.push(prediction.project_b_id);
 
     const { data: projects } = await supabase
       .from("projects")
@@ -86,33 +86,33 @@ Deno.serve(async (req) => {
       projectMap[p.id] = { name: p.name, logo_url: p.logo_url };
     });
 
-    const projectAName = projectMap[forecast.project_a_id]?.name || "Unknown";
-    const projectBName = forecast.project_b_id
-      ? projectMap[forecast.project_b_id]?.name || "Unknown"
+    const projectAName = projectMap[prediction.project_a_id]?.name || "Unknown";
+    const projectBName = prediction.project_b_id
+      ? projectMap[prediction.project_b_id]?.name || "Unknown"
       : null;
 
-    const totalVotes = forecast.total_votes_yes + forecast.total_votes_no;
+    const totalVotes = prediction.total_votes_yes + prediction.total_votes_no;
     const yesPct = totalVotes > 0
-      ? ((forecast.total_votes_yes / totalVotes) * 100).toFixed(0)
+      ? ((prediction.total_votes_yes / totalVotes) * 100).toFixed(0)
       : "50";
 
     const projectLabel = projectBName
       ? `${projectAName} vs ${projectBName}`
       : projectAName;
 
-    const ogTitle = forecast.title;
+    const ogTitle = prediction.title;
     const ogDescription = `${yesPct}% Yes · ${totalVotes} votes · ${projectLabel}${
-      forecast.description ? " — " + forecast.description.slice(0, 140) : ""
+      prediction.description ? " — " + prediction.description.slice(0, 140) : ""
     }`;
-    const ogImage = projectMap[forecast.project_a_id]?.logo_url || `${siteUrl}/favicon.ico`;
-    const canonicalUrl = `${siteUrl}/forecasts/${forecastId}`;
+    const ogImage = projectMap[prediction.project_a_id]?.logo_url || `${siteUrl}/favicon.ico`;
+    const canonicalUrl = `${siteUrl}/predictions/${predictionId}`;
 
     const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${escapeHtml(ogTitle)} — DePIN Forecast</title>
+  <title>${escapeHtml(ogTitle)} — DePIN Prediction</title>
   <meta name="description" content="${escapeHtml(ogDescription)}" />
 
   <meta property="og:title" content="${escapeHtml(ogTitle)}" />
@@ -133,7 +133,7 @@ Deno.serve(async (req) => {
 <body>
   <h1>${escapeHtml(ogTitle)}</h1>
   <p>${escapeHtml(ogDescription)}</p>
-  <p><a href="${escapeHtml(canonicalUrl)}">View Forecast on DePIN Library</a></p>
+  <p><a href="${escapeHtml(canonicalUrl)}">View Prediction on DePIN Library</a></p>
 </body>
 </html>`;
 

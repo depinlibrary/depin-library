@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { Plus, Trash2, Clock, Zap } from "lucide-react";
 import ProjectLogo from "@/components/ProjectLogo";
 
-export default function ManageHourlyForecasts() {
+export default function ManageHourlyPredictions() {
   const queryClient = useQueryClient();
   const [selectedProjectId, setSelectedProjectId] = useState("");
 
@@ -93,7 +93,7 @@ export default function ManageHourlyForecasts() {
     mutationFn: async () => {
       const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
       const res = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/run-hourly-forecasts`,
+        `https://${projectId}.supabase.co/functions/v1/run-hourly-predictions`,
         { method: "POST", headers: { "Content-Type": "application/json" } }
       );
       if (!res.ok) throw new Error("Failed to trigger");

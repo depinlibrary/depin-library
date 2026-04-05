@@ -14,12 +14,12 @@ function getTimeRemaining(endDate: string): string {
   return `${hours}h left`;
 }
 
-interface RelatedForecastsProps {
-  forecasts: any[];
+interface RelatedPredictionsProps {
+  predictions: any[];
 }
 
-export default function RelatedForecastsList({ forecasts }: RelatedForecastsProps) {
-  if (forecasts.length === 0) return null;
+export default function RelatedPredictionsList({ predictions }: RelatedPredictionsProps) {
+  if (predictions.length === 0) return null;
 
   return (
     <motion.div
@@ -30,17 +30,17 @@ export default function RelatedForecastsList({ forecasts }: RelatedForecastsProp
       
       <div className="px-5 py-3.5 border-b border-border flex items-center gap-2">
         
-        <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Related Forecasts</h3>
+        <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Related Predictions</h3>
       </div>
       <div className="divide-y divide-border">
-        {forecasts.map((rf: any) => {
+        {predictions.map((rf: any) => {
           const total = rf.total_votes_yes + rf.total_votes_no;
           const yesPct = total > 0 ? rf.total_votes_yes / total * 100 : 50;
           const isEnded = new Date(rf.end_date) <= new Date();
           return (
             <Link
               key={rf.id}
-              to={`/forecasts/${rf.id}`}
+              to={`/predictions/${rf.id}`}
               className="block px-5 py-3.5 hover:bg-secondary/30 transition-colors group">
               
               <div className="flex items-center gap-2 mb-2">

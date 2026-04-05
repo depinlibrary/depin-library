@@ -29,43 +29,43 @@ Deno.serve(async (req) => {
     }
 
     // 2. Get their targets
-    const forecastIds = forecasts.map((f: any) => f.id);
+    const predictionIds = forecasts.map((f: any) => f.id);
     const { data: targets } = await supabase
       .from("forecast_targets")
       .select("forecast_id, dimension")
-      .in("forecast_id", forecastIds);
+      .in("forecast_id", predictionIds);
 
     // 3. Get existing end snapshots
     const { data: existingSnaps } = await supabase
       .from("forecast_metric_snapshots")
       .select("forecast_id, dimension, snapshot_type")
-      .in("forecast_id", forecastIds)
+      .in("forecast_id", predictionIds)
       .eq("snapshot_type", "end");
 
     const existingEndKeys = new Set(
-      (existingSnaps || []).map((s: any) => `${s.forecast_id}:${s.dimension}`)
+      (existingSnaps || []).map((s: any) => `${s.prediction_id}:${s.dimension}`)
     );
 
     // 4. Find forecasts needing backfill
-    const needsBackfill: { forecast_id: string; dimension: string; project_id: string }[] = [];
+    const needsBackfill: { prediction_id: string; dimension: string; project_id: string }[] = [];
     for (const target of (targets || [])) {
-      const key = `${target.forecast_id}:${target.dimension}`;
+      const key = `${target.prediction_id}:${target.dimension}`;
       if (!existingEndKeys.has(key)) {
-        const forecast = forecasts.find((f: any) => f.id === target.forecast_id);
-        if (forecast && (target.dimension === "token_price" || target.dimension === "market_cap")) {
+        const prediction = forecasts.find((f: any) => f.id === target.prediction_id);
+        if (prediction && (target.dimension === "token_price" || target.dimension === "market_cap")) {
           needsBackfill.push({
-            forecast_id: target.forecast_id,
+            prediction_id: target.prediction_id,
             dimension: target.dimension,
-            project_id: forecast.project_a_id,
+            project_id: prediction.project_a_id,
           });
           // Also backfill Project B snapshots for comparison forecasts
-          if (forecast.project_b_id) {
-            const keyB = `${target.forecast_id}:${target.dimension}_b`;
+          if (prediction.project_b_id) {
+            const keyB = `${target.prediction_id}:${target.dimension}_b`;
             if (!existingEndKeys.has(keyB)) {
               needsBackfill.push({
-                forecast_id: target.forecast_id,
+                prediction_id: target.prediction_id,
                 dimension: `${target.dimension}_b`,
-                project_id: forecast.project_b_id,
+                project_id: prediction.project_b_id,
               });
             }
           }
@@ -90,15 +90,15 @@ Deno.serve(async (req) => {
       priceMap[m.project_id] = { price: m.price_usd ? Number(m.price_usd) : null, mcap: m.market_cap_usd ? Number(m.market_cap_usd) : null };
     });
 
-    // 6. Also backfill missing start snapshots using the forecast's start_price
+    // 6. Also backfill missing start snapshots using the prediction's start_price
     const { data: existingStartSnaps } = await supabase
       .from("forecast_metric_snapshots")
       .select("forecast_id, dimension")
-      .in("forecast_id", forecastIds)
+      .in("forecast_id", predictionIds)
       .eq("snapshot_type", "start");
 
     const existingStartKeys = new Set(
-      (existingStartSnaps || []).map((s: any) => `${s.forecast_id}:${s.dimension}`)
+      (existingStartSnaps || []).map((s: any) => `${s.prediction_id}:${s.dimension}`)
     );
 
     // 7. Insert snapshots
@@ -111,28 +111,28 @@ Deno.serve(async (req) => {
       const value = baseDim === "token_price" ? mData.price : mData.mcap;
       if (value == null) continue;
 
-      const forecast = forecasts.find((f: any) => f.id === item.forecast_id);
+      const prediction = forecasts.find((f: any) => f.id === item.prediction_id);
 
       // End snapshot with current market data (best approximation for old forecasts)
       snapshots.push({
-        forecast_id: item.forecast_id,
+        prediction_id: item.prediction_id,
         dimension: item.dimension,
         snapshot_type: "end",
         value: value,
         source: "coingecko",
-        captured_at: forecast?.end_date || new Date().toISOString(),
+        captured_at: prediction?.end_date || new Date().toISOString(),
       });
 
-      // Backfill start snapshot if missing, using forecast's start_price
-      const startKey = `${item.forecast_id}:${item.dimension}`;
-      if (!existingStartKeys.has(startKey) && forecast?.start_price != null) {
+      // Backfill start snapshot if missing, using prediction's start_price
+      const startKey = `${item.prediction_id}:${item.dimension}`;
+      if (!existingStartKeys.has(startKey) && prediction?.start_price != null) {
         snapshots.push({
-          forecast_id: item.forecast_id,
+          prediction_id: item.prediction_id,
           dimension: item.dimension,
           snapshot_type: "start",
-          value: Number(forecast.start_price),
+          value: Number(prediction.start_price),
           source: "coingecko",
-          captured_at: forecast.created_at || new Date().toISOString(),
+          captured_at: prediction.created_at || new Date().toISOString(),
         });
       }
     }
@@ -141,7 +141,7 @@ Deno.serve(async (req) => {
     if (snapshots.length > 0) {
       const { error: insertErr } = await supabase
         .from("forecast_metric_snapshots")
-        .upsert(snapshots, { onConflict: "forecast_id,dimension,snapshot_type" });
+        .upsert(snapshots, { onConflict: "prediction_id,dimension,snapshot_type" });
       if (insertErr) throw insertErr;
       inserted = snapshots.length;
     }
@@ -159,7 +159,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ status: "ok", backfilled: inserted, forecasts_checked: forecasts.length }),
+      JSON.stringify({ status: "ok", backfilled: inserted, predictions_checked: forecasts.length }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {

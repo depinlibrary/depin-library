@@ -5,7 +5,7 @@ import { Timer, TrendingUp, TrendingDown, Minus, Clock, History, ArrowLeft, Chev
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useVoteHourlyRound, useHourlyRoundHistory, useRealtimeHourlyRounds, isVotingOpen, getVotingDeadline, getUserOutcome } from "@/hooks/useHourlyForecasts";
+import { useVoteHourlyRound, useHourlyRoundHistory, useRealtimeHourlyRounds, isVotingOpen, getVotingDeadline, getUserOutcome } from "@/hooks/useHourlyPredictions";
 import { useTokenMarketData } from "@/hooks/useTokenMarketData";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import Navbar from "@/components/Navbar";
@@ -38,7 +38,7 @@ function formatPrice(price: number | null | undefined): string {
   return `$${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-export default function HourlyForecastDetail() {
+export default function HourlyPredictionDetail() {
   const { roundId } = useParams<{ roundId: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -156,7 +156,7 @@ export default function HourlyForecastDetail() {
         <Navbar />
         <div className="container mx-auto px-4 pt-24 pb-12 flex-1 text-center">
           <h1 className="text-2xl font-bold text-foreground mb-2">Round not found</h1>
-          <Link to="/forecasts" className="text-primary hover:underline text-sm">← Back to Predictions</Link>
+          <Link to="/predictions" className="text-primary hover:underline text-sm">← Back to Predictions</Link>
         </div>
         <Footer />
       </div>
@@ -172,7 +172,7 @@ export default function HourlyForecastDetail() {
 
       <div className="container mx-auto px-4 pt-24 pb-12 flex-1">
         {/* Back */}
-        <Link to="/forecasts" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6">
+        <Link to="/predictions" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6">
           <ArrowLeft className="h-4 w-4" /> Back to Predictions
         </Link>
 
@@ -465,7 +465,7 @@ export default function HourlyForecastDetail() {
                 return (
                   <Link
                     key={r.id}
-                    to={`/forecasts/hourly/${r.id}`}
+                    to={`/predictions/hourly/${r.id}`}
                     className={`flex items-center justify-between px-6 py-3 text-xs border-b border-border/50 last:border-b-0 hover:bg-secondary/30 transition-colors ${r.id === roundId ? 'bg-primary/5' : ''}`}
                   >
                     <span className="text-muted-foreground font-medium">Round #{r.round_number}</span>

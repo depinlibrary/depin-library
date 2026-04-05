@@ -18,7 +18,7 @@ Deno.serve(async (req) => {
     const now = new Date();
     const nowISO = now.toISOString();
 
-    // Get all enabled hourly forecast configs
+    // Get all enabled hourly prediction configs
     const { data: configs, error: configErr } = await supabase
       .from("hourly_forecast_config")
       .select("*, project:projects!hourly_forecast_config_project_id_fkey(id, name, coingecko_id)")

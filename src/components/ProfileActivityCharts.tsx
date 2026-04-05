@@ -5,7 +5,7 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
   BarChart, Bar,
 } from "recharts";
-import type { VoteHistoryItem } from "@/hooks/useUserForecastStats";
+import type { VoteHistoryItem } from "@/hooks/useUserPredictionStats";
 import { format, subDays, startOfDay, isSameDay } from "date-fns";
 
 interface Props {

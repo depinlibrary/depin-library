@@ -5,9 +5,9 @@ import { createNotification } from "@/hooks/useNotifications";
 
 // ── Likes ──
 
-export function useForecastCommentLikes(commentIds: string[]) {
+export function usePredictionCommentLikes(commentIds: string[]) {
   return useQuery({
-    queryKey: ["forecast-comment-likes", commentIds],
+    queryKey: ["prediction-comment-likes", commentIds],
     queryFn: async (): Promise<Record<string, { count: number; userLiked: boolean }>> => {
       if (!commentIds.length) return {};
 
@@ -35,12 +35,12 @@ export function useForecastCommentLikes(commentIds: string[]) {
   });
 }
 
-export function useToggleForecastCommentLike() {
+export function useTogglePredictionCommentLike() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async ({ commentId, isLiked, forecastId }: { commentId: string; isLiked: boolean; forecastId: string }) => {
+    mutationFn: async ({ commentId, isLiked, predictionId }: { commentId: string; isLiked: boolean; predictionId: string }) => {
       if (!user) throw new Error("Must be logged in");
       if (isLiked) {
         const { error } = await supabase
@@ -76,21 +76,21 @@ export function useToggleForecastCommentLike() {
             type: "forecast_comment_like",
             title: "Your comment was liked",
             message: `${likerName} liked your comment`,
-            link: `/forecasts/${forecastId}`,
-            metadata: { commentId, forecastId },
+            link: `/predictions/${predictionId}`,
+            metadata: { commentId, predictionId },
           });
         }
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["forecast-comment-likes"] });
+      queryClient.invalidateQueries({ queryKey: ["prediction-comment-likes"] });
     },
   });
 }
 
 // ── Replies ──
 
-export type ForecastCommentReply = {
+export type PredictionCommentReply = {
   id: string;
   comment_id: string;
   user_id: string;
@@ -100,10 +100,10 @@ export type ForecastCommentReply = {
   avatar_url?: string | null;
 };
 
-export function useForecastCommentReplies(commentId: string) {
+export function usePredictionCommentReplies(commentId: string) {
   return useQuery({
-    queryKey: ["forecast-comment-replies", commentId],
-    queryFn: async (): Promise<ForecastCommentReply[]> => {
+    queryKey: ["prediction-comment-replies", commentId],
+    queryFn: async (): Promise<PredictionCommentReply[]> => {
       const { data: replies, error } = await supabase
         .from("forecast_comment_replies")
         .select("*")
@@ -133,12 +133,12 @@ export function useForecastCommentReplies(commentId: string) {
   });
 }
 
-export function useCreateForecastCommentReply() {
+export function useCreatePredictionCommentReply() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async ({ commentId, replyText, forecastId }: { commentId: string; replyText: string; forecastId: string }) => {
+    mutationFn: async ({ commentId, replyText, predictionId }: { commentId: string; replyText: string; predictionId: string }) => {
       if (!user) throw new Error("Must be logged in");
       
       // Insert the reply
@@ -170,18 +170,18 @@ export function useCreateForecastCommentReply() {
           type: "forecast_comment_reply",
           title: "New reply to your comment",
           message: `${replierName} replied: "${replyText.slice(0, 100)}${replyText.length > 100 ? "..." : ""}"`,
-          link: `/forecasts/${forecastId}`,
-          metadata: { commentId, forecastId },
+          link: `/predictions/${predictionId}`,
+          metadata: { commentId, predictionId },
         });
       }
     },
     onSuccess: (_, { commentId }) => {
-      queryClient.invalidateQueries({ queryKey: ["forecast-comment-replies", commentId] });
+      queryClient.invalidateQueries({ queryKey: ["prediction-comment-replies", commentId] });
     },
   });
 }
 
-export function useDeleteForecastCommentReply() {
+export function useDeletePredictionCommentReply() {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -191,16 +191,16 @@ export function useDeleteForecastCommentReply() {
       return commentId;
     },
     onSuccess: (commentId) => {
-      queryClient.invalidateQueries({ queryKey: ["forecast-comment-replies", commentId] });
+      queryClient.invalidateQueries({ queryKey: ["prediction-comment-replies", commentId] });
     },
   });
 }
 
 // ── Reply Likes ──
 
-export function useForecastReplyLikes(replyIds: string[]) {
+export function usePredictionReplyLikes(replyIds: string[]) {
   return useQuery({
-    queryKey: ["forecast-reply-likes", replyIds],
+    queryKey: ["prediction-reply-likes", replyIds],
     queryFn: async (): Promise<Record<string, { count: number; userLiked: boolean }>> => {
       if (!replyIds.length) return {};
 
@@ -228,12 +228,12 @@ export function useForecastReplyLikes(replyIds: string[]) {
   });
 }
 
-export function useToggleForecastReplyLike() {
+export function useTogglePredictionReplyLike() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async ({ replyId, isLiked, forecastId }: { replyId: string; isLiked: boolean; forecastId: string }) => {
+    mutationFn: async ({ replyId, isLiked, predictionId }: { replyId: string; isLiked: boolean; predictionId: string }) => {
       if (!user) throw new Error("Must be logged in");
       if (isLiked) {
         const { error } = await supabase
@@ -269,14 +269,14 @@ export function useToggleForecastReplyLike() {
             type: "forecast_comment_like",
             title: "Your reply was liked",
             message: `${likerName} liked your reply`,
-            link: `/forecasts/${forecastId}`,
-            metadata: { replyId, forecastId },
+            link: `/predictions/${predictionId}`,
+            metadata: { replyId, predictionId },
           });
         }
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["forecast-reply-likes"] });
+      queryClient.invalidateQueries({ queryKey: ["prediction-reply-likes"] });
     },
   });
 }

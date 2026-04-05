@@ -17,8 +17,8 @@ import { ManageCategories, ManageBlockchains } from "@/components/admin/ManageCa
 import UsersList from "@/components/admin/UsersList";
 import DeletionRequests from "@/components/admin/DeletionRequests";
 import ManageSpotlight from "@/components/admin/ManageSpotlight";
-import ManageForecasts from "@/components/admin/ManageForecasts";
-import ManageHourlyForecasts from "@/components/admin/ManageHourlyForecasts";
+import ManagePredictions from "@/components/admin/ManagePredictions";
+import ManageHourlyPredictions from "@/components/admin/ManageHourlyPredictions";
 
 import { useDynamicOptions } from "@/hooks/useDynamicOptions";
 
@@ -64,7 +64,7 @@ const AdminDashboard = () => {
   const { categories: CATEGORIES, blockchains: BLOCKCHAINS } = useDynamicOptions();
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<"projects" | "submissions" | "categories" | "users" | "deletion-requests" | "spotlight" | "forecasts" | "hourly">("projects");
+  const [tab, setTab] = useState<"projects" | "submissions" | "categories" | "users" | "deletion-requests" | "spotlight" | "predictions" | "hourly">("projects");
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [filter, setFilter] = useState<"pending" | "approved" | "rejected">("pending");
   const [projects, setProjects] = useState<Project[]>([]);
@@ -293,7 +293,7 @@ const AdminDashboard = () => {
               {([
                 { key: "projects", label: `All Projects (${projects.length})` },
                 { key: "submissions", label: "Submissions" },
-                { key: "forecasts", label: "Predictions" },
+                { key: "predictions", label: "Predictions" },
                 { key: "hourly", label: "Hourly Predictions" },
                 { key: "spotlight", label: "Spotlight" },
                 { key: "deletion-requests", label: "Deletion Requests" },
@@ -585,15 +585,15 @@ const AdminDashboard = () => {
 
             {tab === "deletion-requests" && (
               <div className="rounded-xl border border-border bg-card p-5">
-                <h3 className="mb-4 text-lg font-semibold text-foreground">Forecast Deletion Requests</h3>
+                <h3 className="mb-4 text-lg font-semibold text-foreground">Prediction Deletion Requests</h3>
                 <DeletionRequests />
               </div>
             )}
 
-            {tab === "forecasts" && (
+            {tab === "predictions" && (
               <div className="rounded-xl border border-border bg-card p-5">
-                <h3 className="mb-4 text-lg font-semibold text-foreground">Manage Forecasts</h3>
-                <ManageForecasts />
+                <h3 className="mb-4 text-lg font-semibold text-foreground">Manage Predictions</h3>
+                <ManagePredictions />
               </div>
             )}
 
@@ -606,7 +606,7 @@ const AdminDashboard = () => {
 
             {tab === "hourly" && (
               <div className="rounded-xl border border-border bg-card p-5">
-                <ManageHourlyForecasts />
+                <ManageHourlyPredictions />
               </div>
             )}
           </motion.div>

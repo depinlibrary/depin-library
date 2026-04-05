@@ -5,28 +5,28 @@ import { useAuth } from "@/contexts/AuthContext";
 import { createNotification } from "@/hooks/useNotifications";
 
 /** Subscribe to realtime changes on the forecasts table and invalidate queries */
-export function useRealtimeForecasts() {
+export function useRealtimePredictions() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
     const channel = supabase
-      .channel("realtime-forecasts")
+      .channel("realtime-predictions")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "forecasts" },
+        { event: "*", schema: "public", table: "predictions" },
         () => {
-          queryClient.invalidateQueries({ queryKey: ["forecasts"] });
+          queryClient.invalidateQueries({ queryKey: ["predictions"] });
         }
       )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "forecast_votes" },
         (payload: any) => {
-          const forecastId = payload.new?.forecast_id || payload.old?.forecast_id;
-          queryClient.invalidateQueries({ queryKey: ["forecasts"] });
-          if (forecastId) {
-            queryClient.invalidateQueries({ queryKey: ["forecast-detail", forecastId] });
-            queryClient.invalidateQueries({ queryKey: ["forecast-vote-history", forecastId] });
+          const predictionId = payload.new?.forecast_id || payload.old?.forecast_id;
+          queryClient.invalidateQueries({ queryKey: ["predictions"] });
+          if (predictionId) {
+            queryClient.invalidateQueries({ queryKey: ["prediction-detail", predictionId] });
+            queryClient.invalidateQueries({ queryKey: ["prediction-vote-history", predictionId] });
           }
         }
       )
@@ -37,7 +37,7 @@ export function useRealtimeForecasts() {
     };
   }, [queryClient]);
 }
-export type Forecast = {
+export type Prediction = {
   id: string;
   title: string;
   description: string;
@@ -64,25 +64,25 @@ export type Forecast = {
   outcome?: string | null;
 };
 
-export type ForecastSortOption = "votes" | "newest" | "ending_soon";
-export type ForecastStatusFilter = "all" | "active" | "ended";
+export type PredictionSortOption = "votes" | "newest" | "ending_soon";
+export type PredictionStatusFilter = "all" | "active" | "ended";
 
-export function useForecasts(sort: ForecastSortOption = "newest", page = 1, pageSize = 12, projectFilter?: string, search?: string, statusFilter: ForecastStatusFilter = "all", dimensionFilter?: string) {
+export function usePredictions(sort: PredictionSortOption = "newest", page = 1, pageSize = 12, projectFilter?: string, search?: string, statusFilter: PredictionStatusFilter = "all", dimensionFilter?: string) {
   return useQuery({
-    queryKey: ["forecasts", sort, page, projectFilter, search, statusFilter, dimensionFilter],
-    queryFn: async (): Promise<{ forecasts: Forecast[]; total: number }> => {
+    queryKey: ["predictions", sort, page, projectFilter, search, statusFilter, dimensionFilter],
+    queryFn: async (): Promise<{ predictions: Prediction[]; total: number }> => {
       const now = new Date().toISOString();
 
-      // If filtering by dimension, first get matching forecast IDs
-      let dimensionForecastIds: string[] | null = null;
+      // If filtering by dimension, first get matching prediction IDs
+      let dimensionPredictionIds: string[] | null = null;
       if (dimensionFilter) {
         const { data: targets } = await supabase
           .from("forecast_targets")
           .select("forecast_id")
           .eq("dimension", dimensionFilter);
-        dimensionForecastIds = (targets || []).map((t: any) => t.forecast_id);
-        if (dimensionForecastIds.length === 0) {
-          return { forecasts: [], total: 0 };
+        dimensionPredictionIds = (targets || []).map((t: any) => t.forecast_id);
+        if (dimensionPredictionIds.length === 0) {
+          return { predictions: [], total: 0 };
         }
       }
       
@@ -91,8 +91,8 @@ export function useForecasts(sort: ForecastSortOption = "newest", page = 1, page
         .from("forecasts")
         .select("*", { count: "exact", head: true });
 
-      if (dimensionForecastIds) {
-        countQuery = countQuery.in("id", dimensionForecastIds);
+      if (dimensionPredictionIds) {
+        countQuery = countQuery.in("id", dimensionPredictionIds);
       }
 
       if (projectFilter) {
@@ -116,8 +116,8 @@ export function useForecasts(sort: ForecastSortOption = "newest", page = 1, page
         .select("*")
         .range((page - 1) * pageSize, page * pageSize - 1);
 
-      if (dimensionForecastIds) {
-        query = query.in("id", dimensionForecastIds);
+      if (dimensionPredictionIds) {
+        query = query.in("id", dimensionPredictionIds);
       }
 
       if (projectFilter) {
@@ -145,12 +145,12 @@ export function useForecasts(sort: ForecastSortOption = "newest", page = 1, page
           query = query.order("created_at", { ascending: false });
       }
 
-      const { data: forecasts, error } = await query;
+      const { data: predictions, error } = await query;
       if (error) throw error;
 
       // Fetch project names
       const projectIds = new Set<string>();
-      (forecasts || []).forEach((f: any) => {
+      (predictions || []).forEach((f: any) => {
         projectIds.add(f.project_a_id);
         if (f.project_b_id) projectIds.add(f.project_b_id);
       });
@@ -169,20 +169,20 @@ export function useForecasts(sort: ForecastSortOption = "newest", page = 1, page
       const { data: { session } } = await supabase.auth.getSession();
       let userVotes: Record<string, string> = {};
       if (session?.user) {
-        const forecastIds = (forecasts || []).map((f: any) => f.id);
-        if (forecastIds.length > 0) {
+        const predictionIds = (predictions || []).map((f: any) => f.id);
+        if (predictionIds.length > 0) {
           const { data: votes } = await supabase
             .from("forecast_votes")
             .select("forecast_id, vote")
             .eq("user_id", session.user.id)
-            .in("forecast_id", forecastIds);
+            .in("forecast_id", predictionIds);
           (votes || []).forEach((v: any) => {
             userVotes[v.forecast_id] = v.vote;
           });
         }
       }
 
-      const enriched = (forecasts || []).map((f: any) => ({
+      const enriched = (predictions || []).map((f: any) => ({
         ...f,
         project_a_name: projectMap[f.project_a_id]?.name || "Unknown",
         project_b_name: f.project_b_id ? projectMap[f.project_b_id]?.name || "Unknown" : null,
@@ -195,12 +195,12 @@ export function useForecasts(sort: ForecastSortOption = "newest", page = 1, page
         user_vote: userVotes[f.id] || null,
       }));
 
-      return { forecasts: enriched, total: count || 0 };
+      return { predictions: enriched, total: count || 0 };
     },
   });
 }
 
-export function useCreateForecast() {
+export function useCreatePrediction() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
@@ -253,14 +253,14 @@ export function useCreateForecast() {
         if (!dupError && dupCheck && dupCheck.length > 0 && dupCheck[0].is_duplicate) {
           const dup = dupCheck[0];
           if (dup.duplicate_type === "structural") {
-            throw new Error(`A similar active forecast already exists for this project and market: "${dup.duplicate_title}"`);
+            throw new Error(`A similar active prediction already exists for this project and market: "${dup.duplicate_title}"`);
           } else if (dup.duplicate_type === "title_similar") {
-            throw new Error(`A forecast with a very similar title already exists: "${dup.duplicate_title}" (${Math.round((dup.similarity_score || 0) * 100)}% match)`);
+            throw new Error(`A prediction with a very similar title already exists: "${dup.duplicate_title}" (${Math.round((dup.similarity_score || 0) * 100)}% match)`);
           }
         }
       }
 
-      const { data: forecast, error } = await supabase.from("forecasts").insert({
+      const { data: prediction, error } = await supabase.from("forecasts").insert({
         title,
         description,
         project_a_id: projectAId,
@@ -274,9 +274,9 @@ export function useCreateForecast() {
       if (error) throw error;
 
       // Insert analysis dimensions
-      if (analysisDimensions.length > 0 && forecast) {
+      if (analysisDimensions.length > 0 && prediction) {
         const targets = analysisDimensions.map(dim => ({
-          forecast_id: forecast.id,
+          forecast_id: prediction.id,
           dimension: dim,
         }));
         await supabase.from("forecast_targets").insert(targets);
@@ -285,35 +285,35 @@ export function useCreateForecast() {
         try {
           const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
           await fetch(
-            `https://${projectId}.supabase.co/functions/v1/snapshot-forecast-metrics`,
+            `https://${projectId}.supabase.co/functions/v1/snapshot-prediction-metrics`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ forecast_id: forecast.id, snapshot_type: "start" }),
+              body: JSON.stringify({ forecast_id: prediction.id, snapshot_type: "start" }),
             }
           );
         } catch {}
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["forecasts"] });
+      queryClient.invalidateQueries({ queryKey: ["predictions"] });
     },
   });
 }
 
-export function useVoteForecast() {
+export function useVotePrediction() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async ({ forecastId, vote, confidenceLevel }: { forecastId: string; vote: "yes" | "no"; confidenceLevel?: number }) => {
+    mutationFn: async ({ predictionId, vote, confidenceLevel }: { predictionId: string; vote: "yes" | "no"; confidenceLevel?: number }) => {
       if (!user) throw new Error("Must be logged in");
 
       // Check if user already voted — votes are permanent
       const { data: existingVote } = await supabase
         .from("forecast_votes")
         .select("id")
-        .eq("forecast_id", forecastId)
+        .eq("forecast_id", predictionId)
         .eq("user_id", user.id)
         .maybeSingle();
 
@@ -322,21 +322,21 @@ export function useVoteForecast() {
       }
 
       const { error } = await supabase.from("forecast_votes").insert({
-        forecast_id: forecastId,
+        forecast_id: predictionId,
         user_id: user.id,
         vote,
         confidence_level: confidenceLevel ?? null,
       });
       if (error) throw error;
 
-      // Notify forecast creator
-      const { data: forecast } = await supabase
+      // Notify prediction creator
+      const { data: prediction } = await supabase
         .from("forecasts")
         .select("creator_user_id, title")
-        .eq("id", forecastId)
+        .eq("id", predictionId)
         .single();
 
-      if (forecast && forecast.creator_user_id !== user.id) {
+      if (prediction && prediction.creator_user_id !== user.id) {
         const { data: profile } = await supabase
           .from("profiles")
           .select("display_name")
@@ -347,21 +347,21 @@ export function useVoteForecast() {
         const voteLabel = vote === "yes" ? "Yes" : "No";
 
         await createNotification({
-          userId: forecast.creator_user_id,
+          userId: prediction.creator_user_id,
           type: "forecast_vote",
-          title: "New vote on your forecast",
-          message: `${voterName} voted "${voteLabel}" on "${forecast.title.slice(0, 50)}${forecast.title.length > 50 ? "..." : ""}"`,
-          link: `/forecasts/${forecastId}`,
-          metadata: { forecastId, vote },
+          title: "New vote on your prediction",
+          message: `${voterName} voted "${voteLabel}" on "${prediction.title.slice(0, 50)}${prediction.title.length > 50 ? "..." : ""}"`,
+          link: `/predictions/${predictionId}`,
+          metadata: { predictionId, vote },
         });
       }
 
-      return forecastId;
+      return predictionId;
     },
-    onSuccess: (forecastId) => {
-      queryClient.invalidateQueries({ queryKey: ["forecasts"] });
-      queryClient.invalidateQueries({ queryKey: ["forecast-detail", forecastId] });
-      queryClient.invalidateQueries({ queryKey: ["forecast-vote-history", forecastId] });
+    onSuccess: (predictionId) => {
+      queryClient.invalidateQueries({ queryKey: ["predictions"] });
+      queryClient.invalidateQueries({ queryKey: ["prediction-detail", predictionId] });
+      queryClient.invalidateQueries({ queryKey: ["prediction-vote-history", predictionId] });
     },
   });
 }

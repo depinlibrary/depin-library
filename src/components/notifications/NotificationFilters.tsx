@@ -9,8 +9,8 @@ import {
 
 const notificationTypeLabels: Record<string, string> = {
   price_alert: "Price Alert",
-  forecast_result: "Forecast Result",
-  forecast_vote: "Forecast Vote",
+  prediction_result: "Prediction Result",
+  prediction_vote: "Prediction Vote",
 };
 
 interface NotificationFiltersProps {

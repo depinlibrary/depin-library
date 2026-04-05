@@ -1,6 +1,6 @@
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { CheckCircle, XCircle, Clock, FileText } from "lucide-react";
-import { useUserForecastStats } from "@/hooks/useUserForecastStats";
+import { useUserPredictionStats } from "@/hooks/useUserPredictionStats";
 import { Skeleton } from "@/components/ui/skeleton";
 import UserAvatar from "@/components/UserAvatar";
 
@@ -12,7 +12,7 @@ interface UserStatsHoverCardProps {
 }
 
 const UserStatsHoverCard = ({ userId, displayName, avatarUrl, children }: UserStatsHoverCardProps) => {
-  const { data: stats, isLoading } = useUserForecastStats(userId);
+  const { data: stats, isLoading } = useUserPredictionStats(userId);
 
   const accuracyColor = (stats?.accuracy ?? 0) >= 60
     ? "text-green-500"
@@ -41,8 +41,8 @@ const UserStatsHoverCard = ({ userId, displayName, avatarUrl, children }: UserSt
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-3/4" />
             </div>
-          ) : stats?.totalVotes === 0 && stats?.forecastsCreated === 0 ? (
-            <p className="text-xs text-muted-foreground text-center py-2">No forecast activity yet</p>
+          ) : stats?.totalVotes === 0 && stats?.predictionsCreated === 0 ? (
+            <p className="text-xs text-muted-foreground text-center py-2">No prediction activity yet</p>
           ) : (
             <>
               {/* Stats grid — no icons */}
@@ -56,7 +56,7 @@ const UserStatsHoverCard = ({ userId, displayName, avatarUrl, children }: UserSt
                   <p className="text-[9px] text-muted-foreground">Accuracy</p>
                 </div>
                 <div className="bg-secondary/50 rounded-lg p-2 text-center">
-                  <p className="text-lg font-bold text-foreground">{stats?.forecastsCreated}</p>
+                  <p className="text-lg font-bold text-foreground">{stats?.predictionsCreated}</p>
                   <p className="text-[9px] text-muted-foreground">Created</p>
                 </div>
               </div>

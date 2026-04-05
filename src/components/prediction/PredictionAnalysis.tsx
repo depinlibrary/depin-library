@@ -54,14 +54,14 @@ const dimensionMeta: Record<string, { label: string; icon: typeof TrendingUp; fo
   };
 
 interface Props {
-  forecastId: string;
+  predictionId: string;
   isEnded: boolean;
   totalVotesYes?: number;
   totalVotesNo?: number;
   predictionTarget?: number | null;
   predictionDirection?: string | null;
   startPrice?: number | null;
-  forecastDimension?: string | null;
+  predictionDimension?: string | null;
   projectAId?: string;
   projectBId?: string | null;
   projectAName?: string;
@@ -69,15 +69,15 @@ interface Props {
   isCreator?: boolean;
 }
 
-export default function ForecastAnalysis({
-  forecastId,
+export default function PredictionAnalysis({
+  predictionId,
   isEnded,
   totalVotesYes = 0,
   totalVotesNo = 0,
   predictionTarget,
   predictionDirection,
   startPrice,
-  forecastDimension,
+  predictionDimension,
   projectAId,
   projectBId,
   projectAName,
@@ -85,36 +85,36 @@ export default function ForecastAnalysis({
   isCreator = false,
 }: Props) {
   const { data: targets = [] } = useQuery({
-    queryKey: ["forecast-targets", forecastId],
+    queryKey: ["prediction-targets", predictionId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("forecast_targets").select("*").eq("forecast_id", forecastId);
+      const { data, error } = await supabase.from("forecast_targets").select("*").eq("forecast_id", predictionId);
       if (error) throw error;
       return data || [];
     },
   });
 
   const { data: snapshots = [] } = useQuery({
-    queryKey: ["forecast-snapshots", forecastId],
+    queryKey: ["prediction-snapshots", predictionId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("forecast_metric_snapshots")
         .select("*")
-        .eq("forecast_id", forecastId);
+        .eq("forecast_id", predictionId);
       if (error) throw error;
       return data || [];
     },
     enabled: targets.length > 0,
   });
 
-  // Check if end snapshots are missing for an ended forecast
+  // Check if end snapshots are missing for an ended prediction
   const hasEndSnapshots =
     isEnded && snapshots.length > 0 && snapshots.some((s: any) => s.snapshot_type === "end" && s.value != null);
   const needsFallback = isEnded && snapshots.length > 0 && !hasEndSnapshots;
 
-  // Always fetch live market data — used as live tracker for active forecasts
-  // AND as fallback for ended forecasts with missing end snapshots
+  // Always fetch live market data — used as live tracker for active predictions
+  // AND as fallback for ended predictions with missing end snapshots
   const { data: liveMarketData } = useQuery({
-    queryKey: ["forecast-live-market", projectAId],
+    queryKey: ["prediction-live-market", projectAId],
     queryFn: async () => {
       if (!projectAId) return null;
       const { data, error } = await supabase
@@ -131,7 +131,7 @@ export default function ForecastAnalysis({
 
   // Always fetch live market data for Project B
   const { data: liveMarketDataB } = useQuery({
-    queryKey: ["forecast-live-market-b", projectBId],
+    queryKey: ["prediction-live-market-b", projectBId],
     queryFn: async () => {
       if (!projectBId) return null;
       const { data, error } = await supabase
@@ -146,12 +146,12 @@ export default function ForecastAnalysis({
     refetchInterval: isEnded ? false : 60000,
   });
 
-  // Auto-trigger backfill when visiting an ended forecast with missing end snapshots
+  // Auto-trigger backfill when visiting an ended prediction with missing end snapshots
   const backfillTriggered = useRef(false);
   useEffect(() => {
     if (needsFallback && !backfillTriggered.current) {
       backfillTriggered.current = true;
-      supabase.functions.invoke("backfill-forecast-snapshots").catch(() => {});
+      supabase.functions.invoke("backfill-prediction-snapshots").catch(() => {});
     }
   }, [needsFallback]);
 
@@ -161,7 +161,7 @@ export default function ForecastAnalysis({
     const s = snapshots.find((s: any) => s.dimension === dim && s.snapshot_type === type);
     if (s?.value != null) return s.value;
 
-    // Fallback: use live market data for active forecasts OR ended forecasts missing snapshots
+    // Fallback: use live market data for active predictions OR ended predictions missing snapshots
     if (!isEnded || needsFallback) {
       if (dim === "token_price" && liveMarketData?.price_usd != null) return Number(liveMarketData.price_usd);
       if (dim === "market_cap" && liveMarketData?.market_cap_usd != null) return Number(liveMarketData.market_cap_usd);
@@ -169,7 +169,7 @@ export default function ForecastAnalysis({
     return null;
   };
 
-  // For active forecasts, get "current" value from live data
+  // For active predictions, get "current" value from live data
   const getCurrentValue = (dim: string): number | null => {
     if (dim === "token_price" && liveMarketData?.price_usd != null) return Number(liveMarketData.price_usd);
     if (dim === "market_cap" && liveMarketData?.market_cap_usd != null) return Number(liveMarketData.market_cap_usd);
@@ -205,16 +205,16 @@ export default function ForecastAnalysis({
 
       <div className="divide-y divide-border">
         {/* Two-Project Comparison Section — for token_price / market_cap with two projects */}
-        {(forecastDimension === "token_price" || forecastDimension === "market_cap") &&
+        {(predictionDimension === "token_price" || predictionDimension === "market_cap") &&
           !!projectBId &&
           predictionTarget != null &&
           predictionDirection &&
           startPrice != null &&
           (() => {
-            const dimLabel = forecastDimension === "token_price" ? "Price" : "Market Cap";
-            const dimKey = forecastDimension === "token_price" ? "token_price" : "market_cap";
+            const dimLabel = predictionDimension === "token_price" ? "Price" : "Market Cap";
+            const dimKey = predictionDimension === "token_price" ? "token_price" : "market_cap";
             const formatVal = (v: number) => {
-              if (forecastDimension === "market_cap") {
+              if (predictionDimension === "market_cap") {
                 if (v >= 1e9) return `$${(v / 1e9).toFixed(2)}B`;
                 if (v >= 1e6) return `$${(v / 1e6).toFixed(2)}M`;
                 return `$${v.toLocaleString()}`;
@@ -235,12 +235,12 @@ export default function ForecastAnalysis({
 
             // Current/end values
             const liveA = liveMarketData
-              ? forecastDimension === "token_price"
+              ? predictionDimension === "token_price"
                 ? Number(liveMarketData.price_usd)
                 : Number(liveMarketData.market_cap_usd)
               : null;
             const liveB = liveMarketDataB
-              ? forecastDimension === "token_price"
+              ? predictionDimension === "token_price"
                 ? Number(liveMarketDataB.price_usd)
                 : Number(liveMarketDataB.market_cap_usd)
               : null;
@@ -248,7 +248,7 @@ export default function ForecastAnalysis({
             const endSnapB =
               snapshots.find((s: any) => s.dimension === `${dimKey}_b` && s.snapshot_type === "end")?.value ?? null;
 
-            // For ended forecasts: prefer end snapshots, fall back to live data if snapshots missing
+            // For ended predictions: prefer end snapshots, fall back to live data if snapshots missing
             const currentA = isEnded ? (endSnapA ?? liveA) : (liveA ?? endSnapA);
             const currentB = isEnded ? (endSnapB ?? liveB) : (liveB ?? endSnapB);
 
@@ -377,16 +377,16 @@ export default function ForecastAnalysis({
           })()}
 
         {/* Single-Project Prediction Target Section — for token_price / market_cap without project B */}
-        {(forecastDimension === "token_price" || forecastDimension === "market_cap") &&
+        {(predictionDimension === "token_price" || predictionDimension === "market_cap") &&
           !projectBId &&
           startPrice != null &&
           predictionTarget != null &&
           predictionDirection &&
           (() => {
             const pctChange = startPrice !== 0 ? ((predictionTarget - startPrice) / startPrice) * 100 : null;
-            const dimLabel = forecastDimension === "token_price" ? "Price" : "Market Cap";
+            const dimLabel = predictionDimension === "token_price" ? "Price" : "Market Cap";
             const formatVal = (v: number) => {
-              if (forecastDimension === "market_cap") {
+              if (predictionDimension === "market_cap") {
                 if (v >= 1e9) return `$${(v / 1e9).toFixed(2)}B`;
                 if (v >= 1e6) return `$${(v / 1e6).toFixed(2)}M`;
                 return `$${v.toLocaleString()}`;
@@ -398,7 +398,7 @@ export default function ForecastAnalysis({
                   : `$${v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
             };
 
-            const dim = forecastDimension === "token_price" ? "token_price" : "market_cap";
+            const dim = predictionDimension === "token_price" ? "token_price" : "market_cap";
             const endSnap = getSnapshot(dim, "end");
             const liveVal = getCurrentValue(dim);
             const currentVal = isEnded ? endSnap : (liveVal ?? endSnap);
@@ -558,7 +558,7 @@ export default function ForecastAnalysis({
       {!isEnded && targets.length > 0 && (
         <div className="px-6 py-3 border-t border-border bg-secondary/20">
           <p className="text-[10px] text-muted-foreground text-center">
-            Metrics are snapshotted at creation and compared when the forecast ends. Data from CoinGecko.
+            Metrics are snapshotted at creation and compared when the prediction ends. Data from CoinGecko.
           </p>
         </div>
       )}

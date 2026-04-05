@@ -19,20 +19,20 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    const { forecast_id, snapshot_type } = await req.json();
+    const { prediction_id, snapshot_type } = await req.json();
 
-    if (!forecast_id || !snapshot_type) {
+    if (!prediction_id || !snapshot_type) {
       return new Response(
-        JSON.stringify({ error: "forecast_id and snapshot_type required" }),
+        JSON.stringify({ error: "prediction_id and snapshot_type required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Get forecast targets
+    // Get prediction targets
     const { data: targets, error: tErr } = await supabase
       .from("forecast_targets")
       .select("dimension")
-      .eq("forecast_id", forecast_id);
+      .eq("forecast_id", prediction_id);
 
     if (tErr || !targets?.length) {
       return new Response(
@@ -41,16 +41,16 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Get forecast to find projects
-    const { data: forecast } = await supabase
+    // Get prediction to find projects
+    const { data: prediction } = await supabase
       .from("forecasts")
       .select("project_a_id, project_b_id")
-      .eq("id", forecast_id)
+      .eq("id", prediction_id)
       .single();
 
-    if (!forecast) {
+    if (!prediction) {
       return new Response(
-        JSON.stringify({ error: "forecast not found" }),
+        JSON.stringify({ error: "prediction not found" }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -59,23 +59,23 @@ Deno.serve(async (req) => {
     const { data: project } = await supabase
       .from("projects")
       .select("name, coingecko_id")
-      .eq("id", forecast.project_a_id)
+      .eq("id", prediction.project_a_id)
       .single();
 
     // Get current market data for Project A (CoinGecko-sourced)
     const { data: marketData } = await supabase
       .from("token_market_data")
       .select("price_usd, market_cap_usd")
-      .eq("project_id", forecast.project_a_id)
+      .eq("project_id", prediction.project_a_id)
       .single();
 
     // Get current market data for Project B if it exists
     let marketDataB: any = null;
-    if (forecast.project_b_id) {
+    if (prediction.project_b_id) {
       const { data: mdB } = await supabase
         .from("token_market_data")
         .select("price_usd, market_cap_usd")
-        .eq("project_id", forecast.project_b_id)
+        .eq("project_id", prediction.project_b_id)
         .single();
       marketDataB = mdB;
     }
@@ -152,7 +152,7 @@ Deno.serve(async (req) => {
       }
 
       snapshots.push({
-        forecast_id,
+        prediction_id,
         dimension: dim,
         snapshot_type,
         value,
@@ -161,7 +161,7 @@ Deno.serve(async (req) => {
       });
 
       // Also snapshot Project B's data for comparison forecasts
-      if (forecast.project_b_id && marketDataB && (dim === "token_price" || dim === "market_cap")) {
+      if (prediction.project_b_id && marketDataB && (dim === "token_price" || dim === "market_cap")) {
         let valueB: number | null = null;
         let sourceB = "pending";
 
@@ -174,7 +174,7 @@ Deno.serve(async (req) => {
         }
 
         snapshots.push({
-          forecast_id,
+          prediction_id,
           dimension: `${dim}_b`,
           snapshot_type,
           value: valueB,
@@ -186,7 +186,7 @@ Deno.serve(async (req) => {
 
     const { error: insertErr } = await supabase
       .from("forecast_metric_snapshots")
-      .upsert(snapshots, { onConflict: "forecast_id,dimension,snapshot_type" });
+      .upsert(snapshots, { onConflict: "prediction_id,dimension,snapshot_type" });
 
     if (insertErr) {
       return new Response(
