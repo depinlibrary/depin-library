@@ -269,10 +269,7 @@ const HourlyRoundCard = ({ round, index }: { round: HourlyRound; index: number }
                 PREDICTING
               </span>
             )}
-            {isInCooldown && (
-              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400">Cooldown</span>
-            )}
-            {!isActive && !isInCooldown && round.status === "resolved" && (
+            {isResolved && (
               <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">Resolved</span>
             )}
           </div>
