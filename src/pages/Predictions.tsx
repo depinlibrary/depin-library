@@ -1169,7 +1169,7 @@ const Predictions = () => {
             {/* Topic chips */}
             {[
               { value: "", label: "All" },
-              { value: "hourly", label: "⚡ Rush Hour", comingSoon: false },
+              { value: "hourly", label: "Rush Hour", comingSoon: false },
               { value: "token_price", label: "Token Price", comingSoon: false },
               { value: "market_cap", label: "Market Cap", comingSoon: false },
               
@@ -1320,7 +1320,7 @@ const Predictions = () => {
                 </div>
               ))}
             </div>
-          ) : allPredictions.length === 0 && !isLoading ? (
+          ) : allPredictions.length === 0 && hourlyRounds.length === 0 && !isLoading ? (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
