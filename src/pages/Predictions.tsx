@@ -967,7 +967,7 @@ const Predictions = () => {
   }, [isFetching]);
 
   const total = totalCount;
-  const hasMorePages = allPredictions.length < totalCount && predictions.length > 0;
+  const hasMorePages = allPredictions.length < totalCount && forecasts.length > 0;
   const isInitialLoading = isLoading && allPredictions.length === 0;
   const isFetchingMore = isFetching && allPredictions.length > 0;
 
