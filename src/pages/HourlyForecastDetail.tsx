@@ -244,7 +244,7 @@ export default function HourlyForecastDetail() {
               <div className="flex items-center gap-3 mb-5">
                 <Timer className="h-5 w-5 text-muted-foreground" />
                 <span className="text-2xl font-mono font-bold text-foreground tabular-nums">
-                  {isActive && votingOpen ? `Voting closes ${votingCountdown}` : isActive ? `Resolves ${countdown}` : isInCooldown ? `Next in ${countdown}` : "—"}
+                  {isActive && votingOpen ? `Voting closes ${votingCountdown}` : isActive ? `Resolves ${countdown}` : "—"}
                 </span>
                 <span className="text-xs text-muted-foreground">{totalVotes} vote{totalVotes !== 1 ? "s" : ""}</span>
               </div>
