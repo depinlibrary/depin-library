@@ -91,23 +91,23 @@
 
     --border: 220 14% 88%;
     --input: 220 14% 88%;
-    --ring: 217 90% 50%;
+    --ring: 152 76% 38%;
 
     --sidebar-background: 220 14% 96%;
     --sidebar-foreground: 222 18% 30%;
-    --sidebar-primary: 217 90% 50%;
+    --sidebar-primary: 152 76% 38%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 220 14% 93%;
     --sidebar-accent-foreground: 222 18% 30%;
     --sidebar-border: 220 14% 88%;
-    --sidebar-ring: 217 90% 50%;
+    --sidebar-ring: 152 76% 38%;
 
     /* Custom tokens */
-    --glow-primary: 217 90% 50%;
+    --glow-primary: 152 76% 38%;
     --glow-accent: 265 60% 55%;
     --surface-glass: 220 14% 96%;
     --neon-green: 155 70% 35%;
-    --neon-blue: 217 90% 50%;
+    --neon-blue: 152 76% 38%;
     --text-dim: 218 10% 55%;
   }
 }
