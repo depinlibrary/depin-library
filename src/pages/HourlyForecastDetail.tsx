@@ -93,9 +93,13 @@ export default function HourlyForecastDetail() {
 
   const isActive = round?.status === "active" && new Date(round.end_time) > new Date();
   const isInCooldown = round?.status === "resolved" && round.cooldown_end && new Date(round.cooldown_end) > new Date();
+  const votingOpen = round ? isVotingOpen(round) : false;
+  const votingDeadline = round ? getVotingDeadline(round.start_time, round.end_time) : null;
   const countdown = useCountdown(isActive ? round?.end_time ?? null : isInCooldown ? round?.cooldown_end ?? null : null);
+  const votingCountdown = useCountdown(votingOpen && votingDeadline ? votingDeadline.toISOString() : null);
   const totalVotes = (round?.total_votes_up || 0) + (round?.total_votes_down || 0);
   const upPct = totalVotes > 0 ? ((round?.total_votes_up || 0) / totalVotes) * 100 : 50;
+  const userOutcome = getUserOutcome(userVote || null, round?.outcome || null);
 
   const chartData = useMemo(() => {
     if (!marketData?.sparkline_7d || !Array.isArray(marketData.sparkline_7d)) return [];
