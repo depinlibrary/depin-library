@@ -51,8 +51,20 @@ export function useRealtimeHourlyRounds() {
   useEffect(() => {
     const channel = supabase
       .channel("realtime-hourly-rounds")
-      .on("postgres_changes", { event: "*", schema: "public", table: "hourly_forecast_rounds" }, () => {
+      .on("postgres_changes", { event: "*", schema: "public", table: "hourly_forecast_rounds" }, (payload: any) => {
         queryClient.invalidateQueries({ queryKey: ["hourly-rounds"] });
+        const roundId = payload.new?.id || payload.old?.id;
+        if (roundId) {
+          queryClient.invalidateQueries({ queryKey: ["hourly-round-detail", roundId] });
+        }
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "hourly_forecast_votes" }, (payload: any) => {
+        queryClient.invalidateQueries({ queryKey: ["hourly-rounds"] });
+        const roundId = payload.new?.round_id || payload.old?.round_id;
+        if (roundId) {
+          queryClient.invalidateQueries({ queryKey: ["hourly-round-detail", roundId] });
+          queryClient.invalidateQueries({ queryKey: ["hourly-round-user-vote", roundId] });
+        }
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
