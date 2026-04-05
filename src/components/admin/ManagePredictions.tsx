@@ -32,8 +32,8 @@ export default function ManagePredictions() {
   const [editForm, setEditForm] = useState<Partial<Prediction>>({});
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const { data: forecasts = [], isLoading } = useQuery({
-    queryKey: ["admin-forecasts", searchQuery],
+  const { data: predictions = [], isLoading } = useQuery({
+    queryKey: ["admin-predictions", searchQuery],
     queryFn: async () => {
       let query = supabase
         .from("forecasts")
@@ -75,7 +75,7 @@ export default function ManagePredictions() {
     },
     onSuccess: () => {
       toast.success("Prediction updated successfully");
-      queryClient.invalidateQueries({ queryKey: ["admin-forecasts"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-predictions"] });
       setEditingPrediction(null);
     },
     onError: (error) => {
@@ -90,7 +90,7 @@ export default function ManagePredictions() {
     },
     onSuccess: () => {
       toast.success("Prediction deleted permanently");
-      queryClient.invalidateQueries({ queryKey: ["admin-forecasts"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-predictions"] });
       setDeletingId(null);
     },
     onError: (error) => {
@@ -113,7 +113,7 @@ export default function ManagePredictions() {
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search forecasts by title..."
+            placeholder="Search predictions by title..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
@@ -125,13 +125,13 @@ export default function ManagePredictions() {
         <div className="flex justify-center py-8">
           <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
         </div>
-      ) : forecasts.length === 0 ? (
+      ) : predictions.length === 0 ? (
         <p className="py-8 text-center text-sm text-muted-foreground">
-          {searchQuery ? "No forecasts found matching your search." : "No forecasts have been created yet."}
+          {searchQuery ? "No predictions found matching your search." : "No predictions have been created yet."}
         </p>
       ) : (
         <div className="space-y-4">
-          {forecasts.map((prediction) => (
+          {predictions.map((prediction) => (
             <div key={prediction.id} className="flex flex-col gap-4 rounded-xl border border-border bg-card p-5 sm:flex-row sm:items-start sm:justify-between">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">

@@ -111,8 +111,8 @@ export default function PredictionAnalysis({
     isEnded && snapshots.length > 0 && snapshots.some((s: any) => s.snapshot_type === "end" && s.value != null);
   const needsFallback = isEnded && snapshots.length > 0 && !hasEndSnapshots;
 
-  // Always fetch live market data — used as live tracker for active forecasts
-  // AND as fallback for ended forecasts with missing end snapshots
+  // Always fetch live market data — used as live tracker for active predictions
+  // AND as fallback for ended predictions with missing end snapshots
   const { data: liveMarketData } = useQuery({
     queryKey: ["prediction-live-market", projectAId],
     queryFn: async () => {
@@ -161,7 +161,7 @@ export default function PredictionAnalysis({
     const s = snapshots.find((s: any) => s.dimension === dim && s.snapshot_type === type);
     if (s?.value != null) return s.value;
 
-    // Fallback: use live market data for active forecasts OR ended forecasts missing snapshots
+    // Fallback: use live market data for active predictions OR ended predictions missing snapshots
     if (!isEnded || needsFallback) {
       if (dim === "token_price" && liveMarketData?.price_usd != null) return Number(liveMarketData.price_usd);
       if (dim === "market_cap" && liveMarketData?.market_cap_usd != null) return Number(liveMarketData.market_cap_usd);
@@ -169,7 +169,7 @@ export default function PredictionAnalysis({
     return null;
   };
 
-  // For active forecasts, get "current" value from live data
+  // For active predictions, get "current" value from live data
   const getCurrentValue = (dim: string): number | null => {
     if (dim === "token_price" && liveMarketData?.price_usd != null) return Number(liveMarketData.price_usd);
     if (dim === "market_cap" && liveMarketData?.market_cap_usd != null) return Number(liveMarketData.market_cap_usd);
@@ -248,7 +248,7 @@ export default function PredictionAnalysis({
             const endSnapB =
               snapshots.find((s: any) => s.dimension === `${dimKey}_b` && s.snapshot_type === "end")?.value ?? null;
 
-            // For ended forecasts: prefer end snapshots, fall back to live data if snapshots missing
+            // For ended predictions: prefer end snapshots, fall back to live data if snapshots missing
             const currentA = isEnded ? (endSnapA ?? liveA) : (liveA ?? endSnapA);
             const currentB = isEnded ? (endSnapB ?? liveB) : (liveB ?? endSnapB);
 
