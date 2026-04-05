@@ -1169,7 +1169,7 @@ const Predictions = () => {
             {/* Topic chips */}
             {[
               { value: "", label: "All" },
-              
+              { value: "hourly", label: "⚡ Rush Hour", comingSoon: false },
               { value: "token_price", label: "Token Price", comingSoon: false },
               { value: "market_cap", label: "Market Cap", comingSoon: false },
               
