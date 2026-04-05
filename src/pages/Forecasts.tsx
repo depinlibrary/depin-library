@@ -224,8 +224,8 @@ const HourlyRoundCard = ({ round, index }: { round: HourlyRound; index: number }
       toast("Please log in to vote", { action: { label: "Log in", onClick: () => navigate("/auth?redirect=/forecasts") } });
       return;
     }
-    if (round.user_vote) {
-      toast.info("You already voted on this round.");
+    if (round.user_vote === vote) {
+      toast.info("You already voted " + (vote === "up" ? "Up" : "Down"));
       return;
     }
     if (!votingOpen) {
@@ -234,7 +234,7 @@ const HourlyRoundCard = ({ round, index }: { round: HourlyRound; index: number }
     }
     voteHourly.mutate({ roundId: round.id, vote }, {
       onError: (e: any) => toast.error(e.message),
-      onSuccess: () => toast.success(`Voted ${vote === "up" ? "Up" : "Down"}!`),
+      onSuccess: () => toast.success(round.user_vote ? `Switched to ${vote === "up" ? "Up" : "Down"}!` : `Voted ${vote === "up" ? "Up" : "Down"}!`),
     });
   };
 
