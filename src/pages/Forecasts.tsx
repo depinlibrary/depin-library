@@ -297,7 +297,7 @@ const HourlyRoundCard = ({ round, index }: { round: HourlyRound; index: number }
         </div>
 
         {/* User outcome for resolved rounds */}
-        {round.status === "resolved" && round.outcome && !isInCooldown && (
+        {round.status === "resolved" && round.outcome && (
           <>
             <div className={`mt-2 flex items-center gap-1.5 text-xs font-semibold ${
               round.outcome === "up" ? "text-primary" : round.outcome === "down" ? "text-destructive" : "text-muted-foreground"
