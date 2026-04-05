@@ -539,13 +539,32 @@ export default function HourlyPredictionDetail() {
             <div className="max-h-72 overflow-y-auto">
               {history.map((r: any) => {
                 const rTotal = r.total_votes_up + r.total_votes_down;
+                const histVote = historyVotes[r.id] || null;
+                const histOutcome = getUserOutcome(histVote, r.outcome);
                 return (
                   <Link
                     key={r.id}
                     to={`/predictions/hourly/${r.id}`}
                     className={`flex items-center justify-between px-6 py-3 text-xs border-b border-border/50 last:border-b-0 hover:bg-secondary/30 transition-colors ${r.id === roundId ? 'bg-primary/5' : ''}`}
                   >
-                    <span className="text-muted-foreground font-medium">Round #{r.round_number}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground font-medium">Round #{r.round_number}</span>
+                      {histOutcome === "correct" && (
+                        <span className="flex items-center gap-1 text-[10px] font-semibold text-green-600 dark:text-green-400 bg-green-500/10 px-1.5 py-0.5 rounded-full">
+                          <CheckCircle2 className="h-3 w-3" /> Correct
+                        </span>
+                      )}
+                      {histOutcome === "wrong" && (
+                        <span className="flex items-center gap-1 text-[10px] font-semibold text-destructive bg-destructive/10 px-1.5 py-0.5 rounded-full">
+                          <XCircle className="h-3 w-3" /> Wrong
+                        </span>
+                      )}
+                      {histVote && !histOutcome && (
+                        <span className="text-[10px] text-muted-foreground">
+                          Voted {histVote === "up" ? "↑" : "↓"}
+                        </span>
+                      )}
+                    </div>
                     <div className="flex items-center gap-4">
                       <span className="text-muted-foreground">{rTotal} votes</span>
                       {r.start_price != null && r.end_price != null && (
