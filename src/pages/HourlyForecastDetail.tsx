@@ -126,8 +126,8 @@ export default function HourlyForecastDetail() {
       toast.info("You already voted on this round.");
       return;
     }
-    if (!isActive) {
-      toast.info("This round has ended.");
+    if (!votingOpen) {
+      toast.info("Voting window has closed for this round.");
       return;
     }
     voteHourly.mutate({ roundId: roundId!, vote }, {
