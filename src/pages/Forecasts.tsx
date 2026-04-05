@@ -210,7 +210,7 @@ const HourlyRoundCard = ({ round, index }: { round: HourlyRound; index: number }
   const navigate = useNavigate();
   const voteHourly = useVoteHourlyRound();
   const isActive = round.status === "active" && new Date(round.end_time) > new Date();
-  const isInCooldown = round.status === "resolved" && round.cooldown_end && new Date(round.cooldown_end) > new Date();
+  const isResolved = round.status === "resolved";
   const votingOpen = isVotingOpen(round);
   const votingDeadline = getVotingDeadline(round.start_time, round.end_time);
   const countdown = useHourlyCountdown(isActive ? round.end_time : isInCooldown ? round.cooldown_end : null);
