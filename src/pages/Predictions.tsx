@@ -221,7 +221,7 @@ const HourlyRoundCard = ({ round, index }: { round: HourlyRound; index: number }
 
   const handleVote = (vote: "up" | "down") => {
     if (!user) {
-      toast("Please log in to vote", { action: { label: "Log in", onClick: () => navigate("/auth?redirect=/forecasts") } });
+      toast("Please log in to vote", { action: { label: "Log in", onClick: () => navigate("/auth?redirect=/predictions") } });
       return;
     }
     if (round.user_vote === vote) {
@@ -367,8 +367,8 @@ const HourlyRoundCard = ({ round, index }: { round: HourlyRound; index: number }
 };
 
 // ---- Hero Section — Full-width prediction market showcase ----
-const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap, search, setSearch, setPage, navigate, dailyRemaining }: {
-  forecasts: Prediction[];
+const HeroSection = ({ predictions, user, setShowCreate, heroDimensionsMap, search, setSearch, setPage, navigate, dailyRemaining }: {
+  predictions: Prediction[];
   user: any;
   setShowCreate: (v: boolean) => void;
   heroDimensionsMap: Record<string, string[]>;
@@ -489,7 +489,7 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap, search
             <BarChart3 className="h-10 w-10 text-muted-foreground/30 mb-3" />
             <h2 className="text-lg font-bold text-foreground font-['Space_Grotesk'] mb-1">No predictions yet</h2>
             <p className="text-sm text-muted-foreground mb-4">Create the first prediction for the community.</p>
-            <Button onClick={() => user ? setShowCreate(true) : (window.location.href = "/auth?redirect=/forecasts")} className="gap-1.5">
+            <Button onClick={() => user ? setShowCreate(true) : (window.location.href = "/auth?redirect=/predictions")} className="gap-1.5">
               <Plus className="h-3.5 w-3.5" /> Create Prediction
             </Button>
           </motion.div>
@@ -559,7 +559,7 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap, search
                   setShowCreate(true);
                 } else {
                   toast("Please log in to create a prediction", {
-                    action: { label: "Log in", onClick: () => navigate("/auth?redirect=/forecasts") },
+                    action: { label: "Log in", onClick: () => navigate("/auth?redirect=/predictions") },
                   });
                 }
               }}
@@ -926,7 +926,7 @@ const Predictions = () => {
     }
   }, [searchParams, user]);
 
-  const forecasts = data?.forecasts || [];
+  const forecasts = data?.predictions || [];
 
   // Accumulate forecasts for infinite scroll
   const [allPredictions, setAllPredictions] = useState<Prediction[]>([]);
@@ -950,12 +950,12 @@ const Predictions = () => {
 
   // Append new page data
   useEffect(() => {
-    if (!forecasts.length) return;
+    if (!predictions.length) return;
     setAllPredictions(prev => {
       if (page === 1) return forecasts;
       // Dedupe by id
       const existingIds = new Set(prev.map(f => f.id));
-      const newItems = forecasts.filter(f => !existingIds.has(f.id));
+      const newItems = predictions.filter(f => !existingIds.has(f.id));
       return [...prev, ...newItems];
     });
   }, [forecasts, page]);
@@ -967,7 +967,7 @@ const Predictions = () => {
   }, [isFetching]);
 
   const total = totalCount;
-  const hasMorePages = allPredictions.length < totalCount && forecasts.length > 0;
+  const hasMorePages = allPredictions.length < totalCount && predictions.length > 0;
   const isInitialLoading = isLoading && allPredictions.length === 0;
   const isFetchingMore = isFetching && allPredictions.length > 0;
 
@@ -1058,8 +1058,8 @@ const Predictions = () => {
   const { data: heroDataAll } = usePredictions("newest", 1, 50, undefined, undefined, "all");
   // Separate: top live forecasts for sidebar (highest votes, active only)
   const { data: heroDataTopLive } = usePredictions("votes", 1, 5, undefined, undefined, "active");
-  const heroAllPredictions = useMemo(() => heroDataAll?.forecasts || [], [heroDataAll]);
-  const heroTopLivePredictions = useMemo(() => heroDataTopLive?.forecasts || [], [heroDataTopLive]);
+  const heroAllPredictions = useMemo(() => heroDataAll?.predictions || [], [heroDataAll]);
+  const heroTopLivePredictions = useMemo(() => heroDataTopLive?.predictions || [], [heroDataTopLive]);
 
   // Fetch dimensions for hero forecasts
   const heroPredictionIds = useMemo(() => heroAllPredictions.map(f => f.id), [heroAllPredictions]);
@@ -1085,7 +1085,7 @@ const Predictions = () => {
   // Stats
   const stats = useMemo(() => {
     const totalVotes = forecasts.reduce((sum, f) => sum + f.total_votes_yes + f.total_votes_no, 0);
-    const activeCount = forecasts.filter(f => new Date(f.end_date) > new Date()).length;
+    const activeCount = predictions.filter(f => new Date(f.end_date) > new Date()).length;
     return { total, totalVotes, activeCount };
   }, [forecasts, total]);
 
@@ -1335,7 +1335,7 @@ const Predictions = () => {
               </p>
               <Button onClick={() => {
                 if (user) { setShowCreate(true); }
-                else { toast("Please log in to create a prediction", { action: { label: "Log in", onClick: () => navigate("/auth?redirect=/forecasts") } }); }
+                else { toast("Please log in to create a prediction", { action: { label: "Log in", onClick: () => navigate("/auth?redirect=/predictions") } }); }
               }} className="gap-1.5">
                 <Plus className="h-3.5 w-3.5" /> Create First Prediction
               </Button>

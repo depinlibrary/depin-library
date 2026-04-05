@@ -31,7 +31,7 @@ export function usePredictionDetail(predictionId: string | undefined) {
       .channel(`prediction-detail-${predictionId}`)
       .on(
         "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "forecasts", filter: `id=eq.${predictionId}` },
+        { event: "UPDATE", schema: "public", table: "predictions", filter: `id=eq.${predictionId}` },
         () => {
           queryClient.invalidateQueries({ queryKey: ["prediction-detail", predictionId] });
         }
@@ -277,7 +277,7 @@ export function useRelatedPredictions(predictionId: string | undefined, projectA
 
       const orFilter = projectIds.map(id => `project_a_id.eq.${id},project_b_id.eq.${id}`).join(",");
 
-      const { data: forecasts, error } = await supabase
+      const { data: predictions, error } = await supabase
         .from("forecasts")
         .select("*")
         .or(orFilter)
@@ -287,7 +287,7 @@ export function useRelatedPredictions(predictionId: string | undefined, projectA
       if (error) throw error;
 
       const pIds = new Set<string>();
-      (forecasts || []).forEach((f: any) => {
+      (predictions || []).forEach((f: any) => {
         pIds.add(f.project_a_id);
         if (f.project_b_id) pIds.add(f.project_b_id);
       });
@@ -302,7 +302,7 @@ export function useRelatedPredictions(predictionId: string | undefined, projectA
       const pMap: Record<string, any> = {};
       (projects || []).forEach((p: any) => { pMap[p.id] = p; });
 
-      return (forecasts || []).map((f: any) => ({
+      return (predictions || []).map((f: any) => ({
         ...f,
         project_a_name: pMap[f.project_a_id]?.name || "Unknown",
         project_a_slug: pMap[f.project_a_id]?.slug,

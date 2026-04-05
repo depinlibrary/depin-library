@@ -10,12 +10,12 @@ export function useRealtimePredictions() {
 
   useEffect(() => {
     const channel = supabase
-      .channel("realtime-forecasts")
+      .channel("realtime-predictions")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "forecasts" },
+        { event: "*", schema: "public", table: "predictions" },
         () => {
-          queryClient.invalidateQueries({ queryKey: ["forecasts"] });
+          queryClient.invalidateQueries({ queryKey: ["predictions"] });
         }
       )
       .on(
@@ -23,7 +23,7 @@ export function useRealtimePredictions() {
         { event: "*", schema: "public", table: "forecast_votes" },
         (payload: any) => {
           const predictionId = payload.new?.forecast_id || payload.old?.forecast_id;
-          queryClient.invalidateQueries({ queryKey: ["forecasts"] });
+          queryClient.invalidateQueries({ queryKey: ["predictions"] });
           if (predictionId) {
             queryClient.invalidateQueries({ queryKey: ["prediction-detail", predictionId] });
             queryClient.invalidateQueries({ queryKey: ["prediction-vote-history", predictionId] });
@@ -69,8 +69,8 @@ export type PredictionStatusFilter = "all" | "active" | "ended";
 
 export function usePredictions(sort: PredictionSortOption = "newest", page = 1, pageSize = 12, projectFilter?: string, search?: string, statusFilter: PredictionStatusFilter = "all", dimensionFilter?: string) {
   return useQuery({
-    queryKey: ["forecasts", sort, page, projectFilter, search, statusFilter, dimensionFilter],
-    queryFn: async (): Promise<{ forecasts: Prediction[]; total: number }> => {
+    queryKey: ["predictions", sort, page, projectFilter, search, statusFilter, dimensionFilter],
+    queryFn: async (): Promise<{ predictions: Prediction[]; total: number }> => {
       const now = new Date().toISOString();
 
       // If filtering by dimension, first get matching prediction IDs
@@ -82,7 +82,7 @@ export function usePredictions(sort: PredictionSortOption = "newest", page = 1, 
           .eq("dimension", dimensionFilter);
         dimensionPredictionIds = (targets || []).map((t: any) => t.forecast_id);
         if (dimensionPredictionIds.length === 0) {
-          return { forecasts: [], total: 0 };
+          return { predictions: [], total: 0 };
         }
       }
       
@@ -145,12 +145,12 @@ export function usePredictions(sort: PredictionSortOption = "newest", page = 1, 
           query = query.order("created_at", { ascending: false });
       }
 
-      const { data: forecasts, error } = await query;
+      const { data: predictions, error } = await query;
       if (error) throw error;
 
       // Fetch project names
       const projectIds = new Set<string>();
-      (forecasts || []).forEach((f: any) => {
+      (predictions || []).forEach((f: any) => {
         projectIds.add(f.project_a_id);
         if (f.project_b_id) projectIds.add(f.project_b_id);
       });
@@ -169,7 +169,7 @@ export function usePredictions(sort: PredictionSortOption = "newest", page = 1, 
       const { data: { session } } = await supabase.auth.getSession();
       let userVotes: Record<string, string> = {};
       if (session?.user) {
-        const predictionIds = (forecasts || []).map((f: any) => f.id);
+        const predictionIds = (predictions || []).map((f: any) => f.id);
         if (predictionIds.length > 0) {
           const { data: votes } = await supabase
             .from("forecast_votes")
@@ -182,7 +182,7 @@ export function usePredictions(sort: PredictionSortOption = "newest", page = 1, 
         }
       }
 
-      const enriched = (forecasts || []).map((f: any) => ({
+      const enriched = (predictions || []).map((f: any) => ({
         ...f,
         project_a_name: projectMap[f.project_a_id]?.name || "Unknown",
         project_b_name: f.project_b_id ? projectMap[f.project_b_id]?.name || "Unknown" : null,
@@ -195,7 +195,7 @@ export function usePredictions(sort: PredictionSortOption = "newest", page = 1, 
         user_vote: userVotes[f.id] || null,
       }));
 
-      return { forecasts: enriched, total: count || 0 };
+      return { predictions: enriched, total: count || 0 };
     },
   });
 }
@@ -296,7 +296,7 @@ export function useCreatePrediction() {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["forecasts"] });
+      queryClient.invalidateQueries({ queryKey: ["predictions"] });
     },
   });
 }
@@ -359,7 +359,7 @@ export function useVotePrediction() {
       return predictionId;
     },
     onSuccess: (predictionId) => {
-      queryClient.invalidateQueries({ queryKey: ["forecasts"] });
+      queryClient.invalidateQueries({ queryKey: ["predictions"] });
       queryClient.invalidateQueries({ queryKey: ["prediction-detail", predictionId] });
       queryClient.invalidateQueries({ queryKey: ["prediction-vote-history", predictionId] });
     },

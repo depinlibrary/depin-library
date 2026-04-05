@@ -21,8 +21,8 @@ interface ProjectPredictionsProps {
 }
 
 const ProjectPredictions = ({ projectId, projectName }: ProjectPredictionsProps) => {
-  const { data: forecasts = [], isLoading } = useQuery({
-    queryKey: ["project-forecasts", projectId],
+  const { data: predictions = [], isLoading } = useQuery({
+    queryKey: ["project-predictions", projectId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("forecasts")
@@ -41,7 +41,7 @@ const ProjectPredictions = ({ projectId, projectName }: ProjectPredictionsProps)
     enabled: !!projectId,
   });
 
-  const predictionIds = forecasts.map((f: any) => f.id);
+  const predictionIds = predictions.map((f: any) => f.id);
   const { data: dimensionsMap = {} } = useQuery({
     queryKey: ["project-prediction-dimensions", projectId, predictionIds],
     enabled: predictionIds.length > 0,
@@ -67,7 +67,7 @@ const ProjectPredictions = ({ projectId, projectName }: ProjectPredictionsProps)
     );
   }
 
-  if (forecasts.length === 0) {
+  if (predictions.length === 0) {
     return (
       <div className="rounded-xl border border-border bg-card p-8 text-center">
         <p className="text-sm text-muted-foreground">No predictions have been made about {projectName} yet.</p>
@@ -80,7 +80,7 @@ const ProjectPredictions = ({ projectId, projectName }: ProjectPredictionsProps)
 
   return (
     <div className="grid gap-3 sm:grid-cols-2">
-      {forecasts.map((prediction: any) => {
+      {predictions.map((prediction: any) => {
         const dimension = (dimensionsMap as Record<string, string>)[prediction.id];
         const isPriceMarket = dimension === "token_price" || dimension === "market_cap";
         const yesLabel = isPriceMarket ? "Long" : "Yes";

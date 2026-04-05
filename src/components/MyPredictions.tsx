@@ -63,8 +63,8 @@ export default function MyPredictions() {
   const [viewTab, setViewTab] = useState<"created" | "voted">("created");
 
   // Created forecasts
-  const { data: forecasts = [], isLoading } = useQuery({
-    queryKey: ["my-forecasts", user?.id],
+  const { data: predictions = [], isLoading } = useQuery({
+    queryKey: ["my-predictions", user?.id],
     queryFn: async () => {
       if (!user) return [];
       const { data, error } = await supabase
@@ -80,7 +80,7 @@ export default function MyPredictions() {
 
   // Voted-on forecasts
   const { data: votedPredictions = [], isLoading: votedLoading } = useQuery({
-    queryKey: ["my-voted-forecasts", user?.id],
+    queryKey: ["my-voted-predictions", user?.id],
     queryFn: async () => {
       if (!user) return [];
       // Get all user votes
@@ -112,7 +112,7 @@ export default function MyPredictions() {
   });
 
   // Fetch dimensions for all user forecasts
-  const allPredictionIds = [...forecasts.map(f => f.id), ...votedPredictions.map((f: any) => f.id)];
+  const allPredictionIds = [...predictions.map(f => f.id), ...votedPredictions.map((f: any) => f.id)];
   const { data: dimensionsMap = {} } = useQuery({
     queryKey: ["my-prediction-dimensions", allPredictionIds],
     enabled: allPredictionIds.length > 0,
@@ -156,8 +156,8 @@ export default function MyPredictions() {
     },
     onSuccess: () => {
       toast.success("Prediction updated");
-      queryClient.invalidateQueries({ queryKey: ["my-forecasts"] });
-      queryClient.invalidateQueries({ queryKey: ["forecasts"] });
+      queryClient.invalidateQueries({ queryKey: ["my-predictions"] });
+      queryClient.invalidateQueries({ queryKey: ["predictions"] });
       setEditPrediction(null);
     },
     onError: () => toast.error("Failed to update prediction"),
@@ -196,11 +196,11 @@ export default function MyPredictions() {
       });
   };
 
-  const filteredCreated = filterAndSort(forecasts);
-  const filteredVoted = filterAndSort(votedPredictions.filter((vf: any) => !forecasts.some(cf => cf.id === vf.id)));
+  const filteredCreated = filterAndSort(predictions);
+  const filteredVoted = filterAndSort(votedPredictions.filter((vf: any) => !predictions.some(cf => cf.id === vf.id)));
 
-  const activeCreated = forecasts.filter((f) => new Date(f.end_date) > new Date()).length;
-  const votedCount = votedPredictions.filter((vf: any) => !forecasts.some(cf => cf.id === vf.id)).length;
+  const activeCreated = predictions.filter((f) => new Date(f.end_date) > new Date()).length;
+  const votedCount = votedPredictions.filter((vf: any) => !predictions.some(cf => cf.id === vf.id)).length;
 
   if (!user) return null;
 
@@ -393,7 +393,7 @@ export default function MyPredictions() {
   const currentLoading = viewTab === "created" ? isLoading : votedLoading;
 
   // Stats for voted tab
-  const votedEnded = votedPredictions.filter((vf: any) => !forecasts.some(cf => cf.id === vf.id) && new Date(vf.end_date) <= new Date());
+  const votedEnded = votedPredictions.filter((vf: any) => !predictions.some(cf => cf.id === vf.id) && new Date(vf.end_date) <= new Date());
   const votedCorrect = votedEnded.filter((vf: any) => {
     const totalVotes = vf.total_votes_yes + vf.total_votes_no;
     const wy = Number(vf.weighted_votes_yes) || 0;
@@ -418,7 +418,7 @@ export default function MyPredictions() {
           <div>
             <h2 className="text-sm font-semibold text-foreground">My Predictions</h2>
             <p className="text-[10px] text-muted-foreground">
-              {forecasts.length} created · {votedCount} voted on
+              {predictions.length} created · {votedCount} voted on
               {votedEnded.length > 0 && ` · ${accuracy}% accuracy`}
             </p>
           </div>
@@ -514,7 +514,7 @@ export default function MyPredictions() {
             {viewTab === "created" ? <BarChart3 className="h-5 w-5 text-muted-foreground/30" /> : <Vote className="h-5 w-5 text-muted-foreground/30" />}
           </div>
           <p className="text-sm font-medium text-foreground mb-1">
-            {viewTab === "created" ? "No forecasts created" : "No voted forecasts"}
+            {viewTab === "created" ? "No predictions created" : "No voted forecasts"}
           </p>
           <p className="text-xs text-muted-foreground mb-3">
             {viewTab === "created" ? "Create your first prediction to get started" : "Vote on forecasts to track your predictions here"}
