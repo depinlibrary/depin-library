@@ -1085,7 +1085,7 @@ const Predictions = () => {
   // Stats
   const stats = useMemo(() => {
     const totalVotes = forecasts.reduce((sum, f) => sum + f.total_votes_yes + f.total_votes_no, 0);
-    const activeCount = predictions.filter(f => new Date(f.end_date) > new Date()).length;
+    const activeCount = forecasts.filter(f => new Date(f.end_date) > new Date()).length;
     return { total, totalVotes, activeCount };
   }, [forecasts, total]);
 
