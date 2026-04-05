@@ -282,7 +282,7 @@ const BillboardHero = ({
                   <Link
                     to="/explore"
                     className="relative inline-flex items-center justify-center gap-1.5 h-11 w-full sm:w-auto rounded-lg px-4 text-xs font-semibold text-primary-foreground overflow-hidden transition-shadow hover:shadow-lg hover:shadow-primary/30"
-                    style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))" }}>
+                    style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.8))" }}>
                     
                     <motion.span
                       className="absolute inset-0 pointer-events-none"
