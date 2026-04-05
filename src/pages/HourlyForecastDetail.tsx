@@ -122,8 +122,8 @@ export default function HourlyForecastDetail() {
       toast("Please log in to vote", { action: { label: "Log in", onClick: () => navigate("/auth?redirect=/forecasts") } });
       return;
     }
-    if (userVote) {
-      toast.info("You already voted on this round.");
+    if (userVote === vote) {
+      toast.info("You already voted " + (vote === "up" ? "Up" : "Down"));
       return;
     }
     if (!votingOpen) {
@@ -132,7 +132,7 @@ export default function HourlyForecastDetail() {
     }
     voteHourly.mutate({ roundId: roundId!, vote }, {
       onError: (e: any) => toast.error(e.message),
-      onSuccess: () => toast.success(`Voted ${vote === "up" ? "Up" : "Down"}!`),
+      onSuccess: () => toast.success(userVote ? `Switched to ${vote === "up" ? "Up" : "Down"}!` : `Voted ${vote === "up" ? "Up" : "Down"}!`),
     });
   };
 
