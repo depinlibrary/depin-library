@@ -1320,7 +1320,7 @@ const Predictions = () => {
                 </div>
               ))}
             </div>
-          ) : allPredictions.length === 0 && !isLoading ? (
+          ) : allPredictions.length === 0 && hourlyRounds.length === 0 && !isLoading ? (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
