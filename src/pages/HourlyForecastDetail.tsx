@@ -256,10 +256,10 @@ export default function HourlyForecastDetail() {
 
               {/* Vote buttons */}
               <div className="mt-auto">
-                {isActive ? (
+                {isActive && votingOpen ? (
                   userVote ? (
                     <div className="text-center text-sm text-muted-foreground py-3 rounded-xl bg-secondary/50">
-                      You voted <span className={`font-semibold ${userVote === "up" ? "text-primary" : "text-destructive"}`}>{userVote === "up" ? "Up" : "Down"}</span> · Note you can't change vote
+                      You voted <span className={`font-semibold ${userVote === "up" ? "text-primary" : "text-destructive"}`}>{userVote === "up" ? "Up" : "Down"}</span> · Waiting for result
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 gap-3">
@@ -281,6 +281,20 @@ export default function HourlyForecastDetail() {
                       </Button>
                     </div>
                   )
+                ) : isActive && !votingOpen ? (
+                  userVote ? (
+                    <div className="text-center text-sm text-muted-foreground py-3 rounded-xl bg-secondary/50">
+                      You voted <span className={`font-semibold ${userVote === "up" ? "text-primary" : "text-destructive"}`}>{userVote === "up" ? "Up" : "Down"}</span> · Waiting for result
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="grid grid-cols-2 gap-3">
+                        <span className="h-12 rounded-lg flex items-center justify-center text-sm font-bold bg-secondary text-muted-foreground opacity-40 blur-[1px]">Up</span>
+                        <span className="h-12 rounded-lg flex items-center justify-center text-sm font-bold bg-secondary text-muted-foreground opacity-40 blur-[1px]">Down</span>
+                      </div>
+                      <p className="text-center text-[10px] text-muted-foreground">Voting window closed · Waiting for result</p>
+                    </div>
+                  )
                 ) : (
                   <div className="grid grid-cols-2 gap-3">
                     <span className="h-12 rounded-lg flex items-center justify-center text-sm font-bold bg-secondary text-muted-foreground opacity-60">Up</span>
@@ -289,17 +303,29 @@ export default function HourlyForecastDetail() {
                 )}
               </div>
 
-              {/* Result for resolved */}
+              {/* Result + user outcome for resolved */}
               {round.status === "resolved" && round.outcome && !isInCooldown && (
-                <div className={`mt-4 flex items-center gap-2 text-sm font-semibold rounded-xl px-4 py-3 ${
-                  round.outcome === "up" ? "bg-primary/10 text-primary" : round.outcome === "down" ? "bg-destructive/10 text-destructive" : "bg-secondary text-muted-foreground"
-                }`}>
-                  {round.outcome === "up" ? <TrendingUp className="h-4 w-4" /> : round.outcome === "down" ? <TrendingDown className="h-4 w-4" /> : <Minus className="h-4 w-4" />}
-                  Price went {round.outcome === "up" ? "UP" : round.outcome === "down" ? "DOWN" : "FLAT"}
-                  {round.start_price != null && round.end_price != null && (
-                    <span className="text-muted-foreground font-normal ml-2">
-                      ({formatPrice(round.start_price)} → {formatPrice(round.end_price)})
-                    </span>
+                <div className="mt-4 space-y-2">
+                  <div className={`flex items-center gap-2 text-sm font-semibold rounded-xl px-4 py-3 ${
+                    round.outcome === "up" ? "bg-primary/10 text-primary" : round.outcome === "down" ? "bg-destructive/10 text-destructive" : "bg-secondary text-muted-foreground"
+                  }`}>
+                    {round.outcome === "up" ? <TrendingUp className="h-4 w-4" /> : round.outcome === "down" ? <TrendingDown className="h-4 w-4" /> : <Minus className="h-4 w-4" />}
+                    Price went {round.outcome === "up" ? "UP" : round.outcome === "down" ? "DOWN" : "FLAT"}
+                    {round.start_price != null && round.end_price != null && (
+                      <span className="text-muted-foreground font-normal ml-2">
+                        ({formatPrice(round.start_price)} → {formatPrice(round.end_price)})
+                      </span>
+                    )}
+                  </div>
+                  {userOutcome && (
+                    <div className={`flex items-center gap-2 text-sm font-semibold rounded-xl px-4 py-3 ${
+                      userOutcome === "correct"
+                        ? "bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20"
+                        : "bg-destructive/10 text-destructive border border-destructive/20"
+                    }`}>
+                      {userOutcome === "correct" ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
+                      {userOutcome === "correct" ? "You predicted correctly!" : "Your prediction was wrong"}
+                    </div>
                   )}
                 </div>
               )}
