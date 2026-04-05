@@ -267,7 +267,7 @@ export default function MyPredictions() {
           </div>
 
           {/* Title */}
-          <Link to={`/forecasts/${f.id}`} className="block mb-auto">
+          <Link to={`/predictions/${f.id}`} className="block mb-auto">
             <h3 className="text-[13px] font-semibold text-foreground leading-snug line-clamp-2 group-hover:underline transition-all duration-200">
               {f.title}
             </h3>
@@ -377,7 +377,7 @@ export default function MyPredictions() {
               )}
               <div className="w-px bg-border" />
               <Link
-                to={`/forecasts/${f.id}`}
+                to={`/predictions/${f.id}`}
                 className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[11px] font-medium text-muted-foreground hover:text-foreground transition-all"
               >
                 View Details
@@ -478,7 +478,7 @@ export default function MyPredictions() {
               <SelectItem value="ending">Ending soon</SelectItem>
             </SelectContent>
           </Select>
-          <Link to="/forecasts?create=true">
+          <Link to="/predictions?create=true">
             <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs">
               <BarChart3 className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">New Prediction</span>
@@ -519,7 +519,7 @@ export default function MyPredictions() {
           <p className="text-xs text-muted-foreground mb-3">
             {viewTab === "created" ? "Create your first prediction to get started" : "Vote on forecasts to track your predictions here"}
           </p>
-          <Link to="/forecasts">
+          <Link to="/predictions">
             <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs">
               {viewTab === "created" ? "Create Prediction" : "Browse Predictions"}
             </Button>

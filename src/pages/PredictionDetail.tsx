@@ -286,7 +286,7 @@ const PredictionDetail = () => {
         <Navbar />
         <div className="container mx-auto px-4 pt-28 pb-16 text-center">
           <h1 className="text-2xl font-bold text-foreground mb-4">Prediction not found</h1>
-          <Link to="/forecasts" className="text-primary hover:underline text-sm">← Back to Predictions</Link>
+          <Link to="/predictions" className="text-primary hover:underline text-sm">← Back to Predictions</Link>
         </div>
         <Footer />
       </div>
@@ -311,7 +311,7 @@ const PredictionDetail = () => {
           {/* ═══════ LEFT COLUMN (2/3): Hero Card + Tabs ═══════ */}
           <div className="lg:col-span-2 lg:pt-4 lg:pb-16">
             {/* Breadcrumb */}
-            <Link to="/forecasts" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-5">
+            <Link to="/predictions" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-5">
               <ArrowLeft className="h-3.5 w-3.5" /> Back to Predictions
             </Link>
             <div className="space-y-4">

@@ -114,7 +114,7 @@ const PredictionCard = ({ prediction, onVote, isAuthenticated, index, dimensions
         </div>
 
         {/* Title */}
-        <Link to={`/forecasts/${prediction.id}`} className="block mb-auto">
+        <Link to={`/predictions/${prediction.id}`} className="block mb-auto">
           <h3 className="text-[13px] font-semibold text-foreground leading-snug line-clamp-2 group-hover:underline transition-all duration-200">
             {prediction.title}
           </h3>
@@ -276,7 +276,7 @@ const HourlyRoundCard = ({ round, index }: { round: HourlyRound; index: number }
         </div>
 
         {/* Title */}
-        <Link to={`/forecasts/hourly/${round.id}`} className="block mb-auto">
+        <Link to={`/predictions/hourly/${round.id}`} className="block mb-auto">
           <h3 className="text-[13px] font-semibold text-foreground leading-snug line-clamp-2 group-hover:underline transition-all duration-200">
             {round.project_name} up or down in 1 hour
           </h3>
@@ -626,7 +626,7 @@ const HeroSection = ({ forecasts, user, setShowCreate, heroDimensionsMap, search
                       </div>
                     </div>
 
-                    <Link to={`/forecasts/${current.id}`}>
+                    <Link to={`/predictions/${current.id}`}>
                       <h2 className="text-xl sm:text-2xl font-bold text-foreground leading-tight font-['Space_Grotesk'] tracking-tight hover:underline transition-all line-clamp-2 mb-5">
                         {current.title}
                       </h2>

@@ -279,7 +279,7 @@ const Profile = () => {
                   <div className="text-center py-8">
                     <HelpCircle className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
                     <p className="text-sm text-muted-foreground">No prediction activity yet</p>
-                    <Link to="/forecasts" className="text-xs text-primary hover:underline mt-1 inline-block">
+                    <Link to="/predictions" className="text-xs text-primary hover:underline mt-1 inline-block">
                       Browse forecasts →
                     </Link>
                   </div>
@@ -288,7 +288,7 @@ const Profile = () => {
                     {predictionStats.history.slice(0, 15).map((item) => (
                       <Link
                         key={item.prediction_id + item.voted_at}
-                        to={`/forecasts/${item.prediction_id}`}
+                        to={`/predictions/${item.prediction_id}`}
                         className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 transition-colors group"
                       >
                         {item.project_logo_url ? (

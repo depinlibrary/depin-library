@@ -136,7 +136,7 @@ export default function ManagePredictions() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <h4 className="font-semibold text-foreground truncate">{prediction.title}</h4>
-                  <Link to={`/forecasts/${prediction.id}`} target="_blank" className="text-muted-foreground hover:text-primary shrink-0">
+                  <Link to={`/predictions/${prediction.id}`} target="_blank" className="text-muted-foreground hover:text-primary shrink-0">
                     <ExternalLink className="h-3.5 w-3.5" />
                   </Link>
                 </div>

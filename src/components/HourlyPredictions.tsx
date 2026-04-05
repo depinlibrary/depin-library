@@ -96,7 +96,7 @@ function RoundCard({ round }: { round: HourlyRound }) {
         </div>
 
         {/* Question */}
-        <Link to={`/forecasts/hourly/${round.id}`} className="block">
+        <Link to={`/predictions/hourly/${round.id}`} className="block">
           <h3 className="text-[13px] font-semibold text-foreground leading-snug mb-1 group-hover:underline">
             {round.project_name} up or down in 1 hour
           </h3>

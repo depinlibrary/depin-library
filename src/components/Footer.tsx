@@ -15,7 +15,7 @@ import {
 const navLinks = [
   { label: "Explore", to: "/explore", icon: Layers },
   { label: "Market", to: "/market", icon: BarChart3 },
-  { label: "Predictions", to: "/forecasts", icon: TrendingUp },
+  { label: "Predictions", to: "/predictions", icon: TrendingUp },
   { label: "Compare", to: "/compare", icon: GitCompare },
   { label: "Portfolio", to: "/portfolio", icon: Briefcase },
 ];
@@ -23,7 +23,7 @@ const navLinks = [
 const resourceLinks = [
   { label: "What is DePIN?", to: "/explore", icon: BookOpen },
   { label: "Submit a Project", to: "/submit", icon: ArrowRight },
-  { label: "Community Predictions", to: "/forecasts", icon: TrendingUp },
+  { label: "Community Predictions", to: "/predictions", icon: TrendingUp },
 ];
 
 const Footer = () => {

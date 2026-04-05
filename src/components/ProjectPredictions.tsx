@@ -71,7 +71,7 @@ const ProjectPredictions = ({ projectId, projectName }: ProjectPredictionsProps)
     return (
       <div className="rounded-xl border border-border bg-card p-8 text-center">
         <p className="text-sm text-muted-foreground">No predictions have been made about {projectName} yet.</p>
-        <Link to="/forecasts?create=true" className="mt-3 inline-block text-sm font-medium text-primary hover:text-primary/80 transition-colors">
+        <Link to="/predictions?create=true" className="mt-3 inline-block text-sm font-medium text-primary hover:text-primary/80 transition-colors">
           Create the first prediction →
         </Link>
       </div>
@@ -95,7 +95,7 @@ const ProjectPredictions = ({ projectId, projectName }: ProjectPredictionsProps)
         return (
           <Link
             key={prediction.id}
-            to={`/forecasts/${prediction.id}`}
+            to={`/predictions/${prediction.id}`}
             className="group relative flex flex-col rounded-xl border border-border bg-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20 h-full"
           >
             <div className="p-4 flex-1 flex flex-col">

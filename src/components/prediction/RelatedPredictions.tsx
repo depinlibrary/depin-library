@@ -40,7 +40,7 @@ export default function RelatedPredictionsList({ forecasts }: RelatedPredictions
           return (
             <Link
               key={rf.id}
-              to={`/forecasts/${rf.id}`}
+              to={`/predictions/${rf.id}`}
               className="block px-5 py-3.5 hover:bg-secondary/30 transition-colors group">
               
               <div className="flex items-center gap-2 mb-2">

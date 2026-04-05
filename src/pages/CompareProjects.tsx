@@ -396,7 +396,7 @@ const CompareProjects = () => {
             {[
               { to: "/", label: "Overview" },
               { to: "/explore", label: "Explore" },
-              { to: "/forecasts", label: "Predictions" },
+              { to: "/predictions", label: "Predictions" },
               { to: "/market", label: "Market" },
               { to: "/compare", label: "Compare" },
             ].map((link) => (
@@ -773,7 +773,7 @@ const CompareProjects = () => {
                           const title = `${projectA?.name} vs ${projectB?.name}: ${result.conclusion.slice(0, 80)}${result.conclusion.length > 80 ? '...' : ''}`;
                           const desc = `Summary: ${result.summary}\n\nLong-term outlook: ${result.long_term_outlook}\n\nKey risks: ${result.risks.join('; ')}`;
                           sessionStorage.setItem('forecast_prefill', JSON.stringify({ title, description: desc }));
-                          navigate(`/forecasts?create=true&a=${projectAId}&b=${projectBId}`);
+                          navigate(`/predictions?create=true&a=${projectAId}&b=${projectBId}`);
                         }}
                         className="gap-2"
                       >

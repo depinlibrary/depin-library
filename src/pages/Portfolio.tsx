@@ -699,7 +699,7 @@ const Portfolio = () => {
     { to: "/", label: "Overview", icon: Home },
     { to: "/explore", label: "Explore", icon: Compass },
     { to: "/market", label: "Market", icon: BarChart3 },
-    { to: "/forecasts", label: "Predictions", icon: LineChart },
+    { to: "/predictions", label: "Predictions", icon: LineChart },
     { to: "/compare", label: "Compare", icon: GitCompare },
   ];
 
@@ -1754,7 +1754,7 @@ const Portfolio = () => {
                         {predictionStats.history.slice(0, 15).map((item) => (
                           <Link
                             key={item.prediction_id + item.voted_at}
-                            to={`/forecasts/${item.prediction_id}`}
+                            to={`/predictions/${item.prediction_id}`}
                             className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 transition-colors group"
                           >
                             {item.project_logo_url ? (

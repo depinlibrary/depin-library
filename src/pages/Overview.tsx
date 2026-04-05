@@ -96,7 +96,7 @@ const Overview = () => {
   { title: "Explore", description: "Browse the full DePIN project directory.", icon: Layers, to: "/explore", accent: "primary" },
   { title: "Market", description: "Track token prices and market trends.", icon: BarChart3, to: "/market", accent: "primary" },
   { title: "Compare", description: "AI-powered side-by-side comparison.", icon: GitCompare, to: "/compare", accent: "accent" },
-  { title: "Predictions", description: "Community predictions and voting.", icon: TrendingUp, to: "/forecasts", accent: "accent" },
+  { title: "Predictions", description: "Community predictions and voting.", icon: TrendingUp, to: "/predictions", accent: "accent" },
   { title: "Portfolio", description: "Track your DePIN holdings.", icon: Briefcase, to: "/portfolio", accent: "primary" }];
 
 
@@ -260,7 +260,7 @@ const Overview = () => {
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-destructive" />
                 </span>
               </div>
-              <Link to="/forecasts" className="text-xs font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
+              <Link to="/predictions" className="text-xs font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
                 All predictions <ArrowRight className="h-3 w-3" />
               </Link>
             </motion.div>
@@ -278,7 +278,7 @@ const Overview = () => {
               return (
                 <motion.div key={prediction.id} variants={fadeUp} className="h-full">
                   <Link
-                    to={`/forecasts/${prediction.id}`}
+                    to={`/predictions/${prediction.id}`}
                     className="group relative flex flex-col rounded-xl border border-border bg-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20 h-full">
                     <div className="p-4 flex-1 flex flex-col">
                       {/* Header: logos + status */}

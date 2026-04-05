@@ -85,7 +85,7 @@ export default function DeletionRequests() {
         message: status === "approved"
           ? `Your request to delete "${predictionTitle.slice(0, 50)}" has been approved.`
           : `Your request to delete "${predictionTitle.slice(0, 50)}" was denied.${response ? ` Reason: ${response}` : ""}`,
-        link: status === "approved" ? "/portfolio" : `/forecasts/${predictionId}`,
+        link: status === "approved" ? "/portfolio" : `/predictions/${predictionId}`,
       });
     },
     onSuccess: () => {

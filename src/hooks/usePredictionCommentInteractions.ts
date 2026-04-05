@@ -76,7 +76,7 @@ export function useTogglePredictionCommentLike() {
             type: "forecast_comment_like",
             title: "Your comment was liked",
             message: `${likerName} liked your comment`,
-            link: `/forecasts/${predictionId}`,
+            link: `/predictions/${predictionId}`,
             metadata: { commentId, predictionId },
           });
         }
@@ -170,7 +170,7 @@ export function useCreatePredictionCommentReply() {
           type: "forecast_comment_reply",
           title: "New reply to your comment",
           message: `${replierName} replied: "${replyText.slice(0, 100)}${replyText.length > 100 ? "..." : ""}"`,
-          link: `/forecasts/${predictionId}`,
+          link: `/predictions/${predictionId}`,
           metadata: { commentId, predictionId },
         });
       }
@@ -269,7 +269,7 @@ export function useTogglePredictionReplyLike() {
             type: "forecast_comment_like",
             title: "Your reply was liked",
             message: `${likerName} liked your reply`,
-            link: `/forecasts/${predictionId}`,
+            link: `/predictions/${predictionId}`,
             metadata: { replyId, predictionId },
           });
         }

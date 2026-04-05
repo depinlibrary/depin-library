@@ -351,7 +351,7 @@ export function useVotePrediction() {
           type: "forecast_vote",
           title: "New vote on your prediction",
           message: `${voterName} voted "${voteLabel}" on "${prediction.title.slice(0, 50)}${prediction.title.length > 50 ? "..." : ""}"`,
-          link: `/forecasts/${predictionId}`,
+          link: `/predictions/${predictionId}`,
           metadata: { predictionId, vote },
         });
       }

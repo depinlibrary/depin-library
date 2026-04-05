@@ -476,7 +476,7 @@ const BillboardHero = ({
             <motion.div variants={fadeUp} className="col-span-1 sm:col-span-2 lg:col-span-4 rounded-lg border border-border bg-card/40 backdrop-blur-md p-4 sm:p-5">
                  <div className="flex items-center gap-2 mb-4">
                    <span className="text-sm font-semibold text-foreground">Top Predictions</span>
-                   <Link to="/forecasts" className="ml-auto text-xs font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
+                   <Link to="/predictions" className="ml-auto text-xs font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
                      View all <ArrowRight className="h-3.5 w-3.5" />
                    </Link>
                  </div>
@@ -500,7 +500,7 @@ const BillboardHero = ({
                    return (
                      <Link
                        key={f.id}
-                       to={`/forecasts/${f.id}`}
+                       to={`/predictions/${f.id}`}
                        className="group relative flex flex-col rounded-xl border border-border/50 bg-secondary/20 overflow-hidden transition-all hover:bg-secondary/40 hover:border-primary/20 hover:shadow-md hover:shadow-primary/5 h-full">
                        <div className="p-4 flex-1 flex flex-col">
                          {/* Header: logos + time */}

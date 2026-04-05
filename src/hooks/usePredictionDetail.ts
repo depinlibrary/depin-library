@@ -192,7 +192,7 @@ export function useAddPredictionComment() {
           type: "forecast_new_comment",
           title: "New comment on your prediction",
           message: `${commenterName} commented: "${commentText.slice(0, 80)}${commentText.length > 80 ? "..." : ""}"`,
-          link: `/forecasts/${predictionId}`,
+          link: `/predictions/${predictionId}`,
           metadata: { predictionId },
         });
       }
