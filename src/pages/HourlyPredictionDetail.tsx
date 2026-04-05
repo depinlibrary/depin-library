@@ -139,6 +139,23 @@ export default function HourlyPredictionDetail() {
   const { data: marketData } = useTokenMarketData(round?.project_id);
   const { data: history = [] } = useHourlyRoundHistory(round?.project_id);
 
+  // Fetch user votes for all history rounds to show correct/wrong indicators
+  const historyRoundIds = useMemo(() => history.map((r: any) => r.id), [history]);
+  const { data: historyVotes = {} } = useQuery({
+    queryKey: ["hourly-history-user-votes", round?.project_id, user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("hourly_forecast_votes")
+        .select("round_id, vote")
+        .eq("user_id", user!.id)
+        .in("round_id", historyRoundIds);
+      const map: Record<string, string> = {};
+      (data || []).forEach((v: any) => { map[v.round_id] = v.vote; });
+      return map;
+    },
+    enabled: !!user && historyRoundIds.length > 0,
+  });
+
   const isActive = round?.status === "active" && new Date(round.end_time) > new Date();
   const isResolved = round?.status === "resolved";
   const votingOpen = round ? isVotingOpen(round) : false;
