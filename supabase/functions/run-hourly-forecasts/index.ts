@@ -63,15 +63,12 @@ Deno.serve(async (req) => {
             else if (endPrice < startPrice) outcome = "down";
           }
 
-          const cooldownEnd = new Date(now.getTime() + config.cooldown_minutes * 60 * 1000);
-
           await supabase
             .from("hourly_forecast_rounds")
             .update({
               status: "resolved",
               end_price: endPrice,
               outcome,
-              cooldown_end: cooldownEnd.toISOString(),
             })
             .eq("id", activeRound.id);
 
