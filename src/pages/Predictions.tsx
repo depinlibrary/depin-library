@@ -1143,7 +1143,7 @@ const Predictions = () => {
 
       {/* Polymarket-style Hero with Auto-Slide — uses unfiltered data */}
       <HeroSection
-        forecasts={heroAllPredictions}
+        predictions={heroAllPredictions}
         user={user}
         setShowCreate={setShowCreate}
         heroDimensionsMap={heroDimensionsMap as Record<string, string[]>}
