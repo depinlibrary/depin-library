@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Timer, TrendingUp, TrendingDown, Minus, Clock, History, ArrowLeft, ChevronRight, CheckCircle2, XCircle } from "lucide-react";
@@ -59,6 +59,46 @@ export default function HourlyPredictionDetail() {
     enabled: !!roundId,
     refetchInterval: 15_000,
   });
+
+  // Query for the latest active round for the same project (used for "Back to Live" and auto-redirect)
+  const { data: liveRound } = useQuery({
+    queryKey: ["hourly-round-live", round?.config_id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("hourly_forecast_rounds")
+        .select("id, status, end_time")
+        .eq("config_id", round!.config_id)
+        .eq("status", "active")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!round?.config_id,
+    refetchInterval: 10_000,
+  });
+
+  // Auto-redirect: when viewing a round that just got resolved and a new live round exists, navigate to it
+  const hasAutoRedirected = useRef(false);
+  useEffect(() => {
+    if (
+      round?.status === "resolved" &&
+      liveRound &&
+      liveRound.id !== roundId &&
+      new Date(liveRound.end_time) > new Date() &&
+      !hasAutoRedirected.current
+    ) {
+      hasAutoRedirected.current = true;
+      toast.success("Round resolved! Switching to the new live round.");
+      navigate(`/predictions/hourly/${liveRound.id}`, { replace: true });
+    }
+  }, [round?.status, liveRound, roundId, navigate]);
+
+  // Reset redirect flag when roundId changes
+  useEffect(() => {
+    hasAutoRedirected.current = false;
+  }, [roundId]);
 
   const { data: project } = useQuery({
     queryKey: ["hourly-round-project", round?.project_id],
@@ -172,9 +212,21 @@ export default function HourlyPredictionDetail() {
 
       <div className="container mx-auto px-4 pt-24 pb-12 flex-1">
         {/* Back */}
-        <Link to="/predictions" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6">
-          <ArrowLeft className="h-4 w-4" /> Back to Predictions
-        </Link>
+        <div className="flex items-center gap-4 mb-6">
+          <Link to="/predictions" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <ArrowLeft className="h-4 w-4" /> Back to Predictions
+          </Link>
+          {round?.status === "resolved" && liveRound && liveRound.id !== roundId && (
+            <Link
+              to={`/predictions/hourly/${liveRound.id}`}
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:text-primary/80 transition-colors"
+            >
+              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              Go to Live Round
+              <ChevronRight className="h-4 w-4" />
+            </Link>
+          )}
+        </div>
 
         {/* Full-width header card — Polymarket style */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl border border-border bg-card overflow-hidden mb-6">
