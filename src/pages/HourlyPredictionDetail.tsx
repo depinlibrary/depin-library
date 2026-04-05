@@ -529,12 +529,24 @@ export default function HourlyPredictionDetail() {
         </motion.div>
 
         {/* History */}
-        {history.length > 0 && (
+        {history.length > 0 && (() => {
+          const voted = history.filter((r: any) => historyVotes[r.id]);
+          const correct = voted.filter((r: any) => getUserOutcome(historyVotes[r.id], r.outcome) === "correct").length;
+          const wrong = voted.filter((r: any) => getUserOutcome(historyVotes[r.id], r.outcome) === "wrong").length;
+          const decided = correct + wrong;
+          const accuracy = decided > 0 ? Math.round((correct / decided) * 100) : 0;
+          return (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="rounded-2xl border border-border bg-card overflow-hidden">
-            <div className="px-6 py-4 border-b border-border">
+            <div className="px-6 py-4 border-b border-border flex items-center justify-between">
               <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
                 <History className="h-3.5 w-3.5" /> Past Rounds
               </h3>
+              {user && decided > 0 && (
+                <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
+                  {correct}/{decided} correct — {accuracy}% accuracy
+                </span>
+              )}
             </div>
             <div className="max-h-72 overflow-y-auto">
               {history.map((r: any) => {
@@ -580,7 +592,8 @@ export default function HourlyPredictionDetail() {
               })}
             </div>
           </motion.div>
-        )}
+          );
+        })()}
       </div>
 
       <Footer />
