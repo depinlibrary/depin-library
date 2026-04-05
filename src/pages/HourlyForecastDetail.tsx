@@ -319,7 +319,7 @@ export default function HourlyForecastDetail() {
               </div>
 
               {/* Result + user outcome for resolved */}
-              {round.status === "resolved" && round.outcome && !isInCooldown && (
+              {round.status === "resolved" && round.outcome && (
                 <div className="mt-4 space-y-2">
                   <div className={`flex items-center gap-2 text-sm font-semibold rounded-xl px-4 py-3 ${
                     round.outcome === "up" ? "bg-primary/10 text-primary" : round.outcome === "down" ? "bg-destructive/10 text-destructive" : "bg-secondary text-muted-foreground"
