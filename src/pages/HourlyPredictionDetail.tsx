@@ -212,9 +212,21 @@ export default function HourlyPredictionDetail() {
 
       <div className="container mx-auto px-4 pt-24 pb-12 flex-1">
         {/* Back */}
-        <Link to="/predictions" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6">
-          <ArrowLeft className="h-4 w-4" /> Back to Predictions
-        </Link>
+        <div className="flex items-center gap-4 mb-6">
+          <Link to="/predictions" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <ArrowLeft className="h-4 w-4" /> Back to Predictions
+          </Link>
+          {round?.status === "resolved" && liveRound && liveRound.id !== roundId && (
+            <Link
+              to={`/predictions/hourly/${liveRound.id}`}
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:text-primary/80 transition-colors"
+            >
+              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              Go to Live Round
+              <ChevronRight className="h-4 w-4" />
+            </Link>
+          )}
+        </div>
 
         {/* Full-width header card — Polymarket style */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl border border-border bg-card overflow-hidden mb-6">
