@@ -60,6 +60,46 @@ export default function HourlyPredictionDetail() {
     refetchInterval: 15_000,
   });
 
+  // Query for the latest active round for the same project (used for "Back to Live" and auto-redirect)
+  const { data: liveRound } = useQuery({
+    queryKey: ["hourly-round-live", round?.config_id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("hourly_forecast_rounds")
+        .select("id, status, end_time")
+        .eq("config_id", round!.config_id)
+        .eq("status", "active")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!round?.config_id,
+    refetchInterval: 10_000,
+  });
+
+  // Auto-redirect: when viewing a round that just got resolved and a new live round exists, navigate to it
+  const hasAutoRedirected = useRef(false);
+  useEffect(() => {
+    if (
+      round?.status === "resolved" &&
+      liveRound &&
+      liveRound.id !== roundId &&
+      new Date(liveRound.end_time) > new Date() &&
+      !hasAutoRedirected.current
+    ) {
+      hasAutoRedirected.current = true;
+      toast.success("Round resolved! Switching to the new live round.");
+      navigate(`/predictions/hourly/${liveRound.id}`, { replace: true });
+    }
+  }, [round?.status, liveRound, roundId, navigate]);
+
+  // Reset redirect flag when roundId changes
+  useEffect(() => {
+    hasAutoRedirected.current = false;
+  }, [roundId]);
+
   const { data: project } = useQuery({
     queryKey: ["hourly-round-project", round?.project_id],
     queryFn: async () => {
