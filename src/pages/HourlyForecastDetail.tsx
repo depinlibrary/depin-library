@@ -208,12 +208,7 @@ export default function HourlyForecastDetail() {
                       PREDICTING
                     </span>
                   )}
-                  {isInCooldown && (
-                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400">
-                      <Clock className="h-3 w-3 inline mr-1" />Cooldown
-                    </span>
-                  )}
-                  {!isActive && !isInCooldown && round.status === "resolved" && (
+                  {isResolved && (
                     <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-muted text-muted-foreground">Resolved</span>
                   )}
                 </div>
