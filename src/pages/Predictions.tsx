@@ -950,7 +950,7 @@ const Predictions = () => {
 
   // Append new page data
   useEffect(() => {
-    if (!predictions.length) return;
+    if (!forecasts.length) return;
     setAllPredictions(prev => {
       if (page === 1) return forecasts;
       // Dedupe by id
