@@ -42,25 +42,25 @@
 
     --border: 222 16% 16%;
     --input: 222 16% 16%;
-    --ring: 217 90% 58%;
+    --ring: 152 76% 45%;
 
     --radius: 0.75rem;
 
     --sidebar-background: 222 22% 7%;
     --sidebar-foreground: 214 20% 85%;
-    --sidebar-primary: 217 90% 58%;
+    --sidebar-primary: 152 76% 45%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 222 16% 12%;
     --sidebar-accent-foreground: 214 20% 85%;
     --sidebar-border: 222 16% 16%;
-    --sidebar-ring: 217 90% 58%;
+    --sidebar-ring: 152 76% 45%;
 
     /* Custom tokens */
-    --glow-primary: 217 90% 58%;
+    --glow-primary: 152 76% 45%;
     --glow-accent: 265 70% 60%;
     --surface-glass: 222 22% 10%;
     --neon-green: 155 85% 55%;
-    --neon-blue: 217 90% 58%;
+    --neon-blue: 152 76% 45%;
     --text-dim: 218 10% 40%;
   }
 
