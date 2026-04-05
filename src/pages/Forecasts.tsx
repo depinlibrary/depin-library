@@ -321,8 +321,18 @@ const HourlyRoundCard = ({ round, index }: { round: HourlyRound; index: number }
       <div className="px-4 pb-4">
         {isActive && votingOpen ? (
           round.user_vote ? (
-            <div className="text-center text-[10px] text-muted-foreground py-2">
-              You voted <span className={`font-semibold ${round.user_vote === "up" ? "text-primary" : "text-destructive"}`}>{round.user_vote === "up" ? "Up" : "Down"}</span> · Waiting for result
+            <div className="space-y-2">
+              <div className="text-center text-[10px] text-muted-foreground py-1">
+                You voted <span className={`font-semibold ${round.user_vote === "up" ? "text-primary" : "text-destructive"}`}>{round.user_vote === "up" ? "Up" : "Down"}</span> · Tap to switch
+              </div>
+              <div className="flex gap-2">
+                <button onClick={() => handleVote("up")} disabled={voteHourly.isPending} className={`flex-1 rounded-lg py-2 text-xs font-bold text-center transition-colors ${round.user_vote === "up" ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary hover:bg-primary/20"}`}>
+                  Up
+                </button>
+                <button onClick={() => handleVote("down")} disabled={voteHourly.isPending} className={`flex-1 rounded-lg py-2 text-xs font-bold text-center transition-colors ${round.user_vote === "down" ? "bg-destructive text-destructive-foreground" : "bg-destructive/10 text-destructive hover:bg-destructive/20"}`}>
+                  Down
+                </button>
+              </div>
             </div>
           ) : (
             <div className="flex gap-2">
