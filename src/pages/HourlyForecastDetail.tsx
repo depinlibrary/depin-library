@@ -1,11 +1,11 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Timer, TrendingUp, TrendingDown, Minus, Clock, History, ArrowLeft, ChevronRight } from "lucide-react";
+import { Timer, TrendingUp, TrendingDown, Minus, Clock, History, ArrowLeft, ChevronRight, CheckCircle2, XCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useVoteHourlyRound, useHourlyRoundHistory } from "@/hooks/useHourlyForecasts";
+import { useVoteHourlyRound, useHourlyRoundHistory, useRealtimeHourlyRounds, isVotingOpen, getVotingDeadline, getUserOutcome } from "@/hooks/useHourlyForecasts";
 import { useTokenMarketData } from "@/hooks/useTokenMarketData";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import Navbar from "@/components/Navbar";
@@ -43,6 +43,7 @@ export default function HourlyForecastDetail() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const voteHourly = useVoteHourlyRound();
+  useRealtimeHourlyRounds();
 
   const { data: round, isLoading } = useQuery({
     queryKey: ["hourly-round-detail", roundId],
@@ -92,9 +93,13 @@ export default function HourlyForecastDetail() {
 
   const isActive = round?.status === "active" && new Date(round.end_time) > new Date();
   const isInCooldown = round?.status === "resolved" && round.cooldown_end && new Date(round.cooldown_end) > new Date();
+  const votingOpen = round ? isVotingOpen(round) : false;
+  const votingDeadline = round ? getVotingDeadline(round.start_time, round.end_time) : null;
   const countdown = useCountdown(isActive ? round?.end_time ?? null : isInCooldown ? round?.cooldown_end ?? null : null);
+  const votingCountdown = useCountdown(votingOpen && votingDeadline ? votingDeadline.toISOString() : null);
   const totalVotes = (round?.total_votes_up || 0) + (round?.total_votes_down || 0);
   const upPct = totalVotes > 0 ? ((round?.total_votes_up || 0) / totalVotes) * 100 : 50;
+  const userOutcome = getUserOutcome(userVote || null, round?.outcome || null);
 
   const chartData = useMemo(() => {
     if (!marketData?.sparkline_7d || !Array.isArray(marketData.sparkline_7d)) return [];
@@ -121,8 +126,8 @@ export default function HourlyForecastDetail() {
       toast.info("You already voted on this round.");
       return;
     }
-    if (!isActive) {
-      toast.info("This round has ended.");
+    if (!votingOpen) {
+      toast.info("Voting window has closed for this round.");
       return;
     }
     voteHourly.mutate({ roundId: roundId!, vote }, {
@@ -192,10 +197,15 @@ export default function HourlyForecastDetail() {
                 </Link>
                 <div className="flex items-center gap-2">
                   <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-primary/15 text-primary">HOURLY</span>
-                  {isActive && (
+                  {isActive && votingOpen && (
                     <span className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-green-500/10 text-green-600 dark:text-green-400">
                       <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                      LIVE
+                      VOTING OPEN
+                    </span>
+                  )}
+                  {isActive && !votingOpen && (
+                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                      PREDICTING
                     </span>
                   )}
                   {isInCooldown && (
@@ -239,17 +249,17 @@ export default function HourlyForecastDetail() {
               <div className="flex items-center gap-3 mb-5">
                 <Timer className="h-5 w-5 text-muted-foreground" />
                 <span className="text-2xl font-mono font-bold text-foreground tabular-nums">
-                  {isActive ? countdown : isInCooldown ? `Next in ${countdown}` : "—"}
+                  {isActive && votingOpen ? `Voting closes ${votingCountdown}` : isActive ? `Resolves ${countdown}` : isInCooldown ? `Next in ${countdown}` : "—"}
                 </span>
                 <span className="text-xs text-muted-foreground">{totalVotes} vote{totalVotes !== 1 ? "s" : ""}</span>
               </div>
 
               {/* Vote buttons */}
               <div className="mt-auto">
-                {isActive ? (
+                {isActive && votingOpen ? (
                   userVote ? (
                     <div className="text-center text-sm text-muted-foreground py-3 rounded-xl bg-secondary/50">
-                      You voted <span className={`font-semibold ${userVote === "up" ? "text-primary" : "text-destructive"}`}>{userVote === "up" ? "Up" : "Down"}</span> · Note you can't change vote
+                      You voted <span className={`font-semibold ${userVote === "up" ? "text-primary" : "text-destructive"}`}>{userVote === "up" ? "Up" : "Down"}</span> · Waiting for result
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 gap-3">
@@ -271,6 +281,20 @@ export default function HourlyForecastDetail() {
                       </Button>
                     </div>
                   )
+                ) : isActive && !votingOpen ? (
+                  userVote ? (
+                    <div className="text-center text-sm text-muted-foreground py-3 rounded-xl bg-secondary/50">
+                      You voted <span className={`font-semibold ${userVote === "up" ? "text-primary" : "text-destructive"}`}>{userVote === "up" ? "Up" : "Down"}</span> · Waiting for result
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="grid grid-cols-2 gap-3">
+                        <span className="h-12 rounded-lg flex items-center justify-center text-sm font-bold bg-secondary text-muted-foreground opacity-40 blur-[1px]">Up</span>
+                        <span className="h-12 rounded-lg flex items-center justify-center text-sm font-bold bg-secondary text-muted-foreground opacity-40 blur-[1px]">Down</span>
+                      </div>
+                      <p className="text-center text-[10px] text-muted-foreground">Voting window closed · Waiting for result</p>
+                    </div>
+                  )
                 ) : (
                   <div className="grid grid-cols-2 gap-3">
                     <span className="h-12 rounded-lg flex items-center justify-center text-sm font-bold bg-secondary text-muted-foreground opacity-60">Up</span>
@@ -279,17 +303,29 @@ export default function HourlyForecastDetail() {
                 )}
               </div>
 
-              {/* Result for resolved */}
+              {/* Result + user outcome for resolved */}
               {round.status === "resolved" && round.outcome && !isInCooldown && (
-                <div className={`mt-4 flex items-center gap-2 text-sm font-semibold rounded-xl px-4 py-3 ${
-                  round.outcome === "up" ? "bg-primary/10 text-primary" : round.outcome === "down" ? "bg-destructive/10 text-destructive" : "bg-secondary text-muted-foreground"
-                }`}>
-                  {round.outcome === "up" ? <TrendingUp className="h-4 w-4" /> : round.outcome === "down" ? <TrendingDown className="h-4 w-4" /> : <Minus className="h-4 w-4" />}
-                  Price went {round.outcome === "up" ? "UP" : round.outcome === "down" ? "DOWN" : "FLAT"}
-                  {round.start_price != null && round.end_price != null && (
-                    <span className="text-muted-foreground font-normal ml-2">
-                      ({formatPrice(round.start_price)} → {formatPrice(round.end_price)})
-                    </span>
+                <div className="mt-4 space-y-2">
+                  <div className={`flex items-center gap-2 text-sm font-semibold rounded-xl px-4 py-3 ${
+                    round.outcome === "up" ? "bg-primary/10 text-primary" : round.outcome === "down" ? "bg-destructive/10 text-destructive" : "bg-secondary text-muted-foreground"
+                  }`}>
+                    {round.outcome === "up" ? <TrendingUp className="h-4 w-4" /> : round.outcome === "down" ? <TrendingDown className="h-4 w-4" /> : <Minus className="h-4 w-4" />}
+                    Price went {round.outcome === "up" ? "UP" : round.outcome === "down" ? "DOWN" : "FLAT"}
+                    {round.start_price != null && round.end_price != null && (
+                      <span className="text-muted-foreground font-normal ml-2">
+                        ({formatPrice(round.start_price)} → {formatPrice(round.end_price)})
+                      </span>
+                    )}
+                  </div>
+                  {userOutcome && (
+                    <div className={`flex items-center gap-2 text-sm font-semibold rounded-xl px-4 py-3 ${
+                      userOutcome === "correct"
+                        ? "bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20"
+                        : "bg-destructive/10 text-destructive border border-destructive/20"
+                    }`}>
+                      {userOutcome === "correct" ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
+                      {userOutcome === "correct" ? "You predicted correctly!" : "Your prediction was wrong"}
+                    </div>
                   )}
                 </div>
               )}

@@ -6,7 +6,7 @@ import { Timer, ThumbsUp, ThumbsDown, Plus, TrendingUp, TrendingDown, Clock, Fla
 
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
-import { useActiveHourlyRounds, useRealtimeHourlyRounds, useVoteHourlyRound, type HourlyRound } from "@/hooks/useHourlyForecasts";
+import { useActiveHourlyRounds, useRealtimeHourlyRounds, useVoteHourlyRound, isVotingOpen, getVotingDeadline, getUserOutcome, type HourlyRound } from "@/hooks/useHourlyForecasts";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -211,9 +211,13 @@ const HourlyRoundCard = ({ round, index }: { round: HourlyRound; index: number }
   const voteHourly = useVoteHourlyRound();
   const isActive = round.status === "active" && new Date(round.end_time) > new Date();
   const isInCooldown = round.status === "resolved" && round.cooldown_end && new Date(round.cooldown_end) > new Date();
+  const votingOpen = isVotingOpen(round);
+  const votingDeadline = getVotingDeadline(round.start_time, round.end_time);
   const countdown = useHourlyCountdown(isActive ? round.end_time : isInCooldown ? round.cooldown_end : null);
+  const votingCountdown = useHourlyCountdown(votingOpen ? votingDeadline.toISOString() : null);
   const totalVotes = round.total_votes_up + round.total_votes_down;
   const upPct = totalVotes > 0 ? (round.total_votes_up / totalVotes) * 100 : 50;
+  const userOutcome = getUserOutcome(round.user_vote || null, round.outcome);
 
   const handleVote = (vote: "up" | "down") => {
     if (!user) {
@@ -224,8 +228,8 @@ const HourlyRoundCard = ({ round, index }: { round: HourlyRound; index: number }
       toast.info("You already voted on this round.");
       return;
     }
-    if (!isActive) {
-      toast.info("This round has ended.");
+    if (!votingOpen) {
+      toast.info("Voting window has closed for this round.");
       return;
     }
     voteHourly.mutate({ roundId: round.id, vote }, {
@@ -254,10 +258,15 @@ const HourlyRoundCard = ({ round, index }: { round: HourlyRound; index: number }
           </div>
           <div className="flex items-center gap-1.5">
             <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-primary/15 text-primary">HOURLY</span>
-            {isActive && (
+            {isActive && votingOpen && (
               <span className="flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-green-500/10 text-green-600 dark:text-green-400">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                LIVE
+                VOTING
+              </span>
+            )}
+            {isActive && !votingOpen && (
+              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                PREDICTING
               </span>
             )}
             {isInCooldown && (
@@ -286,27 +295,37 @@ const HourlyRoundCard = ({ round, index }: { round: HourlyRound; index: number }
         <div className="mt-1.5 flex items-center gap-1.5">
           <Timer className="h-3 w-3 text-muted-foreground" />
           <span className="text-[10px] font-mono font-semibold text-muted-foreground tabular-nums">
-            {isActive ? countdown : isInCooldown ? `Next ${countdown}` : "—"}
+            {isActive && votingOpen ? `Voting closes ${votingCountdown}` : isActive ? `Resolves ${countdown}` : isInCooldown ? `Next ${countdown}` : "—"}
           </span>
         </div>
 
-        {/* Result for resolved */}
+        {/* User outcome for resolved rounds */}
         {round.status === "resolved" && round.outcome && !isInCooldown && (
-          <div className={`mt-2 flex items-center gap-1.5 text-xs font-semibold ${
-            round.outcome === "up" ? "text-primary" : round.outcome === "down" ? "text-destructive" : "text-muted-foreground"
-          }`}>
-            {round.outcome === "up" ? <TrendingUp className="h-3.5 w-3.5" /> : round.outcome === "down" ? <TrendingDown className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
-            Price went {round.outcome === "up" ? "UP" : round.outcome === "down" ? "DOWN" : "FLAT"}
-          </div>
+          <>
+            <div className={`mt-2 flex items-center gap-1.5 text-xs font-semibold ${
+              round.outcome === "up" ? "text-primary" : round.outcome === "down" ? "text-destructive" : "text-muted-foreground"
+            }`}>
+              {round.outcome === "up" ? <TrendingUp className="h-3.5 w-3.5" /> : round.outcome === "down" ? <TrendingDown className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
+              Price went {round.outcome === "up" ? "UP" : round.outcome === "down" ? "DOWN" : "FLAT"}
+            </div>
+            {userOutcome && (
+              <div className={`mt-1.5 flex items-center gap-1.5 text-[10px] font-semibold ${
+                userOutcome === "correct" ? "text-green-600 dark:text-green-400" : "text-destructive"
+              }`}>
+                {userOutcome === "correct" ? <CheckCircle2 className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
+                {userOutcome === "correct" ? "You predicted correctly!" : "Your prediction was wrong"}
+              </div>
+            )}
+          </>
         )}
       </div>
 
       {/* Vote buttons */}
       <div className="px-4 pb-4">
-        {isActive ? (
+        {isActive && votingOpen ? (
           round.user_vote ? (
             <div className="text-center text-[10px] text-muted-foreground py-2">
-              You voted <span className={`font-semibold ${round.user_vote === "up" ? "text-primary" : "text-destructive"}`}>{round.user_vote === "up" ? "Up" : "Down"}</span> · Note you can't change vote
+              You voted <span className={`font-semibold ${round.user_vote === "up" ? "text-primary" : "text-destructive"}`}>{round.user_vote === "up" ? "Up" : "Down"}</span> · Waiting for result
             </div>
           ) : (
             <div className="flex gap-2">
@@ -316,6 +335,17 @@ const HourlyRoundCard = ({ round, index }: { round: HourlyRound; index: number }
               <button onClick={() => handleVote("down")} disabled={voteHourly.isPending} className="flex-1 rounded-lg py-2 text-xs font-bold text-center bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors">
                 Down
               </button>
+            </div>
+          )
+        ) : isActive && !votingOpen ? (
+          round.user_vote ? (
+            <div className="text-center text-[10px] text-muted-foreground py-2">
+              You voted <span className={`font-semibold ${round.user_vote === "up" ? "text-primary" : "text-destructive"}`}>{round.user_vote === "up" ? "Up" : "Down"}</span> · Waiting for result
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <span className="flex-1 rounded-lg py-2 text-xs font-bold text-center bg-secondary text-muted-foreground opacity-40 blur-[1px]">Up</span>
+              <span className="flex-1 rounded-lg py-2 text-xs font-bold text-center bg-secondary text-muted-foreground opacity-40 blur-[1px]">Down</span>
             </div>
           )
         ) : (
