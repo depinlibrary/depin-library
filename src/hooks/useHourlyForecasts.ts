@@ -26,6 +26,26 @@ export type HourlyRound = {
   user_vote?: string | null;
 };
 
+/** Voting is open for the first 10% of the round (6 minutes of 60). */
+export function getVotingDeadline(startTime: string, endTime: string): Date {
+  const start = new Date(startTime).getTime();
+  const end = new Date(endTime).getTime();
+  const duration = end - start;
+  return new Date(start + duration * 0.1);
+}
+
+export function isVotingOpen(round: { status: string; start_time: string; end_time: string }): boolean {
+  if (round.status !== "active") return false;
+  const now = new Date();
+  if (now >= new Date(round.end_time)) return false;
+  return now < getVotingDeadline(round.start_time, round.end_time);
+}
+
+export function getUserOutcome(userVote: string | null, outcome: string | null): "correct" | "wrong" | null {
+  if (!userVote || !outcome || outcome === "draw") return null;
+  return userVote === outcome ? "correct" : "wrong";
+}
+
 export function useRealtimeHourlyRounds() {
   const queryClient = useQueryClient();
   useEffect(() => {
