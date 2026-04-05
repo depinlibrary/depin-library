@@ -197,10 +197,15 @@ export default function HourlyForecastDetail() {
                 </Link>
                 <div className="flex items-center gap-2">
                   <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-primary/15 text-primary">HOURLY</span>
-                  {isActive && (
+                  {isActive && votingOpen && (
                     <span className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-green-500/10 text-green-600 dark:text-green-400">
                       <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                      LIVE
+                      VOTING OPEN
+                    </span>
+                  )}
+                  {isActive && !votingOpen && (
+                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                      PREDICTING
                     </span>
                   )}
                   {isInCooldown && (
