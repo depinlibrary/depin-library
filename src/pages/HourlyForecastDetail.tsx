@@ -43,6 +43,7 @@ export default function HourlyForecastDetail() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const voteHourly = useVoteHourlyRound();
+  useRealtimeHourlyRounds();
 
   const { data: round, isLoading } = useQuery({
     queryKey: ["hourly-round-detail", roundId],
