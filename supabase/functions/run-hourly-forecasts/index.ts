@@ -79,23 +79,17 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      // No active round — check cooldown
+      // No active round — get last round number
       const { data: lastRounds } = await supabase
         .from("hourly_forecast_rounds")
-        .select("*")
+        .select("round_number")
         .eq("config_id", config.id)
-        .eq("status", "resolved")
-        .order("created_at", { ascending: false })
+        .order("round_number", { ascending: false })
         .limit(1);
 
       const lastRound = lastRounds?.[0];
 
-      if (lastRound?.cooldown_end && new Date(lastRound.cooldown_end) > now) {
-        results.push({ config_id: config.id, action: "in_cooldown", cooldown_end: lastRound.cooldown_end });
-        continue;
-      }
-
-      // Create new round
+      // Create new round immediately
       const { data: marketData } = await supabase
         .from("token_market_data")
         .select("price_usd")
