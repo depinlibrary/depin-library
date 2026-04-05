@@ -1753,8 +1753,8 @@ const Portfolio = () => {
                       <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
                         {predictionStats.history.slice(0, 15).map((item) => (
                           <Link
-                            key={item.prediction_id + item.voted_at}
-                            to={`/predictions/${item.prediction_id}`}
+                            key={item.forecast_id + item.voted_at}
+                            to={`/predictions/${item.forecast_id}`}
                             className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 transition-colors group"
                           >
                             {item.project_logo_url ? (
