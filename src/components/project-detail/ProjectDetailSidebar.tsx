@@ -38,7 +38,7 @@ interface Props {
   coinDetail?: CoinDetail | null;
 }
 
-export default function ProjectDetailSidebar({ project, marketData, ratingsData }: Props) {
+export default function ProjectDetailSidebar({ project, marketData, ratingsData, coinDetail }: Props) {
   const overallRating = ratingsData?.averages?.overall;
   const change24h = marketData?.price_change_24h;
   const isPositive = (change24h ?? 0) >= 0;
