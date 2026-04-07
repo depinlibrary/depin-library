@@ -35,6 +35,7 @@ interface Props {
   project: Project;
   marketData: TokenMarketData | null | undefined;
   ratingsData: any;
+  coinDetail?: CoinDetail | null;
 }
 
 export default function ProjectDetailSidebar({ project, marketData, ratingsData }: Props) {
