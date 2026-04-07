@@ -3,6 +3,7 @@ import { ExternalLink, Globe, Layers, Coins, Calendar, Activity, Star, Twitter, 
 import ProjectLogo from "@/components/ProjectLogo";
 import type { Project } from "@/hooks/useProjects";
 import type { TokenMarketData } from "@/hooks/useTokenMarketData";
+import type { CoinDetail } from "@/hooks/useCoinDetail";
 
 const fadeUp = {
   initial: { opacity: 0, y: 16 },
