@@ -1,22 +1,24 @@
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, ExternalLink, Globe, Layers, Coins, Calendar, Activity, Star, Twitter } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import CompareWithButton from "@/components/CompareWithButton";
 import { useProject } from "@/hooks/useProjects";
 import ProjectRatings from "@/components/ProjectRatings";
 import ReviewSection from "@/components/ReviewSection";
 import ProjectPredictions from "@/components/ProjectPredictions";
-import ProjectLogo from "@/components/ProjectLogo";
 import ShareButtons from "@/components/ShareButtons";
 import RelatedProjects from "@/components/RelatedProjects";
 import ProjectDetailSkeleton from "@/components/ProjectDetailSkeleton";
 import { useTokenMarketData } from "@/hooks/useTokenMarketData";
 import { useProjectRatings } from "@/hooks/useProjectRatings";
+import { useCoinDetail } from "@/hooks/useCoinDetail";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProjectDetailSidebar from "@/components/project-detail/ProjectDetailSidebar";
 import ProjectDetailChart from "@/components/project-detail/ProjectDetailChart";
+import ProjectMarkets from "@/components/project-detail/ProjectMarkets";
+import ProjectLearnMore from "@/components/project-detail/ProjectLearnMore";
 
 const fadeUp = {
   initial: { opacity: 0, y: 16 },
@@ -28,6 +30,7 @@ const ProjectDetail = () => {
   const { data: project, isLoading } = useProject(slug || "");
   const { data: marketData } = useTokenMarketData(project?.id);
   const { data: ratingsData } = useProjectRatings(project?.id || "");
+  const { data: coinDetail } = useCoinDetail(project?.coingecko_id);
 
   if (isLoading) {
     return (
@@ -58,7 +61,7 @@ const ProjectDetail = () => {
         <div className="absolute inset-0 bg-grid opacity-30" />
         <div className="gradient-radial-top absolute inset-0" />
 
-        <div className="container relative mx-auto max-w-6xl px-4">
+        <div className="container relative mx-auto px-4">
           {/* Back row */}
           <motion.div {...fadeUp} className="mb-6 flex items-center justify-between">
             <Link to="/explore" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
@@ -70,13 +73,14 @@ const ProjectDetail = () => {
             </div>
           </motion.div>
 
-          {/* Two-column DePINscan-style layout */}
+          {/* Two-column layout */}
           <div className="grid gap-6 lg:grid-cols-[380px_1fr]">
             {/* Left Sidebar */}
             <ProjectDetailSidebar
               project={project}
               marketData={marketData}
               ratingsData={ratingsData}
+              coinDetail={coinDetail}
             />
 
             {/* Right Main Content */}
@@ -84,6 +88,8 @@ const ProjectDetail = () => {
               <Tabs defaultValue="chart" className="w-full">
                 <TabsList className="mb-4 w-full justify-start bg-card border border-border">
                   <TabsTrigger value="chart">Chart</TabsTrigger>
+                  <TabsTrigger value="markets">Markets</TabsTrigger>
+                  <TabsTrigger value="learn-more">Learn More</TabsTrigger>
                   <TabsTrigger value="ratings">Ratings</TabsTrigger>
                   <TabsTrigger value="reviews">Reviews</TabsTrigger>
                   <TabsTrigger value="predictions">Predictions</TabsTrigger>
@@ -94,6 +100,21 @@ const ProjectDetail = () => {
                     marketData={marketData}
                     projectName={project.name}
                     token={project.token}
+                  />
+                </TabsContent>
+
+                <TabsContent value="markets">
+                  <ProjectMarkets
+                    tickers={coinDetail?.tickers || []}
+                    tokenName={project.token || project.name}
+                  />
+                </TabsContent>
+
+                <TabsContent value="learn-more">
+                  <ProjectLearnMore
+                    coinDetail={coinDetail || { total_supply: null, circulating_supply: null, max_supply: null, fully_diluted_valuation: null, ath: null, ath_date: null, atl: null, atl_date: null, volume_24h: null, contracts: {}, tickers: [], description: null, categories: [], links: { homepage: null, whitepaper: null, repos: null } }}
+                    projectName={project.name}
+                    projectDescription={project.description}
                   />
                 </TabsContent>
 
