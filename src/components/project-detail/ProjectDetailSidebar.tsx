@@ -139,6 +139,21 @@ export default function ProjectDetailSidebar({ project, marketData, ratingsData,
           {/* Market stats */}
           <div className="space-y-2.5">
             <DetailRow label="Market Cap" value={formatMarketCap(marketData.market_cap_usd)} />
+            {coinDetail?.volume_24h != null && (
+              <DetailRow label="24h Volume" value={formatMarketCap(coinDetail.volume_24h)} />
+            )}
+            {coinDetail?.circulating_supply != null && (
+              <DetailRow label="Circulating Supply" value={formatMarketCap(coinDetail.circulating_supply).replace("$", "")} />
+            )}
+            {coinDetail?.total_supply != null && (
+              <DetailRow label="Total Supply" value={formatMarketCap(coinDetail.total_supply).replace("$", "")} />
+            )}
+            {coinDetail?.fully_diluted_valuation != null && (
+              <DetailRow label="Fully Diluted Val." value={formatMarketCap(coinDetail.fully_diluted_valuation)} />
+            )}
+            {coinDetail?.ath != null && (
+              <DetailRow label="All Time High" value={formatPrice(coinDetail.ath)} valueClass="text-neon-green" />
+            )}
             {(() => {
               const sparkline = marketData.sparkline_7d;
               if (!sparkline || !Array.isArray(sparkline) || sparkline.length === 0) return null;
@@ -153,6 +168,23 @@ export default function ProjectDetailSidebar({ project, marketData, ratingsData,
               );
             })()}
             <DetailRow label="Data Source" value={marketData.data_source || "coingecko"} />
+          </div>
+        </motion.div>
+      )}
+
+      {/* Contract Addresses */}
+      {coinDetail && Object.keys(coinDetail.contracts || {}).length > 0 && (
+        <motion.div {...fadeUp} transition={{ delay: 0.15 }} className="rounded-xl border border-border bg-card p-5">
+          <h3 className="text-sm font-semibold text-foreground mb-3">Contracts</h3>
+          <div className="space-y-2">
+            {Object.entries(coinDetail.contracts).map(([platform, address]) => (
+              <div key={platform}>
+                <span className="text-[11px] text-muted-foreground capitalize">{platform.replace(/-/g, " ")}</span>
+                <code className="block text-[11px] text-foreground bg-secondary rounded px-2 py-1 mt-0.5 truncate" title={address}>
+                  {address}
+                </code>
+              </div>
+            ))}
           </div>
         </motion.div>
       )}
