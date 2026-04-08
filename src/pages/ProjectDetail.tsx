@@ -14,7 +14,7 @@ import { useTokenMarketData } from "@/hooks/useTokenMarketData";
 import { useProjectRatings } from "@/hooks/useProjectRatings";
 import { useCoinDetail } from "@/hooks/useCoinDetail";
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+
 import ProjectDetailSidebar from "@/components/project-detail/ProjectDetailSidebar";
 import ProjectDetailChart from "@/components/project-detail/ProjectDetailChart";
 import ProjectMarkets from "@/components/project-detail/ProjectMarkets";
