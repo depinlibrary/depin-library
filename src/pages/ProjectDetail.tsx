@@ -185,7 +185,7 @@ const ProjectDetail = () => {
                   </div>
                 </div>
 
-                <div ref={contentRef} className="min-h-0 flex-1 lg:overflow-y-auto lg:pr-2">
+                <div ref={contentRef} className="min-h-0 flex-1 lg:overflow-y-auto lg:pr-2 scrollbar-none" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                   <div className="space-y-8 pb-20">
                     {/* Social */}
                     <div ref={(el) => { sectionRefs.current["social"] = el; }} id="section-social">
