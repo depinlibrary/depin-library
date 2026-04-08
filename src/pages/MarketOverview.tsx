@@ -112,8 +112,8 @@ const Sparkline = ({ data, change, width = 120, height = 36 }: { data: number[] 
 };
 
 // Hero stat card
-const StatCard = ({ icon: Icon, label, value, sub, accent = false }: {
-  icon: React.ElementType; label: string; value: React.ReactNode; sub?: React.ReactNode; accent?: boolean;
+const StatCard = ({ label, value, sub, accent = false }: {
+  label: string; value: React.ReactNode; sub?: React.ReactNode; accent?: boolean;
 }) => (
   <motion.div
     initial={{ opacity: 0, y: 12 }}
@@ -124,15 +124,10 @@ const StatCard = ({ icon: Icon, label, value, sub, accent = false }: {
         : "border-border bg-card/60 backdrop-blur-sm"
     }`}
   >
-    <div className="flex items-start justify-between">
-      <div>
-        <p className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">{label}</p>
-        <p className="mt-1.5 text-2xl font-bold text-foreground font-mono tracking-tight">{value}</p>
-        {sub && <div className="mt-1">{sub}</div>}
-      </div>
-      <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${accent ? "bg-primary/10" : "bg-secondary"}`}>
-        <Icon className={`h-4.5 w-4.5 ${accent ? "text-primary" : "text-muted-foreground"}`} />
-      </div>
+    <div>
+      <p className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">{label}</p>
+      <p className="mt-1.5 text-2xl font-bold text-foreground font-mono tracking-tight">{value}</p>
+      {sub && <div className="mt-1">{sub}</div>}
     </div>
     {accent && (
       <div className="absolute -bottom-8 -right-8 h-24 w-24 rounded-full bg-primary/5 blur-2xl" />
