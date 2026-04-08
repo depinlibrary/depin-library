@@ -112,8 +112,8 @@ const Sparkline = ({ data, change, width = 120, height = 36 }: { data: number[] 
 };
 
 // Hero stat card
-const StatCard = ({ icon: Icon, label, value, sub, accent = false }: {
-  icon: React.ElementType; label: string; value: React.ReactNode; sub?: React.ReactNode; accent?: boolean;
+const StatCard = ({ label, value, sub, accent = false }: {
+  label: string; value: React.ReactNode; sub?: React.ReactNode; accent?: boolean;
 }) => (
   <motion.div
     initial={{ opacity: 0, y: 12 }}
@@ -124,15 +124,10 @@ const StatCard = ({ icon: Icon, label, value, sub, accent = false }: {
         : "border-border bg-card/60 backdrop-blur-sm"
     }`}
   >
-    <div className="flex items-start justify-between">
-      <div>
-        <p className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">{label}</p>
-        <p className="mt-1.5 text-2xl font-bold text-foreground font-mono tracking-tight">{value}</p>
-        {sub && <div className="mt-1">{sub}</div>}
-      </div>
-      <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${accent ? "bg-primary/10" : "bg-secondary"}`}>
-        <Icon className={`h-4.5 w-4.5 ${accent ? "text-primary" : "text-muted-foreground"}`} />
-      </div>
+    <div>
+      <p className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">{label}</p>
+      <p className="mt-1.5 text-2xl font-bold text-foreground font-mono tracking-tight">{value}</p>
+      {sub && <div className="mt-1">{sub}</div>}
     </div>
     {accent && (
       <div className="absolute -bottom-8 -right-8 h-24 w-24 rounded-full bg-primary/5 blur-2xl" />
@@ -402,10 +397,10 @@ const MarketOverview = () => {
           {/* ── Stat Cards ──────────────────────────────── */}
           {!isLoading && (
             <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3">
-              <StatCard icon={Zap} label="Total Market Cap" value={formatMarketCap(stats.totalMcap)} accent />
-              <StatCard icon={Globe2} label="Tracked Projects" value={stats.tracked} sub={<span className="text-xs text-muted-foreground">{projects.length} total</span>} />
-              <StatCard icon={TrendingUp} label="Avg 24h Change" value={<PriceChange change={stats.avgChange} showIcon />} />
-              <StatCard icon={LayoutGrid} label="Categories" value={categories.length} sub={<span className="text-xs text-muted-foreground">{chains.length} chains</span>} />
+              <StatCard label="Total Market Cap" value={formatMarketCap(stats.totalMcap)} accent />
+              <StatCard label="Tracked Projects" value={stats.tracked} sub={<span className="text-xs text-muted-foreground">{projects.length} total</span>} />
+              <StatCard label="Avg 24h Change" value={<PriceChange change={stats.avgChange} showIcon />} />
+              <StatCard label="Categories" value={categories.length} sub={<span className="text-xs text-muted-foreground">{chains.length} chains</span>} />
             </div>
           )}
         </div>

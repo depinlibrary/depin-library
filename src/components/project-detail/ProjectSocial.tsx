@@ -71,10 +71,7 @@ export default function ProjectSocial({ social, sentimentUp, watchlistUsers, pro
             key={card.label}
             className="rounded-xl border border-border bg-card p-5 flex flex-col gap-1"
           >
-            <div className="flex items-center gap-2 text-muted-foreground mb-1">
-              <card.icon className="h-4 w-4" />
-              <span className="text-sm">{card.label}</span>
-            </div>
+            <span className="text-sm text-muted-foreground mb-1">{card.label}</span>
             <span className="text-2xl font-bold text-foreground">{card.value}</span>
           </div>
         ))}
