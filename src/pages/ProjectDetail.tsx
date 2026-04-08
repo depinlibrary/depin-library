@@ -45,38 +45,65 @@ const ProjectDetail = () => {
   const [activeSection, setActiveSection] = useState<string>("social");
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const navRef = useRef<HTMLDivElement | null>(null);
+  const contentRef = useRef<HTMLDivElement | null>(null);
 
   // Intersection observer to track active section
   useEffect(() => {
     const observers: IntersectionObserver[] = [];
     const entries: Record<string, boolean> = {};
+    const scrollRoot =
+      contentRef.current && contentRef.current.scrollHeight > contentRef.current.clientHeight + 1
+        ? contentRef.current
+        : null;
+
+    setActiveSection("social");
 
     SECTIONS.forEach(({ id }) => {
       const el = sectionRefs.current[id];
       if (!el) return;
+
       const observer = new IntersectionObserver(
         ([entry]) => {
           entries[id] = entry.isIntersecting;
-          // Find first visible section
-          const first = SECTIONS.find((s) => entries[s.id]);
-          if (first) setActiveSection(first.id);
+          const firstVisible = SECTIONS.find((section) => entries[section.id]);
+          if (firstVisible) setActiveSection(firstVisible.id);
         },
-        { rootMargin: "-100px 0px -60% 0px", threshold: 0 }
+        {
+          root: scrollRoot,
+          rootMargin: "-24px 0px -70% 0px",
+          threshold: 0,
+        }
       );
+
       observer.observe(el);
       observers.push(observer);
     });
 
-    return () => observers.forEach((o) => o.disconnect());
+    return () => observers.forEach((observer) => observer.disconnect());
   }, [project]);
 
   const scrollToSection = (id: string) => {
     const el = sectionRefs.current[id];
-    if (el) {
-      const navHeight = navRef.current?.offsetHeight || 48;
-      const top = el.getBoundingClientRect().top + window.scrollY - navHeight - 80;
-      window.scrollTo({ top, behavior: "smooth" });
+    if (!el) return;
+
+    const scrollContainer = contentRef.current;
+    const canUseInnerScroll =
+      !!scrollContainer && scrollContainer.scrollHeight > scrollContainer.clientHeight + 1;
+
+    if (scrollContainer && canUseInnerScroll) {
+      const top =
+        el.getBoundingClientRect().top -
+        scrollContainer.getBoundingClientRect().top +
+        scrollContainer.scrollTop -
+        24;
+
+      scrollContainer.scrollTo({ top: Math.max(top, 0), behavior: "smooth" });
+      return;
     }
+
+    const navHeight = navRef.current?.offsetHeight || 48;
+    const top = el.getBoundingClientRect().top + window.scrollY - navHeight - 80;
+    window.scrollTo({ top, behavior: "smooth" });
   };
 
   if (isLoading) {
@@ -102,7 +129,7 @@ const ProjectDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background overflow-hidden">
+    <div className="min-h-screen bg-background">
       <Navbar />
       <div className="relative pt-24">
         <div className="absolute inset-0 bg-grid opacity-30" />
@@ -121,7 +148,7 @@ const ProjectDetail = () => {
           </motion.div>
 
           {/* Two-column layout */}
-          <div className="grid gap-6 lg:grid-cols-[380px_1fr]">
+          <div className="grid gap-6 lg:grid-cols-[380px_minmax(0,1fr)] lg:items-start">
             {/* Left Sidebar */}
             <ProjectDetailSidebar
               project={project}
@@ -130,88 +157,94 @@ const ProjectDetail = () => {
               coinDetail={coinDetail}
             />
 
-            {/* Right Main Content - Scrollable */}
-            <motion.div {...fadeUp} transition={{ delay: 0.1 }} className="min-h-0 pb-20">
-              {/* Sticky section nav */}
-              <div
-                ref={navRef}
-                className="sticky top-16 z-20 mb-6 border-b border-border bg-background/95 backdrop-blur-sm overflow-x-auto"
-              >
-                <div className="flex items-center gap-1 py-2 min-w-max">
-                  {SECTIONS.map((section) => (
-                    <button
-                      key={section.id}
-                      onClick={() => scrollToSection(section.id)}
-                      className={`px-4 py-1.5 text-sm font-medium rounded-full transition-colors whitespace-nowrap ${
-                        activeSection === section.id
-                          ? "bg-primary text-primary-foreground"
-                          : "text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      {section.label}
-                    </button>
-                  ))}
+            {/* Right Main Content - sticky shell with inner scroll */}
+            <motion.div
+              {...fadeUp}
+              transition={{ delay: 0.1 }}
+              className="min-w-0 lg:sticky lg:top-20 lg:self-start lg:h-[calc(100vh-6rem)]"
+            >
+              <div className="flex min-h-0 flex-col lg:h-full">
+                <div
+                  ref={navRef}
+                  className="z-20 mb-6 shrink-0 border-b border-border bg-background/95 backdrop-blur-sm overflow-x-auto"
+                >
+                  <div className="flex min-w-max items-center gap-1 py-2">
+                    {SECTIONS.map((section) => (
+                      <button
+                        key={section.id}
+                        onClick={() => scrollToSection(section.id)}
+                        className={`px-4 py-1.5 text-sm font-medium rounded-full transition-colors whitespace-nowrap ${
+                          activeSection === section.id
+                            ? "bg-primary text-primary-foreground"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {section.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div ref={contentRef} className="min-h-0 flex-1 lg:overflow-y-auto lg:pr-2">
+                  <div className="space-y-8 pb-20">
+                    {/* Social */}
+                    <div ref={(el) => { sectionRefs.current["social"] = el; }} id="section-social">
+                      <h2 className="mb-4 text-lg font-semibold text-foreground">Social</h2>
+                      <ProjectSocial
+                        social={coinDetail?.social}
+                        sentimentUp={coinDetail?.sentiment_votes_up_percentage}
+                        watchlistUsers={coinDetail?.watchlist_users}
+                        projectName={project.name}
+                      />
+                    </div>
+
+                    {/* Chart */}
+                    <div ref={(el) => { sectionRefs.current["chart"] = el; }} id="section-chart">
+                      <ProjectDetailChart
+                        marketData={marketData}
+                        projectName={project.name}
+                        token={project.token}
+                      />
+                    </div>
+
+                    {/* Markets */}
+                    <div ref={(el) => { sectionRefs.current["markets"] = el; }} id="section-markets">
+                      <ProjectMarkets
+                        tickers={coinDetail?.tickers || []}
+                        tokenName={project.token || project.name}
+                      />
+                    </div>
+
+                    {/* Learn More */}
+                    <div ref={(el) => { sectionRefs.current["learn-more"] = el; }} id="section-learn-more">
+                      <ProjectLearnMore
+                        coinDetail={coinDetail || { total_supply: null, circulating_supply: null, max_supply: null, fully_diluted_valuation: null, ath: null, ath_date: null, atl: null, atl_date: null, volume_24h: null, market_cap: null, contracts: {}, tickers: [], description: null, categories: [], links: { homepage: null, whitepaper: null, repos: null }, social: { twitter_followers: null, reddit_subscribers: null, reddit_active_accounts: null, telegram_members: null, facebook_likes: null }, sentiment_votes_up_percentage: null, sentiment_votes_down_percentage: null, watchlist_users: null }}
+                        projectName={project.name}
+                        projectDescription={project.description}
+                      />
+                    </div>
+
+                    {/* Ratings */}
+                    <div ref={(el) => { sectionRefs.current["ratings"] = el; }} id="section-ratings">
+                      <ProjectRatings projectId={project.id} projectName={project.name} />
+                    </div>
+
+                    {/* Predictions */}
+                    <div ref={(el) => { sectionRefs.current["predictions"] = el; }} id="section-predictions">
+                      <ProjectPredictions projectId={project.id} projectName={project.name} />
+                    </div>
+
+                    {/* Related Projects */}
+                    <motion.div {...fadeUp} transition={{ delay: 0.25 }} className="mt-8">
+                      <RelatedProjects
+                        currentProjectId={project.id}
+                        category={project.category}
+                        blockchain={project.blockchain}
+                      />
+                    </motion.div>
+                  </div>
                 </div>
               </div>
-
-              {/* All sections rendered on one scrollable page */}
-              <div className="space-y-8">
-                {/* Social */}
-                <div ref={(el) => { sectionRefs.current["social"] = el; }} id="section-social">
-                  <h2 className="text-lg font-semibold text-foreground mb-4">Social</h2>
-                  <ProjectSocial
-                    social={coinDetail?.social}
-                    sentimentUp={coinDetail?.sentiment_votes_up_percentage}
-                    watchlistUsers={coinDetail?.watchlist_users}
-                    projectName={project.name}
-                  />
-                </div>
-
-                {/* Chart */}
-                <div ref={(el) => { sectionRefs.current["chart"] = el; }} id="section-chart">
-                  <ProjectDetailChart
-                    marketData={marketData}
-                    projectName={project.name}
-                    token={project.token}
-                  />
-                </div>
-
-                {/* Markets */}
-                <div ref={(el) => { sectionRefs.current["markets"] = el; }} id="section-markets">
-                  <ProjectMarkets
-                    tickers={coinDetail?.tickers || []}
-                    tokenName={project.token || project.name}
-                  />
-                </div>
-
-                {/* Learn More */}
-                <div ref={(el) => { sectionRefs.current["learn-more"] = el; }} id="section-learn-more">
-                  <ProjectLearnMore
-                    coinDetail={coinDetail || { total_supply: null, circulating_supply: null, max_supply: null, fully_diluted_valuation: null, ath: null, ath_date: null, atl: null, atl_date: null, volume_24h: null, market_cap: null, contracts: {}, tickers: [], description: null, categories: [], links: { homepage: null, whitepaper: null, repos: null }, social: { twitter_followers: null, reddit_subscribers: null, reddit_active_accounts: null, telegram_members: null, facebook_likes: null }, sentiment_votes_up_percentage: null, sentiment_votes_down_percentage: null, watchlist_users: null }}
-                    projectName={project.name}
-                    projectDescription={project.description}
-                  />
-                </div>
-
-                {/* Ratings */}
-                <div ref={(el) => { sectionRefs.current["ratings"] = el; }} id="section-ratings">
-                  <ProjectRatings projectId={project.id} projectName={project.name} />
-                </div>
-
-                {/* Predictions */}
-                <div ref={(el) => { sectionRefs.current["predictions"] = el; }} id="section-predictions">
-                  <ProjectPredictions projectId={project.id} projectName={project.name} />
-                </div>
-              </div>
-
-              {/* Related Projects */}
-              <motion.div {...fadeUp} transition={{ delay: 0.25 }} className="mt-8">
-                <RelatedProjects
-                  currentProjectId={project.id}
-                  category={project.category}
-                  blockchain={project.blockchain}
-                />
-              </motion.div>
             </motion.div>
           </div>
         </div>
