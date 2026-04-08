@@ -14,7 +14,7 @@ import { useTokenMarketData } from "@/hooks/useTokenMarketData";
 import { useProjectRatings } from "@/hooks/useProjectRatings";
 import { useCoinDetail } from "@/hooks/useCoinDetail";
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+
 import ProjectDetailSidebar from "@/components/project-detail/ProjectDetailSidebar";
 import ProjectDetailChart from "@/components/project-detail/ProjectDetailChart";
 import ProjectMarkets from "@/components/project-detail/ProjectMarkets";
@@ -102,9 +102,9 @@ const ProjectDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-hidden">
       <Navbar />
-      <div className="relative pt-24 pb-20">
+      <div className="relative pt-24">
         <div className="absolute inset-0 bg-grid opacity-30" />
         <div className="gradient-radial-top absolute inset-0" />
 
@@ -130,8 +130,8 @@ const ProjectDetail = () => {
               coinDetail={coinDetail}
             />
 
-            {/* Right Main Content - Single page scroll */}
-            <motion.div {...fadeUp} transition={{ delay: 0.1 }}>
+            {/* Right Main Content - Scrollable */}
+            <motion.div {...fadeUp} transition={{ delay: 0.1 }} className="min-h-0 pb-20">
               {/* Sticky section nav */}
               <div
                 ref={navRef}
@@ -198,7 +198,6 @@ const ProjectDetail = () => {
                   <ProjectRatings projectId={project.id} projectName={project.name} />
                 </div>
 
-
                 {/* Predictions */}
                 <div ref={(el) => { sectionRefs.current["predictions"] = el; }} id="section-predictions">
                   <ProjectPredictions projectId={project.id} projectName={project.name} />
@@ -217,7 +216,6 @@ const ProjectDetail = () => {
           </div>
         </div>
       </div>
-      <Footer />
     </div>
   );
 };
