@@ -1,3 +1,4 @@
+import { useRef, useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
@@ -14,16 +15,26 @@ import { useProjectRatings } from "@/hooks/useProjectRatings";
 import { useCoinDetail } from "@/hooks/useCoinDetail";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProjectDetailSidebar from "@/components/project-detail/ProjectDetailSidebar";
 import ProjectDetailChart from "@/components/project-detail/ProjectDetailChart";
 import ProjectMarkets from "@/components/project-detail/ProjectMarkets";
 import ProjectLearnMore from "@/components/project-detail/ProjectLearnMore";
+import ProjectSocial from "@/components/project-detail/ProjectSocial";
 
 const fadeUp = {
   initial: { opacity: 0, y: 16 },
   animate: { opacity: 1, y: 0 },
 };
+
+const SECTIONS = [
+  { id: "social", label: "Social" },
+  { id: "chart", label: "Chart" },
+  { id: "markets", label: "Markets" },
+  { id: "learn-more", label: "Learn More" },
+  { id: "ratings", label: "Ratings" },
+  { id: "reviews", label: "Reviews" },
+  { id: "predictions", label: "Predictions" },
+] as const;
 
 const ProjectDetail = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -31,6 +42,43 @@ const ProjectDetail = () => {
   const { data: marketData } = useTokenMarketData(project?.id);
   const { data: ratingsData } = useProjectRatings(project?.id || "");
   const { data: coinDetail } = useCoinDetail(project?.coingecko_id);
+
+  const [activeSection, setActiveSection] = useState<string>("social");
+  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const navRef = useRef<HTMLDivElement | null>(null);
+
+  // Intersection observer to track active section
+  useEffect(() => {
+    const observers: IntersectionObserver[] = [];
+    const entries: Record<string, boolean> = {};
+
+    SECTIONS.forEach(({ id }) => {
+      const el = sectionRefs.current[id];
+      if (!el) return;
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          entries[id] = entry.isIntersecting;
+          // Find first visible section
+          const first = SECTIONS.find((s) => entries[s.id]);
+          if (first) setActiveSection(first.id);
+        },
+        { rootMargin: "-100px 0px -60% 0px", threshold: 0 }
+      );
+      observer.observe(el);
+      observers.push(observer);
+    });
+
+    return () => observers.forEach((o) => o.disconnect());
+  }, [project]);
+
+  const scrollToSection = (id: string) => {
+    const el = sectionRefs.current[id];
+    if (el) {
+      const navHeight = navRef.current?.offsetHeight || 48;
+      const top = el.getBoundingClientRect().top + window.scrollY - navHeight - 80;
+      window.scrollTo({ top, behavior: "smooth" });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -83,56 +131,87 @@ const ProjectDetail = () => {
               coinDetail={coinDetail}
             />
 
-            {/* Right Main Content */}
+            {/* Right Main Content - Single page scroll */}
             <motion.div {...fadeUp} transition={{ delay: 0.1 }}>
-              <Tabs defaultValue="chart" className="w-full">
-                <TabsList className="mb-4 w-full justify-start bg-card border border-border">
-                  <TabsTrigger value="chart">Chart</TabsTrigger>
-                  <TabsTrigger value="markets">Markets</TabsTrigger>
-                  <TabsTrigger value="learn-more">Learn More</TabsTrigger>
-                  <TabsTrigger value="ratings">Ratings</TabsTrigger>
-                  <TabsTrigger value="reviews">Reviews</TabsTrigger>
-                  <TabsTrigger value="predictions">Predictions</TabsTrigger>
-                </TabsList>
+              {/* Sticky section nav */}
+              <div
+                ref={navRef}
+                className="sticky top-16 z-20 mb-6 rounded-xl border border-border bg-card/95 backdrop-blur-sm overflow-x-auto"
+              >
+                <div className="flex items-center gap-0.5 p-1 min-w-max">
+                  {SECTIONS.map((section) => (
+                    <button
+                      key={section.id}
+                      onClick={() => scrollToSection(section.id)}
+                      className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors whitespace-nowrap ${
+                        activeSection === section.id
+                          ? "bg-primary text-primary-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                      }`}
+                    >
+                      {section.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-                <TabsContent value="chart">
+              {/* All sections rendered on one scrollable page */}
+              <div className="space-y-8">
+                {/* Social */}
+                <div ref={(el) => { sectionRefs.current["social"] = el; }} id="section-social">
+                  <h2 className="text-lg font-semibold text-foreground mb-4">Social</h2>
+                  <ProjectSocial
+                    social={coinDetail?.social}
+                    sentimentUp={coinDetail?.sentiment_votes_up_percentage}
+                    watchlistUsers={coinDetail?.watchlist_users}
+                    projectName={project.name}
+                  />
+                </div>
+
+                {/* Chart */}
+                <div ref={(el) => { sectionRefs.current["chart"] = el; }} id="section-chart">
                   <ProjectDetailChart
                     marketData={marketData}
                     projectName={project.name}
                     token={project.token}
                   />
-                </TabsContent>
+                </div>
 
-                <TabsContent value="markets">
+                {/* Markets */}
+                <div ref={(el) => { sectionRefs.current["markets"] = el; }} id="section-markets">
                   <ProjectMarkets
                     tickers={coinDetail?.tickers || []}
                     tokenName={project.token || project.name}
                   />
-                </TabsContent>
+                </div>
 
-                <TabsContent value="learn-more">
+                {/* Learn More */}
+                <div ref={(el) => { sectionRefs.current["learn-more"] = el; }} id="section-learn-more">
                   <ProjectLearnMore
-                    coinDetail={coinDetail || { total_supply: null, circulating_supply: null, max_supply: null, fully_diluted_valuation: null, ath: null, ath_date: null, atl: null, atl_date: null, volume_24h: null, contracts: {}, tickers: [], description: null, categories: [], links: { homepage: null, whitepaper: null, repos: null } }}
+                    coinDetail={coinDetail || { total_supply: null, circulating_supply: null, max_supply: null, fully_diluted_valuation: null, ath: null, ath_date: null, atl: null, atl_date: null, volume_24h: null, market_cap: null, contracts: {}, tickers: [], description: null, categories: [], links: { homepage: null, whitepaper: null, repos: null }, social: { twitter_followers: null, reddit_subscribers: null, reddit_active_accounts: null, telegram_members: null, facebook_likes: null }, sentiment_votes_up_percentage: null, sentiment_votes_down_percentage: null, watchlist_users: null }}
                     projectName={project.name}
                     projectDescription={project.description}
                   />
-                </TabsContent>
+                </div>
 
-                <TabsContent value="ratings">
+                {/* Ratings */}
+                <div ref={(el) => { sectionRefs.current["ratings"] = el; }} id="section-ratings">
                   <ProjectRatings projectId={project.id} projectName={project.name} />
-                </TabsContent>
+                </div>
 
-                <TabsContent value="reviews">
+                {/* Reviews */}
+                <div ref={(el) => { sectionRefs.current["reviews"] = el; }} id="section-reviews">
                   <ReviewSection projectId={project.id} projectName={project.name} projectSlug={project.slug} />
-                </TabsContent>
+                </div>
 
-                <TabsContent value="predictions">
+                {/* Predictions */}
+                <div ref={(el) => { sectionRefs.current["predictions"] = el; }} id="section-predictions">
                   <ProjectPredictions projectId={project.id} projectName={project.name} />
-                </TabsContent>
-              </Tabs>
+                </div>
+              </div>
 
-              {/* Related Projects below tabs */}
-              <motion.div {...fadeUp} transition={{ delay: 0.25 }} className="mt-6">
+              {/* Related Projects */}
+              <motion.div {...fadeUp} transition={{ delay: 0.25 }} className="mt-8">
                 <RelatedProjects
                   currentProjectId={project.id}
                   category={project.category}
