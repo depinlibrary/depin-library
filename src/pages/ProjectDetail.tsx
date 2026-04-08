@@ -32,7 +32,6 @@ const SECTIONS = [
   { id: "markets", label: "Markets" },
   { id: "learn-more", label: "Learn More" },
   { id: "ratings", label: "Ratings" },
-  { id: "reviews", label: "Reviews" },
   { id: "predictions", label: "Predictions" },
 ] as const;
 
