@@ -135,17 +135,17 @@ const ProjectDetail = () => {
               {/* Sticky section nav */}
               <div
                 ref={navRef}
-                className="sticky top-16 z-20 mb-6 rounded-xl border border-border bg-card/95 backdrop-blur-sm overflow-x-auto"
+                className="sticky top-16 z-20 mb-6 border-b border-border bg-background/95 backdrop-blur-sm overflow-x-auto"
               >
-                <div className="flex items-center gap-0.5 p-1 min-w-max">
+                <div className="flex items-center gap-1 py-2 min-w-max">
                   {SECTIONS.map((section) => (
                     <button
                       key={section.id}
                       onClick={() => scrollToSection(section.id)}
-                      className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors whitespace-nowrap ${
+                      className={`px-4 py-1.5 text-sm font-medium rounded-full transition-colors whitespace-nowrap ${
                         activeSection === section.id
-                          ? "bg-primary text-primary-foreground shadow-sm"
-                          : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:text-foreground"
                       }`}
                     >
                       {section.label}
