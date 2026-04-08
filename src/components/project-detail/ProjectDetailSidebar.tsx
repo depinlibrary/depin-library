@@ -109,6 +109,9 @@ export default function ProjectDetailSidebar({ project, marketData, ratingsData,
         <div className="space-y-3">
           <DetailRow label="Chain" value={project.blockchain} />
           <DetailRow label="Token Price" value={marketData?.price_usd !== null && marketData?.price_usd !== undefined ? formatPrice(marketData.price_usd) : "—"} />
+          {coinDetail?.social?.twitter_followers != null && (
+            <DetailRow label="X Followers" value={formatMarketCap(coinDetail.social.twitter_followers).replace("$", "")} />
+          )}
           <DetailRow label="Category" value={project.category} />
           <DetailRow label="Token" value={project.token || "—"} />
           <DetailRow label="Founded" value={project.year_founded ? String(project.year_founded) : "—"} />
