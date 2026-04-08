@@ -397,10 +397,10 @@ const MarketOverview = () => {
           {/* ── Stat Cards ──────────────────────────────── */}
           {!isLoading && (
             <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3">
-              <StatCard icon={Zap} label="Total Market Cap" value={formatMarketCap(stats.totalMcap)} accent />
-              <StatCard icon={Globe2} label="Tracked Projects" value={stats.tracked} sub={<span className="text-xs text-muted-foreground">{projects.length} total</span>} />
-              <StatCard icon={TrendingUp} label="Avg 24h Change" value={<PriceChange change={stats.avgChange} showIcon />} />
-              <StatCard icon={LayoutGrid} label="Categories" value={categories.length} sub={<span className="text-xs text-muted-foreground">{chains.length} chains</span>} />
+              <StatCard label="Total Market Cap" value={formatMarketCap(stats.totalMcap)} accent />
+              <StatCard label="Tracked Projects" value={stats.tracked} sub={<span className="text-xs text-muted-foreground">{projects.length} total</span>} />
+              <StatCard label="Avg 24h Change" value={<PriceChange change={stats.avgChange} showIcon />} />
+              <StatCard label="Categories" value={categories.length} sub={<span className="text-xs text-muted-foreground">{chains.length} chains</span>} />
             </div>
           )}
         </div>
