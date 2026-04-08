@@ -5,7 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import CompareWithButton from "@/components/CompareWithButton";
 import { useProject } from "@/hooks/useProjects";
 import ProjectRatings from "@/components/ProjectRatings";
-import ReviewSection from "@/components/ReviewSection";
+
 import ProjectPredictions from "@/components/ProjectPredictions";
 import ShareButtons from "@/components/ShareButtons";
 import RelatedProjects from "@/components/RelatedProjects";
