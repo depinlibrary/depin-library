@@ -1,6 +1,9 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import type { TokenMarketData } from "@/hooks/useTokenMarketData";
+
+type ChartMetric = "price" | "market_cap" | "volume";
 
 interface Props {
   marketData: TokenMarketData | null | undefined;
@@ -9,6 +12,8 @@ interface Props {
 }
 
 export default function ProjectDetailChart({ marketData, projectName, token }: Props) {
+  const [metric, setMetric] = useState<ChartMetric>("price");
+
   const sparkline = marketData?.sparkline_7d;
   const hasChart = sparkline && Array.isArray(sparkline) && sparkline.length > 0;
   const change24h = marketData?.price_change_24h ?? 0;
@@ -23,7 +28,44 @@ export default function ProjectDetailChart({ marketData, projectName, token }: P
     );
   }
 
-  const chartData = (sparkline as number[]).map((v, i) => ({ idx: i, price: v }));
+  const priceData = (sparkline as number[]).map((v, i) => ({ idx: i, value: v }));
+
+  // For market cap and volume, we simulate from current values since sparkline only has price
+  const currentPrice = marketData?.price_usd ?? 1;
+  const currentMarketCap = marketData?.market_cap_usd ?? 0;
+
+  let chartData = priceData;
+  let valueLabel = "Price";
+  let formatValue = (v: number) => `$${v < 1 ? v.toFixed(6) : v.toFixed(2)}`;
+
+  if (metric === "market_cap" && currentMarketCap > 0 && currentPrice > 0) {
+    // Approximate market cap from price ratio
+    const ratio = currentMarketCap / currentPrice;
+    chartData = priceData.map((d) => ({ ...d, value: d.value * ratio }));
+    valueLabel = "Market Cap";
+    formatValue = (v: number) => {
+      if (v >= 1e9) return `$${(v / 1e9).toFixed(2)}B`;
+      if (v >= 1e6) return `$${(v / 1e6).toFixed(2)}M`;
+      return `$${v.toFixed(0)}`;
+    };
+  } else if (metric === "volume") {
+    // We don't have historical volume data, show message
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="rounded-xl border border-border bg-card p-5"
+      >
+        <div className="mb-4 flex items-center justify-between flex-wrap gap-2">
+          <h2 className="text-lg font-semibold text-foreground">Chart</h2>
+          <MetricToggle metric={metric} setMetric={setMetric} />
+        </div>
+        <div className="flex items-center justify-center h-72 text-muted-foreground">
+          Volume history chart coming soon.
+        </div>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div
@@ -31,11 +73,14 @@ export default function ProjectDetailChart({ marketData, projectName, token }: P
       animate={{ opacity: 1, y: 0 }}
       className="rounded-xl border border-border bg-card p-5"
     >
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex items-center justify-between flex-wrap gap-2">
         <h2 className="text-lg font-semibold text-foreground">Chart</h2>
-        <span className="rounded-md border border-border bg-secondary px-3 py-1 text-xs font-medium text-muted-foreground">
-          7 Days
-        </span>
+        <div className="flex items-center gap-2">
+          <MetricToggle metric={metric} setMetric={setMetric} />
+          <span className="rounded-md border border-border bg-secondary px-3 py-1 text-xs font-medium text-muted-foreground">
+            7 Days
+          </span>
+        </div>
       </div>
 
       <div className="h-72 -mx-2">
@@ -54,8 +99,15 @@ export default function ProjectDetailChart({ marketData, projectName, token }: P
               tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
               tickLine={false}
               axisLine={false}
-              tickFormatter={(v: number) => v < 0.01 ? v.toFixed(6) : v < 1 ? v.toFixed(4) : v.toFixed(2)}
-              width={65}
+              tickFormatter={(v: number) => {
+                if (metric === "market_cap") {
+                  if (v >= 1e9) return `${(v / 1e9).toFixed(1)}B`;
+                  if (v >= 1e6) return `${(v / 1e6).toFixed(0)}M`;
+                  return `${(v / 1e3).toFixed(0)}K`;
+                }
+                return v < 0.01 ? v.toFixed(6) : v < 1 ? v.toFixed(4) : v.toFixed(2);
+              }}
+              width={75}
             />
             <Tooltip
               contentStyle={{
@@ -66,11 +118,11 @@ export default function ProjectDetailChart({ marketData, projectName, token }: P
                 padding: "8px 12px",
               }}
               labelFormatter={() => ""}
-              formatter={(value: number) => [`$${value < 1 ? value.toFixed(6) : value.toFixed(2)}`, "Price"]}
+              formatter={(value: number) => [formatValue(value), valueLabel]}
             />
             <Area
               type="monotone"
-              dataKey="price"
+              dataKey="value"
               stroke={strokeColor}
               strokeWidth={2}
               fill="url(#priceGradChart)"
@@ -81,5 +133,31 @@ export default function ProjectDetailChart({ marketData, projectName, token }: P
         </ResponsiveContainer>
       </div>
     </motion.div>
+  );
+}
+
+function MetricToggle({ metric, setMetric }: { metric: ChartMetric; setMetric: (m: ChartMetric) => void }) {
+  const options: { value: ChartMetric; label: string }[] = [
+    { value: "price", label: "Price" },
+    { value: "market_cap", label: "Market Cap" },
+    { value: "volume", label: "Volume" },
+  ];
+
+  return (
+    <div className="flex rounded-lg border border-border bg-secondary p-0.5 gap-0.5">
+      {options.map((opt) => (
+        <button
+          key={opt.value}
+          onClick={() => setMetric(opt.value)}
+          className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+            metric === opt.value
+              ? "bg-primary text-primary-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
   );
 }

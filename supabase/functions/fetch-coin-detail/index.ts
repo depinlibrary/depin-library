@@ -26,8 +26,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Fetch coin detail (includes contract addresses, total supply)
-    const coinUrl = `${COINGECKO_API}/coins/${coingeckoId}?localization=false&tickers=true&market_data=true&community_data=false&developer_data=false&sparkline=false`;
+    // Fetch coin detail (includes contract addresses, total supply, community data)
+    const coinUrl = `${COINGECKO_API}/coins/${coingeckoId}?localization=false&tickers=true&market_data=true&community_data=true&developer_data=false&sparkline=false`;
     const coinRes = await fetch(coinUrl, {
       headers: { Accept: "application/json" },
       signal: AbortSignal.timeout(15000),
@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
 
     // Extract tickers (exchanges)
     const tickers = (coin.tickers || [])
-      .filter((t: any) => t.target === "USDT" || t.target === "USD" || t.target === "USDC" || t.target === "BUSD")
+      .filter((t: any) => t.target === "USDT" || t.target === "USD" || t.target === "USDC" || t.target === "BUSD" || t.target === "TRY" || t.target === "EUR")
       .slice(0, 15)
       .map((t: any) => ({
         exchange: t.market?.name || "Unknown",
@@ -70,6 +70,13 @@ Deno.serve(async (req) => {
     // Market data
     const md = coin.market_data || {};
 
+    // Community / social data
+    const cd = coin.community_data || {};
+
+    // Market cap and volume history (sparkline-like from market_data)
+    const marketCapHistory = md.market_cap?.usd ?? null;
+    const volumeHistory = md.total_volume?.usd ?? null;
+
     const result = {
       total_supply: md.total_supply ?? null,
       circulating_supply: md.circulating_supply ?? null,
@@ -80,6 +87,7 @@ Deno.serve(async (req) => {
       atl: md.atl?.usd ?? null,
       atl_date: md.atl_date?.usd ?? null,
       volume_24h: md.total_volume?.usd ?? null,
+      market_cap: md.market_cap?.usd ?? null,
       contracts,
       tickers,
       description: coin.description?.en || null,
@@ -89,6 +97,19 @@ Deno.serve(async (req) => {
         whitepaper: coin.links?.whitepaper || null,
         repos: coin.links?.repos_url?.github?.[0] || null,
       },
+      // Social / community metrics
+      social: {
+        twitter_followers: cd.twitter_followers ?? null,
+        reddit_subscribers: cd.reddit_subscribers ?? null,
+        reddit_active_accounts: cd.reddit_accounts_active_48h ?? null,
+        telegram_members: cd.telegram_channel_user_count ?? null,
+        facebook_likes: cd.facebook_likes ?? null,
+      },
+      // Sentiment
+      sentiment_votes_up_percentage: coin.sentiment_votes_up_percentage ?? null,
+      sentiment_votes_down_percentage: coin.sentiment_votes_down_percentage ?? null,
+      // Watchlist
+      watchlist_users: coin.watchlist_portfolio_users ?? null,
     };
 
     return new Response(JSON.stringify(result), {

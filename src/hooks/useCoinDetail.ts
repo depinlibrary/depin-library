@@ -11,6 +11,14 @@ export interface CoinDetailTicker {
   trust_score: string | null;
 }
 
+export interface CoinDetailSocial {
+  twitter_followers: number | null;
+  reddit_subscribers: number | null;
+  reddit_active_accounts: number | null;
+  telegram_members: number | null;
+  facebook_likes: number | null;
+}
+
 export interface CoinDetail {
   total_supply: number | null;
   circulating_supply: number | null;
@@ -21,6 +29,7 @@ export interface CoinDetail {
   atl: number | null;
   atl_date: string | null;
   volume_24h: number | null;
+  market_cap: number | null;
   contracts: Record<string, string>;
   tickers: CoinDetailTicker[];
   description: string | null;
@@ -30,6 +39,10 @@ export interface CoinDetail {
     whitepaper: string | null;
     repos: string | null;
   };
+  social: CoinDetailSocial;
+  sentiment_votes_up_percentage: number | null;
+  sentiment_votes_down_percentage: number | null;
+  watchlist_users: number | null;
 }
 
 export function useCoinDetail(coingeckoId: string | null | undefined) {
@@ -44,7 +57,7 @@ export function useCoinDetail(coingeckoId: string | null | undefined) {
       return data as CoinDetail;
     },
     enabled: !!coingeckoId,
-    staleTime: 5 * 60 * 1000, // 5 min
+    staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
 }
