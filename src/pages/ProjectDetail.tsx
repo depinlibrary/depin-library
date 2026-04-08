@@ -199,10 +199,6 @@ const ProjectDetail = () => {
                   <ProjectRatings projectId={project.id} projectName={project.name} />
                 </div>
 
-                {/* Reviews */}
-                <div ref={(el) => { sectionRefs.current["reviews"] = el; }} id="section-reviews">
-                  <ReviewSection projectId={project.id} projectName={project.name} projectSlug={project.slug} />
-                </div>
 
                 {/* Predictions */}
                 <div ref={(el) => { sectionRefs.current["predictions"] = el; }} id="section-predictions">
