@@ -5,7 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import CompareWithButton from "@/components/CompareWithButton";
 import { useProject } from "@/hooks/useProjects";
 import ProjectRatings from "@/components/ProjectRatings";
-import ReviewSection from "@/components/ReviewSection";
+
 import ProjectPredictions from "@/components/ProjectPredictions";
 import ShareButtons from "@/components/ShareButtons";
 import RelatedProjects from "@/components/RelatedProjects";
@@ -32,7 +32,6 @@ const SECTIONS = [
   { id: "markets", label: "Markets" },
   { id: "learn-more", label: "Learn More" },
   { id: "ratings", label: "Ratings" },
-  { id: "reviews", label: "Reviews" },
   { id: "predictions", label: "Predictions" },
 ] as const;
 
@@ -199,10 +198,6 @@ const ProjectDetail = () => {
                   <ProjectRatings projectId={project.id} projectName={project.name} />
                 </div>
 
-                {/* Reviews */}
-                <div ref={(el) => { sectionRefs.current["reviews"] = el; }} id="section-reviews">
-                  <ReviewSection projectId={project.id} projectName={project.name} projectSlug={project.slug} />
-                </div>
 
                 {/* Predictions */}
                 <div ref={(el) => { sectionRefs.current["predictions"] = el; }} id="section-predictions">

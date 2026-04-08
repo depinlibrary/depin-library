@@ -44,7 +44,7 @@ export default function ProjectDetailSidebar({ project, marketData, ratingsData,
   const isPositive = (change24h ?? 0) >= 0;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:scrollbar-thin">
       {/* Header card: Logo, Name, Badges, Social, Description */}
       <motion.div {...fadeUp} className="rounded-xl border border-border bg-card p-5">
         {/* Name + Rating row */}

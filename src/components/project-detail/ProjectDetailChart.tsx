@@ -75,12 +75,7 @@ export default function ProjectDetailChart({ marketData, projectName, token }: P
     >
       <div className="mb-4 flex items-center justify-between flex-wrap gap-2">
         <h2 className="text-lg font-semibold text-foreground">Chart</h2>
-        <div className="flex items-center gap-2">
-          <MetricToggle metric={metric} setMetric={setMetric} />
-          <span className="rounded-md border border-border bg-secondary px-3 py-1 text-xs font-medium text-muted-foreground">
-            7 Days
-          </span>
-        </div>
+        <MetricToggle metric={metric} setMetric={setMetric} />
       </div>
 
       <div className="h-72 -mx-2">
