@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.snapshot-forecast-metrics]
 verify_jwt = false
+
+[functions.fetch-infra-stats]
+verify_jwt = false

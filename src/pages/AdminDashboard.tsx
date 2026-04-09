@@ -19,6 +19,7 @@ import DeletionRequests from "@/components/admin/DeletionRequests";
 import ManageSpotlight from "@/components/admin/ManageSpotlight";
 import ManagePredictions from "@/components/admin/ManagePredictions";
 import ManageHourlyPredictions from "@/components/admin/ManageHourlyPredictions";
+import ManageInfrastructure from "@/components/admin/ManageInfrastructure";
 
 import { useDynamicOptions } from "@/hooks/useDynamicOptions";
 
@@ -64,7 +65,7 @@ const AdminDashboard = () => {
   const { categories: CATEGORIES, blockchains: BLOCKCHAINS } = useDynamicOptions();
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<"projects" | "submissions" | "categories" | "users" | "deletion-requests" | "spotlight" | "predictions" | "hourly">("projects");
+  const [tab, setTab] = useState<"projects" | "submissions" | "categories" | "users" | "deletion-requests" | "spotlight" | "predictions" | "hourly" | "infrastructure">("projects");
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [filter, setFilter] = useState<"pending" | "approved" | "rejected">("pending");
   const [projects, setProjects] = useState<Project[]>([]);
@@ -299,6 +300,7 @@ const AdminDashboard = () => {
                 { key: "deletion-requests", label: "Deletion Requests" },
                 { key: "categories", label: "Categories & Blockchains" },
                 { key: "users", label: "Users" },
+                { key: "infrastructure", label: "Infrastructure" },
               ] as const).map((t) => (
                 <button
                   key={t.key}
@@ -582,6 +584,8 @@ const AdminDashboard = () => {
             )}
 
             {tab === "users" && <UsersList />}
+
+            {tab === "infrastructure" && <ManageInfrastructure />}
 
             {tab === "deletion-requests" && (
               <div className="rounded-xl border border-border bg-card p-5">
