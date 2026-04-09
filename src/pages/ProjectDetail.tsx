@@ -20,6 +20,8 @@ import ProjectDetailChart from "@/components/project-detail/ProjectDetailChart";
 import ProjectMarkets from "@/components/project-detail/ProjectMarkets";
 import ProjectLearnMore from "@/components/project-detail/ProjectLearnMore";
 import ProjectSocial from "@/components/project-detail/ProjectSocial";
+import ProjectInfrastructure from "@/components/project-detail/ProjectInfrastructure";
+import { useProjectInfrastructure } from "@/hooks/useProjectInfrastructure";
 
 const fadeUp = {
   initial: { opacity: 0, y: 16 },
@@ -27,12 +29,12 @@ const fadeUp = {
 };
 
 const SECTIONS = [
+  { id: "infrastructure", label: "Infrastructure" },
   { id: "social", label: "Social" },
   { id: "chart", label: "Chart" },
   { id: "markets", label: "Markets" },
   { id: "learn-more", label: "Learn More" },
   { id: "ratings", label: "Ratings" },
-  { id: "predictions", label: "Predictions" },
 ] as const;
 
 const ProjectDetail = () => {
@@ -41,8 +43,9 @@ const ProjectDetail = () => {
   const { data: marketData } = useTokenMarketData(project?.id);
   const { data: ratingsData } = useProjectRatings(project?.id || "");
   const { data: coinDetail } = useCoinDetail(project?.coingecko_id);
+  const { data: infrastructure } = useProjectInfrastructure(project?.id);
 
-  const [activeSection, setActiveSection] = useState<string>("social");
+  const [activeSection, setActiveSection] = useState<string>("infrastructure");
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const navRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
@@ -56,7 +59,7 @@ const ProjectDetail = () => {
         ? contentRef.current
         : null;
 
-    setActiveSection("social");
+    setActiveSection("infrastructure");
 
     SECTIONS.forEach(({ id }) => {
       const el = sectionRefs.current[id];
