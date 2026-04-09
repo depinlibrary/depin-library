@@ -817,6 +817,50 @@ export type Database = {
           },
         ]
       }
+      project_infrastructure: {
+        Row: {
+          created_at: string
+          display_order: number
+          icon_name: string | null
+          id: string
+          label: string
+          link_url: string | null
+          project_id: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          icon_name?: string | null
+          id?: string
+          label: string
+          link_url?: string | null
+          project_id: string
+          updated_at?: string
+          value: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          icon_name?: string | null
+          id?: string
+          label?: string
+          link_url?: string | null
+          project_id?: string
+          updated_at?: string
+          value?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_infrastructure_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_ratings: {
         Row: {
           adoption_rating: number

@@ -6,7 +6,7 @@ import CompareWithButton from "@/components/CompareWithButton";
 import { useProject } from "@/hooks/useProjects";
 import ProjectRatings from "@/components/ProjectRatings";
 
-import ProjectPredictions from "@/components/ProjectPredictions";
+
 import ShareButtons from "@/components/ShareButtons";
 import RelatedProjects from "@/components/RelatedProjects";
 import ProjectDetailSkeleton from "@/components/ProjectDetailSkeleton";
@@ -20,6 +20,8 @@ import ProjectDetailChart from "@/components/project-detail/ProjectDetailChart";
 import ProjectMarkets from "@/components/project-detail/ProjectMarkets";
 import ProjectLearnMore from "@/components/project-detail/ProjectLearnMore";
 import ProjectSocial from "@/components/project-detail/ProjectSocial";
+import ProjectInfrastructure from "@/components/project-detail/ProjectInfrastructure";
+import { useProjectInfrastructure } from "@/hooks/useProjectInfrastructure";
 
 const fadeUp = {
   initial: { opacity: 0, y: 16 },
@@ -27,12 +29,12 @@ const fadeUp = {
 };
 
 const SECTIONS = [
+  { id: "infrastructure", label: "Infrastructure" },
   { id: "social", label: "Social" },
   { id: "chart", label: "Chart" },
   { id: "markets", label: "Markets" },
   { id: "learn-more", label: "Learn More" },
   { id: "ratings", label: "Ratings" },
-  { id: "predictions", label: "Predictions" },
 ] as const;
 
 const ProjectDetail = () => {
@@ -41,8 +43,9 @@ const ProjectDetail = () => {
   const { data: marketData } = useTokenMarketData(project?.id);
   const { data: ratingsData } = useProjectRatings(project?.id || "");
   const { data: coinDetail } = useCoinDetail(project?.coingecko_id);
+  const { data: infrastructure } = useProjectInfrastructure(project?.id);
 
-  const [activeSection, setActiveSection] = useState<string>("social");
+  const [activeSection, setActiveSection] = useState<string>("infrastructure");
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const navRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
@@ -56,7 +59,7 @@ const ProjectDetail = () => {
         ? contentRef.current
         : null;
 
-    setActiveSection("social");
+    setActiveSection("infrastructure");
 
     SECTIONS.forEach(({ id }) => {
       const el = sectionRefs.current[id];
@@ -187,6 +190,14 @@ const ProjectDetail = () => {
 
                 <div ref={contentRef} className="min-h-0 flex-1 lg:overflow-y-auto lg:pr-2 scrollbar-none" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                   <div className="space-y-8 pb-20">
+                    {/* Infrastructure */}
+                    <div ref={(el) => { sectionRefs.current["infrastructure"] = el; }} id="section-infrastructure">
+                      <ProjectInfrastructure
+                        items={infrastructure || []}
+                        projectName={project.name}
+                      />
+                    </div>
+
                     {/* Social */}
                     <div ref={(el) => { sectionRefs.current["social"] = el; }} id="section-social">
                       <h2 className="mb-4 text-lg font-semibold text-foreground">Social</h2>
@@ -227,11 +238,6 @@ const ProjectDetail = () => {
                     {/* Ratings */}
                     <div ref={(el) => { sectionRefs.current["ratings"] = el; }} id="section-ratings">
                       <ProjectRatings projectId={project.id} projectName={project.name} />
-                    </div>
-
-                    {/* Predictions */}
-                    <div ref={(el) => { sectionRefs.current["predictions"] = el; }} id="section-predictions">
-                      <ProjectPredictions projectId={project.id} projectName={project.name} />
                     </div>
 
                     {/* Related Projects */}
