@@ -7,6 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Pencil, Plus, Save, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 type InfraItem = {
   id: string;
@@ -67,7 +71,7 @@ export default function ManageInfrastructure() {
       display_order: newForm.display_order,
     });
     if (error) { toast.error(error.message); return; }
-    toast.success("Item added");
+    toast.success("Infrastructure item added successfully");
     setAdding(false);
     setNewForm({ label: "", value: "", icon_name: "Server", link_url: "", display_order: 0 });
     fetchItems();
@@ -82,16 +86,15 @@ export default function ManageInfrastructure() {
       display_order: editForm.display_order ?? 0,
     }).eq("id", id);
     if (error) { toast.error(error.message); return; }
-    toast.success("Saved");
+    toast.success("Infrastructure item updated successfully");
     setEditingId(null);
     fetchItems();
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this infrastructure item?")) return;
     const { error } = await supabase.from("project_infrastructure").delete().eq("id", id);
     if (error) { toast.error(error.message); return; }
-    toast.success("Deleted");
+    toast.success("Infrastructure item deleted");
     setItems((prev) => prev.filter((i) => i.id !== id));
   };
 
@@ -200,9 +203,27 @@ export default function ManageInfrastructure() {
                   <Button size="icon" variant="ghost" onClick={() => { setEditingId(item.id); setEditForm(item); }}>
                     <Pencil className="h-3.5 w-3.5" />
                   </Button>
-                  <Button size="icon" variant="ghost" onClick={() => handleDelete(item.id)}>
-                    <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button size="icon" variant="ghost">
+                        <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Infrastructure Item</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete "{item.label}"? This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleDelete(item.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </div>
             )}
