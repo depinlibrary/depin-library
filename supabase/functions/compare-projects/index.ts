@@ -110,7 +110,7 @@ serve(async (req) => {
       );
     }
 
-    // STEP 3: Fetch project data
+    // STEP 3: Fetch project data + infrastructure
     const { data: projects } = await adminClient
       .from("projects")
       .select("id, name, category, blockchain, token, description, status")
@@ -122,6 +122,19 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // Fetch infrastructure data for both projects
+    const { data: infraData } = await adminClient
+      .from("project_infrastructure")
+      .select("project_id, label, value")
+      .in("project_id", [project_a_id, project_b_id])
+      .order("display_order");
+
+    const infraMap: Record<string, string[]> = {};
+    (infraData || []).forEach((item: any) => {
+      if (!infraMap[item.project_id]) infraMap[item.project_id] = [];
+      infraMap[item.project_id].push(`${item.label}: ${item.value}`);
+    });
 
     // Fetch market data
     const { data: marketData } = await adminClient
@@ -138,7 +151,12 @@ serve(async (req) => {
 
     const formatProject = (p: any) => {
       const m = marketMap[p.id];
-      return `Name: ${p.name}\nCategory: ${p.category}\nBlockchain: ${p.blockchain}\nToken: ${p.token}\nStatus: ${p.status}\nMarket Cap: ${m?.market_cap_usd ? `$${Number(m.market_cap_usd).toLocaleString()}` : "N/A"}\nPrice: ${m?.price_usd ? `$${m.price_usd}` : "N/A"}\n24h Change: ${m?.price_change_24h ? `${m.price_change_24h}%` : "N/A"}\nDescription: ${p.description?.slice(0, 300)}`;
+      const infra = infraMap[p.id];
+      let text = `Name: ${p.name}\nCategory: ${p.category}\nBlockchain: ${p.blockchain}\nToken: ${p.token}\nStatus: ${p.status}\nMarket Cap: ${m?.market_cap_usd ? `$${Number(m.market_cap_usd).toLocaleString()}` : "N/A"}\nPrice: ${m?.price_usd ? `$${m.price_usd}` : "N/A"}\n24h Change: ${m?.price_change_24h ? `${m.price_change_24h}%` : "N/A"}\nDescription: ${p.description?.slice(0, 300)}`;
+      if (infra && infra.length > 0) {
+        text += `\nInfrastructure:\n${infra.map((i: string) => `  - ${i}`).join("\n")}`;
+      }
+      return text;
     };
 
     const userQuestion = user_prompt?.trim() || "Provide a structured comparison including strengths, weaknesses, risks, and long-term outlook.";

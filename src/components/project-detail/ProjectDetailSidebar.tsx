@@ -170,7 +170,7 @@ export default function ProjectDetailSidebar({ project, marketData, ratingsData,
                 </>
               );
             })()}
-            <DetailRow label="Data Source" value={marketData.data_source || "coingecko"} />
+            
           </div>
         </motion.div>
       )}
