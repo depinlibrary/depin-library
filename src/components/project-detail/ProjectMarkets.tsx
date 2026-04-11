@@ -50,9 +50,15 @@ export default function ProjectMarkets({ tickers, tokenName }: Props) {
               <tr key={i} className="border-t border-border hover:bg-secondary/20 transition-colors">
                 <td className="px-5 py-3">
                   <div className="flex items-center gap-2">
-                    {t.exchange_logo && (
-                      <img src={t.exchange_logo} alt="" className="h-5 w-5 rounded-full object-contain" />
-                    )}
+                    <img
+                      src={t.exchange_logo || `https://www.google.com/s2/favicons?domain=${t.exchange.toLowerCase().replace(/\s+/g, '')}.com&sz=32`}
+                      alt={t.exchange}
+                      className="h-5 w-5 rounded-full object-contain bg-secondary"
+                      onError={(e) => {
+                        const target = e.currentTarget;
+                        target.style.display = 'none';
+                      }}
+                    />
                     <span className="font-medium text-foreground">{t.exchange}</span>
                   </div>
                 </td>
