@@ -361,59 +361,59 @@ const BillboardHero = ({
              </motion.div>
 
              {/* ── Trending ── */}
-             <motion.div variants={fadeUp} className="rounded-lg border border-border bg-card/40 backdrop-blur-md p-4">
-               <div className="flex items-center gap-2 mb-3">
-                 <span className="text-base">🔥</span>
-                 <span className="text-sm font-semibold text-foreground">Trending</span>
-               </div>
-               <div className="space-y-2">
-                 {(trendingProjects.length > 0 ? trendingProjects : topMarketCap).slice(0, 3).map((p: any, i: number) => {
-                   const m = marketData[p.id];
-                   const change = m?.price_change_24h || 0;
-                   return (
-                     <Link
-                       key={p.id}
-                       to={`/project/${p.slug}`}
-                       className="group flex items-center gap-2.5 rounded-md px-1 py-2 transition-colors hover:bg-secondary/50">
-                       <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="sm" />
-                       <span className="text-sm font-semibold text-foreground truncate flex-1">{p.name}</span>
-                       <span className="text-sm font-medium text-muted-foreground tabular-nums shrink-0">{formatPrice(m?.price_usd || null)}</span>
-                       <span className={`text-xs font-bold tabular-nums shrink-0 ${change >= 0 ? "text-neon-green" : "text-destructive"}`}>
-                         {change >= 0 ? "▲" : "▼"} {Math.abs(change).toFixed(1)}%
-                       </span>
-                     </Link>
-                   );
-                 })}
-               </div>
-             </motion.div>
+             <motion.div variants={fadeUp} className="rounded-lg border border-border bg-card/40 backdrop-blur-md p-4 flex flex-col">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-xs">🔥</span>
+                  <span className="text-xs font-semibold text-foreground">Trending</span>
+                </div>
+                <div className="space-y-0.5 flex-1 flex flex-col justify-center">
+                  {(trendingProjects.length > 0 ? trendingProjects : topMarketCap).slice(0, 3).map((p: any, i: number) => {
+                    const m = marketData[p.id];
+                    const change = m?.price_change_24h || 0;
+                    return (
+                      <Link
+                        key={p.id}
+                        to={`/project/${p.slug}`}
+                        className="group flex items-center gap-2 rounded-md px-1 py-1.5 transition-colors hover:bg-secondary/50">
+                        <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="xs" />
+                        <span className="text-xs font-semibold text-foreground truncate flex-1">{p.name}</span>
+                        <span className="text-[11px] font-medium text-muted-foreground tabular-nums shrink-0">{formatPrice(m?.price_usd || null)}</span>
+                        <span className={`text-[10px] font-bold tabular-nums shrink-0 ${change >= 0 ? "text-neon-green" : "text-destructive"}`}>
+                          {change >= 0 ? "▲" : "▼"} {Math.abs(change).toFixed(1)}%
+                        </span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </motion.div>
 
-             {/* ── Top Gainers ── */}
-             <motion.div variants={fadeUp} className="rounded-lg border border-border bg-card/40 backdrop-blur-md p-4">
-               <div className="flex items-center gap-2 mb-3">
-                 <span className="text-base">🚀</span>
-                 <span className="text-sm font-semibold text-foreground">Top Gainers</span>
-               </div>
-               <div className="space-y-2">
-                 {topGainers.slice(0, 3).map((p) => {
-                   const m = marketData[p.id];
-                   const change = m?.price_change_24h || 0;
-                   return (
-                     <Link
-                       key={p.id}
-                       to={`/project/${p.slug}`}
-                       className="group flex items-center gap-2.5 rounded-md px-1 py-2 transition-colors hover:bg-secondary/50">
-                       <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="sm" />
-                       <span className="text-sm font-semibold text-foreground truncate flex-1">{p.name}</span>
-                       <span className="text-sm font-medium text-muted-foreground tabular-nums shrink-0">{formatPrice(m?.price_usd || null)}</span>
-                       <span className="text-xs font-bold text-neon-green tabular-nums shrink-0">
-                         ▲ {change.toFixed(1)}%
-                       </span>
-                     </Link>
-                   );
-                 })}
-                 {topGainers.length === 0 && <p className="text-xs text-muted-foreground">No data yet</p>}
-               </div>
-             </motion.div>
+              {/* ── Top Gainers ── */}
+              <motion.div variants={fadeUp} className="rounded-lg border border-border bg-card/40 backdrop-blur-md p-4 flex flex-col">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-xs">🚀</span>
+                  <span className="text-xs font-semibold text-foreground">Top Gainers</span>
+                </div>
+                <div className="space-y-0.5 flex-1 flex flex-col justify-center">
+                  {topGainers.slice(0, 3).map((p) => {
+                    const m = marketData[p.id];
+                    const change = m?.price_change_24h || 0;
+                    return (
+                      <Link
+                        key={p.id}
+                        to={`/project/${p.slug}`}
+                        className="group flex items-center gap-2 rounded-md px-1 py-1.5 transition-colors hover:bg-secondary/50">
+                        <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="xs" />
+                        <span className="text-xs font-semibold text-foreground truncate flex-1">{p.name}</span>
+                        <span className="text-[11px] font-medium text-muted-foreground tabular-nums shrink-0">{formatPrice(m?.price_usd || null)}</span>
+                        <span className="text-[10px] font-bold text-neon-green tabular-nums shrink-0">
+                          ▲ {change.toFixed(1)}%
+                        </span>
+                      </Link>
+                    );
+                  })}
+                  {topGainers.length === 0 && <p className="text-xs text-muted-foreground">No data yet</p>}
+                </div>
+              </motion.div>
            </motion.div>
 
            {/* Top Predictions row */}
