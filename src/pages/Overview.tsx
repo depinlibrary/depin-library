@@ -164,6 +164,84 @@ const Overview = () => {
         </motion.div>
       </section>
 
+      {/* ✦ Top Tokens Overview */}
+      {(() => {
+        const tokenList = [...projects]
+          .filter((p) => marketData[p.id]?.price_usd && marketData[p.id]?.market_cap_usd)
+          .sort((a, b) => (marketData[b.id]?.market_cap_usd || 0) - (marketData[a.id]?.market_cap_usd || 0))
+          .slice(0, 10);
+        if (tokenList.length === 0) return null;
+        return (
+          <section className="container mx-auto px-4 pb-16">
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-50px" }} variants={stagger}>
+              <motion.div variants={fadeUp} className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <h2 className="text-xl font-semibold text-foreground font-['Space_Grotesk']">Top Tokens</h2>
+                  <div className="h-px flex-1 bg-border/50" />
+                </div>
+                <Link to="/market" className="text-xs font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
+                  View all <ArrowRight className="h-3 w-3" />
+                </Link>
+              </motion.div>
+              <motion.div variants={fadeUp} className="rounded-xl border border-border bg-card overflow-hidden">
+                {/* Table header */}
+                <div className="grid grid-cols-[2rem_1fr_6rem_7rem_6rem_5rem] sm:grid-cols-[2rem_1fr_7rem_8rem_7rem_7rem] gap-2 px-4 py-2.5 border-b border-border text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  <span>#</span>
+                  <span>Name</span>
+                  <span className="text-right">Price</span>
+                  <span className="text-right">Market Cap</span>
+                  <span className="text-right">24h</span>
+                  <span className="text-right">7d</span>
+                </div>
+                {tokenList.map((p, i) => {
+                  const m = marketData[p.id];
+                  const change = m?.price_change_24h || 0;
+                  const sparkline = m?.sparkline_7d as number[] | null;
+                  return (
+                    <Link
+                      key={p.id}
+                      to={`/project/${p.slug}`}
+                      className="grid grid-cols-[2rem_1fr_6rem_7rem_6rem_5rem] sm:grid-cols-[2rem_1fr_7rem_8rem_7rem_7rem] gap-2 px-4 py-2.5 items-center border-b border-border/40 last:border-b-0 transition-colors hover:bg-secondary/40"
+                    >
+                      <span className="text-xs text-muted-foreground tabular-nums">{i + 1}</span>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="xs" />
+                        <span className="text-xs font-semibold text-foreground truncate">{p.name}</span>
+                        <span className="text-[10px] text-muted-foreground hidden sm:inline">{p.token}</span>
+                      </div>
+                      <span className="text-xs font-medium text-foreground tabular-nums text-right">
+                        {m?.price_usd ? (m.price_usd >= 1 ? `$${m.price_usd.toFixed(2)}` : `$${m.price_usd.toFixed(4)}`) : "—"}
+                      </span>
+                      <span className="text-xs text-muted-foreground tabular-nums text-right">
+                        {m?.market_cap_usd ? (m.market_cap_usd >= 1e9 ? `$${(m.market_cap_usd / 1e9).toFixed(2)}B` : m.market_cap_usd >= 1e6 ? `$${(m.market_cap_usd / 1e6).toFixed(1)}M` : `$${(m.market_cap_usd / 1e3).toFixed(0)}K`) : "—"}
+                      </span>
+                      <span className={`text-xs font-semibold tabular-nums text-right ${change >= 0 ? "text-neon-green" : "text-destructive"}`}>
+                        {change >= 0 ? "+" : ""}{change.toFixed(1)}%
+                      </span>
+                      <div className="flex justify-end">
+                        {sparkline && sparkline.length >= 2 ? (() => {
+                          const min = Math.min(...sparkline);
+                          const max = Math.max(...sparkline);
+                          const range = max - min || 1;
+                          const h = 20; const w = 48;
+                          const pts = sparkline.map((v, idx) => `${idx / (sparkline.length - 1) * w},${h - (v - min) / range * h}`).join(" ");
+                          const positive = sparkline[sparkline.length - 1] >= sparkline[0];
+                          return (
+                            <svg width={w} height={h}>
+                              <polyline points={pts} fill="none" stroke={positive ? "hsl(var(--neon-green))" : "hsl(var(--destructive))"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                          );
+                        })() : <span className="text-[10px] text-muted-foreground">—</span>}
+                      </div>
+                    </Link>
+                  );
+                })}
+              </motion.div>
+            </motion.div>
+          </section>
+        );
+      })()}
+
       {/* ✦ Spotlight Projects */}
       {spotlightProjects.length > 0 &&
       <section className="container mx-auto px-4 pb-16">
