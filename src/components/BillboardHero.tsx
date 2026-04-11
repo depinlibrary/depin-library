@@ -1,19 +1,10 @@
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  TrendingUp,
-  BarChart3,
-  Layers,
-  Zap,
   ArrowRight,
-  ArrowUpRight,
-  ArrowDownRight,
-  Crown,
-  Flame,
   RefreshCw,
   Search,
-  Link as LinkIcon } from
-"lucide-react";
+} from "lucide-react";
 import ProjectLogo from "@/components/ProjectLogo";
 import { Badge } from "@/components/ui/badge";
 import type { Project } from "@/hooks/useProjects";
