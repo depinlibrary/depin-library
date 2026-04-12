@@ -185,53 +185,86 @@ const Overview = () => {
               </motion.div>
               <motion.div variants={fadeUp} className="rounded-xl border border-border bg-card overflow-hidden">
                 {/* Table header */}
-                <div className="grid grid-cols-[2rem_1fr_6rem_7rem_6rem_5rem] sm:grid-cols-[2rem_1fr_7rem_8rem_7rem_7rem] gap-2 px-4 py-2.5 border-b border-border text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                <div className="hidden sm:grid grid-cols-[2rem_1fr_6rem_7rem_6rem_6rem_6rem_5rem] gap-2 px-4 py-2.5 border-b border-border text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
                   <span>#</span>
                   <span>Name</span>
                   <span className="text-right">Price</span>
-                  <span className="text-right">Market Cap</span>
+                  <span className="text-right">Mkt Cap</span>
+                  <span className="text-right">Volume</span>
+                  <span className="text-right">FDV</span>
                   <span className="text-right">24h</span>
                   <span className="text-right">7d</span>
+                </div>
+                <div className="sm:hidden grid grid-cols-[2rem_1fr_5rem_5rem] gap-2 px-4 py-2.5 border-b border-border text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                  <span>#</span>
+                  <span>Name</span>
+                  <span className="text-right">Price</span>
+                  <span className="text-right">24h</span>
                 </div>
                 {tokenList.map((p, i) => {
                   const m = marketData[p.id];
                   const change = m?.price_change_24h || 0;
                   const sparkline = m?.sparkline_7d as number[] | null;
+                  const vol = (m as any)?.volume_24h as number | null;
+                  const fdv = (m as any)?.fully_diluted_valuation as number | null;
+                  const fmt = (n: number | null) => {
+                    if (!n) return "—";
+                    if (n >= 1e9) return `$${(n / 1e9).toFixed(2)}B`;
+                    if (n >= 1e6) return `$${(n / 1e6).toFixed(1)}M`;
+                    return `$${(n / 1e3).toFixed(0)}K`;
+                  };
                   return (
                     <Link
                       key={p.id}
                       to={`/project/${p.slug}`}
-                      className="grid grid-cols-[2rem_1fr_6rem_7rem_6rem_5rem] sm:grid-cols-[2rem_1fr_7rem_8rem_7rem_7rem] gap-2 px-4 py-2.5 items-center border-b border-border/40 last:border-b-0 transition-colors hover:bg-secondary/40"
+                      className="border-b border-border/40 last:border-b-0 transition-colors hover:bg-secondary/40"
                     >
-                      <span className="text-xs text-muted-foreground tabular-nums">{i + 1}</span>
-                      <div className="flex items-center gap-2 min-w-0">
-                        <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="xs" />
-                        <span className="text-xs font-semibold text-foreground truncate">{p.name}</span>
-                        <span className="text-[10px] text-muted-foreground hidden sm:inline">{p.token}</span>
+                      {/* Desktop row */}
+                      <div className="hidden sm:grid grid-cols-[2rem_1fr_6rem_7rem_6rem_6rem_6rem_5rem] gap-2 px-4 py-2.5 items-center">
+                        <span className="text-xs text-muted-foreground tabular-nums">{i + 1}</span>
+                        <div className="flex items-center gap-2 min-w-0">
+                          <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="xs" />
+                          <span className="text-xs font-semibold text-foreground truncate">{p.name}</span>
+                          <span className="text-[10px] text-muted-foreground">{p.token}</span>
+                        </div>
+                        <span className="text-xs font-medium text-foreground tabular-nums text-right">
+                          {m?.price_usd ? (m.price_usd >= 1 ? `$${m.price_usd.toFixed(2)}` : `$${m.price_usd.toFixed(4)}`) : "—"}
+                        </span>
+                        <span className="text-xs text-muted-foreground tabular-nums text-right">{fmt(m?.market_cap_usd ?? null)}</span>
+                        <span className="text-xs text-muted-foreground tabular-nums text-right">{fmt(vol)}</span>
+                        <span className="text-xs text-muted-foreground tabular-nums text-right">{fmt(fdv)}</span>
+                        <span className={`text-xs font-semibold tabular-nums text-right ${change >= 0 ? "text-neon-green" : "text-destructive"}`}>
+                          {change >= 0 ? "+" : ""}{change.toFixed(1)}%
+                        </span>
+                        <div className="flex justify-end">
+                          {sparkline && sparkline.length >= 2 ? (() => {
+                            const min = Math.min(...sparkline);
+                            const max = Math.max(...sparkline);
+                            const range = max - min || 1;
+                            const h = 20; const w = 48;
+                            const pts = sparkline.map((v, idx) => `${idx / (sparkline.length - 1) * w},${h - (v - min) / range * h}`).join(" ");
+                            const positive = sparkline[sparkline.length - 1] >= sparkline[0];
+                            return (
+                              <svg width={w} height={h}>
+                                <polyline points={pts} fill="none" stroke={positive ? "hsl(var(--neon-green))" : "hsl(var(--destructive))"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                              </svg>
+                            );
+                          })() : <span className="text-[10px] text-muted-foreground">—</span>}
+                        </div>
                       </div>
-                      <span className="text-xs font-medium text-foreground tabular-nums text-right">
-                        {m?.price_usd ? (m.price_usd >= 1 ? `$${m.price_usd.toFixed(2)}` : `$${m.price_usd.toFixed(4)}`) : "—"}
-                      </span>
-                      <span className="text-xs text-muted-foreground tabular-nums text-right">
-                        {m?.market_cap_usd ? (m.market_cap_usd >= 1e9 ? `$${(m.market_cap_usd / 1e9).toFixed(2)}B` : m.market_cap_usd >= 1e6 ? `$${(m.market_cap_usd / 1e6).toFixed(1)}M` : `$${(m.market_cap_usd / 1e3).toFixed(0)}K`) : "—"}
-                      </span>
-                      <span className={`text-xs font-semibold tabular-nums text-right ${change >= 0 ? "text-neon-green" : "text-destructive"}`}>
-                        {change >= 0 ? "+" : ""}{change.toFixed(1)}%
-                      </span>
-                      <div className="flex justify-end">
-                        {sparkline && sparkline.length >= 2 ? (() => {
-                          const min = Math.min(...sparkline);
-                          const max = Math.max(...sparkline);
-                          const range = max - min || 1;
-                          const h = 20; const w = 48;
-                          const pts = sparkline.map((v, idx) => `${idx / (sparkline.length - 1) * w},${h - (v - min) / range * h}`).join(" ");
-                          const positive = sparkline[sparkline.length - 1] >= sparkline[0];
-                          return (
-                            <svg width={w} height={h}>
-                              <polyline points={pts} fill="none" stroke={positive ? "hsl(var(--neon-green))" : "hsl(var(--destructive))"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                          );
-                        })() : <span className="text-[10px] text-muted-foreground">—</span>}
+                      {/* Mobile row */}
+                      <div className="sm:hidden grid grid-cols-[2rem_1fr_5rem_5rem] gap-2 px-4 py-2.5 items-center">
+                        <span className="text-xs text-muted-foreground tabular-nums">{i + 1}</span>
+                        <div className="flex items-center gap-2 min-w-0">
+                          <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="xs" />
+                          <span className="text-xs font-semibold text-foreground truncate">{p.name}</span>
+                        </div>
+                        <span className="text-xs font-medium text-foreground tabular-nums text-right">
+                          {m?.price_usd ? (m.price_usd >= 1 ? `$${m.price_usd.toFixed(2)}` : `$${m.price_usd.toFixed(4)}`) : "—"}
+                        </span>
+                        <span className={`text-xs font-semibold tabular-nums text-right ${change >= 0 ? "text-neon-green" : "text-destructive"}`}>
+                          {change >= 0 ? "+" : ""}{change.toFixed(1)}%
+                        </span>
                       </div>
                     </Link>
                   );
