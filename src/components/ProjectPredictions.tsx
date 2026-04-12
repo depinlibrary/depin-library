@@ -87,6 +87,7 @@ const ProjectPredictions = ({ projectId, projectName }: ProjectPredictionsProps)
         const noLabel = isPriceMarket ? "Short" : "No";
         const totalVotes = prediction.total_votes_yes + prediction.total_votes_no;
         const yesPct = (() => { const wy = Number(prediction.weighted_votes_yes) || 0; const wn = Number(prediction.weighted_votes_no) || 0; const wt = wy + wn; return wt > 0 ? (wy / wt) * 100 : totalVotes > 0 ? (prediction.total_votes_yes / totalVotes) * 100 : 50; })();
+        const noPct = 100 - yesPct;
         const isEnded = prediction.status === "ended" || new Date(prediction.end_date) <= new Date();
         const timeLeft = getTimeLeft(prediction.end_date);
         const projectA = prediction.project_a;
