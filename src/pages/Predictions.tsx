@@ -120,14 +120,14 @@ const PredictionCard = ({ prediction, onVote, isAuthenticated, index, dimensions
           </h3>
         </Link>
 
-        {/* Percentage + votes */}
+        {/* Percentage as cents */}
         <div className="mt-4 flex items-end justify-between">
-          <span className="text-lg font-bold text-foreground tabular-nums">{yesPct.toFixed(0)}%<span className="text-xs font-normal text-muted-foreground ml-1">chance</span></span>
+          <span className="text-lg font-bold text-foreground tabular-nums font-['Space_Grotesk']">{Math.round(yesPct)}¢<span className="text-xs font-normal text-muted-foreground ml-1">{yesLabel}</span></span>
           <span className="text-[10px] text-muted-foreground">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</span>
         </div>
       </div>
 
-      {/* Bottom section — compact Polymarket-style */}
+      {/* Bottom section — Polymarket cent-based buttons */}
       <div className="px-4 pb-4">
         {isEnded && prediction.user_vote ? (() => {
           const outcomeResult = finalResult;
@@ -152,33 +152,34 @@ const PredictionCard = ({ prediction, onVote, isAuthenticated, index, dimensions
           );
         })() : null}
 
-        {/* Vote buttons — inline Polymarket style */}
         <div className="flex gap-2">
           <button
             onClick={() => !isEnded ? (isAuthenticated ? onVote(prediction.id, "yes") : toast.error("Sign in to vote")) : undefined}
             disabled={isEnded}
-            className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all duration-200 ${
+            className={`flex-1 rounded-lg py-2 text-center transition-all duration-200 ${
               isEnded
                 ? "bg-secondary text-muted-foreground cursor-not-allowed opacity-60"
                 : prediction.user_vote === "yes"
-                  ? "bg-primary text-primary-foreground"
+                  ? "bg-primary/15 border border-primary/30 text-primary"
                   : "bg-primary/10 text-primary hover:bg-primary/20"
             }`}
           >
-            {yesLabel}
+            <span className="text-[10px] font-medium block">{yesLabel}</span>
+            <span className="text-sm font-bold font-['Space_Grotesk'] tabular-nums">{Math.round(yesPct)}¢</span>
           </button>
           <button
             onClick={() => !isEnded ? (isAuthenticated ? onVote(prediction.id, "no") : toast.error("Sign in to vote")) : undefined}
             disabled={isEnded}
-            className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all duration-200 ${
+            className={`flex-1 rounded-lg py-2 text-center transition-all duration-200 ${
               isEnded
                 ? "bg-secondary text-muted-foreground cursor-not-allowed opacity-60"
                 : prediction.user_vote === "no"
-                  ? "bg-destructive text-destructive-foreground"
+                  ? "bg-destructive/15 border border-destructive/30 text-destructive"
                   : "bg-destructive/10 text-destructive hover:bg-destructive/20"
             }`}
           >
-            {noLabel}
+            <span className="text-[10px] font-medium block">{noLabel}</span>
+            <span className="text-sm font-bold font-['Space_Grotesk'] tabular-nums">{Math.round(noPct)}¢</span>
           </button>
         </div>
       </div>
