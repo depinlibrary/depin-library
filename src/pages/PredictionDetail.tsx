@@ -718,7 +718,7 @@ const PredictionDetail = () => {
             <StakeSection
               predictionId={prediction.id}
               isEnded={isEnded}
-              userVote={prediction.user_vote || null}
+              userVote={(prediction.user_vote === "yes" || prediction.user_vote === "no") ? prediction.user_vote : null}
               yesLabel={yesLabel}
               noLabel={noLabel}
             />
