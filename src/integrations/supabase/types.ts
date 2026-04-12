@@ -1248,6 +1248,7 @@ export type Database = {
         Row: {
           created_at: string
           data_source: string
+          fully_diluted_valuation: number | null
           id: string
           last_updated: string | null
           market_cap_usd: number | null
@@ -1256,10 +1257,12 @@ export type Database = {
           project_id: string
           sparkline_7d: Json | null
           updated_at: string
+          volume_24h: number | null
         }
         Insert: {
           created_at?: string
           data_source?: string
+          fully_diluted_valuation?: number | null
           id?: string
           last_updated?: string | null
           market_cap_usd?: number | null
@@ -1268,10 +1271,12 @@ export type Database = {
           project_id: string
           sparkline_7d?: Json | null
           updated_at?: string
+          volume_24h?: number | null
         }
         Update: {
           created_at?: string
           data_source?: string
+          fully_diluted_valuation?: number | null
           id?: string
           last_updated?: string | null
           market_cap_usd?: number | null
@@ -1280,6 +1285,7 @@ export type Database = {
           project_id?: string
           sparkline_7d?: Json | null
           updated_at?: string
+          volume_24h?: number | null
         }
         Relationships: [
           {
