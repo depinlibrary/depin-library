@@ -203,22 +203,28 @@ export default function VoteSection({ prediction, yesPct, noPct, totalVotes, isE
               )}
 
               <div className="flex gap-3">
-                <Button
+                <button
                   onClick={() => handleVoteClick("yes")}
-                  variant="outline"
-                  className="flex-1 gap-2 h-11 text-sm font-semibold transition-all"
+                  className={`flex-1 rounded-xl py-3 text-center transition-all duration-200 border-2 ${
+                    userVote === "yes"
+                      ? "border-primary bg-primary/15"
+                      : "border-primary/25 bg-primary/5 hover:bg-primary/10 hover:border-primary/40"
+                  }`}
                 >
-                  <ThumbsUp className="h-4 w-4" />
-                  Vote Yes
-                </Button>
-                <Button
+                  <span className="block text-[10px] font-semibold text-primary">Buy Yes</span>
+                  <span className="block text-lg font-bold font-['Space_Grotesk'] tabular-nums text-foreground">{Math.round(yesPct)}¢</span>
+                </button>
+                <button
                   onClick={() => handleVoteClick("no")}
-                  variant="outline"
-                  className="flex-1 gap-2 h-11 text-sm font-semibold transition-all"
+                  className={`flex-1 rounded-xl py-3 text-center transition-all duration-200 border-2 ${
+                    userVote === "no"
+                      ? "border-destructive bg-destructive/15"
+                      : "border-destructive/25 bg-destructive/5 hover:bg-destructive/10 hover:border-destructive/40"
+                  }`}
                 >
-                  <ThumbsDown className="h-4 w-4" />
-                  Vote No
-                </Button>
+                  <span className="block text-[10px] font-semibold text-destructive">Buy No</span>
+                  <span className="block text-lg font-bold font-['Space_Grotesk'] tabular-nums text-foreground">{Math.round(noPct)}¢</span>
+                </button>
               </div>
             </div>
           ) : (
