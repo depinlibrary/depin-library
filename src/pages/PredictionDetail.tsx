@@ -27,6 +27,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import PriceChart from "@/components/prediction/PriceChart";
+import StakeSection from "@/components/prediction/StakeSection";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import confetti from "canvas-confetti";
@@ -712,6 +713,15 @@ const PredictionDetail = () => {
                 </div>
               </motion.div>
             )}
+
+            {/* USDC Staking */}
+            <StakeSection
+              predictionId={prediction.id}
+              isEnded={isEnded}
+              userVote={prediction.user_vote || null}
+              yesLabel={yesLabel}
+              noLabel={noLabel}
+            />
 
             {/* Prediction Analysis */}
             <PredictionAnalysis predictionId={prediction.id} isEnded={isEnded} totalVotesYes={prediction.total_votes_yes} totalVotesNo={prediction.total_votes_no} predictionTarget={prediction.prediction_target} predictionDirection={prediction.prediction_direction} startPrice={prediction.start_price} predictionDimension={predictionDimension} projectAId={prediction.project_a_id} projectBId={prediction.project_b_id} projectAName={prediction.project_a?.name} projectBName={prediction.project_b?.name} isCreator={!!user && user.id === prediction.creator_user_id} />
