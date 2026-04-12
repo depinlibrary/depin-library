@@ -125,6 +125,8 @@ Deno.serve(async (req) => {
           market_cap_usd: coin.market_cap ?? null,
           price_change_24h: coin.price_change_percentage_24h ?? null,
           sparkline_7d: sparkline,
+          volume_24h: coin.total_volume ?? null,
+          fully_diluted_valuation: coin.fully_diluted_valuation ?? null,
           last_updated: now.toISOString(),
           data_source: "coingecko",
         }, { onConflict: "project_id" });
