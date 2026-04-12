@@ -380,23 +380,42 @@ const PredictionDetail = () => {
                   {prediction.title}
                 </h1>
 
-                {/* Odds pills — stacked */}
-                <div className="flex flex-col gap-3">
-                  <div className="flex w-full items-center justify-between rounded-xl border border-primary/25 bg-primary/5 px-4 py-3 text-sm font-bold text-foreground">
-                    <span className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-primary" />
-                      {yesLabel}
+                {/* Polymarket-style odds pills */}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => handleVote("yes")}
+                    className={`flex-1 rounded-xl border-2 px-4 py-4 text-center transition-all duration-200 ${
+                      prediction?.user_vote === "yes"
+                        ? "border-primary bg-primary/15"
+                        : "border-primary/25 bg-primary/5 hover:bg-primary/10 hover:border-primary/40"
+                    }`}
+                  >
+                    <span className="block text-xs font-semibold text-primary mb-1">{yesLabel}</span>
+                    <span className="block text-2xl font-bold font-['Space_Grotesk'] tabular-nums text-foreground">
+                      {Math.round(yesPct)}¢
                     </span>
-                    <span className="font-['Space_Grotesk'] text-base tabular-nums text-primary">{yesPct.toFixed(0)}%</span>
-                  </div>
-                  <div className="flex w-full items-center justify-between rounded-xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm font-bold text-foreground">
-                    <span className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-destructive" />
-                      {noLabel}
+                    <span className="block text-[10px] text-muted-foreground mt-0.5">{yesPct.toFixed(1)}% chance</span>
+                  </button>
+                  <button
+                    onClick={() => handleVote("no")}
+                    className={`flex-1 rounded-xl border-2 px-4 py-4 text-center transition-all duration-200 ${
+                      prediction?.user_vote === "no"
+                        ? "border-destructive bg-destructive/15"
+                        : "border-destructive/25 bg-destructive/5 hover:bg-destructive/10 hover:border-destructive/40"
+                    }`}
+                  >
+                    <span className="block text-xs font-semibold text-destructive mb-1">{noLabel}</span>
+                    <span className="block text-2xl font-bold font-['Space_Grotesk'] tabular-nums text-foreground">
+                      {Math.round(noPct)}¢
                     </span>
-                    <span className="font-['Space_Grotesk'] text-base tabular-nums text-destructive">{noPct.toFixed(0)}%</span>
-                  </div>
+                    <span className="block text-[10px] text-muted-foreground mt-0.5">{noPct.toFixed(1)}% chance</span>
+                  </button>
                 </div>
+                {prediction?.user_vote && (
+                  <p className="text-[10px] text-muted-foreground text-center mt-2">
+                    You voted <span className={`font-semibold ${prediction.user_vote === "yes" ? "text-primary" : "text-destructive"}`}>{prediction.user_vote === "yes" ? yesLabel : noLabel}</span> · Votes are final
+                  </p>
+                )}
               </div>
               </motion.div>
 
@@ -643,7 +662,7 @@ const PredictionDetail = () => {
               );
             })()}
 
-            {/* Cast Your Vote — hide for ended price/market cap forecasts */}
+            {/* Cast Your Vote — Polymarket style */}
             {!(isEnded && isPriceMarket) && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -651,8 +670,9 @@ const PredictionDetail = () => {
                 transition={{ delay: 0.05 }}
                 className="rounded-2xl border border-border bg-card overflow-hidden"
               >
-                <div className="px-5 py-3.5 border-b border-border">
+                <div className="px-5 py-3.5 border-b border-border flex items-center justify-between">
                   <h3 className="text-sm font-bold text-foreground font-['Space_Grotesk']">Cast Your Vote</h3>
+                  <span className="text-[10px] text-muted-foreground">{totalVotes} voters</span>
                 </div>
                 <div className="p-5">
                   {!isEnded ? (
@@ -677,23 +697,25 @@ const PredictionDetail = () => {
                       <div className="flex gap-2.5">
                         <button
                           onClick={() => handleVote("yes")}
-                          className={`flex-1 rounded-lg py-2.5 text-sm font-bold transition-all duration-200 ${
+                          className={`flex-1 rounded-xl py-3 text-center transition-all duration-200 border-2 ${
                             prediction.user_vote === "yes"
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-primary/10 text-primary hover:bg-primary/20"
+                              ? "border-primary bg-primary/15"
+                              : "border-primary/25 bg-primary/5 hover:bg-primary/10 hover:border-primary/40"
                           }`}
                         >
-                          {prediction.user_vote === "yes" ? `Voted ${yesLabel} ✓` : yesLabel}
+                          <span className="block text-[10px] font-semibold text-primary">{prediction.user_vote === "yes" ? `Voted ${yesLabel} ✓` : `Buy ${yesLabel}`}</span>
+                          <span className="block text-lg font-bold font-['Space_Grotesk'] tabular-nums text-foreground">{Math.round(yesPct)}¢</span>
                         </button>
                         <button
                           onClick={() => handleVote("no")}
-                          className={`flex-1 rounded-lg py-2.5 text-sm font-bold transition-all duration-200 ${
+                          className={`flex-1 rounded-xl py-3 text-center transition-all duration-200 border-2 ${
                             prediction.user_vote === "no"
-                              ? "bg-destructive text-destructive-foreground"
-                              : "bg-destructive/10 text-destructive hover:bg-destructive/20"
+                              ? "border-destructive bg-destructive/15"
+                              : "border-destructive/25 bg-destructive/5 hover:bg-destructive/10 hover:border-destructive/40"
                           }`}
                         >
-                          {prediction.user_vote === "no" ? `Voted ${noLabel} ✓` : noLabel}
+                          <span className="block text-[10px] font-semibold text-destructive">{prediction.user_vote === "no" ? `Voted ${noLabel} ✓` : `Buy ${noLabel}`}</span>
+                          <span className="block text-lg font-bold font-['Space_Grotesk'] tabular-nums text-foreground">{Math.round(noPct)}¢</span>
                         </button>
                       </div>
                       {prediction.user_vote && (
@@ -706,7 +728,7 @@ const PredictionDetail = () => {
                   ) : (
                     <div className="rounded-xl bg-muted/50 border border-border px-4 py-3.5 text-center">
                       <span className="text-xs font-medium text-muted-foreground">
-                        Voting has ended · Final: <span className="text-foreground font-semibold">{yesPct >= 50 ? yesLabel : noLabel}</span> ({yesPct.toFixed(0)}%)
+                        Voting has ended · Final: <span className="text-foreground font-semibold">{yesPct >= 50 ? yesLabel : noLabel}</span> ({Math.round(yesPct)}¢)
                       </span>
                     </div>
                   )}

@@ -87,6 +87,7 @@ const ProjectPredictions = ({ projectId, projectName }: ProjectPredictionsProps)
         const noLabel = isPriceMarket ? "Short" : "No";
         const totalVotes = prediction.total_votes_yes + prediction.total_votes_no;
         const yesPct = (() => { const wy = Number(prediction.weighted_votes_yes) || 0; const wn = Number(prediction.weighted_votes_no) || 0; const wt = wy + wn; return wt > 0 ? (wy / wt) * 100 : totalVotes > 0 ? (prediction.total_votes_yes / totalVotes) * 100 : 50; })();
+        const noPct = 100 - yesPct;
         const isEnded = prediction.status === "ended" || new Date(prediction.end_date) <= new Date();
         const timeLeft = getTimeLeft(prediction.end_date);
         const projectA = prediction.project_a;
@@ -136,22 +137,28 @@ const ProjectPredictions = ({ projectId, projectName }: ProjectPredictionsProps)
                 {prediction.title}
               </h3>
 
-              {/* Percentage + votes */}
+              {/* Percentage as cents + votes */}
               <div className="mt-4 flex items-end justify-between">
-                <span className="text-lg font-bold text-foreground tabular-nums">{yesPct.toFixed(0)}%<span className="text-xs font-normal text-muted-foreground ml-1">chance</span></span>
+                <span className="text-lg font-bold text-foreground tabular-nums font-['Space_Grotesk']">{Math.round(yesPct)}¢<span className="text-xs font-normal text-muted-foreground ml-1">{yesLabel}</span></span>
                 <span className="text-[10px] text-muted-foreground">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</span>
               </div>
             </div>
 
-            {/* Vote buttons */}
+            {/* Polymarket cent-based buttons */}
             <div className="px-4 pb-4">
               <div className="flex gap-2">
-                <span className={`flex-1 rounded-lg py-2 text-xs font-bold text-center ${
+                <span className={`flex-1 rounded-lg py-2 text-center ${
                   isEnded ? "bg-secondary text-muted-foreground opacity-60" : "bg-primary/10 text-primary"
-                }`}>{yesLabel}</span>
-                <span className={`flex-1 rounded-lg py-2 text-xs font-bold text-center ${
+                }`}>
+                  <span className="text-[10px] font-medium block">{yesLabel}</span>
+                  <span className="text-sm font-bold font-['Space_Grotesk'] tabular-nums">{Math.round(yesPct)}¢</span>
+                </span>
+                <span className={`flex-1 rounded-lg py-2 text-center ${
                   isEnded ? "bg-secondary text-muted-foreground opacity-60" : "bg-destructive/10 text-destructive"
-                }`}>{noLabel}</span>
+                }`}>
+                  <span className="text-[10px] font-medium block">{noLabel}</span>
+                  <span className="text-sm font-bold font-['Space_Grotesk'] tabular-nums">{Math.round(noPct)}¢</span>
+                </span>
               </div>
             </div>
           </Link>
