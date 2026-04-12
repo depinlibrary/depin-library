@@ -380,23 +380,42 @@ const PredictionDetail = () => {
                   {prediction.title}
                 </h1>
 
-                {/* Odds pills — stacked */}
-                <div className="flex flex-col gap-3">
-                  <div className="flex w-full items-center justify-between rounded-xl border border-primary/25 bg-primary/5 px-4 py-3 text-sm font-bold text-foreground">
-                    <span className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-primary" />
-                      {yesLabel}
+                {/* Polymarket-style odds pills */}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => handleVote("yes")}
+                    className={`flex-1 rounded-xl border-2 px-4 py-4 text-center transition-all duration-200 ${
+                      prediction?.user_vote === "yes"
+                        ? "border-primary bg-primary/15"
+                        : "border-primary/25 bg-primary/5 hover:bg-primary/10 hover:border-primary/40"
+                    }`}
+                  >
+                    <span className="block text-xs font-semibold text-primary mb-1">{yesLabel}</span>
+                    <span className="block text-2xl font-bold font-['Space_Grotesk'] tabular-nums text-foreground">
+                      {Math.round(yesPct)}¢
                     </span>
-                    <span className="font-['Space_Grotesk'] text-base tabular-nums text-primary">{yesPct.toFixed(0)}%</span>
-                  </div>
-                  <div className="flex w-full items-center justify-between rounded-xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm font-bold text-foreground">
-                    <span className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-destructive" />
-                      {noLabel}
+                    <span className="block text-[10px] text-muted-foreground mt-0.5">{yesPct.toFixed(1)}% chance</span>
+                  </button>
+                  <button
+                    onClick={() => handleVote("no")}
+                    className={`flex-1 rounded-xl border-2 px-4 py-4 text-center transition-all duration-200 ${
+                      prediction?.user_vote === "no"
+                        ? "border-destructive bg-destructive/15"
+                        : "border-destructive/25 bg-destructive/5 hover:bg-destructive/10 hover:border-destructive/40"
+                    }`}
+                  >
+                    <span className="block text-xs font-semibold text-destructive mb-1">{noLabel}</span>
+                    <span className="block text-2xl font-bold font-['Space_Grotesk'] tabular-nums text-foreground">
+                      {Math.round(noPct)}¢
                     </span>
-                    <span className="font-['Space_Grotesk'] text-base tabular-nums text-destructive">{noPct.toFixed(0)}%</span>
-                  </div>
+                    <span className="block text-[10px] text-muted-foreground mt-0.5">{noPct.toFixed(1)}% chance</span>
+                  </button>
                 </div>
+                {prediction?.user_vote && (
+                  <p className="text-[10px] text-muted-foreground text-center mt-2">
+                    You voted <span className={`font-semibold ${prediction.user_vote === "yes" ? "text-primary" : "text-destructive"}`}>{prediction.user_vote === "yes" ? yesLabel : noLabel}</span> · Votes are final
+                  </p>
+                )}
               </div>
               </motion.div>
 
