@@ -131,43 +131,36 @@ export default function VoteSection({ prediction, yesPct, noPct, totalVotes, isE
         </div>
 
         <div className="px-6 py-5">
-          <div className="flex items-end justify-between mb-3">
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-3xl font-bold text-foreground font-['Space_Grotesk'] tracking-tight">{yesPct.toFixed(0)}%</span>
-              <span className="text-[11px] font-semibold text-primary uppercase tracking-wider">Yes</span>
+          {/* Polymarket cent-based odds */}
+          <div className="flex gap-4 mb-5">
+            <div className="flex-1 text-center">
+              <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">Yes</span>
+              <p className="text-3xl font-bold text-foreground font-['Space_Grotesk'] tracking-tight tabular-nums">{Math.round(yesPct)}¢</p>
+              <span className="text-[10px] text-muted-foreground">{yesPct.toFixed(1)}% chance</span>
             </div>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-[11px] font-semibold text-destructive uppercase tracking-wider">No</span>
-              <span className="text-3xl font-bold text-foreground font-['Space_Grotesk'] tracking-tight">{noPct.toFixed(0)}%</span>
+            <div className="w-px bg-border" />
+            <div className="flex-1 text-center">
+              <span className="text-[10px] font-semibold text-destructive uppercase tracking-wider">No</span>
+              <p className="text-3xl font-bold text-foreground font-['Space_Grotesk'] tracking-tight tabular-nums">{Math.round(noPct)}¢</p>
+              <span className="text-[10px] text-muted-foreground">{noPct.toFixed(1)}% chance</span>
             </div>
           </div>
 
-          <div className="h-4 rounded-full bg-secondary overflow-hidden flex mb-5 relative">
+          {/* Progress bar */}
+          <div className="h-3 rounded-full bg-secondary overflow-hidden flex mb-5">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${yesPct}%` }}
               transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-              className="h-full rounded-l-full relative"
+              className="h-full rounded-l-full"
               style={{ background: "linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary) / 0.8))" }}
-            >
-              {yesPct > 15 && (
-                <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-primary-foreground">
-                  {yesPct.toFixed(0)}%
-                </span>
-              )}
-            </motion.div>
+            />
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${noPct}%` }}
               transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-              className="h-full rounded-r-full bg-destructive/60 relative"
-            >
-              {noPct > 15 && (
-                <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-destructive-foreground">
-                  {noPct.toFixed(0)}%
-                </span>
-              )}
-            </motion.div>
+              className="h-full rounded-r-full bg-destructive/60"
+            />
           </div>
 
           {!isEnded && !hasVoted && (
