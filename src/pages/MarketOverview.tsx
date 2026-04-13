@@ -368,6 +368,11 @@ const MarketOverview = () => {
         case "name": return sortAsc ? a.project.name.localeCompare(b.project.name) : b.project.name.localeCompare(a.project.name);
         case "volume": return (sortAsc ? 1 : -1) * (((a.market as any)?.volume_24h ?? -1) - ((b.market as any)?.volume_24h ?? -1));
         case "fdv": return (sortAsc ? 1 : -1) * (((a.market as any)?.fully_diluted_valuation ?? -1) - ((b.market as any)?.fully_diluted_valuation ?? -1));
+        case "vol_mcap": {
+          const rA = ((a.market as any)?.volume_24h && a.market?.market_cap_usd) ? (a.market as any).volume_24h / a.market!.market_cap_usd! : -1;
+          const rB = ((b.market as any)?.volume_24h && b.market?.market_cap_usd) ? (b.market as any).volume_24h / b.market!.market_cap_usd! : -1;
+          return (sortAsc ? 1 : -1) * (rA - rB);
+        }
         default: return (sortAsc ? 1 : -1) * ((a.market?.market_cap_usd ?? -1) - (b.market?.market_cap_usd ?? -1));
       }
     });
