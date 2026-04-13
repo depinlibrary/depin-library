@@ -37,6 +37,8 @@ export type TokenMarketData = {
   sparkline_7d: number[] | null;
   last_updated: string;
   data_source: string;
+  volume_24h: number | null;
+  fully_diluted_valuation: number | null;
 };
 
 export function useTokenMarketData(projectId?: string) {
