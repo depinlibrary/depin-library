@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "@/components/Navbar";
@@ -170,21 +171,37 @@ type SortKey = "market_cap" | "price" | "change_24h" | "name" | "volume" | "fdv"
 
 const ColHeader = ({ label, sortKey, active, asc, onSort, align = "right", className = "", tooltip }: {
   label: string; sortKey: SortKey; active: boolean; asc: boolean; onSort: (k: SortKey) => void; align?: string; className?: string; tooltip?: string;
-}) => (
-  <th
-    className={`px-3 py-3 text-[11px] font-semibold uppercase tracking-wider cursor-pointer select-none transition-colors whitespace-nowrap ${
-      align === "left" ? "text-left" : align === "center" ? "text-center" : "text-right"
-    } ${active ? "text-primary" : "text-muted-foreground/70 hover:text-muted-foreground"} ${className}`}
-    onClick={() => onSort(sortKey)}
-    title={tooltip}
-  >
+}) => {
+  const content = (
     <span className={`inline-flex items-center gap-1 w-full ${align === "left" ? "justify-start" : align === "center" ? "justify-center" : "justify-end"}`}>
       {label}
       {tooltip && <span className="inline-flex items-center justify-center h-3.5 w-3.5 rounded-full bg-muted text-[9px] font-bold text-muted-foreground leading-none shrink-0">?</span>}
       {active && (asc ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />)}
     </span>
-  </th>
-);
+  );
+
+  const thEl = (
+    <th
+      className={`px-3 py-3 text-[11px] font-semibold uppercase tracking-wider cursor-pointer select-none transition-colors whitespace-nowrap ${
+        align === "left" ? "text-left" : align === "center" ? "text-center" : "text-right"
+      } ${active ? "text-primary" : "text-muted-foreground/70 hover:text-muted-foreground"} ${className}`}
+      onClick={() => onSort(sortKey)}
+    >
+      {tooltip ? (
+        <TooltipProvider delayDuration={200}>
+          <Tooltip>
+            <TooltipTrigger asChild><span>{content}</span></TooltipTrigger>
+            <TooltipContent side="top" className="max-w-[240px] text-xs leading-relaxed">
+              {tooltip}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      ) : content}
+    </th>
+  );
+
+  return thEl;
+};
 
 // ═══════════════════════════════════════════════════════════
 // TABLE ROW
