@@ -166,7 +166,7 @@ const TickerItem = ({ project, market, rank, type }: { project: Project; market:
 };
 
 // Sortable column header
-type SortKey = "market_cap" | "price" | "change_24h" | "name";
+type SortKey = "market_cap" | "price" | "change_24h" | "name" | "volume" | "fdv";
 
 const ColHeader = ({ label, sortKey, active, asc, onSort, align = "right", className = "" }: {
   label: string; sortKey: SortKey; active: boolean; asc: boolean; onSort: (k: SortKey) => void; align?: string; className?: string;
