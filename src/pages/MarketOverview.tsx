@@ -166,7 +166,7 @@ const TickerItem = ({ project, market, rank, type }: { project: Project; market:
 };
 
 // Sortable column header
-type SortKey = "market_cap" | "price" | "change_24h" | "name" | "volume" | "fdv";
+type SortKey = "market_cap" | "price" | "change_24h" | "name" | "volume" | "fdv" | "vol_mcap";
 
 const ColHeader = ({ label, sortKey, active, asc, onSort, align = "right", className = "" }: {
   label: string; sortKey: SortKey; active: boolean; asc: boolean; onSort: (k: SortKey) => void; align?: string; className?: string;
@@ -268,6 +268,17 @@ const ProjectRow = ({ project, market, rank, isBookmarked, onBookmark, showBookm
         </span>
       </td>
 
+      {/* Vol/MCap */}
+      <td className="px-3 py-3 text-right">
+        {(() => {
+          const ratio = vol != null && market?.market_cap_usd ? vol / market.market_cap_usd : null;
+          if (ratio == null) return <span className="text-muted-foreground/40 text-sm">—</span>;
+          const pct = ratio * 100;
+          const color = pct >= 10 ? "text-green-400" : pct >= 3 ? "text-foreground/80" : "text-muted-foreground";
+          return <span className={`text-sm font-mono ${color}`}>{pct >= 1 ? pct.toFixed(1) : pct.toFixed(2)}%</span>;
+        })()}
+      </td>
+
       {/* Sparkline */}
       <td className="px-3 py-2">
         <div className="flex justify-center">
@@ -357,6 +368,11 @@ const MarketOverview = () => {
         case "name": return sortAsc ? a.project.name.localeCompare(b.project.name) : b.project.name.localeCompare(a.project.name);
         case "volume": return (sortAsc ? 1 : -1) * (((a.market as any)?.volume_24h ?? -1) - ((b.market as any)?.volume_24h ?? -1));
         case "fdv": return (sortAsc ? 1 : -1) * (((a.market as any)?.fully_diluted_valuation ?? -1) - ((b.market as any)?.fully_diluted_valuation ?? -1));
+        case "vol_mcap": {
+          const rA = ((a.market as any)?.volume_24h && a.market?.market_cap_usd) ? (a.market as any).volume_24h / a.market!.market_cap_usd! : -1;
+          const rB = ((b.market as any)?.volume_24h && b.market?.market_cap_usd) ? (b.market as any).volume_24h / b.market!.market_cap_usd! : -1;
+          return (sortAsc ? 1 : -1) * (rA - rB);
+        }
         default: return (sortAsc ? 1 : -1) * ((a.market?.market_cap_usd ?? -1) - (b.market?.market_cap_usd ?? -1));
       }
     });
@@ -551,6 +567,7 @@ const MarketOverview = () => {
                     <ColHeader label="Market Cap" sortKey="market_cap" active={sortBy === "market_cap"} asc={sortAsc} onSort={handleSort} />
                     <ColHeader label="Volume 24h" sortKey="volume" active={sortBy === "volume"} asc={sortAsc} onSort={handleSort} />
                     <ColHeader label="FDV" sortKey="fdv" active={sortBy === "fdv"} asc={sortAsc} onSort={handleSort} />
+                    <ColHeader label="Vol/MCap" sortKey="vol_mcap" active={sortBy === "vol_mcap"} asc={sortAsc} onSort={handleSort} />
                     <th className="px-3 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70 whitespace-nowrap">Last 7 Days</th>
                     <th className="px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">Info</th>
                   </tr>
@@ -558,7 +575,7 @@ const MarketOverview = () => {
                 <tbody>
                   {visible.length === 0 ? (
                     <tr>
-                      <td colSpan={9} className="py-20 text-center">
+                      <td colSpan={10} className="py-20 text-center">
                         <div className="flex flex-col items-center gap-3">
                           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-secondary">
                             <Search className="h-6 w-6 text-muted-foreground/30" />
