@@ -166,7 +166,7 @@ const TickerItem = ({ project, market, rank, type }: { project: Project; market:
 };
 
 // Sortable column header
-type SortKey = "market_cap" | "price" | "change_24h" | "name" | "volume" | "fdv";
+type SortKey = "market_cap" | "price" | "change_24h" | "name" | "volume" | "fdv" | "vol_mcap";
 
 const ColHeader = ({ label, sortKey, active, asc, onSort, align = "right", className = "" }: {
   label: string; sortKey: SortKey; active: boolean; asc: boolean; onSort: (k: SortKey) => void; align?: string; className?: string;
@@ -266,6 +266,17 @@ const ProjectRow = ({ project, market, rank, isBookmarked, onBookmark, showBookm
         <span className="text-sm text-foreground/80 font-mono">
           {fdv != null ? formatMarketCap(fdv) : <span className="text-muted-foreground/40">—</span>}
         </span>
+      </td>
+
+      {/* Vol/MCap */}
+      <td className="px-3 py-3 text-right">
+        {(() => {
+          const ratio = vol != null && market?.market_cap_usd ? vol / market.market_cap_usd : null;
+          if (ratio == null) return <span className="text-muted-foreground/40 text-sm">—</span>;
+          const pct = ratio * 100;
+          const color = pct >= 10 ? "text-green-400" : pct >= 3 ? "text-foreground/80" : "text-muted-foreground";
+          return <span className={`text-sm font-mono ${color}`}>{pct >= 1 ? pct.toFixed(1) : pct.toFixed(2)}%</span>;
+        })()}
       </td>
 
       {/* Sparkline */}
@@ -551,6 +562,7 @@ const MarketOverview = () => {
                     <ColHeader label="Market Cap" sortKey="market_cap" active={sortBy === "market_cap"} asc={sortAsc} onSort={handleSort} />
                     <ColHeader label="Volume 24h" sortKey="volume" active={sortBy === "volume"} asc={sortAsc} onSort={handleSort} />
                     <ColHeader label="FDV" sortKey="fdv" active={sortBy === "fdv"} asc={sortAsc} onSort={handleSort} />
+                    <ColHeader label="Vol/MCap" sortKey="vol_mcap" active={sortBy === "vol_mcap"} asc={sortAsc} onSort={handleSort} />
                     <th className="px-3 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70 whitespace-nowrap">Last 7 Days</th>
                     <th className="px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">Info</th>
                   </tr>
