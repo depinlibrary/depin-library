@@ -166,7 +166,7 @@ const TickerItem = ({ project, market, rank, type }: { project: Project; market:
 };
 
 // Sortable column header
-type SortKey = "market_cap" | "price" | "change_24h" | "name";
+type SortKey = "market_cap" | "price" | "change_24h" | "name" | "volume" | "fdv";
 
 const ColHeader = ({ label, sortKey, active, asc, onSort, align = "right", className = "" }: {
   label: string; sortKey: SortKey; active: boolean; asc: boolean; onSort: (k: SortKey) => void; align?: string; className?: string;
@@ -192,6 +192,9 @@ const ProjectRow = ({ project, market, rank, isBookmarked, onBookmark, showBookm
   project: Project; market: TokenMarketData | undefined; rank: number;
   isBookmarked: boolean; onBookmark: () => void; showBookmark: boolean;
 }) => {
+  const vol = (market as any)?.volume_24h ?? null;
+  const fdv = (market as any)?.fully_diluted_valuation ?? null;
+
   return (
     <tr className="group border-b border-border/20 transition-colors hover:bg-secondary/15">
       {/* Rank */}
@@ -248,6 +251,20 @@ const ProjectRow = ({ project, market, rank, isBookmarked, onBookmark, showBookm
       <td className="px-3 py-3 text-right">
         <span className="text-sm text-foreground/80 font-mono">
           {market ? formatMarketCap(market.market_cap_usd) : <span className="text-muted-foreground/40">—</span>}
+        </span>
+      </td>
+
+      {/* Volume 24h */}
+      <td className="px-3 py-3 text-right">
+        <span className="text-sm text-foreground/80 font-mono">
+          {vol != null ? formatMarketCap(vol) : <span className="text-muted-foreground/40">—</span>}
+        </span>
+      </td>
+
+      {/* FDV */}
+      <td className="px-3 py-3 text-right">
+        <span className="text-sm text-foreground/80 font-mono">
+          {fdv != null ? formatMarketCap(fdv) : <span className="text-muted-foreground/40">—</span>}
         </span>
       </td>
 
@@ -338,6 +355,8 @@ const MarketOverview = () => {
         case "price": return (sortAsc ? 1 : -1) * ((a.market?.price_usd ?? -1) - (b.market?.price_usd ?? -1));
         case "change_24h": return (sortAsc ? 1 : -1) * ((a.market?.price_change_24h ?? -Infinity) - (b.market?.price_change_24h ?? -Infinity));
         case "name": return sortAsc ? a.project.name.localeCompare(b.project.name) : b.project.name.localeCompare(a.project.name);
+        case "volume": return (sortAsc ? 1 : -1) * (((a.market as any)?.volume_24h ?? -1) - ((b.market as any)?.volume_24h ?? -1));
+        case "fdv": return (sortAsc ? 1 : -1) * (((a.market as any)?.fully_diluted_valuation ?? -1) - ((b.market as any)?.fully_diluted_valuation ?? -1));
         default: return (sortAsc ? 1 : -1) * ((a.market?.market_cap_usd ?? -1) - (b.market?.market_cap_usd ?? -1));
       }
     });
@@ -373,7 +392,7 @@ const MarketOverview = () => {
         <div className="absolute inset-0 gradient-radial-top" />
         <div className="absolute bottom-0 left-0 right-0 h-32 gradient-fade-bottom" />
 
-        <div className="container relative mx-auto max-w-7xl px-4 pt-10 pb-6">
+        <div className="container relative mx-auto px-4 pt-10 pb-6">
           {/* Title row */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex items-end justify-between gap-4 flex-wrap">
             <div>
@@ -405,7 +424,7 @@ const MarketOverview = () => {
 
       {/* ═══ TRENDING ═══════════════════════════════════════ */}
       {!isLoading && (stats.gainers.length > 0 || stats.losers.length > 0) && (
-        <section className="container mx-auto max-w-7xl px-4 pt-2 pb-8">
+        <section className="container mx-auto px-4 pt-2 pb-8">
           <div className="grid gap-8 lg:grid-cols-2">
             {/* Gainers */}
             {stats.gainers.length > 0 && (
@@ -451,7 +470,7 @@ const MarketOverview = () => {
       )}
 
       {/* ═══ MAIN TABLE ═════════════════════════════════════ */}
-      <section className="container mx-auto max-w-7xl px-4 pb-20">
+      <section className="container mx-auto px-4 pb-20">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -522,7 +541,7 @@ const MarketOverview = () => {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[800px]">
+              <table className="w-full min-w-[1000px]">
                 <thead>
                   <tr className="border-b border-border/40">
                     <th className="px-3 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70 w-16">#</th>
@@ -530,6 +549,8 @@ const MarketOverview = () => {
                     <ColHeader label="Price" sortKey="price" active={sortBy === "price"} asc={sortAsc} onSort={handleSort} />
                     <ColHeader label="24h %" sortKey="change_24h" active={sortBy === "change_24h"} asc={sortAsc} onSort={handleSort} />
                     <ColHeader label="Market Cap" sortKey="market_cap" active={sortBy === "market_cap"} asc={sortAsc} onSort={handleSort} />
+                    <ColHeader label="Volume 24h" sortKey="volume" active={sortBy === "volume"} asc={sortAsc} onSort={handleSort} />
+                    <ColHeader label="FDV" sortKey="fdv" active={sortBy === "fdv"} asc={sortAsc} onSort={handleSort} />
                     <th className="px-3 py-3 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70 whitespace-nowrap">Last 7 Days</th>
                     <th className="px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">Info</th>
                   </tr>
@@ -537,7 +558,7 @@ const MarketOverview = () => {
                 <tbody>
                   {visible.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="py-20 text-center">
+                      <td colSpan={9} className="py-20 text-center">
                         <div className="flex flex-col items-center gap-3">
                           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-secondary">
                             <Search className="h-6 w-6 text-muted-foreground/30" />
