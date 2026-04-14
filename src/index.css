@@ -188,26 +188,16 @@
 
 
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 0px;
+  display: none;
 }
 
-::-webkit-scrollbar-track {
-  background: hsl(var(--background));
-}
-
-::-webkit-scrollbar-thumb {
-  background: hsl(var(--border));
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground));
-}
-
-/* Prevent layout shift from scrollbar and dropdowns */
+/* Hide scrollbar globally */
 html {
   overflow-y: scroll;
   overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 /* Prevent Radix from hiding scrollbar and shifting layout */
@@ -221,6 +211,17 @@ body {
   overflow-x: hidden;
   position: relative;
   width: 100%;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
 }
 
 /* ──────────────────────────────────────────
