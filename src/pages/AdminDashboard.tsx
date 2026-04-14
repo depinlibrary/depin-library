@@ -529,7 +529,7 @@ const AdminDashboard = () => {
                                     </SelectContent>
                                   </Select>
                                 </div>
-                                <div><Label className="text-xs text-muted-foreground">Year Founded</Label><Input type="number" value={editForm.year_founded || ""} onChange={(e) => setEditForm((f) => ({ ...f, year_founded: e.target.value ? Number(e.target.value) : null }))} className="mt-1" /></div>
+                                
                               </div>
                               <div className="flex justify-end gap-2 pt-2">
                                 <Button size="sm" variant="outline" onClick={cancelEdit} disabled={uploading2}>Cancel</Button>

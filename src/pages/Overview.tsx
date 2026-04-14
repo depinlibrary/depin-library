@@ -185,13 +185,14 @@ const Overview = () => {
               </motion.div>
               <motion.div variants={fadeUp} className="rounded-xl border border-border bg-card overflow-hidden">
                 {/* Table header */}
-                <div className="hidden sm:grid grid-cols-[2rem_1fr_6rem_7rem_6rem_6rem_6rem_5rem] gap-2 px-4 py-2.5 border-b border-border text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                <div className="hidden sm:grid grid-cols-[2rem_1fr_6rem_7rem_6rem_6rem_5rem_5rem_5rem] gap-2 px-4 py-2.5 border-b border-border text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
                   <span>#</span>
                   <span>Name</span>
                   <span className="text-right">Price</span>
                   <span className="text-right">Mkt Cap</span>
                   <span className="text-right">Volume</span>
                   <span className="text-right">FDV</span>
+                  <span className="text-right">Vol/MCap</span>
                   <span className="text-right">24h</span>
                   <span className="text-right">7d</span>
                 </div>
@@ -207,6 +208,7 @@ const Overview = () => {
                   const sparkline = m?.sparkline_7d as number[] | null;
                   const vol = (m as any)?.volume_24h as number | null;
                   const fdv = (m as any)?.fully_diluted_valuation as number | null;
+                  const volMcapRatio = vol && m?.market_cap_usd ? (vol / m.market_cap_usd) * 100 : null;
                   const fmt = (n: number | null) => {
                     if (!n) return "—";
                     if (n >= 1e9) return `$${(n / 1e9).toFixed(2)}B`;
@@ -220,7 +222,7 @@ const Overview = () => {
                       className="border-b border-border/40 last:border-b-0 transition-colors hover:bg-secondary/40"
                     >
                       {/* Desktop row */}
-                      <div className="hidden sm:grid grid-cols-[2rem_1fr_6rem_7rem_6rem_6rem_6rem_5rem] gap-2 px-4 py-2.5 items-center">
+                      <div className="hidden sm:grid grid-cols-[2rem_1fr_6rem_7rem_6rem_6rem_5rem_5rem_5rem] gap-2 px-4 py-2.5 items-center">
                         <span className="text-xs text-muted-foreground tabular-nums">{i + 1}</span>
                         <div className="flex items-center gap-2 min-w-0">
                           <ProjectLogo logoUrl={p.logo_url} logoEmoji={p.logo_emoji} name={p.name} size="xs" />
@@ -233,6 +235,9 @@ const Overview = () => {
                         <span className="text-xs text-muted-foreground tabular-nums text-right">{fmt(m?.market_cap_usd ?? null)}</span>
                         <span className="text-xs text-muted-foreground tabular-nums text-right">{fmt(vol)}</span>
                         <span className="text-xs text-muted-foreground tabular-nums text-right">{fmt(fdv)}</span>
+                        <span className={`text-xs tabular-nums text-right ${volMcapRatio !== null && volMcapRatio >= 10 ? "text-green-400 font-semibold" : volMcapRatio !== null && volMcapRatio >= 3 ? "text-foreground" : "text-muted-foreground"}`}>
+                          {volMcapRatio !== null ? `${volMcapRatio >= 1 ? volMcapRatio.toFixed(1) : volMcapRatio.toFixed(2)}%` : "—"}
+                        </span>
                         <span className={`text-xs font-semibold tabular-nums text-right ${change >= 0 ? "text-neon-green" : "text-destructive"}`}>
                           {change >= 0 ? "+" : ""}{change.toFixed(1)}%
                         </span>
@@ -429,18 +434,24 @@ const Overview = () => {
                         {prediction.title}
                       </h3>
 
-                      {/* Percentage + votes */}
+                      {/* Percentage as cents + votes */}
                       <div className="mt-4 flex items-end justify-between">
-                        <span className="text-lg font-bold text-foreground tabular-nums">{yesPct.toFixed(0)}%<span className="text-xs font-normal text-muted-foreground ml-1">chance</span></span>
+                        <span className="text-lg font-bold text-foreground tabular-nums font-['Space_Grotesk']">{Math.round(yesPct)}¢<span className="text-xs font-normal text-muted-foreground ml-1">{yesLabel}</span></span>
                         <span className="text-[10px] text-muted-foreground">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</span>
                       </div>
                     </div>
 
-                    {/* Compact vote buttons */}
+                    {/* Polymarket cent-based buttons */}
                     <div className="px-4 pb-4">
                       <div className="flex gap-2">
-                        <span className="flex-1 rounded-lg py-2 text-xs font-bold text-center bg-primary/10 text-primary">{yesLabel}</span>
-                        <span className="flex-1 rounded-lg py-2 text-xs font-bold text-center bg-destructive/10 text-destructive">{noLabel}</span>
+                        <span className={`flex-1 rounded-lg py-2 text-center ${isEnded ? "bg-secondary text-muted-foreground opacity-60" : "bg-primary/10 text-primary"}`}>
+                          <span className="text-[10px] font-medium block">{yesLabel}</span>
+                          <span className="text-sm font-bold font-['Space_Grotesk'] tabular-nums">{Math.round(yesPct)}¢</span>
+                        </span>
+                        <span className={`flex-1 rounded-lg py-2 text-center ${isEnded ? "bg-secondary text-muted-foreground opacity-60" : "bg-destructive/10 text-destructive"}`}>
+                          <span className="text-[10px] font-medium block">{noLabel}</span>
+                          <span className="text-sm font-bold font-['Space_Grotesk'] tabular-nums">{Math.round(100 - yesPct)}¢</span>
+                        </span>
                       </div>
                     </div>
                   </Link>

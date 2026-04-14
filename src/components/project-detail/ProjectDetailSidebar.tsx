@@ -114,7 +114,7 @@ export default function ProjectDetailSidebar({ project, marketData, ratingsData,
           )}
           <DetailRow label="Category" value={project.category} />
           <DetailRow label="Token" value={project.token || "—"} />
-          <DetailRow label="Founded" value={project.year_founded ? String(project.year_founded) : "—"} />
+          
         </div>
       </motion.div>
 

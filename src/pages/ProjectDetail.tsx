@@ -169,7 +169,7 @@ const ProjectDetail = () => {
               <div className="flex min-h-0 flex-col lg:h-full">
                 <div
                   ref={navRef}
-                  className="z-20 mb-6 shrink-0 border-b border-border bg-background/95 backdrop-blur-sm overflow-x-auto"
+                  className="z-20 mb-6 shrink-0 rounded-xl border border-border bg-card/80 backdrop-blur-sm overflow-x-auto"
                 >
                   <div className="flex min-w-max items-center gap-1 py-2">
                     {SECTIONS.map((section) => (

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAvatar } from "@/hooks/useAvatar";
-import { LogOut, Plus, User, Shield, Menu, X, Sun, Moon, ChevronDown, BarChart3, TrendingUp, Compass, GitCompare, Briefcase, Home, Zap, ArrowRight, LineChart, Camera, Pencil, Check, Sparkles, Star, Clock } from "lucide-react";
+import { LogOut, Plus, User, Shield, Menu, X, Sun, Moon, ChevronDown, BarChart3, TrendingUp, Compass, GitCompare, Briefcase, Home, Zap, ArrowRight, LineChart, Camera, Pencil, Check, Sparkles, Star, Clock, Wrench, BrainCircuit } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState, useRef, useCallback } from "react";
 import NotificationDropdown from "@/components/NotificationDropdown";
@@ -43,6 +43,7 @@ const Navbar = () => {
 
   const isExploreActive = location.pathname === "/explore";
   const isMarketActive = ["/market", "/predictions", "/portfolio"].includes(location.pathname);
+  const isToolsActive = ["/compare"].includes(location.pathname);
 
   useEffect(() => {
     if (!user) { setIsAdmin(false); return; }
@@ -72,6 +73,8 @@ const Navbar = () => {
   const marketDropdownRef = useRef<HTMLDivElement>(null);
   const [exploreDropdownOpen, setExploreDropdownOpen] = useState(false);
   const exploreDropdownRef = useRef<HTMLDivElement>(null);
+  const [toolsDropdownOpen, setToolsDropdownOpen] = useState(false);
+  const toolsDropdownRef = useRef<HTMLDivElement>(null);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const profileDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -82,6 +85,9 @@ const Navbar = () => {
       }
       if (exploreDropdownRef.current && !exploreDropdownRef.current.contains(e.target as Node)) {
         setExploreDropdownOpen(false);
+      }
+      if (toolsDropdownRef.current && !toolsDropdownRef.current.contains(e.target as Node)) {
+        setToolsDropdownOpen(false);
       }
       if (profileDropdownRef.current && !profileDropdownRef.current.contains(e.target as Node)) {
         setProfileDropdownOpen(false);
@@ -98,14 +104,12 @@ const Navbar = () => {
 
   const navLinks = [
     { to: "/", label: "Overview" },
-    { to: "/compare", label: "Compare" },
   ];
 
   const mobileNavLinks = [
     { to: "/", label: "Overview", icon: Home },
     { to: "/explore", label: "Explore", icon: Compass },
     { to: "/market", label: "Market", icon: BarChart3 },
-    { to: "/compare", label: "Compare", icon: GitCompare },
   ];
 
   return (
@@ -420,24 +424,103 @@ const Navbar = () => {
               )}
             </AnimatePresence>
           </div>
-          {/* Compare link */}
-          <Link
-            to="/compare"
-            className={`relative rounded-lg px-3 py-1.5 text-[13px] font-medium transition-all ${
-              isActive("/compare")
-                ? "text-foreground"
-                : "text-muted-foreground hover:text-foreground hover:bg-secondary/40"
-            }`}
+          {/* Tools mega dropdown */}
+          <div
+            className="relative"
+            ref={toolsDropdownRef}
+            onMouseEnter={() => setToolsDropdownOpen(true)}
+            onMouseLeave={() => setToolsDropdownOpen(false)}
           >
-            Compare
-            {isActive("/compare") && (
-              <motion.div
-                layoutId="nav-indicator"
-                className="absolute inset-x-1 -bottom-[13px] h-[2px] rounded-full bg-primary"
-                transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              />
-            )}
-          </Link>
+            <button
+              onClick={() => setToolsDropdownOpen((v) => !v)}
+              className={`relative flex items-center gap-1 rounded-lg px-3 py-1.5 text-[13px] font-medium transition-all ${
+                isToolsActive
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/40"
+              }`}
+            >
+              Tools
+              <ChevronDown className={`h-3 w-3 transition-transform duration-200 ${toolsDropdownOpen ? "rotate-180" : ""}`} />
+              {isToolsActive && (
+                <motion.div
+                  layoutId="nav-indicator"
+                  className="absolute inset-x-1 -bottom-[13px] h-[2px] rounded-full bg-primary"
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
+              )}
+            </button>
+            <AnimatePresence>
+              {toolsDropdownOpen && (
+                <div className="absolute left-1/2 top-full z-50 pt-2" style={{ marginLeft: '-170px' }}>
+                  <motion.div
+                    initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                    transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                    className="w-[340px] rounded-xl border border-border bg-card shadow-xl shadow-background/30 overflow-hidden"
+                  >
+                    {/* Header */}
+                    <div className="px-4 pt-3 pb-2">
+                      <p className="text-[10px] uppercase tracking-[0.15em] font-semibold text-muted-foreground/50">Tools Hub</p>
+                    </div>
+
+                    {/* Links */}
+                    <div className="px-2 pb-2 space-y-0.5">
+                      <Link
+                        to="/compare"
+                        onClick={() => setToolsDropdownOpen(false)}
+                        className={`group/item flex items-center gap-3 rounded-lg px-3 py-3 transition-all ${
+                          location.pathname === "/compare"
+                            ? "bg-primary/8 border border-primary/15"
+                            : "hover:bg-secondary/50 border border-transparent"
+                        }`}
+                      >
+                        <div className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors ${
+                          location.pathname === "/compare" ? "bg-primary/15" : "bg-secondary group-hover/item:bg-primary/10"
+                        }`}>
+                          <GitCompare className={`h-4 w-4 ${location.pathname === "/compare" ? "text-primary" : "text-muted-foreground group-hover/item:text-primary"} transition-colors`} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="text-[13px] font-semibold text-foreground">Compare</p>
+                            {location.pathname === "/compare" && (
+                              <span className="rounded-full bg-primary/15 px-1.5 py-0.5 text-[9px] font-bold text-primary uppercase tracking-wider">Active</span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-muted-foreground mt-0.5">AI-powered side-by-side project comparison</p>
+                        </div>
+                        <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/30 group-hover/item:text-muted-foreground transition-all group-hover/item:translate-x-0.5" />
+                      </Link>
+
+                      <div
+                        className="group/item flex items-center gap-3 rounded-lg px-3 py-3 transition-all hover:bg-secondary/50 border border-transparent cursor-not-allowed opacity-70"
+                      >
+                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-secondary group-hover/item:bg-primary/10 transition-colors">
+                          <BrainCircuit className="h-4 w-4 text-muted-foreground group-hover/item:text-primary transition-colors" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="text-[13px] font-semibold text-foreground">AI Analyze</p>
+                            <span className="rounded-full bg-accent/50 px-1.5 py-0.5 text-[9px] font-bold text-accent-foreground uppercase tracking-wider">Soon</span>
+                          </div>
+                          <p className="text-[11px] text-muted-foreground mt-0.5">Deep AI analysis of any DePIN project</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Footer */}
+                    <div className="border-t border-border px-4 py-2.5 flex items-center justify-between bg-secondary/20">
+                      <span className="text-[10px] text-muted-foreground">Research & analysis tools</span>
+                      <div className="flex items-center gap-1 text-[10px] font-medium text-primary">
+                        <Wrench className="h-3 w-3" />
+                        Tools
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
+              )}
+            </AnimatePresence>
+          </div>
         </nav>
 
         {/* Desktop auth actions — right */}
@@ -718,6 +801,29 @@ const Navbar = () => {
                   Portfolio Tracker
                   {location.pathname === "/portfolio" && <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />}
                 </Link>
+              </div>
+
+              {/* Tools section */}
+              <div className="mt-1 mb-1">
+                <p className="px-3 py-1.5 text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 font-semibold">Tools</p>
+                <Link
+                  to="/compare"
+                  onClick={() => setMobileOpen(false)}
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
+                    location.pathname === "/compare"
+                      ? "bg-primary/10 text-foreground"
+                      : "text-muted-foreground hover:bg-secondary/40 hover:text-foreground"
+                  }`}
+                >
+                  <GitCompare className={`h-4 w-4 ${location.pathname === "/compare" ? "text-primary" : ""}`} />
+                  Compare
+                  {location.pathname === "/compare" && <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />}
+                </Link>
+                <div className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground/50 cursor-not-allowed">
+                  <BrainCircuit className="h-4 w-4" />
+                  AI Analyze
+                  <span className="ml-auto rounded-full bg-accent/50 px-1.5 py-0.5 text-[9px] font-bold text-accent-foreground uppercase">Soon</span>
+                </div>
               </div>
 
               {/* Divider */}
