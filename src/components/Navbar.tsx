@@ -104,7 +104,6 @@ const Navbar = () => {
 
   const navLinks = [
     { to: "/", label: "Overview" },
-    { to: "/compare", label: "Compare" },
   ];
 
   const mobileNavLinks = [
