@@ -803,6 +803,29 @@ const Navbar = () => {
                 </Link>
               </div>
 
+              {/* Tools section */}
+              <div className="mt-1 mb-1">
+                <p className="px-3 py-1.5 text-[10px] uppercase tracking-[0.15em] text-muted-foreground/50 font-semibold">Tools</p>
+                <Link
+                  to="/compare"
+                  onClick={() => setMobileOpen(false)}
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
+                    location.pathname === "/compare"
+                      ? "bg-primary/10 text-foreground"
+                      : "text-muted-foreground hover:bg-secondary/40 hover:text-foreground"
+                  }`}
+                >
+                  <GitCompare className={`h-4 w-4 ${location.pathname === "/compare" ? "text-primary" : ""}`} />
+                  Compare
+                  {location.pathname === "/compare" && <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />}
+                </Link>
+                <div className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground/50 cursor-not-allowed">
+                  <BrainCircuit className="h-4 w-4" />
+                  AI Analyze
+                  <span className="ml-auto rounded-full bg-accent/50 px-1.5 py-0.5 text-[9px] font-bold text-accent-foreground uppercase">Soon</span>
+                </div>
+              </div>
+
               {/* Divider */}
               <div className="my-1.5 h-px bg-border/50" />
 
