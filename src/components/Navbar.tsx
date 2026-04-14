@@ -110,7 +110,6 @@ const Navbar = () => {
     { to: "/", label: "Overview", icon: Home },
     { to: "/explore", label: "Explore", icon: Compass },
     { to: "/market", label: "Market", icon: BarChart3 },
-    { to: "/compare", label: "Compare", icon: GitCompare },
   ];
 
   return (
