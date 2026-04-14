@@ -14,7 +14,7 @@ const RelatedProjects = ({ currentProjectId, category, blockchain }: RelatedProj
 
   const related = projects
     .filter((p) => p.id !== currentProjectId && p.category === category)
-    .slice(0, 4);
+    .slice(0, 6);
 
   if (related.length === 0) return null;
 
