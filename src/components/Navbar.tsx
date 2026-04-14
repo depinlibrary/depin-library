@@ -43,6 +43,7 @@ const Navbar = () => {
 
   const isExploreActive = location.pathname === "/explore";
   const isMarketActive = ["/market", "/predictions", "/portfolio"].includes(location.pathname);
+  const isToolsActive = ["/compare"].includes(location.pathname);
 
   useEffect(() => {
     if (!user) { setIsAdmin(false); return; }
@@ -72,6 +73,8 @@ const Navbar = () => {
   const marketDropdownRef = useRef<HTMLDivElement>(null);
   const [exploreDropdownOpen, setExploreDropdownOpen] = useState(false);
   const exploreDropdownRef = useRef<HTMLDivElement>(null);
+  const [toolsDropdownOpen, setToolsDropdownOpen] = useState(false);
+  const toolsDropdownRef = useRef<HTMLDivElement>(null);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const profileDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -82,6 +85,9 @@ const Navbar = () => {
       }
       if (exploreDropdownRef.current && !exploreDropdownRef.current.contains(e.target as Node)) {
         setExploreDropdownOpen(false);
+      }
+      if (toolsDropdownRef.current && !toolsDropdownRef.current.contains(e.target as Node)) {
+        setToolsDropdownOpen(false);
       }
       if (profileDropdownRef.current && !profileDropdownRef.current.contains(e.target as Node)) {
         setProfileDropdownOpen(false);
