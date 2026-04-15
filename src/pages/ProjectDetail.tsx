@@ -146,6 +146,13 @@ const ProjectDetail = () => {
               <ArrowLeft className="h-4 w-4" /> All Projects
             </Link>
             <div className="flex items-center gap-2">
+              <button
+                onClick={() => setAiSidebarOpen(true)}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground transition-all hover:bg-secondary/50 hover:text-foreground"
+              >
+                <BrainCircuit className="h-4 w-4" />
+                AI Analyze
+              </button>
               <CompareWithButton currentProjectId={project.id} currentProjectName={project.name} currentCategory={project.category} />
               <ShareButtons title={project.name} description={project.tagline} />
             </div>
@@ -256,6 +263,14 @@ const ProjectDetail = () => {
           </div>
         </div>
       </div>
+
+      {/* AI Analysis Sidebar */}
+      <AIAnalysisSidebar
+        open={aiSidebarOpen}
+        onClose={() => setAiSidebarOpen(false)}
+        projectName={project.name}
+        projectId={project.id}
+      />
     </div>
   );
 };
