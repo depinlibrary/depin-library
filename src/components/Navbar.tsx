@@ -43,7 +43,7 @@ const Navbar = () => {
 
   const isExploreActive = location.pathname === "/explore";
   const isMarketActive = ["/market", "/predictions", "/portfolio"].includes(location.pathname);
-  const isToolsActive = ["/compare"].includes(location.pathname);
+  const isToolsActive = ["/compare", "/ai-analysis"].includes(location.pathname);
 
   useEffect(() => {
     if (!user) { setIsAdmin(false); return; }
@@ -492,20 +492,31 @@ const Navbar = () => {
                         <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/30 group-hover/item:text-muted-foreground transition-all group-hover/item:translate-x-0.5" />
                       </Link>
 
-                      <div
-                        className="group/item flex items-center gap-3 rounded-lg px-3 py-3 transition-all hover:bg-secondary/50 border border-transparent cursor-not-allowed opacity-70"
+                      <Link
+                        to="/ai-analysis"
+                        onClick={() => setToolsDropdownOpen(false)}
+                        className={`group/item flex items-center gap-3 rounded-lg px-3 py-3 transition-all ${
+                          location.pathname === "/ai-analysis"
+                            ? "bg-primary/8 border border-primary/15"
+                            : "hover:bg-secondary/50 border border-transparent"
+                        }`}
                       >
-                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-secondary group-hover/item:bg-primary/10 transition-colors">
-                          <BrainCircuit className="h-4 w-4 text-muted-foreground group-hover/item:text-primary transition-colors" />
+                        <div className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors ${
+                          location.pathname === "/ai-analysis" ? "bg-primary/15" : "bg-secondary group-hover/item:bg-primary/10"
+                        }`}>
+                          <BrainCircuit className={`h-4 w-4 ${location.pathname === "/ai-analysis" ? "text-primary" : "text-muted-foreground group-hover/item:text-primary"} transition-colors`} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <p className="text-[13px] font-semibold text-foreground">AI Analyze</p>
-                            <span className="rounded-full bg-accent/50 px-1.5 py-0.5 text-[9px] font-bold text-accent-foreground uppercase tracking-wider">Soon</span>
+                            {location.pathname === "/ai-analysis" && (
+                              <span className="rounded-full bg-primary/15 px-1.5 py-0.5 text-[9px] font-bold text-primary uppercase tracking-wider">Active</span>
+                            )}
                           </div>
                           <p className="text-[11px] text-muted-foreground mt-0.5">Deep AI analysis of any DePIN project</p>
                         </div>
-                      </div>
+                        <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/30 group-hover/item:text-muted-foreground transition-all group-hover/item:translate-x-0.5" />
+                      </Link>
                     </div>
 
                     {/* Footer */}
