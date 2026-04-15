@@ -1,11 +1,11 @@
 import { useRef, useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, BrainCircuit } from "lucide-react";
 import CompareWithButton from "@/components/CompareWithButton";
 import { useProject } from "@/hooks/useProjects";
 import ProjectRatings from "@/components/ProjectRatings";
-
+import AIAnalysisSidebar from "@/components/AIAnalysisSidebar";
 
 import ShareButtons from "@/components/ShareButtons";
 import RelatedProjects from "@/components/RelatedProjects";
@@ -46,6 +46,7 @@ const ProjectDetail = () => {
   const { data: infrastructure } = useProjectInfrastructure(project?.id);
 
   const [activeSection, setActiveSection] = useState<string>("infrastructure");
+  const [aiSidebarOpen, setAiSidebarOpen] = useState(false);
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const navRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
