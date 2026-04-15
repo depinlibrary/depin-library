@@ -25,6 +25,7 @@ import PredictionDetail from "./pages/PredictionDetail";
 import HourlyPredictionDetail from "./pages/HourlyPredictionDetail";
 import Notifications from "./pages/Notifications";
 import Profile from "./pages/Profile";
+import AIAnalysis from "./pages/AIAnalysis";
 import NotFound from "./pages/NotFound";
 import ScrollToTop from "./components/ScrollToTop";
 
@@ -58,6 +59,7 @@ const AnimatedRoutes = () => {
         <Route path="/predictions/:id" element={<PageTransition><PredictionDetail /></PageTransition>} />
         <Route path="/notifications" element={<PageTransition><Notifications /></PageTransition>} />
         <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
+        <Route path="/ai-analysis" element={<PageTransition><AIAnalysis /></PageTransition>} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
     </AnimatePresence>
