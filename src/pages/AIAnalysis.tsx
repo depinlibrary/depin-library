@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
+import { useAvatar } from "@/hooks/useAvatar";
 import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   BrainCircuit,
   Send,
@@ -9,10 +11,18 @@ import {
   MessageSquare,
   Trash2,
   Sparkles,
-  ArrowRight,
-  Clock,
+  Sun,
+  Moon,
+  User,
+  Camera,
+  Pencil,
+  Check,
+  LogOut,
+  Briefcase,
 } from "lucide-react";
-import Navbar from "@/components/Navbar";
+import logoImg from "@/assets/logo.png";
+import NotificationDropdown from "@/components/NotificationDropdown";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -37,15 +47,32 @@ const SAMPLE_PROMPTS = [
   "Explain the revenue model of Hivemapper",
 ];
 
+const NAV_LINKS = [
+  { to: "/", label: "Overview" },
+  { to: "/explore", label: "Explore" },
+  { to: "/predictions", label: "Predictions" },
+  { to: "/market", label: "Market" },
+  { to: "/compare", label: "Compare" },
+  { to: "/ai-analysis", label: "AI Analysis" },
+];
+
 const AIAnalysis = () => {
   const { user, loading } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+  const { avatarUrl, displayName, uploading, uploadAvatar, updateDisplayName } = useAvatar();
   const navigate = useNavigate();
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [inputValue, setInputValue] = useState("");
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Profile dropdown state
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [editingName, setEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState("");
 
   const activeSession = sessions.find((s) => s.id === activeSessionId);
 
@@ -54,6 +81,11 @@ const AIAnalysis = () => {
       navigate("/auth?mode=login&redirect=/ai-analysis");
     }
   }, [user, loading, navigate]);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate("/");
+  };
 
   const createNewSession = (initialPrompt?: string) => {
     const id = crypto.randomUUID();
@@ -70,7 +102,6 @@ const AIAnalysis = () => {
         content: initialPrompt,
         timestamp: new Date(),
       });
-      // Simulate AI response placeholder
       newSession.messages.push({
         id: crypto.randomUUID(),
         role: "assistant",
@@ -138,11 +169,8 @@ const AIAnalysis = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Navbar />
-        <div className="flex items-center justify-center pt-32">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-        </div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
       </div>
     );
   }
@@ -151,14 +179,186 @@ const AIAnalysis = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Navbar />
-      <div className="flex flex-1 pt-16 overflow-hidden">
-        {/* Sidebar */}
-        <div
-          className={`border-r border-border bg-card/50 flex flex-col transition-all duration-300 shrink-0 ${
-            sidebarCollapsed ? "w-0 overflow-hidden" : "w-[280px]"
-          }`}
-        >
+      {/* Custom Header — matches Compare page */}
+      <header className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/90 backdrop-blur-xl">
+        <div className="flex h-14 items-center">
+          {/* Logo area — matches sidebar width */}
+          <div className="hidden md:flex items-center w-[260px] shrink-0 px-4 border-r border-border/50 h-full">
+            <Link to="/" className="flex items-center gap-0">
+              <img src={logoImg} alt="DePIN Library" className="h-10 w-10 object-contain" />
+              <span className="text-base font-semibold tracking-tight text-foreground">
+                DePIN Library
+              </span>
+            </Link>
+          </div>
+          {/* Mobile logo */}
+          <div className="flex md:hidden items-center px-4">
+            <Link to="/" className="flex items-center gap-0">
+              <img src={logoImg} alt="DePIN Library" className="h-9 w-9 object-contain" />
+              <span className="text-sm font-semibold tracking-tight text-foreground">DePIN Library</span>
+            </Link>
+          </div>
+          {/* Right side */}
+          <div className="flex-1 flex items-center justify-end px-4 gap-1.5">
+            <button
+              onClick={toggleTheme}
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-border transition-all hover:bg-secondary/50"
+              aria-label="Toggle theme"
+            >
+              {theme === "dark" ? <Sun className="h-3.5 w-3.5 text-foreground" /> : <Moon className="h-3.5 w-3.5 text-foreground" />}
+            </button>
+            <NotificationDropdown />
+            {/* Profile avatar dropdown */}
+            <div
+              className="relative"
+              ref={profileDropdownRef}
+              onMouseEnter={() => setProfileDropdownOpen(true)}
+              onMouseLeave={() => setProfileDropdownOpen(false)}
+            >
+              <button
+                onClick={() => setProfileDropdownOpen((v) => !v)}
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/15 border border-primary/30 transition-all hover:bg-primary/25 hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20 overflow-hidden"
+                aria-label="Profile menu"
+              >
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="Avatar" className="h-8 w-8 rounded-full object-cover" />
+                ) : (
+                  <User className="h-3.5 w-3.5 text-primary" />
+                )}
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) uploadAvatar(file);
+                  e.target.value = "";
+                }}
+              />
+              <AnimatePresence>
+                {profileDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 6, scale: 0.95 }}
+                    transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                    className="absolute right-0 top-full pt-2 z-50 w-56"
+                  >
+                    <div className="rounded-xl border border-border bg-card shadow-xl shadow-background/30 overflow-hidden">
+                      <div className="px-4 py-3 border-b border-border/50 flex items-center gap-3">
+                        <div className="relative group/avatar shrink-0">
+                          <div className="h-10 w-10 rounded-full bg-primary/15 border border-primary/30 overflow-hidden flex items-center justify-center">
+                            {avatarUrl ? (
+                              <img src={avatarUrl} alt="Avatar" className="h-10 w-10 rounded-full object-cover" />
+                            ) : (
+                              <User className="h-4 w-4 text-primary" />
+                            )}
+                          </div>
+                          <button
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={uploading}
+                            className="absolute inset-0 flex items-center justify-center rounded-full bg-background/70 opacity-0 group-hover/avatar:opacity-100 transition-opacity"
+                          >
+                            <Camera className="h-3.5 w-3.5 text-foreground" />
+                          </button>
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          {editingName ? (
+                            <form
+                              className="flex items-center gap-1"
+                              onSubmit={async (e) => {
+                                e.preventDefault();
+                                await updateDisplayName(nameInput);
+                                setEditingName(false);
+                              }}
+                            >
+                              <input
+                                autoFocus
+                                value={nameInput}
+                                onChange={(e) => setNameInput(e.target.value.slice(0, 50))}
+                                onKeyDown={(e) => { if (e.key === "Escape") setEditingName(false); }}
+                                className="w-full bg-secondary/50 border border-border rounded px-1.5 py-0.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-border"
+                                maxLength={50}
+                              />
+                              <button type="submit" className="shrink-0 p-0.5 rounded hover:bg-primary/15 transition-colors">
+                                <Check className="h-3 w-3 text-primary" />
+                              </button>
+                            </form>
+                          ) : (
+                            <div className="flex items-center gap-1 group/name">
+                              <p className="text-xs font-semibold text-foreground truncate">
+                                {displayName || user.email?.split("@")[0]}
+                              </p>
+                              <button
+                                onClick={() => { setNameInput(displayName || ""); setEditingName(true); }}
+                                className="shrink-0 p-0.5 rounded opacity-0 group-hover/name:opacity-100 hover:bg-secondary/50 transition-all"
+                              >
+                                <Pencil className="h-2.5 w-2.5 text-muted-foreground" />
+                              </button>
+                            </div>
+                          )}
+                          <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{uploading ? "Uploading…" : user.email}</p>
+                        </div>
+                      </div>
+                      <div className="py-1.5 px-1.5">
+                        <Link
+                          to="/portfolio"
+                          onClick={() => setProfileDropdownOpen(false)}
+                          className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-muted-foreground hover:bg-secondary/50 hover:text-foreground transition-all"
+                        >
+                          <Briefcase className="h-3.5 w-3.5" />
+                          Portfolio
+                        </Link>
+                        <Link
+                          to="/submit"
+                          onClick={() => setProfileDropdownOpen(false)}
+                          className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-muted-foreground hover:bg-secondary/50 hover:text-foreground transition-all"
+                        >
+                          <Plus className="h-3.5 w-3.5" />
+                          Submit Project
+                        </Link>
+                      </div>
+                      <div className="border-t border-border/50 py-1.5 px-1.5">
+                        <button
+                          onClick={() => { handleSignOut(); setProfileDropdownOpen(false); }}
+                          className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-destructive hover:bg-destructive/10 transition-all"
+                        >
+                          <LogOut className="h-3.5 w-3.5" />
+                          Sign Out
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div className="flex flex-1 pt-14">
+        {/* Sidebar — fixed with nav links + chat sessions */}
+        <aside className="hidden md:flex flex-col w-[260px] shrink-0 border-r border-border bg-card/30 fixed top-14 left-0 bottom-0 overflow-hidden">
+          {/* Nav links */}
+          <div className="px-3 pt-3 pb-2 space-y-0.5 border-b border-border/50">
+            {NAV_LINKS.map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                className={`flex items-center rounded-lg px-3 py-2 text-[13px] font-medium transition-all ${
+                  link.to === "/ai-analysis"
+                    ? "bg-secondary text-foreground"
+                    : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
+                }`}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+
+          {/* New analysis button */}
           <div className="p-3 border-b border-border/50">
             <Button
               onClick={() => {
@@ -173,6 +373,7 @@ const AIAnalysis = () => {
             </Button>
           </div>
 
+          {/* Chat sessions list */}
           <div className="flex-1 overflow-y-auto p-2 space-y-1">
             {sessions.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center px-4">
@@ -207,23 +408,10 @@ const AIAnalysis = () => {
               ))
             )}
           </div>
-        </div>
+        </aside>
 
         {/* Main Chat Area */}
-        <div className="flex-1 flex flex-col min-w-0">
-          {/* Toggle sidebar button */}
-          <div className="p-2 border-b border-border/50 flex items-center gap-2">
-            <button
-              onClick={() => setSidebarCollapsed((v) => !v)}
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-border hover:bg-secondary/50 transition-colors"
-            >
-              <MessageSquare className="h-4 w-4 text-muted-foreground" />
-            </button>
-            <span className="text-sm font-medium text-foreground">
-              {activeSession ? activeSession.title : "AI Analysis"}
-            </span>
-          </div>
-
+        <div className="flex-1 flex flex-col min-w-0 md:ml-[260px]">
           {/* Messages or Welcome */}
           <div className="flex-1 overflow-y-auto">
             {!activeSession || activeSession.messages.length === 0 ? (
