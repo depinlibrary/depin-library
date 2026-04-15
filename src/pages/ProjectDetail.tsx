@@ -1,11 +1,11 @@
 import { useRef, useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, BrainCircuit } from "lucide-react";
 import CompareWithButton from "@/components/CompareWithButton";
 import { useProject } from "@/hooks/useProjects";
 import ProjectRatings from "@/components/ProjectRatings";
-
+import AIAnalysisSidebar from "@/components/AIAnalysisSidebar";
 
 import ShareButtons from "@/components/ShareButtons";
 import RelatedProjects from "@/components/RelatedProjects";
@@ -46,6 +46,7 @@ const ProjectDetail = () => {
   const { data: infrastructure } = useProjectInfrastructure(project?.id);
 
   const [activeSection, setActiveSection] = useState<string>("infrastructure");
+  const [aiSidebarOpen, setAiSidebarOpen] = useState(false);
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const navRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
@@ -145,6 +146,13 @@ const ProjectDetail = () => {
               <ArrowLeft className="h-4 w-4" /> All Projects
             </Link>
             <div className="flex items-center gap-2">
+              <button
+                onClick={() => setAiSidebarOpen(true)}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground transition-all hover:bg-secondary/50 hover:text-foreground"
+              >
+                <BrainCircuit className="h-4 w-4" />
+                AI Analyze
+              </button>
               <CompareWithButton currentProjectId={project.id} currentProjectName={project.name} currentCategory={project.category} />
               <ShareButtons title={project.name} description={project.tagline} />
             </div>
@@ -255,6 +263,14 @@ const ProjectDetail = () => {
           </div>
         </div>
       </div>
+
+      {/* AI Analysis Sidebar */}
+      <AIAnalysisSidebar
+        open={aiSidebarOpen}
+        onClose={() => setAiSidebarOpen(false)}
+        projectName={project.name}
+        projectId={project.id}
+      />
     </div>
   );
 };
