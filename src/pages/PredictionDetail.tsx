@@ -393,7 +393,11 @@ const PredictionDetail = () => {
                 <div className="flex gap-3">
                   <button
                     onClick={() => handleVote("yes")}
+                    disabled={votingClosed}
                     className={`flex-1 rounded-xl border-2 px-4 py-4 text-center transition-all duration-200 ${
+                      votingClosed
+                        ? "border-border bg-secondary/40 opacity-60 cursor-not-allowed"
+                        :
                       prediction?.user_vote === "yes"
                         ? "border-primary bg-primary/15"
                         : "border-primary/25 bg-primary/5 hover:bg-primary/10 hover:border-primary/40"
@@ -401,13 +405,17 @@ const PredictionDetail = () => {
                   >
                     <span className="block text-xs font-semibold text-primary mb-1">{yesLabel}</span>
                     <span className="block text-2xl font-bold font-['Space_Grotesk'] tabular-nums text-foreground">
-                      {Math.round(yesPct)}¢
+                      {yesPct.toFixed(1)}%
                     </span>
-                    <span className="block text-[10px] text-muted-foreground mt-0.5">{yesPct.toFixed(1)}% chance</span>
+                    <span className="block text-[10px] text-muted-foreground mt-0.5">chance</span>
                   </button>
                   <button
                     onClick={() => handleVote("no")}
+                    disabled={votingClosed}
                     className={`flex-1 rounded-xl border-2 px-4 py-4 text-center transition-all duration-200 ${
+                      votingClosed
+                        ? "border-border bg-secondary/40 opacity-60 cursor-not-allowed"
+                        :
                       prediction?.user_vote === "no"
                         ? "border-destructive bg-destructive/15"
                         : "border-destructive/25 bg-destructive/5 hover:bg-destructive/10 hover:border-destructive/40"
@@ -415,9 +423,9 @@ const PredictionDetail = () => {
                   >
                     <span className="block text-xs font-semibold text-destructive mb-1">{noLabel}</span>
                     <span className="block text-2xl font-bold font-['Space_Grotesk'] tabular-nums text-foreground">
-                      {Math.round(noPct)}¢
+                      {noPct.toFixed(1)}%
                     </span>
-                    <span className="block text-[10px] text-muted-foreground mt-0.5">{noPct.toFixed(1)}% chance</span>
+                    <span className="block text-[10px] text-muted-foreground mt-0.5">chance</span>
                   </button>
                 </div>
                 {prediction?.user_vote && (
@@ -744,15 +752,6 @@ const PredictionDetail = () => {
                 </div>
               </motion.div>
             )}
-
-            {/* USDC Staking */}
-            <StakeSection
-              predictionId={prediction.id}
-              isEnded={isEnded}
-              userVote={(prediction.user_vote === "yes" || prediction.user_vote === "no") ? prediction.user_vote : null}
-              yesLabel={yesLabel}
-              noLabel={noLabel}
-            />
 
             {/* Prediction Analysis */}
             <PredictionAnalysis predictionId={prediction.id} isEnded={isEnded} totalVotesYes={prediction.total_votes_yes} totalVotesNo={prediction.total_votes_no} predictionTarget={prediction.prediction_target} predictionDirection={prediction.prediction_direction} startPrice={prediction.start_price} predictionDimension={predictionDimension} projectAId={prediction.project_a_id} projectBId={prediction.project_b_id} projectAName={prediction.project_a?.name} projectBName={prediction.project_b?.name} isCreator={!!user && user.id === prediction.creator_user_id} />
