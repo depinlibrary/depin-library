@@ -45,6 +45,7 @@ export type Prediction = {
   project_b_id: string | null;
   creator_user_id: string;
   end_date: string;
+  voting_lock_at: string | null;
   status: string;
   total_votes_yes: number;
   total_votes_no: number;
