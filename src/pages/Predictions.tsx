@@ -67,6 +67,8 @@ const PredictionCard = ({ prediction, onVote, isAuthenticated, index, dimensions
   const totalVotes = prediction.total_votes_yes + prediction.total_votes_no;
   const { yesPct, noPct } = getWeightedChance(prediction);
   const isEnded = new Date(prediction.end_date) <= new Date();
+  const isLocked = !!(prediction as any).voting_lock_at && new Date((prediction as any).voting_lock_at) <= new Date();
+  const votingClosed = isEnded || isLocked;
   const timeLeft = getTimeRemaining(prediction.end_date);
   const finalResult = isEnded ? (prediction.outcome || (yesPct >= 50 ? "yes" : "no")) : null;
   const isPriceMarket = dimensions.some(d => d === "token_price" || d === "market_cap");
@@ -154,32 +156,30 @@ const PredictionCard = ({ prediction, onVote, isAuthenticated, index, dimensions
 
         <div className="flex gap-2">
           <button
-            onClick={() => !isEnded ? (isAuthenticated ? onVote(prediction.id, "yes") : toast.error("Sign in to vote")) : undefined}
-            disabled={isEnded}
+            onClick={() => !votingClosed ? (isAuthenticated ? onVote(prediction.id, "yes") : toast.error("Sign in to vote")) : undefined}
+            disabled={votingClosed}
             className={`flex-1 rounded-lg py-2 text-center transition-all duration-200 ${
-              isEnded
+              votingClosed
                 ? "bg-secondary text-muted-foreground cursor-not-allowed opacity-60"
                 : prediction.user_vote === "yes"
                   ? "bg-primary/15 border border-primary/30 text-primary"
                   : "bg-primary/10 text-primary hover:bg-primary/20"
             }`}
           >
-            <span className="text-[10px] font-medium block">{yesLabel}</span>
-            <span className="text-sm font-bold font-['Space_Grotesk'] tabular-nums">{Math.round(yesPct)}¢</span>
+            <span className="text-sm font-bold block py-1">{yesLabel}</span>
           </button>
           <button
-            onClick={() => !isEnded ? (isAuthenticated ? onVote(prediction.id, "no") : toast.error("Sign in to vote")) : undefined}
-            disabled={isEnded}
+            onClick={() => !votingClosed ? (isAuthenticated ? onVote(prediction.id, "no") : toast.error("Sign in to vote")) : undefined}
+            disabled={votingClosed}
             className={`flex-1 rounded-lg py-2 text-center transition-all duration-200 ${
-              isEnded
+              votingClosed
                 ? "bg-secondary text-muted-foreground cursor-not-allowed opacity-60"
                 : prediction.user_vote === "no"
                   ? "bg-destructive/15 border border-destructive/30 text-destructive"
                   : "bg-destructive/10 text-destructive hover:bg-destructive/20"
             }`}
           >
-            <span className="text-[10px] font-medium block">{noLabel}</span>
-            <span className="text-sm font-bold font-['Space_Grotesk'] tabular-nums">{Math.round(noPct)}¢</span>
+            <span className="text-sm font-bold block py-1">{noLabel}</span>
           </button>
         </div>
       </div>

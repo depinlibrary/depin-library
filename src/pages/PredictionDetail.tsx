@@ -27,7 +27,6 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import PriceChart from "@/components/prediction/PriceChart";
-import StakeSection from "@/components/prediction/StakeSection";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import confetti from "canvas-confetti";
@@ -63,6 +62,11 @@ const confidenceLabels: Record<number, { label: string; color: string }> = {
 
 function CreatorCardWithCountdown({ prediction, isEnded, timeLeft }: { prediction: any; isEnded: boolean; timeLeft: string }) {
   const [countdown, setCountdown] = useState("");
+  const lockAt = prediction.voting_lock_at ? new Date(prediction.voting_lock_at).getTime() : null;
+  const endAt = new Date(prediction.end_date).getTime();
+  const target = lockAt && lockAt < endAt ? lockAt : endAt;
+  const isLocked = lockAt != null && Date.now() >= lockAt;
+  const showLockLabel = lockAt != null && Date.now() < lockAt;
 
   useEffect(() => {
     if (isEnded) {
@@ -71,8 +75,7 @@ function CreatorCardWithCountdown({ prediction, isEnded, timeLeft }: { predictio
     }
     const tick = () => {
       const now = Date.now();
-      const end = new Date(prediction.end_date).getTime();
-      const diff = end - now;
+      const diff = target - now;
       if (diff <= 0) { setCountdown("Ended"); return; }
       const d = Math.floor(diff / (1000 * 60 * 60 * 24));
       const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -88,7 +91,7 @@ function CreatorCardWithCountdown({ prediction, isEnded, timeLeft }: { predictio
     tick();
     const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
-  }, [prediction.end_date, isEnded]);
+  }, [target, isEnded]);
 
   return (
     <motion.div
@@ -111,11 +114,17 @@ function CreatorCardWithCountdown({ prediction, isEnded, timeLeft }: { predictio
           {!isEnded && countdown !== "Ended" && (
             <div className="text-right shrink-0">
               <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-medium mb-0.5">
-                Time Left
+                {showLockLabel ? "Voting Closes In" : "Time Left"}
               </p>
-              <p className="text-xs font-bold font-['Space_Grotesk'] tabular-nums text-primary">
+              <p className={`text-xs font-bold font-['Space_Grotesk'] tabular-nums ${showLockLabel ? "text-amber-500" : "text-primary"}`}>
                 {countdown}
               </p>
+            </div>
+          )}
+          {!isEnded && isLocked && (
+            <div className="text-right shrink-0">
+              <p className="text-[9px] uppercase tracking-wider text-amber-500 font-medium mb-0.5">Locked</p>
+              <p className="text-xs font-bold text-amber-500">🔒 Awaiting result</p>
             </div>
           )}
         </div>
@@ -228,6 +237,14 @@ const PredictionDetail = () => {
     if (!user) { toast.error("Sign in to vote"); return; }
     if (!id) return;
     if (prediction?.user_vote) { toast.error("You have already voted on this prediction."); return; }
+    if (prediction) {
+      const now = Date.now();
+      if (new Date(prediction.end_date).getTime() <= now) { toast.error("This prediction has ended."); return; }
+      if (prediction.voting_lock_at && new Date(prediction.voting_lock_at).getTime() <= now) {
+        toast.error("Voting is closed. Predictions are locked until results are revealed.");
+        return;
+      }
+    }
     votePrediction.mutate(
       { predictionId: id, vote, confidenceLevel: confidence },
       {
@@ -303,6 +320,8 @@ const PredictionDetail = () => {
   const totalVotes = prediction.total_votes_yes + prediction.total_votes_no;
   const { yesPct, noPct } = getWeightedChance(prediction);
   const isEnded = new Date(prediction.end_date) <= new Date();
+  const isLocked = !!prediction.voting_lock_at && new Date(prediction.voting_lock_at) <= new Date();
+  const votingClosed = isEnded || isLocked;
   const timeLeft = getTimeRemaining(prediction.end_date);
   const confInfo = confidenceLabels[confidence] || confidenceLabels[3];
   const isPriceMarket = predictionDimension === "token_price" || predictionDimension === "market_cap";
@@ -384,7 +403,11 @@ const PredictionDetail = () => {
                 <div className="flex gap-3">
                   <button
                     onClick={() => handleVote("yes")}
+                    disabled={votingClosed}
                     className={`flex-1 rounded-xl border-2 px-4 py-4 text-center transition-all duration-200 ${
+                      votingClosed
+                        ? "border-border bg-secondary/40 opacity-60 cursor-not-allowed"
+                        :
                       prediction?.user_vote === "yes"
                         ? "border-primary bg-primary/15"
                         : "border-primary/25 bg-primary/5 hover:bg-primary/10 hover:border-primary/40"
@@ -392,13 +415,17 @@ const PredictionDetail = () => {
                   >
                     <span className="block text-xs font-semibold text-primary mb-1">{yesLabel}</span>
                     <span className="block text-2xl font-bold font-['Space_Grotesk'] tabular-nums text-foreground">
-                      {Math.round(yesPct)}¢
+                      {yesPct.toFixed(1)}%
                     </span>
-                    <span className="block text-[10px] text-muted-foreground mt-0.5">{yesPct.toFixed(1)}% chance</span>
+                    <span className="block text-[10px] text-muted-foreground mt-0.5">chance</span>
                   </button>
                   <button
                     onClick={() => handleVote("no")}
+                    disabled={votingClosed}
                     className={`flex-1 rounded-xl border-2 px-4 py-4 text-center transition-all duration-200 ${
+                      votingClosed
+                        ? "border-border bg-secondary/40 opacity-60 cursor-not-allowed"
+                        :
                       prediction?.user_vote === "no"
                         ? "border-destructive bg-destructive/15"
                         : "border-destructive/25 bg-destructive/5 hover:bg-destructive/10 hover:border-destructive/40"
@@ -406,9 +433,9 @@ const PredictionDetail = () => {
                   >
                     <span className="block text-xs font-semibold text-destructive mb-1">{noLabel}</span>
                     <span className="block text-2xl font-bold font-['Space_Grotesk'] tabular-nums text-foreground">
-                      {Math.round(noPct)}¢
+                      {noPct.toFixed(1)}%
                     </span>
-                    <span className="block text-[10px] text-muted-foreground mt-0.5">{noPct.toFixed(1)}% chance</span>
+                    <span className="block text-[10px] text-muted-foreground mt-0.5">chance</span>
                   </button>
                 </div>
                 {prediction?.user_vote && (
@@ -675,7 +702,7 @@ const PredictionDetail = () => {
                   <span className="text-[10px] text-muted-foreground">{totalVotes} voters</span>
                 </div>
                 <div className="p-5">
-                  {!isEnded ? (
+                  {!votingClosed ? (
                     <>
                       <div className="mb-4 rounded-xl bg-secondary/30 border border-border/50 px-4 py-3.5">
                         <div className="flex items-center justify-between mb-3">
@@ -703,8 +730,9 @@ const PredictionDetail = () => {
                               : "border-primary/25 bg-primary/5 hover:bg-primary/10 hover:border-primary/40"
                           }`}
                         >
-                          <span className="block text-[10px] font-semibold text-primary">{prediction.user_vote === "yes" ? `Voted ${yesLabel} ✓` : `Buy ${yesLabel}`}</span>
-                          <span className="block text-lg font-bold font-['Space_Grotesk'] tabular-nums text-foreground">{Math.round(yesPct)}¢</span>
+                          <span className="block text-sm font-bold text-primary py-1">
+                            {prediction.user_vote === "yes" ? `Voted ${yesLabel} ✓` : yesLabel}
+                          </span>
                         </button>
                         <button
                           onClick={() => handleVote("no")}
@@ -714,8 +742,9 @@ const PredictionDetail = () => {
                               : "border-destructive/25 bg-destructive/5 hover:bg-destructive/10 hover:border-destructive/40"
                           }`}
                         >
-                          <span className="block text-[10px] font-semibold text-destructive">{prediction.user_vote === "no" ? `Voted ${noLabel} ✓` : `Buy ${noLabel}`}</span>
-                          <span className="block text-lg font-bold font-['Space_Grotesk'] tabular-nums text-foreground">{Math.round(noPct)}¢</span>
+                          <span className="block text-sm font-bold text-destructive py-1">
+                            {prediction.user_vote === "no" ? `Voted ${noLabel} ✓` : noLabel}
+                          </span>
                         </button>
                       </div>
                       {prediction.user_vote && (
@@ -725,25 +754,22 @@ const PredictionDetail = () => {
                         </motion.p>
                       )}
                     </>
+                  ) : isLocked && !isEnded ? (
+                    <div className="rounded-xl bg-amber-500/10 border border-amber-500/20 px-4 py-3.5 text-center">
+                      <span className="text-xs font-medium text-amber-600 dark:text-amber-400">
+                        🔒 Voting closed · Awaiting result
+                      </span>
+                    </div>
                   ) : (
                     <div className="rounded-xl bg-muted/50 border border-border px-4 py-3.5 text-center">
                       <span className="text-xs font-medium text-muted-foreground">
-                        Voting has ended · Final: <span className="text-foreground font-semibold">{yesPct >= 50 ? yesLabel : noLabel}</span> ({Math.round(yesPct)}¢)
+                        Voting has ended · Final: <span className="text-foreground font-semibold">{yesPct >= 50 ? yesLabel : noLabel}</span> ({yesPct.toFixed(1)}%)
                       </span>
                     </div>
                   )}
                 </div>
               </motion.div>
             )}
-
-            {/* USDC Staking */}
-            <StakeSection
-              predictionId={prediction.id}
-              isEnded={isEnded}
-              userVote={(prediction.user_vote === "yes" || prediction.user_vote === "no") ? prediction.user_vote : null}
-              yesLabel={yesLabel}
-              noLabel={noLabel}
-            />
 
             {/* Prediction Analysis */}
             <PredictionAnalysis predictionId={prediction.id} isEnded={isEnded} totalVotesYes={prediction.total_votes_yes} totalVotesNo={prediction.total_votes_no} predictionTarget={prediction.prediction_target} predictionDirection={prediction.prediction_direction} startPrice={prediction.start_price} predictionDimension={predictionDimension} projectAId={prediction.project_a_id} projectBId={prediction.project_b_id} projectAName={prediction.project_a?.name} projectBName={prediction.project_b?.name} isCreator={!!user && user.id === prediction.creator_user_id} />

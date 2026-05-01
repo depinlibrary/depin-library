@@ -166,6 +166,10 @@ export default function PredictionAnalysis({
       if (dim === "token_price" && liveMarketData?.price_usd != null) return Number(liveMarketData.price_usd);
       if (dim === "market_cap" && liveMarketData?.market_cap_usd != null) return Number(liveMarketData.market_cap_usd);
     }
+    // Fallback for "start": use the start_price stored on the prediction itself
+    if (type === "start" && startPrice != null && (dim === predictionDimension)) {
+      return Number(startPrice);
+    }
     return null;
   };
 

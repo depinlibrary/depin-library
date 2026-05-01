@@ -211,8 +211,7 @@ export default function VoteSection({ prediction, yesPct, noPct, totalVotes, isE
                       : "border-primary/25 bg-primary/5 hover:bg-primary/10 hover:border-primary/40"
                   }`}
                 >
-                  <span className="block text-[10px] font-semibold text-primary">Buy Yes</span>
-                  <span className="block text-lg font-bold font-['Space_Grotesk'] tabular-nums text-foreground">{Math.round(yesPct)}¢</span>
+                  <span className="block text-sm font-bold text-primary py-1">Yes</span>
                 </button>
                 <button
                   onClick={() => handleVoteClick("no")}
@@ -222,8 +221,7 @@ export default function VoteSection({ prediction, yesPct, noPct, totalVotes, isE
                       : "border-destructive/25 bg-destructive/5 hover:bg-destructive/10 hover:border-destructive/40"
                   }`}
                 >
-                  <span className="block text-[10px] font-semibold text-destructive">Buy No</span>
-                  <span className="block text-lg font-bold font-['Space_Grotesk'] tabular-nums text-foreground">{Math.round(noPct)}¢</span>
+                  <span className="block text-sm font-bold text-destructive py-1">No</span>
                 </button>
               </div>
             </div>

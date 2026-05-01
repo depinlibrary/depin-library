@@ -45,6 +45,7 @@ export type Prediction = {
   project_b_id: string | null;
   creator_user_id: string;
   end_date: string;
+  voting_lock_at: string | null;
   status: string;
   total_votes_yes: number;
   total_votes_no: number;
@@ -215,6 +216,7 @@ export function useCreatePrediction() {
       predictionTarget,
       predictionDirection,
       startPrice,
+      votingLockAt,
     }: {
       title: string;
       description: string;
@@ -225,6 +227,7 @@ export function useCreatePrediction() {
       predictionTarget?: number;
       predictionDirection?: string;
       startPrice?: number;
+      votingLockAt?: string | null;
     }) => {
       if (!user) throw new Error("Must be logged in");
 
@@ -270,6 +273,7 @@ export function useCreatePrediction() {
         prediction_target: predictionTarget ?? null,
         prediction_direction: predictionDirection ?? null,
         start_price: startPrice ?? null,
+        voting_lock_at: votingLockAt ?? null,
       }).select("id").single();
       if (error) throw error;
 
@@ -308,6 +312,22 @@ export function useVotePrediction() {
   return useMutation({
     mutationFn: async ({ predictionId, vote, confidenceLevel }: { predictionId: string; vote: "yes" | "no"; confidenceLevel?: number }) => {
       if (!user) throw new Error("Must be logged in");
+
+      // Check voting window — locked or ended?
+      const { data: forecastRow } = await supabase
+        .from("forecasts")
+        .select("voting_lock_at, end_date")
+        .eq("id", predictionId)
+        .maybeSingle();
+      if (forecastRow) {
+        const now = Date.now();
+        if (new Date(forecastRow.end_date).getTime() <= now) {
+          throw new Error("Voting has ended for this prediction.");
+        }
+        if (forecastRow.voting_lock_at && new Date(forecastRow.voting_lock_at).getTime() <= now) {
+          throw new Error("Voting is closed. Predictions are locked until results are revealed.");
+        }
+      }
 
       // Check if user already voted — votes are permanent
       const { data: existingVote } = await supabase
