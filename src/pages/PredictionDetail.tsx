@@ -310,6 +310,8 @@ const PredictionDetail = () => {
   const totalVotes = prediction.total_votes_yes + prediction.total_votes_no;
   const { yesPct, noPct } = getWeightedChance(prediction);
   const isEnded = new Date(prediction.end_date) <= new Date();
+  const isLocked = !!prediction.voting_lock_at && new Date(prediction.voting_lock_at) <= new Date();
+  const votingClosed = isEnded || isLocked;
   const timeLeft = getTimeRemaining(prediction.end_date);
   const confInfo = confidenceLabels[confidence] || confidenceLabels[3];
   const isPriceMarket = predictionDimension === "token_price" || predictionDimension === "market_cap";
