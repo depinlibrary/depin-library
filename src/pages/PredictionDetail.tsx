@@ -62,6 +62,11 @@ const confidenceLabels: Record<number, { label: string; color: string }> = {
 
 function CreatorCardWithCountdown({ prediction, isEnded, timeLeft }: { prediction: any; isEnded: boolean; timeLeft: string }) {
   const [countdown, setCountdown] = useState("");
+  const lockAt = prediction.voting_lock_at ? new Date(prediction.voting_lock_at).getTime() : null;
+  const endAt = new Date(prediction.end_date).getTime();
+  const target = lockAt && lockAt < endAt ? lockAt : endAt;
+  const isLocked = lockAt != null && Date.now() >= lockAt;
+  const showLockLabel = lockAt != null && Date.now() < lockAt;
 
   useEffect(() => {
     if (isEnded) {
@@ -70,8 +75,7 @@ function CreatorCardWithCountdown({ prediction, isEnded, timeLeft }: { predictio
     }
     const tick = () => {
       const now = Date.now();
-      const end = new Date(prediction.end_date).getTime();
-      const diff = end - now;
+      const diff = target - now;
       if (diff <= 0) { setCountdown("Ended"); return; }
       const d = Math.floor(diff / (1000 * 60 * 60 * 24));
       const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -87,7 +91,7 @@ function CreatorCardWithCountdown({ prediction, isEnded, timeLeft }: { predictio
     tick();
     const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
-  }, [prediction.end_date, isEnded]);
+  }, [target, isEnded]);
 
   return (
     <motion.div
@@ -110,11 +114,17 @@ function CreatorCardWithCountdown({ prediction, isEnded, timeLeft }: { predictio
           {!isEnded && countdown !== "Ended" && (
             <div className="text-right shrink-0">
               <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-medium mb-0.5">
-                Time Left
+                {showLockLabel ? "Voting Closes In" : "Time Left"}
               </p>
-              <p className="text-xs font-bold font-['Space_Grotesk'] tabular-nums text-primary">
+              <p className={`text-xs font-bold font-['Space_Grotesk'] tabular-nums ${showLockLabel ? "text-amber-500" : "text-primary"}`}>
                 {countdown}
               </p>
+            </div>
+          )}
+          {!isEnded && isLocked && (
+            <div className="text-right shrink-0">
+              <p className="text-[9px] uppercase tracking-wider text-amber-500 font-medium mb-0.5">Locked</p>
+              <p className="text-xs font-bold text-amber-500">🔒 Awaiting result</p>
             </div>
           )}
         </div>
