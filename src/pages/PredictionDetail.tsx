@@ -692,7 +692,7 @@ const PredictionDetail = () => {
                   <span className="text-[10px] text-muted-foreground">{totalVotes} voters</span>
                 </div>
                 <div className="p-5">
-                  {!isEnded ? (
+                  {!votingClosed ? (
                     <>
                       <div className="mb-4 rounded-xl bg-secondary/30 border border-border/50 px-4 py-3.5">
                         <div className="flex items-center justify-between mb-3">
@@ -720,8 +720,9 @@ const PredictionDetail = () => {
                               : "border-primary/25 bg-primary/5 hover:bg-primary/10 hover:border-primary/40"
                           }`}
                         >
-                          <span className="block text-[10px] font-semibold text-primary">{prediction.user_vote === "yes" ? `Voted ${yesLabel} ✓` : `Buy ${yesLabel}`}</span>
-                          <span className="block text-lg font-bold font-['Space_Grotesk'] tabular-nums text-foreground">{Math.round(yesPct)}¢</span>
+                          <span className="block text-sm font-bold text-primary py-1">
+                            {prediction.user_vote === "yes" ? `Voted ${yesLabel} ✓` : yesLabel}
+                          </span>
                         </button>
                         <button
                           onClick={() => handleVote("no")}
@@ -731,8 +732,9 @@ const PredictionDetail = () => {
                               : "border-destructive/25 bg-destructive/5 hover:bg-destructive/10 hover:border-destructive/40"
                           }`}
                         >
-                          <span className="block text-[10px] font-semibold text-destructive">{prediction.user_vote === "no" ? `Voted ${noLabel} ✓` : `Buy ${noLabel}`}</span>
-                          <span className="block text-lg font-bold font-['Space_Grotesk'] tabular-nums text-foreground">{Math.round(noPct)}¢</span>
+                          <span className="block text-sm font-bold text-destructive py-1">
+                            {prediction.user_vote === "no" ? `Voted ${noLabel} ✓` : noLabel}
+                          </span>
                         </button>
                       </div>
                       {prediction.user_vote && (
@@ -742,10 +744,16 @@ const PredictionDetail = () => {
                         </motion.p>
                       )}
                     </>
+                  ) : isLocked && !isEnded ? (
+                    <div className="rounded-xl bg-amber-500/10 border border-amber-500/20 px-4 py-3.5 text-center">
+                      <span className="text-xs font-medium text-amber-600 dark:text-amber-400">
+                        🔒 Voting closed · Awaiting result
+                      </span>
+                    </div>
                   ) : (
                     <div className="rounded-xl bg-muted/50 border border-border px-4 py-3.5 text-center">
                       <span className="text-xs font-medium text-muted-foreground">
-                        Voting has ended · Final: <span className="text-foreground font-semibold">{yesPct >= 50 ? yesLabel : noLabel}</span> ({Math.round(yesPct)}¢)
+                        Voting has ended · Final: <span className="text-foreground font-semibold">{yesPct >= 50 ? yesLabel : noLabel}</span> ({yesPct.toFixed(1)}%)
                       </span>
                     </div>
                   )}
