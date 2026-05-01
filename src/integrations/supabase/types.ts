@@ -386,6 +386,7 @@ export type Database = {
           title: string
           total_votes_no: number
           total_votes_yes: number
+          voting_lock_at: string | null
           weighted_votes_no: number
           weighted_votes_yes: number
         }
@@ -406,6 +407,7 @@ export type Database = {
           title: string
           total_votes_no?: number
           total_votes_yes?: number
+          voting_lock_at?: string | null
           weighted_votes_no?: number
           weighted_votes_yes?: number
         }
@@ -426,6 +428,7 @@ export type Database = {
           title?: string
           total_votes_no?: number
           total_votes_yes?: number
+          voting_lock_at?: string | null
           weighted_votes_no?: number
           weighted_votes_yes?: number
         }
