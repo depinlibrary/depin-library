@@ -227,8 +227,14 @@ const PredictionDetail = () => {
     if (!user) { toast.error("Sign in to vote"); return; }
     if (!id) return;
     if (prediction?.user_vote) { toast.error("You have already voted on this prediction."); return; }
-    if (isLocked) { toast.error("Voting is closed for this prediction."); return; }
-    if (isEnded) { toast.error("This prediction has ended."); return; }
+    if (prediction) {
+      const now = Date.now();
+      if (new Date(prediction.end_date).getTime() <= now) { toast.error("This prediction has ended."); return; }
+      if (prediction.voting_lock_at && new Date(prediction.voting_lock_at).getTime() <= now) {
+        toast.error("Voting is closed. Predictions are locked until results are revealed.");
+        return;
+      }
+    }
     votePrediction.mutate(
       { predictionId: id, vote, confidenceLevel: confidence },
       {
