@@ -150,14 +150,12 @@ const ProjectPredictions = ({ projectId, projectName }: ProjectPredictionsProps)
                 <span className={`flex-1 rounded-lg py-2 text-center ${
                   isEnded ? "bg-secondary text-muted-foreground opacity-60" : "bg-primary/10 text-primary"
                 }`}>
-                  <span className="text-[10px] font-medium block">{yesLabel}</span>
-                  <span className="text-sm font-bold font-['Space_Grotesk'] tabular-nums">{Math.round(yesPct)}¢</span>
+                  <span className="text-sm font-bold block py-1">{yesLabel}</span>
                 </span>
                 <span className={`flex-1 rounded-lg py-2 text-center ${
                   isEnded ? "bg-secondary text-muted-foreground opacity-60" : "bg-destructive/10 text-destructive"
                 }`}>
-                  <span className="text-[10px] font-medium block">{noLabel}</span>
-                  <span className="text-sm font-bold font-['Space_Grotesk'] tabular-nums">{Math.round(noPct)}¢</span>
+                  <span className="text-sm font-bold block py-1">{noLabel}</span>
                 </span>
               </div>
             </div>
