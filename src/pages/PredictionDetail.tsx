@@ -27,7 +27,6 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import PriceChart from "@/components/prediction/PriceChart";
-import StakeSection from "@/components/prediction/StakeSection";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import confetti from "canvas-confetti";
@@ -228,6 +227,8 @@ const PredictionDetail = () => {
     if (!user) { toast.error("Sign in to vote"); return; }
     if (!id) return;
     if (prediction?.user_vote) { toast.error("You have already voted on this prediction."); return; }
+    if (isLocked) { toast.error("Voting is closed for this prediction."); return; }
+    if (isEnded) { toast.error("This prediction has ended."); return; }
     votePrediction.mutate(
       { predictionId: id, vote, confidenceLevel: confidence },
       {
