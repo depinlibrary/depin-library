@@ -11,26 +11,9 @@ import type { Project } from "@/hooks/useProjects";
 import type { TokenMarketData } from "@/hooks/useTokenMarketData";
 import { useEffect, useState, useRef } from "react";
 
-interface TopPrediction {
-  id: string;
-  title: string;
-  total_votes_yes: number;
-  total_votes_no: number;
-  status: string;
-  end_date: string;
-  project_a_logo_url?: string | null;
-  project_a_logo_emoji?: string;
-  project_a_name?: string;
-  project_b_logo_url?: string | null;
-  project_b_logo_emoji?: string;
-  project_b_name?: string | null;
-  dimension?: string;
-}
-
 interface BillboardHeroProps {
   projects: Project[];
   marketData: Record<string, TokenMarketData>;
-  topPredictions: TopPrediction[];
   trendingProjects: any[];
   totalCategories: number;
   totalBlockchains: number;
@@ -109,7 +92,6 @@ const MiniSparkline = ({ data, positive }: {data: number[] | null;positive: bool
 const BillboardHero = ({
   projects,
   marketData,
-  topPredictions,
   trendingProjects,
   totalCategories,
   totalBlockchains,
@@ -416,105 +398,6 @@ const BillboardHero = ({
               </motion.div>
            </motion.div>
 
-           {/* Top Predictions row */}
-           <motion.div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 auto-rows-min relative">
-             {/* ── Top Predictions — Matching PredictionCard design ── */}
-             {topPredictions.length > 0 &&
-            <motion.div variants={fadeUp} className="col-span-1 sm:col-span-2 lg:col-span-4 rounded-lg border border-border bg-card/40 backdrop-blur-md p-4 sm:p-5">
-                 <div className="flex items-center gap-2 mb-4">
-                   <span className="text-sm font-semibold text-foreground">Top Predictions</span>
-                   <Link to="/predictions" className="ml-auto text-xs font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
-                     View all <ArrowRight className="h-3.5 w-3.5" />
-                   </Link>
-                 </div>
-                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                   {topPredictions.slice(0, 4).map((f) => {
-                  const totalVotes = f.total_votes_yes + f.total_votes_no;
-                  const yesPercent = totalVotes > 0 ? (() => { const wy = Number((f as any).weighted_votes_yes) || 0; const wn = Number((f as any).weighted_votes_no) || 0; const wt = wy + wn; return wt > 0 ? (wy / wt) * 100 : (f.total_votes_yes / totalVotes) * 100; })() : 50;
-                   const isEnded = f.status === "ended" || new Date(f.end_date) <= new Date();
-                   const isPriceMarket = f.dimension === "token_price" || f.dimension === "market_cap";
-                   const yesLabel = isPriceMarket ? "Long" : "Yes";
-                   const noLabel = isPriceMarket ? "Short" : "No";
-                   const timeLeft = (() => {
-                     const diff = new Date(f.end_date).getTime() - Date.now();
-                     if (diff <= 0) return "Ended";
-                     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                     if (days > 30) return `${Math.floor(days / 30)}mo left`;
-                     if (days > 0) return `${days}d left`;
-                     const hours = Math.floor(diff / (1000 * 60 * 60));
-                     return `${hours}h left`;
-                   })();
-                   return (
-                     <Link
-                       key={f.id}
-                       to={`/predictions/${f.id}`}
-                       className="group relative flex flex-col rounded-xl border border-border/50 bg-secondary/20 overflow-hidden transition-all hover:bg-secondary/40 hover:border-primary/20 hover:shadow-md hover:shadow-primary/5 h-full">
-                       <div className="p-4 flex-1 flex flex-col">
-                         {/* Header: logos + time */}
-                         <div className="flex items-center justify-between mb-3">
-                           <div className="flex items-center gap-2">
-                             <div className="flex items-center -space-x-1.5">
-                               {f.project_a_logo_url ? (
-                                 <img src={f.project_a_logo_url} alt={f.project_a_name} className="w-7 h-7 rounded-lg object-contain border border-card bg-secondary relative z-10" />
-                               ) : (
-                                 <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs border border-card bg-secondary relative z-10">{f.project_a_logo_emoji || "⬡"}</span>
-                               )}
-                               {f.project_b_name && (
-                                 f.project_b_logo_url ? (
-                                   <img src={f.project_b_logo_url} alt={f.project_b_name} className="w-7 h-7 rounded-lg object-contain border border-card bg-secondary relative z-0" />
-                                 ) : (
-                                   <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs border border-card bg-secondary relative z-0">{f.project_b_logo_emoji || "⬡"}</span>
-                                 )
-                               )}
-                             </div>
-                             <div className="flex items-center gap-1">
-                               <span className="text-[11px] font-medium text-muted-foreground">{f.project_a_name}</span>
-                               {f.project_b_name && (
-                                 <>
-                                   <span className="text-muted-foreground/40 text-[9px]">vs</span>
-                                   <span className="text-[11px] font-medium text-muted-foreground">{f.project_b_name}</span>
-                                 </>
-                               )}
-                             </div>
-                           </div>
-                           <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${isEnded ? 'bg-destructive/10 text-destructive' : 'bg-green-500/10 text-green-600 dark:text-green-400'}`}>
-                             {timeLeft}
-                           </span>
-                         </div>
-
-                         {/* Title */}
-                         <h3 className="text-[13px] font-semibold text-foreground leading-snug line-clamp-2 group-hover:underline transition-all duration-200 mb-auto">
-                           {f.title}
-                         </h3>
-
-                         {/* Percentage as cents + votes */}
-                         <div className="mt-4 flex items-end justify-between">
-                           <span className="text-lg font-bold text-foreground tabular-nums font-['Space_Grotesk']">{Math.round(yesPercent)}¢<span className="text-xs font-normal text-muted-foreground ml-1">{yesLabel}</span></span>
-                           <span className="text-[10px] text-muted-foreground">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</span>
-                         </div>
-                       </div>
-
-                       {/* Polymarket cent-based buttons */}
-                       <div className="px-4 pb-4">
-                         <div className="flex gap-2">
-                           <span className={`flex-1 rounded-lg py-2 text-center ${
-                             isEnded ? "bg-secondary text-muted-foreground opacity-60" : "bg-primary/10 text-primary"
-                           }`}>
-                             <span className="text-sm font-bold block py-1">{yesLabel}</span>
-                           </span>
-                           <span className={`flex-1 rounded-lg py-2 text-center ${
-                             isEnded ? "bg-secondary text-muted-foreground opacity-60" : "bg-destructive/10 text-destructive"
-                           }`}>
-                             <span className="text-sm font-bold block py-1">{noLabel}</span>
-                           </span>
-                         </div>
-                       </div>
-                      </Link>);
-                 })}
-                  </div>
-               </motion.div>
-            }
-          </motion.div>
         </motion.div>
       </div>
 
