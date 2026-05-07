@@ -14,7 +14,6 @@ import {
   useDeleteNotification,
   Notification,
 } from "@/hooks/useNotifications";
-import NotificationPreferencesDialog from "@/components/NotificationPreferencesDialog";
 import { NotificationGroup } from "@/components/notifications/NotificationGroup";
 import { NotificationFilters } from "@/components/notifications/NotificationFilters";
 import { NotificationEmpty } from "@/components/notifications/NotificationEmpty";
@@ -121,7 +120,6 @@ const Notifications = () => {
                 <CheckCheck className="h-3.5 w-3.5" aria-hidden="true" /> Mark all read
               </Button>
             )}
-            <NotificationPreferencesDialog />
           </div>
         </div>
 
