@@ -5,24 +5,14 @@ import { useAuth } from "@/contexts/AuthContext";
 export type NotificationPreferences = {
   id: string;
   user_id: string;
-  forecast_comment_reply: boolean;
-  forecast_comment_like: boolean;
-  forecast_new_comment: boolean;
   review_like: boolean;
-  forecast_vote: boolean;
-  forecast_result: boolean;
   price_alert: boolean;
   created_at: string;
   updated_at: string;
 };
 
 const DEFAULT_PREFS = {
-  forecast_comment_reply: true,
-  forecast_comment_like: true,
-  forecast_new_comment: true,
   review_like: true,
-  forecast_vote: true,
-  forecast_result: true,
   price_alert: true,
 };
 
@@ -65,7 +55,7 @@ export function useUpdateNotificationPreferences() {
 
   return useMutation({
     mutationFn: async (updates: Partial<Pick<NotificationPreferences,
-      "forecast_comment_reply" | "forecast_comment_like" | "forecast_new_comment" | "review_like" | "price_alert"
+      "review_like" | "price_alert"
     >>) => {
       if (!user) throw new Error("Not authenticated");
       const { error } = await supabase

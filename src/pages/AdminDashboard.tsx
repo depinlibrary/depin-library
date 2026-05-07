@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   Check, X, Clock, ExternalLink, Pencil, Save, Trash2, Upload, ImageIcon,
-  LayoutDashboard, FileText, LineChart, Activity, Star, Shield, Layers,
+  LayoutDashboard, FileText, Star, Shield, Layers,
   Users, Server, Sun, Moon, User, LogOut, Camera, Home, Compass, BarChart3,
   GitCompare,
 } from "lucide-react";
@@ -26,15 +26,12 @@ import { toast } from "sonner";
 import { useNavigate, Link } from "react-router-dom";
 import { ManageCategories, ManageBlockchains } from "@/components/admin/ManageCategories";
 import UsersList from "@/components/admin/UsersList";
-import DeletionRequests from "@/components/admin/DeletionRequests";
 import ManageSpotlight from "@/components/admin/ManageSpotlight";
-import ManagePredictions from "@/components/admin/ManagePredictions";
-import ManageHourlyPredictions from "@/components/admin/ManageHourlyPredictions";
 import ManageInfrastructure from "@/components/admin/ManageInfrastructure";
 import logoImg from "@/assets/logo.png";
 import { useDynamicOptions } from "@/hooks/useDynamicOptions";
 
-type TabKey = "projects" | "submissions" | "categories" | "users" | "deletion-requests" | "spotlight" | "predictions" | "hourly" | "infrastructure";
+type TabKey = "projects" | "submissions" | "categories" | "users" | "spotlight" | "infrastructure";
 
 type Submission = {
   id: string; name: string; tagline: string; description: string; category: string;
@@ -52,11 +49,8 @@ type Project = {
 const sidebarTabs: { key: TabKey; label: string; icon: any }[] = [
   { key: "projects", label: "All Projects", icon: LayoutDashboard },
   { key: "submissions", label: "Submissions", icon: FileText },
-  { key: "predictions", label: "Predictions", icon: LineChart },
-  { key: "hourly", label: "Hourly Predictions", icon: Activity },
   { key: "spotlight", label: "Spotlight", icon: Star },
   { key: "infrastructure", label: "Infrastructure", icon: Server },
-  { key: "deletion-requests", label: "Deletion Requests", icon: Trash2 },
   { key: "categories", label: "Categories", icon: Layers },
   { key: "users", label: "Users", icon: Users },
 ];
@@ -586,27 +580,10 @@ const AdminDashboard = () => {
 
                 {tab === "users" && <UsersList />}
                 {tab === "infrastructure" && <ManageInfrastructure />}
-                {tab === "deletion-requests" && (
-                  <div className="rounded-xl border border-border bg-card p-5">
-                    <h3 className="mb-4 text-lg font-semibold text-foreground">Prediction Deletion Requests</h3>
-                    <DeletionRequests />
-                  </div>
-                )}
-                {tab === "predictions" && (
-                  <div className="rounded-xl border border-border bg-card p-5">
-                    <h3 className="mb-4 text-lg font-semibold text-foreground">Manage Predictions</h3>
-                    <ManagePredictions />
-                  </div>
-                )}
                 {tab === "spotlight" && (
                   <div className="rounded-xl border border-border bg-card p-5">
                     <h3 className="mb-4 text-lg font-semibold text-foreground">Manage Spotlight Projects</h3>
                     <ManageSpotlight />
-                  </div>
-                )}
-                {tab === "hourly" && (
-                  <div className="rounded-xl border border-border bg-card p-5">
-                    <ManageHourlyPredictions />
                   </div>
                 )}
               </motion.div>

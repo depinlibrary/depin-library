@@ -8,9 +8,8 @@ import {
   BarChart3,
   GitCompare,
   Briefcase,
-  TrendingUp,
-  Clock } from
-"lucide-react";
+  BrainCircuit,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -19,7 +18,6 @@ import BillboardHero from "@/components/BillboardHero";
 import { useProjects } from "@/hooks/useProjects";
 import { useAllTokenMarketData } from "@/hooks/useTokenMarketData";
 import { useTrendingProjects } from "@/hooks/useSentiment";
-import { usePredictions } from "@/hooks/usePredictions";
 import { useSpotlightProjects } from "@/hooks/useSpotlightProjects";
 
 
@@ -33,59 +31,10 @@ const fadeUp = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" as const } }
 };
 
-function getTimeLeft(endDate: string) {
-  const diff = new Date(endDate).getTime() - Date.now();
-  if (diff <= 0) return null;
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const hours = Math.floor(diff % (1000 * 60 * 60 * 24) / (1000 * 60 * 60));
-  const minutes = Math.floor(diff % (1000 * 60 * 60) / (1000 * 60));
-  if (days > 0) return `${days}d ${hours}h`;
-  if (hours > 0) return `${hours}h ${minutes}m`;
-  return `${minutes}m`;
-}
-
 const Overview = () => {
   const { data: projects = [] } = useProjects();
   const { data: marketData = {}, isRefetching } = useAllTokenMarketData(30 * 1000);
-  const { data: predictionData } = usePredictions("votes", 1, 4);
-  const { data: endingSoonData } = usePredictions("ending_soon", 1, 4, undefined, undefined, "active");
-  const topPredictionsRaw = predictionData?.predictions || [];
-  const endingSoon = endingSoonData?.predictions || [];
-  const allPredictionIds = [...topPredictionsRaw, ...endingSoon].map((f) => f.id);
   const { data: trendingProjects = [] } = useTrendingProjects(5);
-
-  // Fetch dimensions for all predictions (top + ending soon)
-  const { data: predictionDimensionsMap = {} } = useQuery({
-    queryKey: ["prediction-dimensions-overview", allPredictionIds],
-    enabled: allPredictionIds.length > 0,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("forecast_targets")
-        .select("forecast_id, dimension")
-        .in("forecast_id", allPredictionIds);
-      if (error) throw error;
-      const map: Record<string, string> = {};
-      (data || []).forEach((d: any) => { map[d.forecast_id] = d.dimension; });
-      return map;
-    },
-  });
-
-  const topPredictions = topPredictionsRaw.map((f) => ({
-    id: f.id,
-    title: f.title,
-    total_votes_yes: f.total_votes_yes,
-    total_votes_no: f.total_votes_no,
-    status: f.status || "active",
-    end_date: f.end_date,
-    project_a_logo_url: f.project_a_logo_url,
-    project_a_logo_emoji: f.project_a_logo_emoji,
-    project_a_name: f.project_a_name,
-    project_b_logo_url: f.project_b_logo_url,
-    project_b_logo_emoji: f.project_b_logo_emoji,
-    project_b_name: f.project_b_name,
-    dimension: (predictionDimensionsMap as Record<string, string>)[f.id] || undefined,
-  }));
-  const endingSoonIds = endingSoon.map((f) => f.id);
   const { data: spotlightEntries = [] } = useSpotlightProjects();
 
   const spotlightProjects = spotlightEntries.
@@ -96,7 +45,7 @@ const Overview = () => {
   { title: "Explore", description: "Browse the full DePIN project directory.", icon: Layers, to: "/explore", accent: "primary" },
   { title: "Market", description: "Track token prices and market trends.", icon: BarChart3, to: "/market", accent: "primary" },
   { title: "Compare", description: "AI-powered side-by-side comparison.", icon: GitCompare, to: "/compare", accent: "accent" },
-  { title: "Predictions", description: "Community predictions and voting.", icon: TrendingUp, to: "/predictions", accent: "accent" },
+  { title: "AI Analysis", description: "Deep AI analysis of any DePIN project.", icon: BrainCircuit, to: "/ai-analysis", accent: "accent" },
   { title: "Portfolio", description: "Track your DePIN holdings.", icon: Briefcase, to: "/portfolio", accent: "primary" }];
 
 
@@ -126,7 +75,6 @@ const Overview = () => {
         projects={projects}
         isRefetching={isRefetching}
         marketData={marketData}
-        topPredictions={topPredictions}
         trendingProjects={trendingProjects}
         totalCategories={totalCategories}
         totalBlockchains={totalBlockchains} />
@@ -359,101 +307,6 @@ const Overview = () => {
                     </Link>
                   </motion.div>);
 
-            })}
-            </div>
-          </motion.div>
-        </section>
-      }
-
-      {endingSoon.length > 0 &&
-      <section className="container mx-auto px-4 pb-16">
-          <motion.div initial="hidden" animate="visible" variants={stagger}>
-            <motion.div variants={fadeUp} className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <h2 className="text-xl font-semibold text-foreground font-['Space_Grotesk']">Predictions Ending Soon</h2>
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-destructive" />
-                </span>
-              </div>
-              <Link to="/predictions" className="text-xs font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
-                All predictions <ArrowRight className="h-3 w-3" />
-              </Link>
-            </motion.div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {endingSoon.map((prediction, i) => {
-              const dimension = (predictionDimensionsMap as Record<string, string>)[prediction.id];
-              const isPriceMarket = dimension === "token_price" || dimension === "market_cap";
-              const isSentimentDual = dimension === "community_sentiment" && !!prediction.project_b_name;
-              const yesLabel = isPriceMarket ? "Long" : isSentimentDual ? (prediction.project_a_name || "Yes") : "Yes";
-              const noLabel = isPriceMarket ? "Short" : isSentimentDual ? (prediction.project_b_name || "No") : "No";
-              const totalVotes = prediction.total_votes_yes + prediction.total_votes_no;
-              const yesPct = (() => { const wy = Number((prediction as any).weighted_votes_yes) || 0; const wn = Number((prediction as any).weighted_votes_no) || 0; const wt = wy + wn; return wt > 0 ? (wy / wt) * 100 : totalVotes > 0 ? (prediction.total_votes_yes / totalVotes) * 100 : 50; })();
-              const isEnded = new Date(prediction.end_date) <= new Date();
-              const timeLeft = getTimeLeft(prediction.end_date);
-              return (
-                <motion.div key={prediction.id} variants={fadeUp} className="h-full">
-                  <Link
-                    to={`/predictions/${prediction.id}`}
-                    className="group relative flex flex-col rounded-xl border border-border bg-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20 h-full">
-                    <div className="p-4 flex-1 flex flex-col">
-                      {/* Header: logos + status */}
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <div className="flex items-center -space-x-1.5">
-                            {prediction.project_a_logo_url ? (
-                              <img src={prediction.project_a_logo_url} alt={prediction.project_a_name} className="w-7 h-7 rounded-lg object-contain border border-card bg-secondary relative z-10" />
-                            ) : (
-                              <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs border border-card bg-secondary relative z-10">{prediction.project_a_logo_emoji || "⬡"}</span>
-                            )}
-                            {prediction.project_b_name && (
-                              prediction.project_b_logo_url ? (
-                                <img src={prediction.project_b_logo_url} alt={prediction.project_b_name} className="w-7 h-7 rounded-lg object-contain border border-card bg-secondary relative z-0" />
-                              ) : (
-                                <span className="w-7 h-7 rounded-lg flex items-center justify-center text-xs border border-card bg-secondary relative z-0">{prediction.project_b_logo_emoji || "⬡"}</span>
-                              )
-                            )}
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <span className="text-[11px] font-medium text-muted-foreground">{prediction.project_a_name}</span>
-                            {prediction.project_b_name && (
-                              <>
-                                <span className="text-muted-foreground/40 text-[9px]">vs</span>
-                                <span className="text-[11px] font-medium text-muted-foreground">{prediction.project_b_name}</span>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${isEnded ? 'bg-destructive/10 text-destructive' : 'bg-green-500/10 text-green-600 dark:text-green-400'}`}>
-                          {isEnded ? "Ended" : timeLeft ? `${timeLeft}` : "Live"}
-                        </span>
-                      </div>
-
-                      {/* Title */}
-                      <h3 className="text-[13px] font-semibold text-foreground leading-snug line-clamp-2 group-hover:underline transition-all duration-200 mb-auto">
-                        {prediction.title}
-                      </h3>
-
-                      {/* Percentage as cents + votes */}
-                      <div className="mt-4 flex items-end justify-between">
-                        <span className="text-lg font-bold text-foreground tabular-nums font-['Space_Grotesk']">{Math.round(yesPct)}¢<span className="text-xs font-normal text-muted-foreground ml-1">{yesLabel}</span></span>
-                        <span className="text-[10px] text-muted-foreground">{totalVotes.toLocaleString()} vote{totalVotes !== 1 ? "s" : ""}</span>
-                      </div>
-                    </div>
-
-                    {/* Polymarket cent-based buttons */}
-                    <div className="px-4 pb-4">
-                      <div className="flex gap-2">
-                        <span className={`flex-1 rounded-lg py-2 text-center ${isEnded ? "bg-secondary text-muted-foreground opacity-60" : "bg-primary/10 text-primary"}`}>
-                          <span className="text-sm font-bold block py-1">{yesLabel}</span>
-                        </span>
-                        <span className={`flex-1 rounded-lg py-2 text-center ${isEnded ? "bg-secondary text-muted-foreground opacity-60" : "bg-destructive/10 text-destructive"}`}>
-                          <span className="text-sm font-bold block py-1">{noLabel}</span>
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
-                </motion.div>);
             })}
             </div>
           </motion.div>

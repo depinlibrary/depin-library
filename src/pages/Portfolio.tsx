@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Trash2, Briefcase, TrendingUp, TrendingDown, Minus, Pencil, Check, X, BarChart3, ChevronDown, ChevronUp, Eye, EyeOff, Download, Activity, Bell, Wallet, Home, LineChart, Compass, GitCompare, Sun, Moon, User, LogOut, Shield, Camera, Layout, Star, Lock, Mail, Award, Crosshair, BookmarkIcon, Clock, CheckCircle2, XCircle, HelpCircle } from "lucide-react";
+import { Plus, Trash2, Briefcase, TrendingUp, TrendingDown, Minus, Pencil, Check, X, BarChart3, ChevronDown, ChevronUp, Eye, EyeOff, Download, Bell, Home, Compass, GitCompare, Sun, Moon, User, LogOut, Shield, Camera, Layout, Star, Lock, Mail, Award, BookmarkIcon, Clock, BrainCircuit } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, AreaChart, Area, XAxis, YAxis } from "recharts";
 import ProjectLogo from "@/components/ProjectLogo";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,15 +16,12 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Link, Navigate } from "react-router-dom";
 import logoImg from "@/assets/logo.png";
-import MyPredictions from "@/components/MyPredictions";
 import PriceAlertsManager from "@/components/PriceAlertsManager";
 import NotificationDropdown from "@/components/NotificationDropdown";
 import { useBookmarks, useToggleBookmark } from "@/hooks/useBookmarks";
 import { useUpsertPriceAlert } from "@/hooks/usePriceAlerts";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { useUserPredictionStats } from "@/hooks/useUserPredictionStats";
 import { useNotificationPreferences, useUpdateNotificationPreferences } from "@/hooks/useNotificationPreferences";
-import ProfileActivityCharts from "@/components/ProfileActivityCharts";
 import UserAvatar from "@/components/UserAvatar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -370,10 +367,9 @@ const Portfolio = () => {
   const [sortBy, setSortBy] = useState<"value" | "change" | "name">("value");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [perfRange, setPerfRange] = useState<"1D" | "7D" | "30D" | "90D">("7D");
-  const [activeTab, setActiveTab] = useState<"dashboard" | "predictions" | "alerts" | "watchlist" | "profile" | "activities">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "alerts" | "watchlist" | "profile">("dashboard");
 
-  // Profile & Activities hooks
-  const { data: predictionStats, isLoading: statsLoading } = useUserPredictionStats(user?.id);
+  // Profile hooks
   const { data: bookmarks } = useBookmarks();
   const { data: notifPrefs, isLoading: prefsLoading } = useNotificationPreferences();
   const updatePrefs = useUpdateNotificationPreferences();
@@ -423,9 +419,8 @@ const Portfolio = () => {
   };
 
   const notifOptions = [
-    { key: "forecast_vote", label: "Prediction votes", desc: "When someone votes on your prediction", icon: TrendingUp },
-    { key: "forecast_result", label: "Prediction results", desc: "When a prediction you voted on ends", icon: Crosshair },
     { key: "price_alert", label: "Price alerts", desc: "Token price threshold alerts", icon: BarChart3 },
+    { key: "review_like", label: "Review likes", desc: "When someone likes your review", icon: Award },
   ];
 
   useEffect(() => {

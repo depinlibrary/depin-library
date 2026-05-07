@@ -15,7 +15,6 @@ import {
 const navLinks = [
   { label: "Explore", to: "/explore", icon: Layers },
   { label: "Market", to: "/market", icon: BarChart3 },
-  { label: "Predictions", to: "/predictions", icon: TrendingUp },
   { label: "Compare", to: "/compare", icon: GitCompare },
   { label: "Portfolio", to: "/portfolio", icon: Briefcase },
 ];
@@ -23,7 +22,7 @@ const navLinks = [
 const resourceLinks = [
   { label: "What is DePIN?", to: "/explore", icon: BookOpen },
   { label: "Submit a Project", to: "/submit", icon: ArrowRight },
-  { label: "Community Predictions", to: "/predictions", icon: TrendingUp },
+  { label: "AI Analysis", to: "/ai-analysis", icon: TrendingUp },
 ];
 
 const Footer = () => {
@@ -101,7 +100,7 @@ const Footer = () => {
           <div className="flex flex-col gap-4">
             <span className="text-[11px] font-semibold text-foreground uppercase tracking-widest">Stay Connected</span>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              DePIN Library is built by and for the community. Explore, rate, prediction, and help shape the future of decentralized infrastructure.
+              DePIN Library is built by and for the community. Explore, rate, and help shape the future of decentralized infrastructure.
             </p>
             <Link
               to="/explore"

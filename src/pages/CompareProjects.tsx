@@ -396,9 +396,9 @@ const CompareProjects = () => {
             {[
               { to: "/", label: "Overview" },
               { to: "/explore", label: "Explore" },
-              { to: "/predictions", label: "Predictions" },
               { to: "/market", label: "Market" },
               { to: "/compare", label: "Compare" },
+              { to: "/ai-analysis", label: "AI Analysis" },
             ].map((link) => (
               <Link
                 key={link.to}
@@ -761,26 +761,6 @@ const CompareProjects = () => {
                     <p className="text-sm text-secondary-foreground leading-relaxed">{result.conclusion}</p>
                   </div>
 
-
-                  {user && projectA && projectB && (
-                    <div className="rounded-2xl border border-primary/20 bg-primary/5 p-6 text-center">
-                      <h3 className="text-sm font-semibold text-foreground mb-2">Have a prediction based on this analysis?</h3>
-                      <p className="text-xs text-muted-foreground mb-4 max-w-md mx-auto">
-                        Create a community prediction about {projectA.name} vs {projectB.name} and let others vote on the outcome.
-                      </p>
-                      <Button
-                        onClick={() => {
-                          const title = `${projectA?.name} vs ${projectB?.name}: ${result.conclusion.slice(0, 80)}${result.conclusion.length > 80 ? '...' : ''}`;
-                          const desc = `Summary: ${result.summary}\n\nLong-term outlook: ${result.long_term_outlook}\n\nKey risks: ${result.risks.join('; ')}`;
-                          sessionStorage.setItem('forecast_prefill', JSON.stringify({ title, description: desc }));
-                          navigate(`/predictions?create=true&a=${projectAId}&b=${projectBId}`);
-                        }}
-                        className="gap-2"
-                      >
-                        <TrendingUp className="w-4 h-4" /> Create Prediction
-                      </Button>
-                    </div>
-                  )}
 
                   <p className="text-[11px] text-muted-foreground text-center pt-2">
                     This analysis is AI-generated and not financial advice. Always do your own research.

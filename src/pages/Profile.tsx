@@ -3,7 +3,6 @@ import { Navigate, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAvatar } from "@/hooks/useAvatar";
-import { useUserPredictionStats } from "@/hooks/useUserPredictionStats";
 import { useBookmarks } from "@/hooks/useBookmarks";
 import { useNotificationPreferences, useUpdateNotificationPreferences } from "@/hooks/useNotificationPreferences";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,7 +17,6 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import ProfileActivityCharts from "@/components/ProfileActivityCharts";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -34,7 +32,8 @@ const Profile = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading, signOut } = useAuth();
   const { avatarUrl, displayName, uploading, uploadAvatar, updateDisplayName } = useAvatar();
-  const { data: predictionStats, isLoading: statsLoading } = useUserPredictionStats(user?.id);
+  const predictionStats: any = null;
+  const statsLoading = false;
   const { data: bookmarks } = useBookmarks();
   const { data: notifPrefs, isLoading: prefsLoading } = useNotificationPreferences();
   const updatePrefs = useUpdateNotificationPreferences();
@@ -132,9 +131,8 @@ const Profile = () => {
   };
 
   const notifOptions = [
-    { key: "forecast_vote", label: "Prediction votes", desc: "When someone votes on your prediction", icon: TrendingUp },
-    { key: "forecast_result", label: "Prediction results", desc: "When a prediction you voted on ends", icon: Crosshair },
     { key: "price_alert", label: "Price alerts", desc: "Token price threshold alerts", icon: BarChart3 },
+    { key: "review_like", label: "Review likes", desc: "When someone likes your review", icon: Award },
   ];
 
   return (
@@ -214,22 +212,8 @@ const Profile = () => {
 
           {/* Activity Tab */}
           <TabsContent value="activity" className="space-y-6">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {statsLoading ? (
-                Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)
-              ) : (
-                <>
-                  <StatCard icon={TrendingUp} label="Total Votes" value={predictionStats?.totalVotes ?? 0} color="text-primary" />
-                  <StatCard icon={CheckCircle2} label="Correct" value={predictionStats?.correctVotes ?? 0} color="text-primary" />
-                  <StatCard icon={XCircle} label="Incorrect" value={predictionStats?.incorrectVotes ?? 0} color="text-primary" />
-                  <StatCard icon={Crosshair} label="Accuracy" value={`${predictionStats?.accuracy ?? 0}%`} color="text-primary" />
-                </>
-              )}
-            </div>
-
             {/* Quick Stats Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3">
               <Card className="border-border/50">
                 <CardContent className="p-4 flex items-center gap-3">
                   <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -241,85 +225,7 @@ const Profile = () => {
                   </div>
                 </CardContent>
               </Card>
-              <Card className="border-border/50">
-                <CardContent className="p-4 flex items-center gap-3">
-                   <div className="h-10 w-10 rounded-lg bg-accent/10 flex items-center justify-center">
-                    <Clock className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-foreground">{predictionStats?.pendingVotes ?? 0}</p>
-                    <p className="text-xs text-muted-foreground">Pending Predictions</p>
-                  </div>
-                </CardContent>
-              </Card>
             </div>
-
-            {/* Charts */}
-            {!statsLoading && predictionStats && predictionStats.totalVotes > 0 && (
-              <ProfileActivityCharts
-                history={predictionStats.history}
-                totalVotes={predictionStats.totalVotes}
-                correctVotes={predictionStats.correctVotes}
-                incorrectVotes={predictionStats.incorrectVotes}
-              />
-            )}
-
-            {/* Recent Prediction Activity */}
-            <Card className="border-border/50">
-              <CardHeader>
-                <CardTitle className="text-base">Recent Prediction Activity</CardTitle>
-                <CardDescription>Your latest votes and their outcomes</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {statsLoading ? (
-                  <div className="space-y-3">
-                    {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-14 rounded-lg" />)}
-                  </div>
-                ) : !predictionStats?.history?.length ? (
-                  <div className="text-center py-8">
-                    <HelpCircle className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">No prediction activity yet</p>
-                    <Link to="/predictions" className="text-xs text-primary hover:underline mt-1 inline-block">
-                      Browse predictions →
-                    </Link>
-                  </div>
-                ) : (
-                  <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
-                    {predictionStats.history.slice(0, 15).map((item) => (
-                      <Link
-                        key={item.forecast_id + item.voted_at}
-                        to={`/predictions/${item.forecast_id}`}
-                        className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 transition-colors group"
-                      >
-                        {item.project_logo_url ? (
-                          <img src={item.project_logo_url} alt={item.project_name} className="w-8 h-8 rounded-lg object-contain bg-secondary shrink-0" />
-                        ) : (
-                          <span className="w-8 h-8 rounded-lg flex items-center justify-center text-base bg-secondary shrink-0">{item.project_logo_emoji}</span>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-foreground truncate transition-colors">
-                            {item.prediction_title}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            Voted <Badge variant={item.vote === "yes" ? "default" : "destructive"} className="text-[10px] px-1.5 py-0 ml-1">{item.vote.toUpperCase()}</Badge>
-                            <span className="ml-2">{formatDistanceToNow(new Date(item.voted_at), { addSuffix: true })}</span>
-                          </p>
-                        </div>
-                        {item.is_ended && (
-                          <div className="shrink-0">
-                            {item.was_correct === true && <CheckCircle2 className="h-4 w-4 text-emerald-400" />}
-                            {item.was_correct === false && <XCircle className="h-4 w-4 text-destructive" />}
-                          </div>
-                        )}
-                        {!item.is_ended && (
-                          <Clock className="h-4 w-4 text-muted-foreground/50 shrink-0" />
-                        )}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
           </TabsContent>
 
           {/* Settings Tab */}

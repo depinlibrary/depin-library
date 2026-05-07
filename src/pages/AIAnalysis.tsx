@@ -50,7 +50,6 @@ const SAMPLE_PROMPTS = [
 const NAV_LINKS = [
   { to: "/", label: "Overview" },
   { to: "/explore", label: "Explore" },
-  { to: "/predictions", label: "Predictions" },
   { to: "/market", label: "Market" },
   { to: "/compare", label: "Compare" },
   { to: "/ai-analysis", label: "AI Analysis" },
