@@ -3,7 +3,6 @@ import { Navigate, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAvatar } from "@/hooks/useAvatar";
-import { useUserPredictionStats } from "@/hooks/useUserPredictionStats";
 import { useBookmarks } from "@/hooks/useBookmarks";
 import { useNotificationPreferences, useUpdateNotificationPreferences } from "@/hooks/useNotificationPreferences";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,7 +17,6 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import ProfileActivityCharts from "@/components/ProfileActivityCharts";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -34,7 +32,8 @@ const Profile = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading, signOut } = useAuth();
   const { avatarUrl, displayName, uploading, uploadAvatar, updateDisplayName } = useAvatar();
-  const { data: predictionStats, isLoading: statsLoading } = useUserPredictionStats(user?.id);
+  const predictionStats: any = null;
+  const statsLoading = false;
   const { data: bookmarks } = useBookmarks();
   const { data: notifPrefs, isLoading: prefsLoading } = useNotificationPreferences();
   const updatePrefs = useUpdateNotificationPreferences();
@@ -132,9 +131,8 @@ const Profile = () => {
   };
 
   const notifOptions = [
-    { key: "forecast_vote", label: "Prediction votes", desc: "When someone votes on your prediction", icon: TrendingUp },
-    { key: "forecast_result", label: "Prediction results", desc: "When a prediction you voted on ends", icon: Crosshair },
     { key: "price_alert", label: "Price alerts", desc: "Token price threshold alerts", icon: BarChart3 },
+    { key: "review_like", label: "Review likes", desc: "When someone likes your review", icon: Award },
   ];
 
   return (
