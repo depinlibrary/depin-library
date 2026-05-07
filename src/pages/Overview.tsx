@@ -8,9 +8,8 @@ import {
   BarChart3,
   GitCompare,
   Briefcase,
-  TrendingUp,
-  Clock } from
-"lucide-react";
+  BrainCircuit,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -19,7 +18,6 @@ import BillboardHero from "@/components/BillboardHero";
 import { useProjects } from "@/hooks/useProjects";
 import { useAllTokenMarketData } from "@/hooks/useTokenMarketData";
 import { useTrendingProjects } from "@/hooks/useSentiment";
-import { usePredictions } from "@/hooks/usePredictions";
 import { useSpotlightProjects } from "@/hooks/useSpotlightProjects";
 
 
@@ -33,59 +31,10 @@ const fadeUp = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" as const } }
 };
 
-function getTimeLeft(endDate: string) {
-  const diff = new Date(endDate).getTime() - Date.now();
-  if (diff <= 0) return null;
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const hours = Math.floor(diff % (1000 * 60 * 60 * 24) / (1000 * 60 * 60));
-  const minutes = Math.floor(diff % (1000 * 60 * 60) / (1000 * 60));
-  if (days > 0) return `${days}d ${hours}h`;
-  if (hours > 0) return `${hours}h ${minutes}m`;
-  return `${minutes}m`;
-}
-
 const Overview = () => {
   const { data: projects = [] } = useProjects();
   const { data: marketData = {}, isRefetching } = useAllTokenMarketData(30 * 1000);
-  const { data: predictionData } = usePredictions("votes", 1, 4);
-  const { data: endingSoonData } = usePredictions("ending_soon", 1, 4, undefined, undefined, "active");
-  const topPredictionsRaw = predictionData?.predictions || [];
-  const endingSoon = endingSoonData?.predictions || [];
-  const allPredictionIds = [...topPredictionsRaw, ...endingSoon].map((f) => f.id);
   const { data: trendingProjects = [] } = useTrendingProjects(5);
-
-  // Fetch dimensions for all predictions (top + ending soon)
-  const { data: predictionDimensionsMap = {} } = useQuery({
-    queryKey: ["prediction-dimensions-overview", allPredictionIds],
-    enabled: allPredictionIds.length > 0,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("forecast_targets")
-        .select("forecast_id, dimension")
-        .in("forecast_id", allPredictionIds);
-      if (error) throw error;
-      const map: Record<string, string> = {};
-      (data || []).forEach((d: any) => { map[d.forecast_id] = d.dimension; });
-      return map;
-    },
-  });
-
-  const topPredictions = topPredictionsRaw.map((f) => ({
-    id: f.id,
-    title: f.title,
-    total_votes_yes: f.total_votes_yes,
-    total_votes_no: f.total_votes_no,
-    status: f.status || "active",
-    end_date: f.end_date,
-    project_a_logo_url: f.project_a_logo_url,
-    project_a_logo_emoji: f.project_a_logo_emoji,
-    project_a_name: f.project_a_name,
-    project_b_logo_url: f.project_b_logo_url,
-    project_b_logo_emoji: f.project_b_logo_emoji,
-    project_b_name: f.project_b_name,
-    dimension: (predictionDimensionsMap as Record<string, string>)[f.id] || undefined,
-  }));
-  const endingSoonIds = endingSoon.map((f) => f.id);
   const { data: spotlightEntries = [] } = useSpotlightProjects();
 
   const spotlightProjects = spotlightEntries.
@@ -96,7 +45,7 @@ const Overview = () => {
   { title: "Explore", description: "Browse the full DePIN project directory.", icon: Layers, to: "/explore", accent: "primary" },
   { title: "Market", description: "Track token prices and market trends.", icon: BarChart3, to: "/market", accent: "primary" },
   { title: "Compare", description: "AI-powered side-by-side comparison.", icon: GitCompare, to: "/compare", accent: "accent" },
-  { title: "Predictions", description: "Community predictions and voting.", icon: TrendingUp, to: "/predictions", accent: "accent" },
+  { title: "AI Analysis", description: "Deep AI analysis of any DePIN project.", icon: BrainCircuit, to: "/ai-analysis", accent: "accent" },
   { title: "Portfolio", description: "Track your DePIN holdings.", icon: Briefcase, to: "/portfolio", accent: "primary" }];
 
 
@@ -126,7 +75,6 @@ const Overview = () => {
         projects={projects}
         isRefetching={isRefetching}
         marketData={marketData}
-        topPredictions={topPredictions}
         trendingProjects={trendingProjects}
         totalCategories={totalCategories}
         totalBlockchains={totalBlockchains} />
