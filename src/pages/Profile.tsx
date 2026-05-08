@@ -32,7 +32,6 @@ const Profile = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading, signOut } = useAuth();
   const { avatarUrl, displayName, uploading, uploadAvatar, updateDisplayName } = useAvatar();
-  const predictionStats: any = null;
   const statsLoading = false;
   const { data: bookmarks } = useBookmarks();
   const { data: notifPrefs, isLoading: prefsLoading } = useNotificationPreferences();
@@ -351,7 +350,7 @@ const Profile = () => {
                         <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                         <AlertDialogDescription className="space-y-3">
                           <span className="block">
-                            This will permanently delete your account including all your reviews, predictions, votes, bookmarks, and portfolio data. This action cannot be undone.
+                            This will permanently delete your account including all your reviews, bookmarks, and portfolio data. This action cannot be undone.
                           </span>
                           <span className="block text-sm font-medium text-foreground">
                             Type <span className="font-mono text-destructive">DELETE</span> to confirm:

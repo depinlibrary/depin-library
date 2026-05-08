@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Trash2, Briefcase, TrendingUp, TrendingDown, Minus, Pencil, Check, X, BarChart3, ChevronDown, ChevronUp, Eye, EyeOff, Download, Bell, Home, Compass, GitCompare, Sun, Moon, User, LogOut, Shield, Camera, Layout, Star, Lock, Mail, Award, BookmarkIcon, Clock, BrainCircuit } from "lucide-react";
+import { Plus, Trash2, Briefcase, TrendingUp, TrendingDown, Minus, Pencil, Check, X, BarChart3, ChevronDown, ChevronUp, Eye, EyeOff, Download, Bell, Home, Compass, GitCompare, Sun, Moon, User, LogOut, Shield, Camera, Layout, Star, Lock, Mail, Award, BookmarkIcon, Clock, BrainCircuit, Activity, Wallet } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, AreaChart, Area, XAxis, YAxis } from "recharts";
 import ProjectLogo from "@/components/ProjectLogo";
 import { useAuth } from "@/contexts/AuthContext";
@@ -684,9 +684,7 @@ const Portfolio = () => {
   const sidebarTabs = [
     { key: "dashboard" as const, label: "Dashboard", icon: Layout },
     { key: "alerts" as const, label: "Alerts", icon: Bell },
-    { key: "predictions" as const, label: "Predictions", icon: Activity },
     { key: "watchlist" as const, label: "Watchlist", icon: Star },
-    { key: "activities" as const, label: "Activities", icon: Clock },
     { key: "profile" as const, label: "Settings", icon: Lock },
   ];
 
@@ -694,7 +692,7 @@ const Portfolio = () => {
     { to: "/", label: "Overview", icon: Home },
     { to: "/explore", label: "Explore", icon: Compass },
     { to: "/market", label: "Market", icon: BarChart3 },
-    { to: "/predictions", label: "Predictions", icon: LineChart },
+    { to: "/ai-analysis", label: "AI Analysis", icon: BrainCircuit },
     { to: "/compare", label: "Compare", icon: GitCompare },
   ];
 
@@ -1625,29 +1623,6 @@ const Portfolio = () => {
               </motion.div>
             )}
 
-            {/* ── Predictions Tab ── */}
-            {activeTab === "predictions" && (
-              <motion.div
-                key="predictions"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="space-y-4"
-              >
-                <div className="rounded-xl border border-border bg-card p-4 flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
-                    <Activity className="h-4 w-4 text-primary" />
-                  </div>
-                  <div>
-                    <h2 className="text-sm font-semibold text-foreground">My Predictions</h2>
-                    <p className="text-xs text-muted-foreground">Manage and track your community predictions</p>
-                  </div>
-                </div>
-                <MyPredictions />
-              </motion.div>
-            )}
-
             {/* ── Watchlist Tab ── */}
             {activeTab === "watchlist" && (
               <motion.div
@@ -1668,115 +1643,6 @@ const Portfolio = () => {
                   </div>
                 </div>
                 <WatchlistContent projects={projects} marketDataMap={marketDataMap} />
-              </motion.div>
-            )}
-
-            {/* ── Activities Tab ── */}
-            {activeTab === "activities" && (
-              <motion.div
-                key="activities"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="space-y-6 no-card-hover"
-              >
-                <div className="rounded-xl border border-border bg-card p-4 flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
-                    <Clock className="h-4 w-4 text-primary" />
-                  </div>
-                  <div>
-                    <h2 className="text-sm font-semibold text-foreground">Activities</h2>
-                    <p className="text-xs text-muted-foreground">Your voting history and performance stats</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {statsLoading ? (
-                    Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)
-                  ) : (
-                    <>
-                      <Card className="border-border/50"><CardContent className="p-4 text-center"><TrendingUp className="h-5 w-5 mx-auto mb-2 text-primary" /><p className="text-2xl font-bold text-foreground">{predictionStats?.totalVotes ?? 0}</p><p className="text-[11px] text-muted-foreground mt-0.5">Total Votes</p></CardContent></Card>
-                      <Card className="border-border/50"><CardContent className="p-4 text-center"><CheckCircle2 className="h-5 w-5 mx-auto mb-2 text-primary" /><p className="text-2xl font-bold text-foreground">{predictionStats?.correctVotes ?? 0}</p><p className="text-[11px] text-muted-foreground mt-0.5">Correct</p></CardContent></Card>
-                      <Card className="border-border/50"><CardContent className="p-4 text-center"><XCircle className="h-5 w-5 mx-auto mb-2 text-primary" /><p className="text-2xl font-bold text-foreground">{predictionStats?.incorrectVotes ?? 0}</p><p className="text-[11px] text-muted-foreground mt-0.5">Incorrect</p></CardContent></Card>
-                      <Card className="border-border/50"><CardContent className="p-4 text-center"><Crosshair className="h-5 w-5 mx-auto mb-2 text-primary" /><p className="text-2xl font-bold text-foreground">{`${predictionStats?.accuracy ?? 0}%`}</p><p className="text-[11px] text-muted-foreground mt-0.5">Accuracy</p></CardContent></Card>
-                    </>
-                  )}
-                </div>
-
-                {/* Quick Stats */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <Card className="border-border/50">
-                    <CardContent className="p-4 flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center"><BookmarkIcon className="h-5 w-5 text-primary" /></div>
-                      <div><p className="text-2xl font-bold text-foreground">{bookmarks?.length ?? 0}</p><p className="text-xs text-muted-foreground">Bookmarked Projects</p></div>
-                    </CardContent>
-                  </Card>
-                  <Card className="border-border/50">
-                    <CardContent className="p-4 flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-accent/10 flex items-center justify-center"><Clock className="h-5 w-5 text-primary" /></div>
-                      <div><p className="text-2xl font-bold text-foreground">{predictionStats?.pendingVotes ?? 0}</p><p className="text-xs text-muted-foreground">Pending Predictions</p></div>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Charts */}
-                {!statsLoading && predictionStats && predictionStats.totalVotes > 0 && (
-                  <ProfileActivityCharts
-                    history={predictionStats.history}
-                    totalVotes={predictionStats.totalVotes}
-                    correctVotes={predictionStats.correctVotes}
-                    incorrectVotes={predictionStats.incorrectVotes}
-                  />
-                )}
-
-                {/* Recent Prediction Activity */}
-                <Card className="border-border/50">
-                  <CardHeader>
-                    <CardTitle className="text-base">Recent Prediction Activity</CardTitle>
-                    <CardDescription>Your latest votes and their outcomes</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {statsLoading ? (
-                      <div className="space-y-3">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-14 rounded-lg" />)}</div>
-                    ) : !predictionStats?.history?.length ? (
-                      <div className="text-center py-8">
-                        <HelpCircle className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
-                        <p className="text-sm text-muted-foreground">No prediction activity yet</p>
-                        <button onClick={() => setActiveTab("predictions")} className="text-xs text-primary hover:underline mt-1 inline-block">Browse predictions →</button>
-                      </div>
-                    ) : (
-                      <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
-                        {predictionStats.history.slice(0, 15).map((item) => (
-                          <Link
-                            key={item.forecast_id + item.voted_at}
-                            to={`/predictions/${item.forecast_id}`}
-                            className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 transition-colors group"
-                          >
-                            {item.project_logo_url ? (
-                              <img src={item.project_logo_url} alt={item.project_name} className="w-8 h-8 rounded-lg object-contain bg-secondary shrink-0" />
-                            ) : (
-                              <span className="w-8 h-8 rounded-lg flex items-center justify-center text-base bg-secondary shrink-0">{item.project_logo_emoji}</span>
-                            )}
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-foreground truncate">{item.prediction_title}</p>
-                              <p className="text-xs text-muted-foreground">
-                                Voted <Badge variant={item.vote === "yes" ? "default" : "destructive"} className="text-[10px] px-1.5 py-0 ml-1">{item.vote.toUpperCase()}</Badge>
-                                <span className="ml-2">{formatDistanceToNow(new Date(item.voted_at), { addSuffix: true })}</span>
-                              </p>
-                            </div>
-                            {item.is_ended && (
-                              <div className="shrink-0">
-                                {item.was_correct === true && <CheckCircle2 className="h-4 w-4 text-emerald-400" />}
-                                {item.was_correct === false && <XCircle className="h-4 w-4 text-destructive" />}
-                              </div>
-                            )}
-                            {!item.is_ended && <Clock className="h-4 w-4 text-muted-foreground/50 shrink-0" />}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
               </motion.div>
             )}
 
@@ -1887,7 +1753,7 @@ const Portfolio = () => {
                           <AlertDialogHeader>
                             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                             <AlertDialogDescription className="space-y-3">
-                              <span className="block">This will permanently delete your account including all your reviews, predictions, votes, bookmarks, and portfolio data.</span>
+                              <span className="block">This will permanently delete your account including all your reviews, bookmarks, and portfolio data.</span>
                               <span className="block text-sm font-medium text-foreground">Type <span className="font-mono text-destructive">DELETE</span> to confirm:</span>
                               <Input value={confirmText} onChange={(e) => setConfirmText(e.target.value)} placeholder="Type DELETE" className="font-mono" />
                             </AlertDialogDescription>

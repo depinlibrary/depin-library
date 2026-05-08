@@ -48,48 +48,13 @@ serve(async (req) => {
       comparisonMap[c.project_b_id] = (comparisonMap[c.project_b_id] || 0) + 1;
     });
 
-    // Get prediction counts per project
-    const { data: forecasts } = await supabase
-      .from("forecasts")
-      .select("project_a_id, project_b_id");
-
-    const predictionMap: Record<string, number> = {};
-    (forecasts || []).forEach((f: any) => {
-      predictionMap[f.project_a_id] = (predictionMap[f.project_a_id] || 0) + 1;
-      if (f.project_b_id) predictionMap[f.project_b_id] = (predictionMap[f.project_b_id] || 0) + 1;
-    });
-
-    // Get prediction vote counts per project
-    const { data: votes } = await supabase
-      .from("forecast_votes")
-      .select("forecast_id");
-
-    // Map votes to projects via forecasts
-    const votesByPrediction: Record<string, number> = {};
-    (votes || []).forEach((v: any) => {
-      votesByPrediction[v.prediction_id] = (votesByPrediction[v.prediction_id] || 0) + 1;
-    });
-
-    const voteMap: Record<string, number> = {};
-    (forecasts || []).forEach((f: any) => {
-      const count = votesByPrediction[f.id] || 0;
-      voteMap[f.project_a_id] = (voteMap[f.project_a_id] || 0) + count;
-      if (f.project_b_id) voteMap[f.project_b_id] = (voteMap[f.project_b_id] || 0) + count;
-    });
-
     // Calculate scores
     const scores = projectIds.map((id: string) => {
       const ratings = ratingsMap[id] || 0;
       const comps = comparisonMap[id] || 0;
-      const fcs = predictionMap[id] || 0;
-      const fv = voteMap[id] || 0;
 
-      // Score formula (views not tracked yet, so redistribute weight)
-      const score =
-        comps * 0.35 +
-        fcs * 0.25 +
-        ratings * 0.25 +
-        fv * 0.15;
+      // Score formula based on comparisons and ratings
+      const score = comps * 0.6 + ratings * 0.4;
 
       return { project_id: id, score: Math.round(score * 100) / 100 };
     });
