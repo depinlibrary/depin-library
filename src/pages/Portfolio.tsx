@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Trash2, Briefcase, TrendingUp, TrendingDown, Minus, Pencil, Check, X, BarChart3, ChevronDown, ChevronUp, Eye, EyeOff, Download, Bell, Home, Compass, GitCompare, Sun, Moon, User, LogOut, Shield, Camera, Layout, Star, Lock, Mail, Award, BookmarkIcon, Clock, BrainCircuit } from "lucide-react";
+import { Plus, Trash2, Briefcase, TrendingUp, TrendingDown, Minus, Pencil, Check, X, BarChart3, ChevronDown, ChevronUp, Eye, EyeOff, Download, Bell, Home, Compass, GitCompare, Sun, Moon, User, LogOut, Shield, Camera, Layout, Star, Lock, Mail, Award, BookmarkIcon, Clock, BrainCircuit, Activity, Wallet } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, AreaChart, Area, XAxis, YAxis } from "recharts";
 import ProjectLogo from "@/components/ProjectLogo";
 import { useAuth } from "@/contexts/AuthContext";
@@ -684,9 +684,7 @@ const Portfolio = () => {
   const sidebarTabs = [
     { key: "dashboard" as const, label: "Dashboard", icon: Layout },
     { key: "alerts" as const, label: "Alerts", icon: Bell },
-    { key: "predictions" as const, label: "Predictions", icon: Activity },
     { key: "watchlist" as const, label: "Watchlist", icon: Star },
-    { key: "activities" as const, label: "Activities", icon: Clock },
     { key: "profile" as const, label: "Settings", icon: Lock },
   ];
 
@@ -694,7 +692,7 @@ const Portfolio = () => {
     { to: "/", label: "Overview", icon: Home },
     { to: "/explore", label: "Explore", icon: Compass },
     { to: "/market", label: "Market", icon: BarChart3 },
-    { to: "/predictions", label: "Predictions", icon: LineChart },
+    { to: "/ai-analysis", label: "AI Analysis", icon: BrainCircuit },
     { to: "/compare", label: "Compare", icon: GitCompare },
   ];
 
