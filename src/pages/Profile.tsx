@@ -32,7 +32,6 @@ const Profile = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading, signOut } = useAuth();
   const { avatarUrl, displayName, uploading, uploadAvatar, updateDisplayName } = useAvatar();
-  const predictionStats: any = null;
   const statsLoading = false;
   const { data: bookmarks } = useBookmarks();
   const { data: notifPrefs, isLoading: prefsLoading } = useNotificationPreferences();
