@@ -42,7 +42,7 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
 
   const isExploreActive = location.pathname === "/explore";
-  const isMarketActive = ["/market", "/predictions", "/portfolio"].includes(location.pathname);
+  const isMarketActive = ["/market", "/portfolio"].includes(location.pathname);
   const isToolsActive = ["/compare", "/ai-analysis"].includes(location.pathname);
 
   useEffect(() => {
@@ -354,32 +354,6 @@ const Navbar = () => {
                           )}
                         </div>
                         <p className="text-[11px] text-muted-foreground mt-0.5">Live prices, sparklines & market cap data</p>
-                      </div>
-                      <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/30 group-hover/item:text-muted-foreground transition-all group-hover/item:translate-x-0.5" />
-                    </Link>
-
-                    <Link
-                      to="/predictions"
-                      onClick={() => setMarketDropdownOpen(false)}
-                      className={`group/item flex items-center gap-3 rounded-lg px-3 py-3 transition-all ${
-                        location.pathname === "/predictions"
-                          ? "bg-primary/8 border border-primary/15"
-                          : "hover:bg-secondary/50 border border-transparent"
-                      }`}
-                    >
-                      <div className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors ${
-                        location.pathname === "/predictions" ? "bg-primary/15" : "bg-secondary group-hover/item:bg-primary/10"
-                      }`}>
-                        <TrendingUp className={`h-4 w-4 ${location.pathname === "/predictions" ? "text-primary" : "text-muted-foreground group-hover/item:text-primary"} transition-colors`} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className="text-[13px] font-semibold text-foreground">Predictions</p>
-                          {location.pathname === "/predictions" && (
-                            <span className="rounded-full bg-primary/15 px-1.5 py-0.5 text-[9px] font-bold text-primary uppercase tracking-wider">Active</span>
-                          )}
-                        </div>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">Community predictions, voting & accuracy</p>
                       </div>
                       <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/30 group-hover/item:text-muted-foreground transition-all group-hover/item:translate-x-0.5" />
                     </Link>
@@ -785,19 +759,6 @@ const Navbar = () => {
                   <BarChart3 className={`h-4 w-4 ${location.pathname === "/market" ? "text-primary" : ""}`} />
                   Token Market
                   {location.pathname === "/market" && <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />}
-                </Link>
-                <Link
-                  to="/predictions"
-                  onClick={() => setMobileOpen(false)}
-                  className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
-                    location.pathname === "/predictions"
-                      ? "bg-primary/10 text-foreground"
-                      : "text-muted-foreground hover:bg-secondary/40 hover:text-foreground"
-                  }`}
-                >
-                  <LineChart className={`h-4 w-4 ${location.pathname === "/predictions" ? "text-primary" : ""}`} />
-                  Predictions
-                  {location.pathname === "/predictions" && <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />}
                 </Link>
                 <Link
                   to="/portfolio"
