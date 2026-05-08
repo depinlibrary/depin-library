@@ -1753,7 +1753,7 @@ const Portfolio = () => {
                           <AlertDialogHeader>
                             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                             <AlertDialogDescription className="space-y-3">
-                              <span className="block">This will permanently delete your account including all your reviews, predictions, votes, bookmarks, and portfolio data.</span>
+                              <span className="block">This will permanently delete your account including all your reviews, bookmarks, and portfolio data.</span>
                               <span className="block text-sm font-medium text-foreground">Type <span className="font-mono text-destructive">DELETE</span> to confirm:</span>
                               <Input value={confirmText} onChange={(e) => setConfirmText(e.target.value)} placeholder="Type DELETE" className="font-mono" />
                             </AlertDialogDescription>
