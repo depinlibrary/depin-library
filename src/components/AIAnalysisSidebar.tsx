@@ -243,6 +243,7 @@ const AIAnalysisSidebar = ({
           </motion.div>
         </>
       )}
+      <OutOfPointsDialog open={showOutOfPoints} onOpenChange={setShowOutOfPoints} />
     </AnimatePresence>
   );
 };
