@@ -74,20 +74,36 @@ export function usePoints() {
   };
 }
 
-/** Persist a "we already showed the claim dialog this session" flag. */
+/**
+ * Persists weekly-claim popup state across sessions.
+ * Only opens when a *new* weekly claim is actually available (DB-driven).
+ * After the user claims or dismisses, we remember the current eligibility
+ * window in localStorage so we don't re-prompt until the next window opens.
+ */
 export function useWeeklyClaimDialogState() {
   const { user } = useAuth();
-  const { canClaim, isLoading } = usePoints();
+  const { canClaim, isLoading, lastClaimAt } = usePoints();
   const [open, setOpen] = useState(false);
+
+  // Identifier for the current eligibility window. When the user claims,
+  // lastClaimAt advances → the window id changes → next time canClaim
+  // becomes true again, the prompt re-shows.
+  const windowId = lastClaimAt ? lastClaimAt.toISOString() : "initial";
 
   useEffect(() => {
     if (!user || isLoading) return;
     if (!canClaim) return;
-    const key = `weekly-claim-shown:${user.id}`;
-    if (sessionStorage.getItem(key)) return;
+    const key = `weekly-claim-acked:${user.id}`;
+    if (localStorage.getItem(key) === windowId) return;
     setOpen(true);
-    sessionStorage.setItem(key, "1");
-  }, [user, canClaim, isLoading]);
+  }, [user, canClaim, isLoading, windowId]);
 
-  return { open, setOpen };
+  const ackAndClose = (next: boolean) => {
+    if (!next && user) {
+      localStorage.setItem(`weekly-claim-acked:${user.id}`, windowId);
+    }
+    setOpen(next);
+  };
+
+  return { open, setOpen: ackAndClose };
 }
