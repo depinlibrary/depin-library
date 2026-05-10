@@ -223,6 +223,7 @@ const AIAnalysis = () => {
             >
               {theme === "dark" ? <Sun className="h-3.5 w-3.5 text-foreground" /> : <Moon className="h-3.5 w-3.5 text-foreground" />}
             </button>
+            <PointsBadge />
             <NotificationDropdown />
             {/* Profile avatar dropdown */}
             <div
@@ -525,6 +526,7 @@ const AIAnalysis = () => {
           </div>
         </div>
       </div>
+      <OutOfPointsDialog open={showOutOfPoints} onOpenChange={setShowOutOfPoints} />
     </div>
   );
 };
