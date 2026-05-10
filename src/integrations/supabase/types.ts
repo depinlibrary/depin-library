@@ -160,6 +160,30 @@ export type Database = {
         }
         Relationships: []
       }
+      point_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          reason: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          reason?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       portfolio_holdings: {
         Row: {
           created_at: string
@@ -765,6 +789,30 @@ export type Database = {
           },
         ]
       }
+      user_points: {
+        Row: {
+          balance: number
+          created_at: string
+          last_claim_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          last_claim_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          last_claim_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -788,12 +836,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      claim_weekly_points: { Args: never; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      spend_points: {
+        Args: { _amount: number; _reason: string }
+        Returns: Json
       }
     }
     Enums: {
