@@ -256,6 +256,7 @@ const CompareProjects = () => {
 
             {user ? (
               <>
+                <PointsBadge />
                 <NotificationDropdown />
                 {/* Profile avatar dropdown — hover */}
                 <div
