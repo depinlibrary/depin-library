@@ -804,6 +804,7 @@ const CompareProjects = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <OutOfPointsDialog open={showOutOfPoints} onOpenChange={setShowOutOfPoints} />
     </div>
   );
 };
