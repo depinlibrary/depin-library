@@ -25,6 +25,9 @@ import NotificationDropdown from "@/components/NotificationDropdown";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { usePoints, COST_PER_PROMPT } from "@/hooks/usePoints";
+import OutOfPointsDialog from "@/components/points/OutOfPointsDialog";
+import PointsBadge from "@/components/points/PointsBadge";
 
 interface ChatMessage {
   id: string;
@@ -72,6 +75,8 @@ const AIAnalysis = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState("");
+  const [showOutOfPoints, setShowOutOfPoints] = useState(false);
+  const { spend } = usePoints();
 
   const activeSession = sessions.find((s) => s.id === activeSessionId);
 
@@ -86,7 +91,14 @@ const AIAnalysis = () => {
     navigate("/");
   };
 
-  const createNewSession = (initialPrompt?: string) => {
+  const createNewSession = async (initialPrompt?: string) => {
+    if (initialPrompt) {
+      const res = await spend(COST_PER_PROMPT, "ai_analysis_prompt");
+      if (!res.ok) {
+        setShowOutOfPoints(true);
+        return;
+      }
+    }
     const id = crypto.randomUUID();
     const newSession: ChatSession = {
       id,
@@ -114,10 +126,15 @@ const AIAnalysis = () => {
     setInputValue("");
   };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!inputValue.trim()) return;
     if (!activeSession) {
-      createNewSession(inputValue.trim());
+      await createNewSession(inputValue.trim());
+      return;
+    }
+    const res = await spend(COST_PER_PROMPT, "ai_analysis_prompt");
+    if (!res.ok) {
+      setShowOutOfPoints(true);
       return;
     }
     const userMsg: ChatMessage = {
