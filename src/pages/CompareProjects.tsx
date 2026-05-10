@@ -19,6 +19,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { formatDistanceToNow } from "date-fns";
+import { usePoints, COST_PER_PROMPT } from "@/hooks/usePoints";
+import OutOfPointsDialog from "@/components/points/OutOfPointsDialog";
+import PointsBadge from "@/components/points/PointsBadge";
 
 type ComparisonResult = {
   summary: string;
@@ -62,6 +65,8 @@ const CompareProjects = () => {
   const [createdAt, setCreatedAt] = useState<string>("");
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [activeHistoryId, setActiveHistoryId] = useState<string | null>(null);
+  const [showOutOfPoints, setShowOutOfPoints] = useState(false);
+  const { spend } = usePoints();
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -167,6 +172,13 @@ const CompareProjects = () => {
     setResult(null);
 
     try {
+      // Charge points before invoking AI
+      const spendRes = await spend(COST_PER_PROMPT, "compare_prompt");
+      if (!spendRes.ok) {
+        setAnalyzing(false);
+        setShowOutOfPoints(true);
+        return;
+      }
       const { data, error } = await supabase.functions.invoke("compare-projects", {
         body: { project_a_id: projectAId, project_b_id: projectBId, user_prompt: userPrompt || undefined }
       });
@@ -244,6 +256,7 @@ const CompareProjects = () => {
 
             {user ? (
               <>
+                <PointsBadge />
                 <NotificationDropdown />
                 {/* Profile avatar dropdown — hover */}
                 <div
@@ -791,6 +804,7 @@ const CompareProjects = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <OutOfPointsDialog open={showOutOfPoints} onOpenChange={setShowOutOfPoints} />
     </div>
   );
 };

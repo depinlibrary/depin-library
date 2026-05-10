@@ -23,6 +23,7 @@ import Profile from "./pages/Profile";
 import AIAnalysis from "./pages/AIAnalysis";
 import NotFound from "./pages/NotFound";
 import ScrollToTop from "./components/ScrollToTop";
+import WeeklyClaimDialog from "./components/points/WeeklyClaimDialog";
 
 /** Activates global realtime subscriptions */
 function RealtimeProvider({ children }: { children: React.ReactNode }) {
@@ -68,6 +69,7 @@ const App = () => (
         <AuthProvider>
           <RealtimeProvider>
             <AnimatedRoutes />
+            <WeeklyClaimDialog />
           </RealtimeProvider>
         </AuthProvider>
       </BrowserRouter>
