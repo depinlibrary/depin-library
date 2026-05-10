@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { usePoints, COST_PER_PROMPT } from "@/hooks/usePoints";
+import OutOfPointsDialog from "@/components/points/OutOfPointsDialog";
 
 interface ChatMessage {
   id: string;
@@ -41,11 +43,19 @@ const AIAnalysisSidebar = ({
   const { user } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState("");
+  const [showOutOfPoints, setShowOutOfPoints] = useState(false);
+  const { spend } = usePoints();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const handleSend = (text?: string) => {
+  const handleSend = async (text?: string) => {
     const content = text || inputValue.trim();
     if (!content) return;
+    if (!user) return;
+    const res = await spend(COST_PER_PROMPT, "ai_sidebar_prompt");
+    if (!res.ok) {
+      setShowOutOfPoints(true);
+      return;
+    }
     const userMsg: ChatMessage = {
       id: crypto.randomUUID(),
       role: "user",
