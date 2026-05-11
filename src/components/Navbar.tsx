@@ -290,114 +290,24 @@ const Navbar = () => {
               )}
             </AnimatePresence>
           </div>
-          {/* Market mega dropdown */}
-          <div
-            className="relative"
-            ref={marketDropdownRef}
-            onMouseEnter={() => setMarketDropdownOpen(true)}
-            onMouseLeave={() => setMarketDropdownOpen(false)}
+          {/* Market direct link */}
+          <Link
+            to="/market"
+            className={`relative rounded-lg px-3 py-1.5 text-[13px] font-medium transition-all ${
+              location.pathname === "/market"
+                ? "text-foreground"
+                : "text-muted-foreground hover:text-foreground hover:bg-secondary/40"
+            }`}
           >
-            <button
-              onClick={() => setMarketDropdownOpen((v) => !v)}
-              className={`relative flex items-center gap-1 rounded-lg px-3 py-1.5 text-[13px] font-medium transition-all ${
-                isMarketActive
-                  ? "text-foreground"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/40"
-              }`}
-            >
-              Market
-              <ChevronDown className={`h-3 w-3 transition-transform duration-200 ${marketDropdownOpen ? "rotate-180" : ""}`} />
-              {isMarketActive && (
-                <motion.div
-                  layoutId="nav-indicator"
-                  className="absolute inset-x-1 -bottom-[13px] h-[2px] rounded-full bg-primary"
-                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                />
-              )}
-            </button>
-            <AnimatePresence>
-              {marketDropdownOpen && (
-                <div className="absolute left-1/2 top-full z-50 pt-2" style={{ marginLeft: '-170px' }}>
-                  <motion.div
-                    initial={{ opacity: 0, y: 8, scale: 0.96 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 8, scale: 0.96 }}
-                    transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                    className="w-[340px] rounded-xl border border-border bg-card shadow-xl shadow-background/30 overflow-hidden"
-                  >
-                  {/* Header */}
-                  <div className="px-4 pt-3 pb-2">
-                    <p className="text-[10px] uppercase tracking-[0.15em] font-semibold text-muted-foreground/50">Market Hub</p>
-                  </div>
-
-                  {/* Links */}
-                  <div className="px-2 pb-2 space-y-0.5">
-                    <Link
-                      to="/market"
-                      onClick={() => setMarketDropdownOpen(false)}
-                      className={`group/item flex items-center gap-3 rounded-lg px-3 py-3 transition-all ${
-                        location.pathname === "/market"
-                          ? "bg-primary/8 border border-primary/15"
-                          : "hover:bg-secondary/50 border border-transparent"
-                      }`}
-                    >
-                      <div className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors ${
-                        location.pathname === "/market" ? "bg-primary/15" : "bg-secondary group-hover/item:bg-primary/10"
-                      }`}>
-                        <BarChart3 className={`h-4 w-4 ${location.pathname === "/market" ? "text-primary" : "text-muted-foreground group-hover/item:text-primary"} transition-colors`} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className="text-[13px] font-semibold text-foreground">Token Market</p>
-                          {location.pathname === "/market" && (
-                            <span className="rounded-full bg-primary/15 px-1.5 py-0.5 text-[9px] font-bold text-primary uppercase tracking-wider">Active</span>
-                          )}
-                        </div>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">Live prices, sparklines & market cap data</p>
-                      </div>
-                      <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/30 group-hover/item:text-muted-foreground transition-all group-hover/item:translate-x-0.5" />
-                    </Link>
-
-                    <Link
-                      to="/portfolio"
-                      onClick={() => setMarketDropdownOpen(false)}
-                      className={`group/item flex items-center gap-3 rounded-lg px-3 py-3 transition-all ${
-                        location.pathname === "/portfolio"
-                          ? "bg-primary/8 border border-primary/15"
-                          : "hover:bg-secondary/50 border border-transparent"
-                      }`}
-                    >
-                      <div className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors ${
-                        location.pathname === "/portfolio" ? "bg-primary/15" : "bg-secondary group-hover/item:bg-primary/10"
-                      }`}>
-                        <LineChart className={`h-4 w-4 ${location.pathname === "/portfolio" ? "text-primary" : "text-muted-foreground group-hover/item:text-primary"} transition-colors`} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className="text-[13px] font-semibold text-foreground">Portfolio Tracker</p>
-                          {location.pathname === "/portfolio" && (
-                            <span className="rounded-full bg-primary/15 px-1.5 py-0.5 text-[9px] font-bold text-primary uppercase tracking-wider">Active</span>
-                          )}
-                        </div>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">Track holdings, alerts & performance</p>
-                      </div>
-                      <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/30 group-hover/item:text-muted-foreground transition-all group-hover/item:translate-x-0.5" />
-                    </Link>
-                  </div>
-
-                  {/* Footer with quick action */}
-                  <div className="border-t border-border px-4 py-2.5 flex items-center justify-between bg-secondary/20">
-                    <span className="text-[10px] text-muted-foreground">Track DePIN tokens in real time</span>
-                    <div className="flex items-center gap-1 text-[10px] font-medium text-primary">
-                      <Zap className="h-3 w-3" />
-                      Live
-                    </div>
-                  </div>
-                </motion.div>
-                </div>
-              )}
-            </AnimatePresence>
-          </div>
+            Market
+            {location.pathname === "/market" && (
+              <motion.div
+                layoutId="nav-indicator"
+                className="absolute inset-x-1 -bottom-[13px] h-[2px] rounded-full bg-primary"
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              />
+            )}
+          </Link>
           {/* Tools mega dropdown */}
           <div
             className="relative"
