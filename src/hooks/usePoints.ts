@@ -10,6 +10,7 @@ export type PointsRow = {
   user_id: string;
   balance: number;
   last_claim_at: string | null;
+  last_dismissed_window: string | null;
 };
 
 export function usePoints() {
@@ -22,7 +23,7 @@ export function usePoints() {
     queryFn: async (): Promise<PointsRow | null> => {
       const { data, error } = await supabase
         .from("user_points" as any)
-        .select("user_id, balance, last_claim_at")
+        .select("user_id, balance, last_claim_at, last_dismissed_window")
         .eq("user_id", user!.id)
         .maybeSingle();
       if (error) throw error;
@@ -32,6 +33,7 @@ export function usePoints() {
 
   const balance = query.data?.balance ?? 0;
   const lastClaimAt = query.data?.last_claim_at ? new Date(query.data.last_claim_at) : null;
+  const lastDismissedWindow = query.data?.last_dismissed_window ?? null;
   const nextClaimAt = lastClaimAt
     ? new Date(lastClaimAt.getTime() + 7 * 24 * 60 * 60 * 1000)
     : null;
@@ -65,6 +67,7 @@ export function usePoints() {
   return {
     balance,
     lastClaimAt,
+    lastDismissedWindow,
     nextClaimAt,
     canClaim: !!canClaim,
     isLoading: query.isLoading,
@@ -82,25 +85,41 @@ export function usePoints() {
  */
 export function useWeeklyClaimDialogState() {
   const { user } = useAuth();
-  const { canClaim, isLoading, lastClaimAt } = usePoints();
+  const qc = useQueryClient();
+  const { canClaim, isLoading, lastClaimAt, lastDismissedWindow } = usePoints();
   const [open, setOpen] = useState(false);
 
-  // Identifier for the current eligibility window. When the user claims,
-  // lastClaimAt advances → the window id changes → next time canClaim
-  // becomes true again, the prompt re-shows.
-  const windowId = lastClaimAt ? lastClaimAt.toISOString() : "initial";
+  // The current eligibility window is identified by the user's last_claim_at
+  // (or "initial" if they have never claimed). When the user claims,
+  // last_claim_at advances → the window changes → the prompt re-shows.
+  const windowMs = lastClaimAt ? lastClaimAt.getTime() : -Infinity;
+  const dismissedMs = lastDismissedWindow
+    ? new Date(lastDismissedWindow).getTime()
+    : -Infinity;
+  const dismissedThisWindow = dismissedMs >= windowMs;
 
   useEffect(() => {
     if (!user || isLoading) return;
     if (!canClaim) return;
+    if (dismissedThisWindow) return;
+    // Local fallback for offline-first UX
     const key = `weekly-claim-acked:${user.id}`;
-    if (localStorage.getItem(key) === windowId) return;
+    const localWindowId = lastClaimAt ? lastClaimAt.toISOString() : "initial";
+    if (localStorage.getItem(key) === localWindowId) return;
     setOpen(true);
-  }, [user, canClaim, isLoading, windowId]);
+  }, [user, canClaim, isLoading, dismissedThisWindow, lastClaimAt]);
 
-  const ackAndClose = (next: boolean) => {
+  const ackAndClose = async (next: boolean) => {
     if (!next && user) {
-      localStorage.setItem(`weekly-claim-acked:${user.id}`, windowId);
+      const localWindowId = lastClaimAt ? lastClaimAt.toISOString() : "initial";
+      localStorage.setItem(`weekly-claim-acked:${user.id}`, localWindowId);
+      // Persist server-side so dismissal syncs across devices
+      try {
+        await (supabase.rpc as any)("dismiss_weekly_claim");
+        qc.invalidateQueries({ queryKey: ["user-points", user.id] });
+      } catch {
+        // Silent — local fallback already set
+      }
     }
     setOpen(next);
   };
