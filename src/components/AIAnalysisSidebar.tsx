@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { usePoints, COST_PER_PROMPT } from "@/hooks/usePoints";
 import OutOfPointsDialog from "@/components/points/OutOfPointsDialog";
+import PointsBadge from "@/components/points/PointsBadge";
 
 interface ChatMessage {
   id: string;
@@ -123,6 +124,7 @@ const AIAnalysisSidebar = ({
                 </div>
               </div>
               <div className="flex items-center gap-1">
+                <PointsBadge className="!flex mr-1" />
                 <Link
                   to="/ai-analysis"
                   className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-secondary/50 transition-colors"
