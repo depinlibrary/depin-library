@@ -794,6 +794,7 @@ export type Database = {
           balance: number
           created_at: string
           last_claim_at: string | null
+          last_dismissed_window: string | null
           updated_at: string
           user_id: string
         }
@@ -801,6 +802,7 @@ export type Database = {
           balance?: number
           created_at?: string
           last_claim_at?: string | null
+          last_dismissed_window?: string | null
           updated_at?: string
           user_id: string
         }
@@ -808,6 +810,7 @@ export type Database = {
           balance?: number
           created_at?: string
           last_claim_at?: string | null
+          last_dismissed_window?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -837,6 +840,7 @@ export type Database = {
     }
     Functions: {
       claim_weekly_points: { Args: never; Returns: Json }
+      dismiss_weekly_claim: { Args: never; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
