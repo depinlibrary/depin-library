@@ -142,7 +142,10 @@ const ProjectDetail = () => {
         <div className="container relative mx-auto px-4">
           {/* Back row */}
           <motion.div {...fadeUp} className="mb-6 flex items-center justify-between">
-            <Link to="/explore" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
+            <Link
+              to="/explore"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground shadow-sm transition-all hover:bg-secondary/60 hover:border-primary/40"
+            >
               <ArrowLeft className="h-4 w-4" /> All Projects
             </Link>
             <div className="flex items-center gap-2">
